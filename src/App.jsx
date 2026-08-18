@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AuthScreen } from './components/AuthScreen.jsx';
+import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
@@ -43,6 +44,7 @@ function AccountPopover({ user, profile, loading, onClose, onSignOut }) {
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [activeScreen, setActiveScreen] = useState('home');
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
@@ -73,6 +75,7 @@ export default function App() {
         setProfile(null);
         setMenuOpen(false);
         setAccountOpen(false);
+        setActiveScreen('home');
       }
     });
 
@@ -123,19 +126,26 @@ export default function App() {
       }
     }
 
-    function handleProfileButton(event) {
-      if (!userId) return;
-      if (event.target.closest('.profile-btn')) {
+    function handleDocumentClick(event) {
+      if (userId && event.target.closest('.profile-btn')) {
         setAccountOpen((current) => !current);
+        return;
+      }
+
+      const navItem = event.target.closest('.bottom-nav .nav-item');
+      if (navItem?.textContent?.trim().startsWith('Тренировки')) {
+        setMenuOpen(false);
+        setAccountOpen(false);
+        setActiveScreen('exercises');
       }
     }
 
     document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('click', handleProfileButton);
+    document.addEventListener('click', handleDocumentClick);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('click', handleProfileButton);
+      document.removeEventListener('click', handleDocumentClick);
     };
   }, [userId]);
 
@@ -157,6 +167,7 @@ export default function App() {
 
     setSignOutLoading(false);
     setAccountOpen(false);
+    setActiveScreen('home');
   }
 
   if (authConfigError) {
@@ -176,11 +187,16 @@ export default function App() {
 
   return (
     <>
-      <HomeScreen
-        menuOpen={menuOpen}
-        onOpenMenu={() => setMenuOpen(true)}
-        onCloseMenu={() => setMenuOpen(false)}
-      />
+      {activeScreen === 'exercises' ? (
+        <ExercisesScreen onHome={() => setActiveScreen('home')} />
+      ) : (
+        <HomeScreen
+          menuOpen={menuOpen}
+          onOpenMenu={() => setMenuOpen(true)}
+          onCloseMenu={() => setMenuOpen(false)}
+        />
+      )}
+
       {accountOpen && (
         <AccountPopover
           user={user}
