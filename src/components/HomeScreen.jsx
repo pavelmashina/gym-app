@@ -1,40 +1,97 @@
-const calendarDays = [
-  { label: '30', out: true },
-  { label: '1' },
-  { label: '2' },
-  { label: '3', selected: true },
-  { label: '4' },
-  { label: '5' },
-  { label: '6' },
-  { label: '7' },
-  { label: '8', workout: true },
-  { label: '9' },
-  { label: '10' },
-  { label: '11', workout: true },
-  { label: '12' },
-  { label: '13' },
-  { label: '14', workout: true },
-  { label: '15' },
-  { label: '16' },
-  { label: '17', workout: true },
-  { label: '18' },
-  { label: '19' },
-  { label: '20' },
-  { label: '21' },
-  { label: '22', workout: true },
-  { label: '23' },
-  { label: '24' },
-  { label: '25', workout: true },
-  { label: '26' },
-  { label: '27' },
-  { label: '28', workout: true },
-  { label: '29' },
-  { label: '30' },
-  { label: '31', workout: true },
-  { label: '1', out: true },
-  { label: '2', out: true },
-  { label: '3', out: true },
+import { useEffect, useMemo, useState } from 'react';
+import '../home-dynamic.css';
+
+const MONTHS = [
+  'Январь',
+  'Февраль',
+  'Март',
+  'Апрель',
+  'Май',
+  'Июнь',
+  'Июль',
+  'Август',
+  'Сентябрь',
+  'Октябрь',
+  'Ноябрь',
+  'Декабрь',
 ];
+
+const MONTHS_GENITIVE = [
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
+];
+
+function toDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function formatMonth(date) {
+  return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function formatFullDate(date) {
+  return `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function buildCalendarDays(monthDate, today, workoutDateSet) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const mondayOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalCells = Math.ceil((mondayOffset + daysInMonth) / 7) * 7;
+  const todayKey = toDateKey(today);
+
+  return Array.from({ length: totalCells }, (_, index) => {
+    const date = new Date(year, month, index - mondayOffset + 1);
+    const key = toDateKey(date);
+
+    return {
+      key,
+      label: String(date.getDate()),
+      out: date.getMonth() !== month,
+      workout: workoutDateSet.has(key),
+      today: key === todayKey,
+    };
+  });
+}
+
+function useDeviceDate() {
+  const [today, setToday] = useState(() => new Date());
+
+  useEffect(() => {
+    const syncWithDevice = () => setToday(new Date());
+    const intervalId = window.setInterval(syncWithDevice, 60_000);
+
+    window.addEventListener('focus', syncWithDevice);
+    document.addEventListener('visibilitychange', syncWithDevice);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', syncWithDevice);
+      document.removeEventListener('visibilitychange', syncWithDevice);
+    };
+  }, []);
+
+  return today;
+}
 
 function Header({ menuOpen, onOpenMenu }) {
   return (
@@ -92,15 +149,33 @@ function PromoBanner() {
   );
 }
 
-function CalendarCard() {
+function CalendarCard({ today, workoutDates }) {
+  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(today));
+
+  useEffect(() => {
+    setDisplayMonth(startOfMonth(today));
+  }, [today.getFullYear(), today.getMonth()]);
+
+  const workoutDateSet = useMemo(() => new Set(workoutDates), [workoutDates]);
+  const calendarDays = useMemo(
+    () => buildCalendarDays(displayMonth, today, workoutDateSet),
+    [displayMonth, today, workoutDateSet],
+  );
+
+  function changeMonth(delta) {
+    setDisplayMonth(
+      (current) => new Date(current.getFullYear(), current.getMonth() + delta, 1),
+    );
+  }
+
   return (
     <section className="calendar-card">
       <div className="month-row">
-        <button type="button" aria-label="Предыдущий месяц">
+        <button type="button" aria-label="Предыдущий месяц" onClick={() => changeMonth(-1)}>
           ←
         </button>
-        <div className="month">Октябрь 2024</div>
-        <button type="button" aria-label="Следующий месяц">
+        <div className="month">{formatMonth(displayMonth)}</div>
+        <button type="button" aria-label="Следующий месяц" onClick={() => changeMonth(1)}>
           →
         </button>
       </div>
@@ -116,18 +191,22 @@ function CalendarCard() {
       </div>
 
       <div className="days">
-        {calendarDays.map((day, index) => {
+        {calendarDays.map((day) => {
           const classNames = [
             'day',
             day.out ? 'out' : '',
             day.workout ? 'workout' : '',
-            day.selected ? 'selected' : '',
+            day.today ? 'today' : '',
           ]
             .filter(Boolean)
             .join(' ');
 
           return (
-            <div className={classNames} key={`${day.label}-${index}`}>
+            <div
+              className={classNames}
+              key={day.key}
+              aria-current={day.today ? 'date' : undefined}
+            >
               <span>{day.label}</span>
             </div>
           );
@@ -137,11 +216,76 @@ function CalendarCard() {
   );
 }
 
-function DailySummary() {
+function WorkoutSummary({ workout }) {
+  if (!workout) {
+    return (
+      <section className="summary-col workout home-empty-card">
+        <div className="summary-label">Тренировка</div>
+        <div className="home-empty-copy">
+          <h3>Нет тренировки</h3>
+          <p>На сегодня ничего не запланировано</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="summary-col workout">
+      <div className="summary-label">Тренировка</div>
+      <h3>{workout.title}</h3>
+      <p>{workout.exerciseCount} упражнений</p>
+      <button className="workout-btn" type="button">
+        К тренировке
+      </button>
+    </section>
+  );
+}
+
+function NutritionSummary({ nutritionPlan }) {
+  if (!nutritionPlan) {
+    return (
+      <section className="summary-col food home-empty-card">
+        <div className="summary-label">Питание</div>
+        <div className="home-empty-copy">
+          <h3>План не выбран</h3>
+          <p>Питание пока не настроено</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="summary-col food">
+      <div className="summary-label">Питание</div>
+      <h3>{nutritionPlan.calories}</h3>
+      <p className="food-caption">ккал на день</p>
+      <div className="food-grid">
+        <div className="food-stat">
+          <strong>{nutritionPlan.protein} г</strong>
+          <span>Белки</span>
+        </div>
+        <div className="food-stat">
+          <strong>{nutritionPlan.fat} г</strong>
+          <span>Жиры</span>
+        </div>
+        <div className="food-stat">
+          <strong>{nutritionPlan.carbs} г</strong>
+          <span>Углеводы</span>
+        </div>
+        <div className="food-stat">
+          <strong>{nutritionPlan.completion ?? 0}%</strong>
+          <span>Выполнено</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DailySummary({ today, workout, nutritionPlan }) {
   return (
     <section className="date-card">
       <div className="date-row">
-        <div className="date-title">3 октября 2024</div>
+        <div className="date-title">{formatFullDate(today)}</div>
         <svg
           className="edit-icon"
           viewBox="0 0 24 24"
@@ -156,41 +300,8 @@ function DailySummary() {
       </div>
 
       <div className="summary">
-        <section className="summary-col workout">
-          <div className="summary-label">Тренировка</div>
-          <h3>
-            Спина
-            <br />и руки
-          </h3>
-          <p>6 упражнений</p>
-          <button className="workout-btn" type="button">
-            К тренировке
-          </button>
-        </section>
-
-        <section className="summary-col food">
-          <div className="summary-label">Питание</div>
-          <h3>2600</h3>
-          <p className="food-caption">ккал на день</p>
-          <div className="food-grid">
-            <div className="food-stat">
-              <strong>140 г</strong>
-              <span>Белки</span>
-            </div>
-            <div className="food-stat">
-              <strong>80 г</strong>
-              <span>Жиры</span>
-            </div>
-            <div className="food-stat">
-              <strong>260 г</strong>
-              <span>Углеводы</span>
-            </div>
-            <div className="food-stat">
-              <strong>0%</strong>
-              <span>Выполнено</span>
-            </div>
-          </div>
-        </section>
+        <WorkoutSummary workout={workout} />
+        <NutritionSummary nutritionPlan={nutritionPlan} />
       </div>
     </section>
   );
@@ -280,15 +391,28 @@ function Drawer({ onCloseMenu }) {
   );
 }
 
-export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu }) {
+export function HomeScreen({
+  menuOpen,
+  onOpenMenu,
+  onCloseMenu,
+  workoutDates = [],
+  todaysWorkout = null,
+  nutritionPlan = null,
+}) {
+  const today = useDeviceDate();
+
   return (
     <div className={`phone${menuOpen ? ' menu-open' : ''}`}>
       <Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} />
 
       <main className="content">
         <PromoBanner />
-        <CalendarCard />
-        <DailySummary />
+        <CalendarCard today={today} workoutDates={workoutDates} />
+        <DailySummary
+          today={today}
+          workout={todaysWorkout}
+          nutritionPlan={nutritionPlan}
+        />
       </main>
 
       <BottomNav />
