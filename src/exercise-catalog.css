@@ -279,8 +279,12 @@
 }
 
 .exercise-detail-layer {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: min(100vw, 430px);
+  height: 100dvh;
+  transform: translateX(-50%);
   z-index: 60;
   background: var(--bg);
 }
@@ -416,7 +420,11 @@
 
 @media (min-width: 600px) {
   .exercise-detail-layer {
+    top: 24px;
+    height: calc(100vh - 48px);
+    max-height: 900px;
     border-radius: 34px;
     overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);
   }
 }
