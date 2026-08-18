@@ -47,8 +47,11 @@ security definer
 set search_path = ''
 as $$
 begin
-  insert into public.profiles (id)
-  values (new.id)
+  insert into public.profiles (id, display_name)
+  values (
+    new.id,
+    nullif(trim(new.raw_user_meta_data ->> 'display_name'), '')
+  )
   on conflict (id) do nothing;
 
   return new;
