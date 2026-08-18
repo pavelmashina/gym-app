@@ -1,0 +1,33 @@
+.day.today span {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  background: #171717;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.16);
+}
+
+.home-empty-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-empty-copy {
+  margin-top: auto;
+  margin-bottom: 2px;
+}
+
+.home-empty-copy h3 {
+  max-width: 150px;
+}
+
+.home-empty-copy p {
+  max-width: 155px;
+}
+
+.summary-col.food .home-empty-copy p {
+  color: var(--muted);
+}
