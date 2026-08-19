@@ -2,7 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { AuthScreen } from './components/AuthScreen.jsx';
 import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
+import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
+
+const NAVIGATION_LABELS = {
+  'Тренировки': 'training',
+  'Статистика': 'statistics',
+  'Главная': 'home',
+  'Питание': 'nutrition',
+  'СпортПит': 'sportpit',
+};
 
 function LoadingScreen() {
   return (
@@ -133,11 +142,17 @@ export default function App() {
       }
 
       const navItem = event.target.closest('.bottom-nav .nav-item');
-      if (navItem?.textContent?.trim().startsWith('Тренировки')) {
-        setMenuOpen(false);
-        setAccountOpen(false);
-        setActiveScreen('exercises');
-      }
+      if (!navItem) return;
+
+      const label = navItem.textContent?.trim();
+      const nextScreen = Object.entries(NAVIGATION_LABELS)
+        .find(([navigationLabel]) => label?.startsWith(navigationLabel))?.[1];
+
+      if (!nextScreen) return;
+
+      setMenuOpen(false);
+      setAccountOpen(false);
+      setActiveScreen(nextScreen);
     }
 
     document.addEventListener('keydown', handleKeyDown);
@@ -170,6 +185,22 @@ export default function App() {
     setActiveScreen('home');
   }
 
+  function renderActiveScreen() {
+    if (activeScreen === 'training') return <ExercisesScreen />;
+
+    if (['statistics', 'nutrition', 'sportpit'].includes(activeScreen)) {
+      return <SectionPlaceholder section={activeScreen} />;
+    }
+
+    return (
+      <HomeScreen
+        menuOpen={menuOpen}
+        onOpenMenu={() => setMenuOpen(true)}
+        onCloseMenu={() => setMenuOpen(false)}
+      />
+    );
+  }
+
   if (authConfigError) {
     return (
       <main className="auth-shell">
@@ -187,15 +218,7 @@ export default function App() {
 
   return (
     <>
-      {activeScreen === 'exercises' ? (
-        <ExercisesScreen onHome={() => setActiveScreen('home')} />
-      ) : (
-        <HomeScreen
-          menuOpen={menuOpen}
-          onOpenMenu={() => setMenuOpen(true)}
-          onCloseMenu={() => setMenuOpen(false)}
-        />
-      )}
+      {renderActiveScreen()}
 
       {accountOpen && (
         <AccountPopover
