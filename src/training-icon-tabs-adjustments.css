@@ -1,5 +1,11 @@
 .training-tabs {
-  padding-left: 4.5px;
+  --training-tab-width: 92px;
+  --training-icon-block-width: 65px;
+  --training-edge-visual-compensation: 2px;
+  padding-left: calc(
+    18px - ((var(--training-tab-width) - var(--training-icon-block-width)) / 2)
+    + var(--training-edge-visual-compensation)
+  );
 }
 
 .training-tabs button {
@@ -12,4 +18,10 @@
   height: 65px;
   border-radius: 21px;
   background-size: 36px 36px;
+}
+
+@media (max-width: 360px) {
+  .training-tabs {
+    --training-tab-width: 86px;
+  }
 }
