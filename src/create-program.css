@@ -84,8 +84,11 @@
 }
 
 .program-field {
-  display: block;
-  padding: 17px 17px 16px;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 13px 17px 12px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -96,7 +99,7 @@
 .program-field > span,
 .program-select-row > span {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 780;
@@ -125,10 +128,15 @@
   color: var(--muted-2);
 }
 
+.program-auto-textarea {
+  min-height: 22px;
+  overflow: hidden;
+}
+
 .program-weeks-field input {
   max-width: 90px;
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .create-program-section {
@@ -217,14 +225,10 @@
 
 .program-category-list {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  padding: 0 0 5px;
-  scrollbar-width: none;
-}
-
-.program-category-list::-webkit-scrollbar {
-  display: none;
+  overflow: visible;
+  padding: 0;
 }
 
 .program-category-list button {
@@ -247,7 +251,7 @@
 }
 
 .program-select-card {
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .program-select-row {
