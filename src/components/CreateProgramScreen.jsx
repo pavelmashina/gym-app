@@ -58,6 +58,22 @@ function resizeTextArea(element) {
   element.style.height = `${element.scrollHeight}px`;
 }
 
+function createProgramWeek(index) {
+  return {
+    id: crypto.randomUUID(),
+    number: index + 1,
+    workouts: [],
+  };
+}
+
+function reconcileProgramWeeks(currentWeeks, weekCount) {
+  return Array.from({ length: weekCount }, (_, index) => {
+    const existing = currentWeeks[index];
+    if (existing) return { ...existing, number: index + 1 };
+    return createProgramWeek(index);
+  });
+}
+
 export function CreateProgramScreen({ onBack }) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
@@ -68,19 +84,14 @@ export function CreateProgramScreen({ onBack }) {
   const [place, setPlace] = useState('');
   const [equipment, setEquipment] = useState('');
   const [level, setLevel] = useState('');
-  const [workouts, setWorkouts] = useState([
-    {
-      id: crypto.randomUUID(),
-      name: 'Тренировка 1',
-      exerciseCount: 0,
-    },
-  ]);
+  const [programWeeks, setProgramWeeks] = useState([]);
 
   useEffect(() => () => {
     if (coverUrl) URL.revokeObjectURL(coverUrl);
   }, [coverUrl]);
 
-  const canContinue = name.trim().length > 0 && Number(weeks) > 0;
+  const weekCount = Math.max(0, Math.min(52, Number(weeks) || 0));
+  const canContinue = name.trim().length > 0 && weekCount > 0;
 
   function handleCoverChange(event) {
     const file = event.target.files?.[0];
@@ -111,6 +122,7 @@ export function CreateProgramScreen({ onBack }) {
 
   function handleNext() {
     if (!canContinue) return;
+    setProgramWeeks((current) => reconcileProgramWeeks(current, weekCount));
     setStep(2);
     scrollCreateProgramToTop();
   }
@@ -124,10 +136,10 @@ export function CreateProgramScreen({ onBack }) {
     return (
       <CreateProgramStructureScreen
         programName={name.trim()}
-        weeks={weeks}
+        weekCount={weekCount}
         categories={categories}
-        workouts={workouts}
-        onWorkoutsChange={setWorkouts}
+        programWeeks={programWeeks}
+        onProgramWeeksChange={setProgramWeeks}
         onBack={handleBackFromStepTwo}
       />
     );
