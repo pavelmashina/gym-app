@@ -9,13 +9,16 @@
   /* положение всего скролл-меню по вертикали */
   --menu-top: 14px;
 
+  /* сдвиг ВСЕГО пункта: фон + иконка + весь текст */
+  --item-x: 0px;
+
   /* дополнительный сдвиг фоновых блоков всех иконок */
   --icon-x: 18px;
 
   /* сдвиг рисунка иконки внутри фонового блока */
   --icon-image-x: 0px;
 
-  /* сдвиг подписей: Рекомендации, Каталог и т.д. */
+  /* сдвиг ВСЕГО текста, включая вторую и следующие строки */
   --text-x: 18px;
 
   /* технические размеры, обычно их менять не нужно */
@@ -37,8 +40,13 @@
   gap: 10px;
   white-space: normal;
 
-  /* Сдвигает только текст, не затрагивая фон и саму иконку. */
-  text-indent: var(--text-x);
+  /*
+    Двигает весь пункт на --item-x.
+    Дополнительно двигает весь текст на --text-x.
+    Фон ниже получает обратную компенсацию --text-x,
+    поэтому text-x не затрагивает иконку.
+  */
+  transform: translateX(calc(var(--item-x) + var(--text-x)));
 }
 
 .exercise-catalog-content .training-tabs button::before {
@@ -47,8 +55,12 @@
   border-radius: 21px;
   background-size: 36px 36px;
 
-  /* Двигает фон вместе с иконкой внутри него. */
-  transform: translateX(var(--icon-x));
+  /*
+    Двигает фон вместе с иконкой на --icon-x.
+    - var(--text-x) компенсирует сдвиг текста на родительском button.
+    В результате --item-x двигает всё, а --text-x — только весь текст.
+  */
+  transform: translateX(calc(var(--icon-x) - var(--text-x)));
 
   /* Двигает только рисунок иконки внутри фона. */
   background-position:
@@ -57,7 +69,7 @@
 }
 
 .exercise-catalog-content .training-tabs button:active::before {
-  transform: translateX(var(--icon-x)) scale(0.96);
+  transform: translateX(calc(var(--icon-x) - var(--text-x))) scale(0.96);
 }
 
 @media (max-width: 360px) {
