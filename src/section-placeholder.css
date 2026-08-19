@@ -1,0 +1,97 @@
+.section-placeholder-phone {
+  background: var(--bg);
+}
+
+.placeholder-appbar {
+  padding: 20px 18px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.placeholder-appbar > div > span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.placeholder-appbar h1 {
+  margin: 2px 0 0;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -1.2px;
+}
+
+.placeholder-content {
+  padding: 0 18px calc(126px + env(safe-area-inset-bottom));
+}
+
+.placeholder-card {
+  min-height: 310px;
+  padding: 30px;
+  border: 1px dashed #d9d9d4;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.placeholder-mark {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  color: var(--muted-2);
+  font-size: 22px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
+}
+
+.placeholder-card h2 {
+  margin: 16px 0 0;
+  font-size: 18px;
+}
+
+.placeholder-card p {
+  max-width: 280px;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.placeholder-bottom-nav .placeholder-active {
+  color: var(--ink);
+  font-weight: 760;
+}
+
+.placeholder-bottom-nav .nav-item.home {
+  color: #aaa9a3;
+}
+
+.placeholder-bottom-nav .nav-item.home .home-circle {
+  width: auto;
+  height: auto;
+  margin-top: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #aaa9a3;
+  box-shadow: none;
+}
+
+.placeholder-bottom-nav .nav-item.home svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.placeholder-bottom-nav .nav-item.home span:last-child {
+  color: inherit;
+  font-weight: 400;
+}
