@@ -1,6 +1,6 @@
 .training-tabs {
   gap: 12px;
-  margin: 14px 0px 0;
+  margin: 14px -18px 0;
   padding: 0 18px 14px;
   border-bottom: 1px solid var(--line);
   overflow-x: auto;
