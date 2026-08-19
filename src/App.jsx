@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AuthScreen } from './components/AuthScreen.jsx';
+import { CreateProgramScreen } from './components/CreateProgramScreen.jsx';
 import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
@@ -132,12 +133,21 @@ export default function App() {
       if (event.key === 'Escape') {
         setMenuOpen(false);
         setAccountOpen(false);
+        setActiveScreen((current) => (current === 'create-program' ? 'training' : current));
       }
     }
 
     function handleDocumentClick(event) {
       if (userId && event.target.closest('.profile-btn')) {
         setAccountOpen((current) => !current);
+        return;
+      }
+
+      const createProgramTrigger = event.target.closest('.create-program-wide, .training-tabs button');
+      if (createProgramTrigger?.textContent?.trim().startsWith('Создать свою программу')) {
+        setMenuOpen(false);
+        setAccountOpen(false);
+        setActiveScreen('create-program');
         return;
       }
 
@@ -186,6 +196,10 @@ export default function App() {
   }
 
   function renderActiveScreen() {
+    if (activeScreen === 'create-program') {
+      return <CreateProgramScreen onBack={() => setActiveScreen('training')} />;
+    }
+
     if (activeScreen === 'training') return <ExercisesScreen />;
 
     if (['statistics', 'nutrition', 'sportpit'].includes(activeScreen)) {
