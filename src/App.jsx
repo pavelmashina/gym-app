@@ -14,6 +14,14 @@ const NAVIGATION_LABELS = {
   'СпортПит': 'sportpit',
 };
 
+function isPasswordRecoveryUrl() {
+  if (typeof window === 'undefined') return false;
+
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const searchParams = new URLSearchParams(window.location.search);
+  return hashParams.get('type') === 'recovery' || searchParams.get('type') === 'recovery';
+}
+
 function LoadingScreen() {
   return (
     <main className="auth-loading" aria-live="polite">
@@ -59,6 +67,7 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [signOutLoading, setSignOutLoading] = useState(false);
+  const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(isPasswordRecoveryUrl);
 
   const user = session?.user ?? null;
   const userId = user?.id ?? null;
@@ -77,8 +86,17 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!active) return;
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecoveryActive(true);
+      }
+
+      if (event === 'SIGNED_OUT') {
+        setPasswordRecoveryActive(false);
+      }
+
       setSession(nextSession ?? null);
       setAuthReady(true);
       if (!nextSession) {
@@ -228,6 +246,16 @@ export default function App() {
   }
 
   if (!authReady) return <LoadingScreen />;
+
+  if (passwordRecoveryActive && session) {
+    return (
+      <AuthScreen
+        recoveryMode
+        onRecoveryComplete={() => setPasswordRecoveryActive(false)}
+      />
+    );
+  }
+
   if (!session) return <AuthScreen />;
 
   return (

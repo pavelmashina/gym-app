@@ -89,6 +89,10 @@
   margin-top: 20px;
 }
 
+.auth-form-standalone {
+  margin-top: 24px;
+}
+
 .auth-field {
   display: grid;
   gap: 7px;
@@ -123,6 +127,40 @@
 
 .auth-field input::placeholder {
   color: #afafa9;
+}
+
+.auth-password-group {
+  display: grid;
+  gap: 6px;
+}
+
+.auth-forgot,
+.auth-back-link {
+  width: fit-content;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.auth-forgot {
+  margin: -1px 0 0 2px;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.auth-forgot:hover,
+.auth-back-link:hover {
+  color: var(--ink);
+}
+
+.auth-back-link {
+  justify-self: center;
+  margin-top: -2px;
+  font-size: 12px;
+  font-weight: 760;
 }
 
 .auth-submit {
