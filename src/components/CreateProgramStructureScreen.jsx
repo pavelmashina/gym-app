@@ -89,6 +89,25 @@ function formatExerciseCount(count) {
   return formatCount(count, ['упражнение', 'упражнения', 'упражнений']);
 }
 
+function formatSetCount(count) {
+  return formatCount(count, ['подход', 'подхода', 'подходов']);
+}
+
+function createPrescriptionSet() {
+  return {
+    id: crypto.randomUUID(),
+    reps: '',
+  };
+}
+
+function withDefaultPrescription(exercise) {
+  if (Array.isArray(exercise.sets) && exercise.sets.length > 0) return exercise;
+  return {
+    ...exercise,
+    sets: [createPrescriptionSet()],
+  };
+}
+
 function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -154,8 +173,22 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
     const catalogById = new Map(catalog.map((exercise) => [exercise.id, exercise]));
     const existingById = new Map(workout.exercises.map((exercise) => [exercise.id, exercise]));
     const selectedExercises = selectedIds
-      .map((id) => catalogById.get(id) ?? existingById.get(id))
+      .map((id) => {
+        const catalogExercise = catalogById.get(id);
+        const existingExercise = existingById.get(id);
+        if (!catalogExercise && !existingExercise) return null;
+
+        if (existingExercise) {
+          return withDefaultPrescription({
+            ...catalogExercise,
+            ...existingExercise,
+          });
+        }
+
+        return withDefaultPrescription(catalogExercise);
+      })
       .filter(Boolean);
+
     onSave(selectedExercises);
   }
 
@@ -248,6 +281,45 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
 
 function ProgramWorkoutEditor({ workout, weekNumber, onBack, onRename, onSaveExercises }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const nameInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!renaming) return;
+    const input = nameInputRef.current;
+    if (!input) return;
+    input.focus();
+    input.select();
+  }, [renaming]);
+
+  function updateExercise(exerciseId, updater) {
+    onSaveExercises(workout.exercises.map((exercise) => (
+      exercise.id === exerciseId ? updater(exercise) : exercise
+    )));
+  }
+
+  function addSet(exerciseId) {
+    updateExercise(exerciseId, (exercise) => ({
+      ...exercise,
+      sets: [...(exercise.sets ?? []), createPrescriptionSet()],
+    }));
+  }
+
+  function updateSetReps(exerciseId, setId, reps) {
+    updateExercise(exerciseId, (exercise) => ({
+      ...exercise,
+      sets: (exercise.sets ?? []).map((set) => (
+        set.id === setId ? { ...set, reps } : set
+      )),
+    }));
+  }
+
+  function removeSet(exerciseId, setId) {
+    updateExercise(exerciseId, (exercise) => ({
+      ...exercise,
+      sets: (exercise.sets ?? []).filter((set) => set.id !== setId),
+    }));
+  }
 
   if (pickerOpen) {
     return (
@@ -276,17 +348,34 @@ function ProgramWorkoutEditor({ workout, weekNumber, onBack, onRename, onSaveExe
       <main className="program-workout-editor-content">
         <section className="program-workout-editor-intro">
           <span>Неделя {weekNumber}</span>
-          <div className="program-workout-editor-title-row">
-            <input
-              type="text"
-              value={workout.name}
-              onChange={(event) => onRename(event.target.value)}
-              maxLength={80}
-              aria-label="Название тренировки"
-            />
-            <span className="program-workout-edit-icon" aria-hidden="true"><PencilIcon /></span>
+          <div className={`program-workout-editor-title-row${renaming ? ' editing' : ''}`}>
+            {renaming ? (
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={workout.name}
+                onChange={(event) => onRename(event.target.value)}
+                onBlur={() => setRenaming(false)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') event.currentTarget.blur();
+                }}
+                maxLength={80}
+                aria-label="Название тренировки"
+              />
+            ) : (
+              <h1>{workout.name || 'Без названия'}</h1>
+            )}
+            <button
+              className="program-workout-edit-icon"
+              type="button"
+              aria-label="Изменить название тренировки"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => setRenaming(true)}
+            >
+              <PencilIcon />
+            </button>
           </div>
-          <p>Добавьте упражнения, которые будут выполняться в этой тренировке.</p>
+          <p>Добавьте упражнения и задайте для каждого количество подходов и повторений.</p>
         </section>
 
         <section className="program-workout-editor-section">
@@ -299,15 +388,63 @@ function ProgramWorkoutEditor({ workout, weekNumber, onBack, onRename, onSaveExe
 
           {workout.exercises.length > 0 && (
             <div className="program-workout-selected-list">
-              {workout.exercises.map((exercise, index) => (
-                <div className="program-workout-selected-row" key={exercise.id}>
-                  <span>{index + 1}</span>
-                  <div>
-                    <strong>{exercise.name}</strong>
-                    <small>{[exercise.muscle_group, exercise.movement_type].filter(Boolean).join(' · ')}</small>
-                  </div>
-                </div>
-              ))}
+              {workout.exercises.map((rawExercise, index) => {
+                const exercise = withDefaultPrescription(rawExercise);
+                const sets = exercise.sets ?? [];
+
+                return (
+                  <article className="program-workout-exercise-card" key={exercise.id}>
+                    <header className="program-workout-exercise-head">
+                      <span className="program-workout-exercise-number">{index + 1}</span>
+                      <div>
+                        <strong>{exercise.name}</strong>
+                        <small>{[exercise.muscle_group, exercise.movement_type].filter(Boolean).join(' · ')}</small>
+                      </div>
+                      <span className="program-workout-set-count">{formatSetCount(sets.length)}</span>
+                    </header>
+
+                    <div className="program-workout-sets">
+                      <div className="program-workout-set-columns" aria-hidden="true">
+                        <span>Подход</span>
+                        <span>Повторения</span>
+                        <span />
+                      </div>
+
+                      {sets.map((set, setIndex) => (
+                        <div className="program-workout-set-row" key={set.id}>
+                          <span className="program-workout-set-number">{setIndex + 1}</span>
+                          <label>
+                            <span className="sr-only">Повторения в подходе {setIndex + 1}</span>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              min="1"
+                              max="999"
+                              value={set.reps}
+                              onChange={(event) => updateSetReps(exercise.id, set.id, event.target.value)}
+                              placeholder="0"
+                              aria-label={`Повторения, подход ${setIndex + 1}`}
+                            />
+                          </label>
+                          <button
+                            className="program-workout-set-remove"
+                            type="button"
+                            aria-label={`Удалить подход ${setIndex + 1}`}
+                            onClick={() => removeSet(exercise.id, set.id)}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button className="program-workout-add-set" type="button" onClick={() => addSet(exercise.id)}>
+                      <PlusIcon />
+                      <span>Добавить подход</span>
+                    </button>
+                  </article>
+                );
+              })}
             </div>
           )}
 
