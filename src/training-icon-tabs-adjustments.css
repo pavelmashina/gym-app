@@ -1,32 +1,67 @@
+/*
+  Ручная настройка скролл-меню раздела «Тренировки».
+  Меняйте только значения переменных ниже.
+*/
 .exercise-catalog-content .training-tabs {
-  padding-left: 4.5px;
+  /* левый край ФОНА первой иконки относительно края экрана */
+  --menu-left: 18px;
+
+  /* положение всего скролл-меню по вертикали */
+  --menu-top: 14px;
+
+  /* дополнительный сдвиг фоновых блоков всех иконок */
+  --icon-x: 0px;
+
+  /* сдвиг рисунка иконки внутри фонового блока */
+  --icon-image-x: 0px;
+
+  /* сдвиг подписей: Рекомендации, Каталог и т.д. */
+  --text-x: 0px;
+
+  /* технические размеры, обычно их менять не нужно */
+  --training-tab-width: 92px;
+  --training-icon-block-width: 65px;
+
+  margin-top: var(--menu-top);
+  padding-left: calc(
+    var(--menu-left) - ((var(--training-tab-width) - var(--training-icon-block-width)) / 2)
+  );
 }
 
 .exercise-catalog-content .training-tabs button {
-  flex: 0 0 92px;
-  min-width: 92px;
-  max-width: 92px;
+  flex: 0 0 var(--training-tab-width);
+  min-width: var(--training-tab-width);
+  max-width: var(--training-tab-width);
   min-height: 108px;
   padding: 0;
   gap: 10px;
   white-space: normal;
+
+  /* Сдвигает только текст, не затрагивая фон и саму иконку. */
+  text-indent: var(--text-x);
 }
 
 .exercise-catalog-content .training-tabs button::before {
-  width: 65px;
-  height: 65px;
+  width: var(--training-icon-block-width);
+  height: var(--training-icon-block-width);
   border-radius: 21px;
   background-size: 36px 36px;
+
+  /* Двигает фон вместе с иконкой внутри него. */
+  transform: translateX(var(--icon-x));
+
+  /* Двигает только рисунок иконки внутри фона. */
+  background-position:
+    calc(50% + var(--icon-image-x))
+    50%;
+}
+
+.exercise-catalog-content .training-tabs button:active::before {
+  transform: translateX(var(--icon-x)) scale(0.96);
 }
 
 @media (max-width: 360px) {
   .exercise-catalog-content .training-tabs {
-    padding-left: 7.5px;
-  }
-
-  .exercise-catalog-content .training-tabs button {
-    flex-basis: 86px;
-    min-width: 86px;
-    max-width: 86px;
+    --training-tab-width: 86px;
   }
 }
