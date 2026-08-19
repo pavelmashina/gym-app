@@ -603,15 +603,6 @@ export function CreateProgramStructureScreen({
     setOpenWeekIds((current) => (current.includes(weekId) ? current : [...current, weekId]));
   }
 
-  function renameWorkout(weekId, workoutId, value) {
-    updateWeek(weekId, (week) => ({
-      ...week,
-      workouts: week.workouts.map((workout) => (
-        workout.id === workoutId ? { ...workout, name: value } : workout
-      )),
-    }));
-  }
-
   function removeWorkout(weekId, workoutId) {
     updateWeek(weekId, (week) => ({
       ...week,
@@ -731,26 +722,16 @@ export function CreateProgramStructureScreen({
                                   <input
                                     type="text"
                                     value={workout.name}
-                                    onChange={(event) => renameWorkout(week.id, workout.id, event.target.value)}
-                                    placeholder={`Тренировка ${workoutIndex + 1}`}
-                                    maxLength={80}
+                                    readOnly
+                                    tabIndex={-1}
                                     aria-label={`Название тренировки ${workoutIndex + 1} недели ${week.number}`}
                                   />
-                                  <span className="program-workout-name-edit" aria-hidden="true"><PencilIcon /></span>
                                 </div>
                                 <span>
                                   {workout.exercises.length > 0
                                     ? formatExerciseCount(workout.exercises.length)
                                     : 'Упражнения не выбраны'}
                                 </span>
-                                {workout.exercises.length > 0 && (
-                                  <div className="program-workout-exercise-preview">
-                                    {workout.exercises.slice(0, 3).map((exercise) => (
-                                      <small key={exercise.id}>{exercise.name}</small>
-                                    ))}
-                                    {workout.exercises.length > 3 && <small>+{workout.exercises.length - 3}</small>}
-                                  </div>
-                                )}
                               </div>
                               <button
                                 className="program-workout-open"
