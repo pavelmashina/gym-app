@@ -1,17 +1,18 @@
 .exercise-catalog-content .training-tabs {
-  --training-tab-width: 92px;
-  --training-icon-block-width: 65px;
-  padding-left: calc(
-    18px - ((var(--training-tab-width) - var(--training-icon-block-width)) / 2)
-  );
+  padding-left: 4.5px;
 }
 
-.training-tabs button {
+.exercise-catalog-content .training-tabs button {
+  flex: 0 0 92px;
+  min-width: 92px;
+  max-width: 92px;
   min-height: 108px;
+  padding: 0;
   gap: 10px;
+  white-space: normal;
 }
 
-.training-tabs button::before {
+.exercise-catalog-content .training-tabs button::before {
   width: 65px;
   height: 65px;
   border-radius: 21px;
@@ -20,6 +21,12 @@
 
 @media (max-width: 360px) {
   .exercise-catalog-content .training-tabs {
-    --training-tab-width: 86px;
+    padding-left: 7.5px;
+  }
+
+  .exercise-catalog-content .training-tabs button {
+    flex-basis: 86px;
+    min-width: 86px;
+    max-width: 86px;
   }
 }
