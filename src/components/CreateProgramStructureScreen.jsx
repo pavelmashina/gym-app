@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import '../create-program-step2.css';
+import '../create-program-step2-fixes.css';
 
 function BackIcon() {
   return (
@@ -29,6 +30,15 @@ function ChevronIcon({ direction = 'right' }) {
       aria-hidden="true"
     >
       <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <path d="M4.5 19.5 5.8 14 15.9 3.9a2.1 2.1 0 0 1 3 0l1.2 1.2a2.1 2.1 0 0 1 0 3L10 18.2l-5.5 1.3Z" />
+      <path d="m14.7 5.1 4.2 4.2" />
     </svg>
   );
 }
@@ -84,6 +94,7 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedIds, setSelectedIds] = useState(() => workout.exercises.map((exercise) => exercise.id));
 
   useEffect(() => {
@@ -96,7 +107,6 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
       const { data, error: requestError } = await supabase
         .from('exercises')
         .select('id, name, muscle_group, movement_type, difficulty')
-        .eq('is_active', true)
         .order('name', { ascending: true });
 
       if (!active) return;
@@ -117,7 +127,7 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   const filteredExercises = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ru');
@@ -155,7 +165,7 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
         <button className="create-program-back" type="button" aria-label="Назад к тренировке" onClick={onBack}>
           <BackIcon />
         </button>
-        <strong>Упражнения</strong>
+        <strong>Добавить упражнение</strong>
         <span className="create-program-header-spacer" />
       </header>
 
@@ -163,7 +173,7 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
         <section className="program-exercise-picker-intro">
           <span>Неделя {weekNumber}</span>
           <h1>{workout.name}</h1>
-          <p>Выберите упражнения из общей базы. Можно добавить несколько упражнений.</p>
+          <p>Выберите упражнения из общей базы. Уже добавленные упражнения отмечены.</p>
         </section>
 
         <label className="program-exercise-search">
@@ -192,7 +202,12 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
           </div>
         )}
 
-        {!loading && error && <div className="program-exercise-state error">{error}</div>}
+        {!loading && error && (
+          <div className="program-exercise-state error program-exercise-error-state">
+            <span>{error}</span>
+            <button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button>
+          </div>
+        )}
 
         {!loading && !error && filteredExercises.length === 0 && (
           <div className="program-exercise-state">По вашему запросу ничего не найдено.</div>
@@ -213,9 +228,7 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
                   <span className="program-exercise-check">{selected && <CheckIcon />}</span>
                   <span className="program-exercise-row-copy">
                     <strong>{exercise.name}</strong>
-                    <small>
-                      {[exercise.muscle_group, exercise.movement_type].filter(Boolean).join(' · ')}
-                    </small>
+                    <small>{[exercise.muscle_group, exercise.movement_type].filter(Boolean).join(' · ')}</small>
                   </span>
                 </button>
               );
@@ -233,6 +246,85 @@ function ProgramExercisePicker({ workout, weekNumber, onBack, onSave }) {
   );
 }
 
+function ProgramWorkoutEditor({ workout, weekNumber, onBack, onRename, onSaveExercises }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  if (pickerOpen) {
+    return (
+      <ProgramExercisePicker
+        workout={workout}
+        weekNumber={weekNumber}
+        onBack={() => setPickerOpen(false)}
+        onSave={(exercises) => {
+          onSaveExercises(exercises);
+          setPickerOpen(false);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="phone create-program-phone program-workout-editor-phone">
+      <header className="create-program-header">
+        <button className="create-program-back" type="button" aria-label="Назад к структуре программы" onClick={onBack}>
+          <BackIcon />
+        </button>
+        <strong>Тренировка</strong>
+        <span className="create-program-header-spacer" />
+      </header>
+
+      <main className="program-workout-editor-content">
+        <section className="program-workout-editor-intro">
+          <span>Неделя {weekNumber}</span>
+          <div className="program-workout-editor-title-row">
+            <input
+              type="text"
+              value={workout.name}
+              onChange={(event) => onRename(event.target.value)}
+              maxLength={80}
+              aria-label="Название тренировки"
+            />
+            <span className="program-workout-edit-icon" aria-hidden="true"><PencilIcon /></span>
+          </div>
+          <p>Добавьте упражнения, которые будут выполняться в этой тренировке.</p>
+        </section>
+
+        <section className="program-workout-editor-section">
+          <div className="program-workout-editor-section-head">
+            <div>
+              <span>Упражнения</span>
+              <h2>{workout.exercises.length > 0 ? formatExerciseCount(workout.exercises.length) : 'Пока пусто'}</h2>
+            </div>
+          </div>
+
+          {workout.exercises.length > 0 && (
+            <div className="program-workout-selected-list">
+              {workout.exercises.map((exercise, index) => (
+                <div className="program-workout-selected-row" key={exercise.id}>
+                  <span>{index + 1}</span>
+                  <div>
+                    <strong>{exercise.name}</strong>
+                    <small>{[exercise.muscle_group, exercise.movement_type].filter(Boolean).join(' · ')}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button className="program-workout-add-exercise" type="button" onClick={() => setPickerOpen(true)}>
+            <span><PlusIcon /></span>
+            <div>
+              <strong>Добавить упражнение</strong>
+              <small>Выбрать из базы упражнений</small>
+            </div>
+            <ChevronIcon />
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+}
+
 export function CreateProgramStructureScreen({
   programName,
   weekCount,
@@ -243,12 +335,18 @@ export function CreateProgramStructureScreen({
 }) {
   const [openWeekIds, setOpenWeekIds] = useState([]);
   const [editingWorkout, setEditingWorkout] = useState(null);
+  const initializedWeekAccordion = useRef(false);
 
   useEffect(() => {
-    if (programWeeks.length > 0 && openWeekIds.length === 0) {
+    if (!initializedWeekAccordion.current && programWeeks.length > 0) {
+      initializedWeekAccordion.current = true;
       setOpenWeekIds([programWeeks[0].id]);
+      return;
     }
-  }, [programWeeks, openWeekIds.length]);
+
+    const validIds = new Set(programWeeks.map((week) => week.id));
+    setOpenWeekIds((current) => current.filter((id) => validIds.has(id)));
+  }, [programWeeks]);
 
   const totalWorkouts = programWeeks.reduce((sum, week) => sum + week.workouts.length, 0);
   const totalExercises = programWeeks.reduce(
@@ -319,7 +417,6 @@ export function CreateProgramStructureScreen({
         workout.id === workoutId ? { ...workout, exercises } : workout
       )),
     }));
-    setEditingWorkout(null);
   }
 
   const structureReady = programWeeks.length === weekCount
@@ -330,12 +427,13 @@ export function CreateProgramStructureScreen({
 
   if (editingWorkout && editingWeek && editingWorkoutValue) {
     return (
-      <ProgramExercisePicker
+      <ProgramWorkoutEditor
         key={`${editingWorkout.weekId}:${editingWorkout.workoutId}`}
         workout={editingWorkoutValue}
         weekNumber={editingWeek.number}
         onBack={() => setEditingWorkout(null)}
-        onSave={(exercises) => saveExercises(editingWeek.id, editingWorkoutValue.id, exercises)}
+        onRename={(value) => renameWorkout(editingWeek.id, editingWorkoutValue.id, value)}
+        onSaveExercises={(exercises) => saveExercises(editingWeek.id, editingWorkoutValue.id, exercises)}
       />
     );
   }
@@ -418,14 +516,17 @@ export function CreateProgramStructureScreen({
                             <article className="program-workout-card" key={workout.id}>
                               <div className="program-workout-number" aria-hidden="true">{workoutIndex + 1}</div>
                               <div className="program-workout-copy">
-                                <input
-                                  type="text"
-                                  value={workout.name}
-                                  onChange={(event) => renameWorkout(week.id, workout.id, event.target.value)}
-                                  placeholder={`Тренировка ${workoutIndex + 1}`}
-                                  maxLength={80}
-                                  aria-label={`Название тренировки ${workoutIndex + 1} недели ${week.number}`}
-                                />
+                                <div className="program-workout-name-row">
+                                  <input
+                                    type="text"
+                                    value={workout.name}
+                                    onChange={(event) => renameWorkout(week.id, workout.id, event.target.value)}
+                                    placeholder={`Тренировка ${workoutIndex + 1}`}
+                                    maxLength={80}
+                                    aria-label={`Название тренировки ${workoutIndex + 1} недели ${week.number}`}
+                                  />
+                                  <span className="program-workout-name-edit" aria-hidden="true"><PencilIcon /></span>
+                                </div>
                                 <span>
                                   {workout.exercises.length > 0
                                     ? formatExerciseCount(workout.exercises.length)
@@ -436,16 +537,14 @@ export function CreateProgramStructureScreen({
                                     {workout.exercises.slice(0, 3).map((exercise) => (
                                       <small key={exercise.id}>{exercise.name}</small>
                                     ))}
-                                    {workout.exercises.length > 3 && (
-                                      <small>+{workout.exercises.length - 3}</small>
-                                    )}
+                                    {workout.exercises.length > 3 && <small>+{workout.exercises.length - 3}</small>}
                                   </div>
                                 )}
                               </div>
                               <button
                                 className="program-workout-open"
                                 type="button"
-                                aria-label={`Выбрать упражнения для тренировки ${workoutIndex + 1}`}
+                                aria-label={`Открыть тренировку ${workoutIndex + 1}`}
                                 onClick={() => setEditingWorkout({ weekId: week.id, workoutId: workout.id })}
                               >
                                 <ChevronIcon />
