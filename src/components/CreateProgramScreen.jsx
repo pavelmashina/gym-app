@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CreateProgramStructureScreen } from './CreateProgramStructureScreen.jsx';
 import '../create-program.css';
 
 const CATEGORY_OPTIONS = [
@@ -58,6 +59,7 @@ function resizeTextArea(element) {
 }
 
 export function CreateProgramScreen({ onBack }) {
+  const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [weeks, setWeeks] = useState('');
   const [description, setDescription] = useState('');
@@ -66,7 +68,13 @@ export function CreateProgramScreen({ onBack }) {
   const [place, setPlace] = useState('');
   const [equipment, setEquipment] = useState('');
   const [level, setLevel] = useState('');
-  const [nextMessage, setNextMessage] = useState('');
+  const [workouts, setWorkouts] = useState([
+    {
+      id: crypto.randomUUID(),
+      name: 'Тренировка 1',
+      exerciseCount: 0,
+    },
+  ]);
 
   useEffect(() => () => {
     if (coverUrl) URL.revokeObjectURL(coverUrl);
@@ -95,9 +103,34 @@ export function CreateProgramScreen({ onBack }) {
     resizeTextArea(event.target);
   }
 
+  function scrollCreateProgramToTop() {
+    requestAnimationFrame(() => {
+      document.querySelector('.create-program-phone')?.scrollTo({ top: 0, behavior: 'instant' });
+    });
+  }
+
   function handleNext() {
     if (!canContinue) return;
-    setNextMessage('Основные данные заполнены. Следующим шагом подключим структуру недель и тренировок.');
+    setStep(2);
+    scrollCreateProgramToTop();
+  }
+
+  function handleBackFromStepTwo() {
+    setStep(1);
+    scrollCreateProgramToTop();
+  }
+
+  if (step === 2) {
+    return (
+      <CreateProgramStructureScreen
+        programName={name.trim()}
+        weeks={weeks}
+        categories={categories}
+        workouts={workouts}
+        onWorkoutsChange={setWorkouts}
+        onBack={handleBackFromStepTwo}
+      />
+    );
   }
 
   return (
@@ -225,8 +258,6 @@ export function CreateProgramScreen({ onBack }) {
             />
           </div>
         </section>
-
-        {nextMessage && <div className="create-program-status" aria-live="polite">{nextMessage}</div>}
       </main>
 
       <footer className="create-program-footer">
