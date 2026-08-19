@@ -1,3 +1,7 @@
+.training-tabs {
+  padding-left: 4.5px;
+}
+
 .training-tabs button {
   min-height: 108px;
   gap: 10px;
