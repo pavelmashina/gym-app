@@ -20,10 +20,10 @@
 .exercise-eyebrow {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.8px;
 }
 
 .exercise-appbar .profile-btn svg {
@@ -86,28 +86,134 @@
   line-height: 1;
 }
 
-.exercise-groups {
+.training-tabs {
   display: flex;
-  gap: 8px;
+  gap: 22px;
+  margin: 15px -18px 0;
+  padding: 0 18px 10px;
   overflow-x: auto;
-  margin: 14px -18px 0;
-  padding: 0 18px 4px;
+  border-bottom: 1px solid var(--line);
   scrollbar-width: none;
 }
 
+.training-tabs::-webkit-scrollbar,
 .exercise-groups::-webkit-scrollbar {
   display: none;
 }
 
+.training-tabs button {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.training-tabs button.active {
+  color: var(--ink);
+}
+
+.training-tabs button.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -11px;
+  height: 2px;
+  border-radius: 99px;
+  background: var(--ink);
+}
+
+.training-section-head {
+  margin-top: 22px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.training-section-title {
+  min-width: 0;
+}
+
+.training-section-title > span,
+.training-builder-heading span {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.training-section-title h2 {
+  margin: 4px 0 0;
+  font-size: 22px;
+  line-height: 1.08;
+  letter-spacing: -0.65px;
+}
+
+.training-tools {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 7px;
+}
+
+.training-tools button {
+  min-width: 42px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.training-tools button.active {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.training-tools svg {
+  width: 17px;
+  height: 17px;
+}
+
+.training-tools span {
+  display: none;
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.exercise-groups {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 12px -18px 0;
+  padding: 0 18px 4px;
+  scrollbar-width: none;
+}
+
 .exercise-groups button {
   flex: 0 0 auto;
-  min-height: 37px;
-  padding: 0 13px;
+  min-height: 35px;
+  padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 750;
   cursor: pointer;
   white-space: nowrap;
@@ -119,25 +225,141 @@
   color: #fff;
 }
 
-.exercise-catalog-heading {
-  margin: 17px 1px 9px;
-  min-height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.training-filter-placeholder {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: var(--accent-soft);
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 750;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
-.exercise-catalog-heading button {
+.create-program-wide {
+  width: 100%;
+  min-height: 82px;
+  margin-top: 16px;
+  padding: 15px 15px 15px 14px;
   border: 0;
-  background: transparent;
-  padding: 4px 0;
-  color: var(--ink);
-  font-size: 11px;
-  font-weight: 800;
+  border-radius: 22px;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  grid-template-columns: 44px 1fr 20px;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
   cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.create-program-wide:active {
+  transform: scale(0.99);
+}
+
+.create-program-plus {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+}
+
+.create-program-plus svg {
+  width: 22px;
+  height: 22px;
+}
+
+.create-program-copy strong,
+.create-program-copy small {
+  display: block;
+}
+
+.create-program-copy strong {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.create-program-copy small {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.create-program-arrow {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.training-empty-programs {
+  min-height: 205px;
+  margin-top: 13px;
+  padding: 26px;
+  border: 1px dashed #d9d9d4;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.training-empty-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  color: var(--muted-2);
+  font-size: 20px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
+}
+
+.training-empty-programs strong {
+  margin-top: 13px;
+  font-size: 15px;
+}
+
+.training-empty-programs span {
+  max-width: 270px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.training-builder {
+  margin-top: 18px;
+  scroll-margin-top: 18px;
+}
+
+.training-builder-heading {
+  margin-bottom: 9px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.training-builder-heading h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  letter-spacing: -0.45px;
+}
+
+.training-builder-heading > strong {
+  min-width: 35px;
+  height: 29px;
+  padding: 0 9px;
+  border-radius: 10px;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
 }
 
 .exercise-list {
@@ -274,8 +496,33 @@
 }
 
 .exercise-nav-active {
-  color: var(--ink);
-  font-weight: 750;
+  color: var(--ink) !important;
+  font-weight: 760;
+}
+
+.exercise-bottom-nav .nav-item.home {
+  color: #aaa9a3;
+}
+
+.exercise-bottom-nav .nav-item.home .home-circle {
+  width: auto;
+  height: auto;
+  margin-top: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #aaa9a3;
+  box-shadow: none;
+}
+
+.exercise-bottom-nav .nav-item.home svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.exercise-bottom-nav .nav-item.home span:last-child {
+  color: inherit;
+  font-weight: 400;
 }
 
 .exercise-detail-layer {
@@ -416,6 +663,12 @@
   color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
+}
+
+@media (min-width: 380px) {
+  .training-tools span {
+    display: inline;
+  }
 }
 
 @media (min-width: 600px) {
