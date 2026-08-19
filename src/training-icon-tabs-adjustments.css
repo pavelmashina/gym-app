@@ -1,3 +1,11 @@
+.training-tabs button {
+  min-height: 108px;
+  gap: 10px;
+}
+
 .training-tabs button::before {
-  background-size: 26px 26px;
+  width: 65px;
+  height: 65px;
+  border-radius: 21px;
+  background-size: 30px 30px;
 }
