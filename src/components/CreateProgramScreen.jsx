@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import '../create-program.css';
 
-const CATEGORY_OPTIONS = ['Сила', 'Набор массы', 'Рельеф', 'Выносливость', 'Общая форма'];
+const CATEGORY_OPTIONS = [
+  'Кардио',
+  'С собственным весом',
+  'Растяжка',
+  'Функциональный тренинг',
+  'Силовой тренинг',
+];
 
 function BackIcon() {
   return (
@@ -46,6 +52,11 @@ function SelectRow({ label, value, onChange, options, placeholder }) {
   );
 }
 
+function resizeTextArea(element) {
+  element.style.height = 'auto';
+  element.style.height = `${element.scrollHeight}px`;
+}
+
 export function CreateProgramScreen({ onBack }) {
   const [name, setName] = useState('');
   const [weeks, setWeeks] = useState('');
@@ -79,6 +90,11 @@ export function CreateProgramScreen({ onBack }) {
     ));
   }
 
+  function handleAutoGrowingTextChange(event, setter) {
+    setter(event.target.value);
+    resizeTextArea(event.target);
+  }
+
   function handleNext() {
     if (!canContinue) return;
     setNextMessage('Основные данные заполнены. Следующим шагом подключим структуру недель и тренировок.');
@@ -104,11 +120,12 @@ export function CreateProgramScreen({ onBack }) {
         <section className="create-program-form-card">
           <label className="program-field">
             <span>Название программы <b>*</b></span>
-            <input
-              type="text"
+            <textarea
+              className="program-auto-textarea"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => handleAutoGrowingTextChange(event, setName)}
               placeholder="Например, Сила и масса"
+              rows="1"
               maxLength={80}
             />
           </label>
@@ -129,10 +146,11 @@ export function CreateProgramScreen({ onBack }) {
           <label className="program-field">
             <span>Описание</span>
             <textarea
+              className="program-auto-textarea"
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(event) => handleAutoGrowingTextChange(event, setDescription)}
               placeholder="Коротко опишите цель и особенности программы"
-              rows="4"
+              rows="1"
               maxLength={600}
             />
           </label>
@@ -164,8 +182,8 @@ export function CreateProgramScreen({ onBack }) {
         <section className="create-program-section">
           <div className="create-program-section-head">
             <div>
-              <span>Параметры</span>
-              <h2>Для кого эта программа</h2>
+              <span>Тип тренировок</span>
+              <h2>Категории</h2>
             </div>
           </div>
 
