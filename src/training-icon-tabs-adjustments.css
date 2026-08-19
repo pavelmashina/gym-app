@@ -5,12 +5,11 @@
 .exercise-catalog-content .training-tabs {
   /*
     КРАЙНИЕ ПОЛОЖЕНИЯ СКРОЛЛА.
-    Эти значения задают физическое свободное место у краёв scroll-контейнера.
-    Чем больше значение — тем дальше крайний пункт останавливается от края.
-    Чем меньше значение — тем ближе крайний пункт можно довести к краю.
+    Теперь эти значения означают расстояние именно от края экрана
+    до ВИДИМОГО края фонового блока крайней иконки.
   */
-  --scroll-left-stop: 4.5px;
-  --scroll-right-stop: 4.5px;
+  --scroll-left-stop: 18px;
+  --scroll-right-stop: 18px;
 
   /* положение всего скролл-меню по вертикали */
   --menu-top: 14px;
@@ -31,16 +30,30 @@
   --training-tab-width: 92px;
   --training-icon-block-width: 65px;
 
+  /*
+    Фон иконки центрирован внутри пункта.
+    Поэтому между краем пункта и краем фона есть половина разницы ширин.
+    Для 92px и 65px это 13.5px.
+  */
+  --training-edge-inset: calc(
+    (var(--training-tab-width) - var(--training-icon-block-width)) / 2
+  );
+
   margin-top: var(--menu-top);
 
   /*
-    padding задаёт реальные пределы прокрутки,
-    scroll-padding задаёт те же точки для scroll-snap после отпускания пальца/мыши.
+    Из желаемого видимого отступа автоматически вычитается внутренний
+    отступ фонового блока внутри 92px-пункта.
+
+    Например: 18px - 13.5px = 4.5px фактического padding контейнера.
+    Поэтому край 65px-фона оказывается ровно в 18px от края экрана.
   */
-  padding-left: var(--scroll-left-stop);
-  padding-right: var(--scroll-right-stop);
-  scroll-padding-left: var(--scroll-left-stop);
-  scroll-padding-right: var(--scroll-right-stop);
+  padding-left: max(0px, calc(var(--scroll-left-stop) - var(--training-edge-inset)));
+  padding-right: max(0px, calc(var(--scroll-right-stop) - var(--training-edge-inset)));
+
+  /* Те же точки используются при фиксации после отпускания скролла. */
+  scroll-padding-left: max(0px, calc(var(--scroll-left-stop) - var(--training-edge-inset)));
+  scroll-padding-right: max(0px, calc(var(--scroll-right-stop) - var(--training-edge-inset)));
 }
 
 .exercise-catalog-content .training-tabs button {
