@@ -1,7 +1,7 @@
 .training-tabs {
   --training-tab-width: 92px;
   --training-icon-block-width: 65px;
-  --training-edge-visual-compensation: 2px;
+  --training-edge-visual-compensation: 18px;
   padding-left: calc(
     18px - ((var(--training-tab-width) - var(--training-icon-block-width)) / 2)
     + var(--training-edge-visual-compensation)
