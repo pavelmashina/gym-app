@@ -3,8 +3,14 @@
   Меняйте только значения переменных ниже.
 */
 .exercise-catalog-content .training-tabs {
-  /* левый край ФОНА первой иконки относительно края экрана */
-  --menu-left: 18px;
+  /*
+    КРАЙНИЕ ПОЛОЖЕНИЯ СКРОЛЛА.
+    Эти значения задают физическое свободное место у краёв scroll-контейнера.
+    Чем больше значение — тем дальше крайний пункт останавливается от края.
+    Чем меньше значение — тем ближе крайний пункт можно довести к краю.
+  */
+  --scroll-left-stop: 4.5px;
+  --scroll-right-stop: 18px;
 
   /* положение всего скролл-меню по вертикали */
   --menu-top: 14px;
@@ -26,9 +32,15 @@
   --training-icon-block-width: 65px;
 
   margin-top: var(--menu-top);
-  padding-left: calc(
-    var(--menu-left) - ((var(--training-tab-width) - var(--training-icon-block-width)) / 2)
-  );
+
+  /*
+    padding задаёт реальные пределы прокрутки,
+    scroll-padding задаёт те же точки для scroll-snap после отпускания пальца/мыши.
+  */
+  padding-left: var(--scroll-left-stop);
+  padding-right: var(--scroll-right-stop);
+  scroll-padding-left: var(--scroll-left-stop);
+  scroll-padding-right: var(--scroll-right-stop);
 }
 
 .exercise-catalog-content .training-tabs button {
