@@ -1,0 +1,120 @@
+.training-tabs {
+  gap: 12px;
+  margin: 14px -18px 0;
+  padding: 0 18px 14px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.training-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.training-tabs button {
+  position: relative;
+  flex: 0 0 92px;
+  min-height: 92px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  text-align: center;
+  white-space: normal;
+  font-size: 10px;
+  font-weight: 760;
+  line-height: 1.16;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.training-tabs button::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 50px;
+  height: 50px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background-color: var(--surface);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 23px 23px;
+  box-shadow: 0 5px 17px rgba(0, 0, 0, 0.035);
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.training-tabs button:active::before {
+  transform: scale(0.96);
+}
+
+.training-tabs button.active {
+  color: var(--ink);
+  font-weight: 820;
+}
+
+.training-tabs button.active::before {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.training-tabs button.active::after {
+  display: none;
+}
+
+/* Рекомендации */
+.training-tabs button:nth-child(1)::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777772' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 1.35 4.1L17.5 8.5l-4.15 1.4L12 14l-1.35-4.1L6.5 8.5l4.15-1.4L12 3Z'/%3E%3Cpath d='m18.5 14 .7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1Z'/%3E%3C/svg%3E");
+}
+
+.training-tabs button:nth-child(1).active::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 1.35 4.1L17.5 8.5l-4.15 1.4L12 14l-1.35-4.1L6.5 8.5l4.15-1.4L12 3Z'/%3E%3Cpath d='m18.5 14 .7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1Z'/%3E%3C/svg%3E");
+}
+
+/* Каталог программ */
+.training-tabs button:nth-child(2)::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777772' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='6' height='6' rx='1.5'/%3E%3Crect x='14' y='4' width='6' height='6' rx='1.5'/%3E%3Crect x='4' y='14' width='6' height='6' rx='1.5'/%3E%3Crect x='14' y='14' width='6' height='6' rx='1.5'/%3E%3C/svg%3E");
+}
+
+.training-tabs button:nth-child(2).active::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='6' height='6' rx='1.5'/%3E%3Crect x='14' y='4' width='6' height='6' rx='1.5'/%3E%3Crect x='4' y='14' width='6' height='6' rx='1.5'/%3E%3Crect x='14' y='14' width='6' height='6' rx='1.5'/%3E%3C/svg%3E");
+}
+
+/* Ваши программы */
+.training-tabs button:nth-child(3)::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777772' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 4.5h9.5A2.5 2.5 0 0 1 18 7v12.5l-5-3-5 3V6.5A2 2 0 0 0 6 4.5Z'/%3E%3Cpath d='M6 4.5A2 2 0 0 0 4 6.5v11'/%3E%3C/svg%3E");
+}
+
+.training-tabs button:nth-child(3).active::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 4.5h9.5A2.5 2.5 0 0 1 18 7v12.5l-5-3-5 3V6.5A2 2 0 0 0 6 4.5Z'/%3E%3Cpath d='M6 4.5A2 2 0 0 0 4 6.5v11'/%3E%3C/svg%3E");
+}
+
+/* Пройденные программы */
+.training-tabs button:nth-child(4)::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777772' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='m8.5 12 2.2 2.2 4.8-5'/%3E%3C/svg%3E");
+}
+
+.training-tabs button:nth-child(4).active::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='m8.5 12 2.2 2.2 4.8-5'/%3E%3C/svg%3E");
+}
+
+/* Создать свою программу */
+.training-tabs button:nth-child(5)::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777772' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='16' rx='4'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E");
+}
+
+.training-tabs button:nth-child(5).active::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='16' rx='4'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 360px) {
+  .training-tabs button {
+    flex-basis: 86px;
+  }
+}
