@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createProgram, getProgram, updateProgram } from '../lib/programs.js';
+import { createProgram, getProgram, startProgram, updateProgram } from '../lib/programs.js';
 import { CreateProgramScheduleScreen } from './CreateProgramScheduleScreen.jsx';
 import { CreateProgramStructureScreen } from './CreateProgramStructureScreen.jsx';
 import '../create-program.css';
@@ -77,9 +77,14 @@ function reconcileProgramWeeks(currentWeeks, weekCount) {
   });
 }
 
-export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
-  const isEditing = Boolean(programId);
-  const [step, setStep] = useState(1);
+export function CreateProgramScreen({
+  onBack,
+  onCreated,
+  programId = null,
+  launchOnly = false,
+}) {
+  const isEditing = Boolean(programId) && !launchOnly;
+  const [step, setStep] = useState(launchOnly ? 3 : 1);
   const [name, setName] = useState('');
   const [weeks, setWeeks] = useState('');
   const [description, setDescription] = useState('');
@@ -92,8 +97,9 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
   const [level, setLevel] = useState('');
   const [programWeeks, setProgramWeeks] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [savingAction, setSavingAction] = useState('');
   const [saveError, setSaveError] = useState('');
-  const [initialLoading, setInitialLoading] = useState(isEditing);
+  const [initialLoading, setInitialLoading] = useState(Boolean(programId));
   const [initialError, setInitialError] = useState('');
 
   useEffect(() => () => {
@@ -126,6 +132,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
         setProgramWeeks(program.programWeeks);
         setExistingCoverPath(program.coverPath);
         setCoverUrl(program.coverUrl ?? '');
+        if (launchOnly) setStep(3);
       } catch (error) {
         if (!active) return;
         console.error('Unable to prepare program editor:', error);
@@ -139,7 +146,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
     return () => {
       active = false;
     };
-  }, [programId]);
+  }, [programId, launchOnly]);
 
   const weekCount = Math.max(0, Math.min(52, Number(weeks) || 0));
   const canContinue = name.trim().length > 0 && weekCount > 0;
@@ -149,13 +156,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
       && week.workouts.every((workout) => workout.name.trim() && workout.exercises.length > 0)
     ));
 
-  async function handleSaveProgram() {
-    if (!structureReady || saving) return;
-
-    setSaving(true);
-    setSaveError('');
-
-    const payload = {
+  function buildSavePayload() {
+    return {
       name,
       description,
       weekCount,
@@ -166,22 +168,41 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
       programWeeks,
       coverFile,
     };
+  }
+
+  async function handleScheduleAction(action, startDate = '') {
+    if (!structureReady || saving) return;
+
+    setSaving(true);
+    setSavingAction(action);
+    setSaveError('');
 
     try {
-      const savedProgram = isEditing
-        ? await updateProgram({
-            programId,
-            existingCoverPath,
-            ...payload,
-          })
-        : await createProgram(payload);
+      let savedProgram;
+
+      if (launchOnly) {
+        const participation = await startProgram(programId, startDate);
+        savedProgram = { id: programId, participation };
+      } else if (isEditing) {
+        savedProgram = await updateProgram({
+          programId,
+          existingCoverPath,
+          ...buildSavePayload(),
+        });
+      } else {
+        savedProgram = await createProgram({
+          ...buildSavePayload(),
+          startDate: action === 'start' ? startDate : null,
+        });
+      }
 
       onCreated?.(savedProgram);
     } catch (error) {
-      console.error('Program save failed:', error);
-      setSaveError(error?.message || 'Не удалось сохранить программу. Попробуйте ещё раз.');
+      console.error('Program save/start failed:', error);
+      setSaveError(error?.message || 'Не удалось выполнить действие. Попробуйте ещё раз.');
     } finally {
       setSaving(false);
+      setSavingAction('');
     }
   }
 
@@ -254,6 +275,10 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
   function handleBackFromSchedule() {
     if (saving) return;
     setSaveError('');
+    if (launchOnly) {
+      onBack?.();
+      return;
+    }
     setStep(2);
     scrollCreateProgramToTop();
   }
@@ -264,7 +289,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
         <main className="create-program-content">
           <div className="program-persistence-loading">
             <div className="exercise-list-spinner" aria-hidden="true" />
-            <span>Загружаем программу…</span>
+            <span>{launchOnly ? 'Готовим запуск программы…' : 'Загружаем программу…'}</span>
           </div>
         </main>
       </div>
@@ -278,7 +303,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
           <button className="create-program-back" type="button" aria-label="Назад" onClick={onBack}>
             <BackIcon />
           </button>
-          <strong>Редактировать программу</strong>
+          <strong>{launchOnly ? 'Начать программу' : 'Редактировать программу'}</strong>
           <span className="create-program-header-spacer" />
         </header>
         <main className="create-program-content">
@@ -295,10 +320,12 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
         programWeeks={programWeeks}
         onProgramWeeksChange={setProgramWeeks}
         onBack={handleBackFromSchedule}
-        onSave={handleSaveProgram}
+        onAction={handleScheduleAction}
         saving={saving}
+        savingAction={savingAction}
         saveError={saveError}
         isEditing={isEditing}
+        launchOnly={launchOnly}
       />
     );
   }
