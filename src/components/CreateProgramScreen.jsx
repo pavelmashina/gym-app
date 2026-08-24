@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CreateProgramStructureScreen } from './CreateProgramStructureScreen.jsx';
+import { supabase } from '../lib/supabase.js';
 import '../create-program.css';
 
 const CATEGORY_OPTIONS = [
@@ -74,7 +75,22 @@ function reconcileProgramWeeks(currentWeeks, weekCount) {
   });
 }
 
-export function CreateProgramScreen({ onBack }) {
+function serializeProgramWeeks(programWeeks) {
+  return programWeeks.map((week) => ({
+    number: week.number,
+    workouts: week.workouts.map((workout) => ({
+      name: workout.name.trim(),
+      exercises: workout.exercises.map((exercise) => ({
+        id: exercise.id,
+        sets: (exercise.sets ?? []).map((set) => ({
+          reps: set.reps === '' || set.reps == null ? '' : String(set.reps),
+        })),
+      })),
+    })),
+  }));
+}
+
+export function CreateProgramScreen({ onBack, onProgramSaved }) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [weeks, setWeeks] = useState('');
@@ -85,6 +101,7 @@ export function CreateProgramScreen({ onBack }) {
   const [equipment, setEquipment] = useState('');
   const [level, setLevel] = useState('');
   const [programWeeks, setProgramWeeks] = useState([]);
+  const savingRef = useRef(false);
 
   useEffect(() => () => {
     if (coverUrl) URL.revokeObjectURL(coverUrl);
@@ -92,6 +109,11 @@ export function CreateProgramScreen({ onBack }) {
 
   const weekCount = Math.max(0, Math.min(52, Number(weeks) || 0));
   const canContinue = name.trim().length > 0 && weekCount > 0;
+  const structureReady = programWeeks.length === weekCount
+    && programWeeks.every((week) => (
+      week.workouts.length > 0
+      && week.workouts.every((workout) => workout.name.trim() && workout.exercises.length > 0)
+    ));
 
   function handleCoverChange(event) {
     const file = event.target.files?.[0];
@@ -132,16 +154,63 @@ export function CreateProgramScreen({ onBack }) {
     scrollCreateProgramToTop();
   }
 
+  async function saveProgram(finalButton) {
+    if (!structureReady || savingRef.current) return;
+
+    savingRef.current = true;
+    const originalLabel = finalButton?.textContent ?? 'Далее';
+    if (finalButton) {
+      finalButton.disabled = true;
+      finalButton.textContent = 'Сохраняем…';
+    }
+
+    const { data, error } = await supabase.rpc('create_program_with_structure', {
+      p_name: name.trim(),
+      p_description: description.trim() || null,
+      p_week_count: weekCount,
+      p_categories: categories,
+      p_training_place: place || null,
+      p_equipment: equipment || null,
+      p_level: level || null,
+      p_structure: serializeProgramWeeks(programWeeks),
+    });
+
+    if (error) {
+      console.error('Unable to save program:', error);
+      savingRef.current = false;
+      if (finalButton) {
+        finalButton.disabled = false;
+        finalButton.textContent = originalLabel;
+      }
+      window.alert('Не удалось сохранить программу. Проверьте соединение и попробуйте ещё раз.');
+      return;
+    }
+
+    savingRef.current = false;
+    onProgramSaved?.(data);
+  }
+
+  function handleStructureClick(event) {
+    const finalButton = event.target.closest('.create-program-step2-phone > .create-program-footer .create-program-next');
+    if (!finalButton || finalButton.disabled) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    saveProgram(finalButton);
+  }
+
   if (step === 2) {
     return (
-      <CreateProgramStructureScreen
-        programName={name.trim()}
-        weekCount={weekCount}
-        categories={categories}
-        programWeeks={programWeeks}
-        onProgramWeeksChange={setProgramWeeks}
-        onBack={handleBackFromStepTwo}
-      />
+      <div style={{ display: 'contents' }} onClickCapture={handleStructureClick}>
+        <CreateProgramStructureScreen
+          programName={name.trim()}
+          weekCount={weekCount}
+          categories={categories}
+          programWeeks={programWeeks}
+          onProgramWeeksChange={setProgramWeeks}
+          onBack={handleBackFromStepTwo}
+        />
+      </div>
     );
   }
 

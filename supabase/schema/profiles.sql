@@ -1,4 +1,4 @@
--- Source-of-truth SQL for the first Supabase milestone.
+-- Recovery baseline for the pre-migration public.profiles table.
 -- This mirrors the schema currently applied to the linked Supabase project.
 
 create schema if not exists private;
@@ -14,6 +14,10 @@ create table if not exists public.profiles (
 );
 
 alter table public.profiles enable row level security;
+
+revoke all on table public.profiles from anon, authenticated;
+grant select, insert, update on public.profiles to authenticated;
+grant all on public.profiles to service_role;
 
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own"
@@ -36,9 +40,6 @@ for update
 to authenticated
 using ((select auth.uid()) = id)
 with check ((select auth.uid()) = id);
-
-grant select, insert, update on public.profiles to authenticated;
-grant all on public.profiles to service_role;
 
 create or replace function private.handle_new_user()
 returns trigger

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import '../exercise-catalog.css';
+import '../user-programs.css';
 
 const ALL_GROUPS = 'Все';
 
@@ -169,7 +170,7 @@ function ExerciseDetail({ exercise, onClose }) {
 function TrainingBottomNav() {
   return (
     <nav className="bottom-nav exercise-bottom-nav" aria-label="Основная навигация">
-      <button className="nav-item exercise-nav-active" type="button">
+      <button className="nav-item exercise-nav-active" type="button" data-screen="training">
         <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8">
           <path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" />
           <path d="m4 21 7 7M21 4l7 7" />
@@ -177,7 +178,7 @@ function TrainingBottomNav() {
         <span>Тренировки</span>
       </button>
 
-      <button className="nav-item" type="button">
+      <button className="nav-item" type="button" data-screen="statistics">
         <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7">
           <rect x="5" y="16" width="4" height="10" rx="1" />
           <rect x="14" y="7" width="4" height="19" rx="1" />
@@ -186,7 +187,7 @@ function TrainingBottomNav() {
         <span>Статистика</span>
       </button>
 
-      <button className="nav-item home" type="button">
+      <button className="nav-item home" type="button" data-screen="home">
         <span className="home-circle">
           <svg viewBox="0 0 32 32" fill="none">
             <path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" />
@@ -195,14 +196,14 @@ function TrainingBottomNav() {
         <span>Главная</span>
       </button>
 
-      <button className="nav-item" type="button">
+      <button className="nav-item" type="button" data-screen="nutrition">
         <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6">
           <path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" />
         </svg>
         <span>Питание</span>
       </button>
 
-      <button className="nav-item" type="button">
+      <button className="nav-item" type="button" data-screen="sportpit">
         <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5">
           <path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" />
           <path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" />
@@ -225,8 +226,55 @@ function EmptyPrograms({ tabId }) {
   );
 }
 
-export function ExercisesScreen() {
-  const [activeTab, setActiveTab] = useState('recommendations');
+function UserPrograms({ programs, loading, error, onRetry }) {
+  if (loading) {
+    return (
+      <section className="user-programs-state">
+        <div className="exercise-list-spinner" aria-hidden="true" />
+        <span>Загружаем ваши программы…</span>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="user-programs-state error">
+        <span>{error}</span>
+        <button type="button" onClick={onRetry}>Повторить</button>
+      </section>
+    );
+  }
+
+  if (programs.length === 0) return <EmptyPrograms tabId="your-programs" />;
+
+  return (
+    <section className="user-programs-list" aria-label="Ваши сохранённые программы">
+      {programs.map((program) => (
+        <article className="user-program-card" key={program.id}>
+          <div className="user-program-card-head">
+            <div>
+              <span>Ваша программа</span>
+              <h3>{program.name}</h3>
+            </div>
+            <strong>{program.week_count} нед.</strong>
+          </div>
+
+          {program.description && <p>{program.description}</p>}
+
+          <div className="user-program-meta">
+            {program.level && <span>{program.level}</span>}
+            {program.training_place && <span>{program.training_place}</span>}
+            {program.equipment && <span>{program.equipment}</span>}
+            {(program.categories ?? []).map((category) => <span key={category}>{category}</span>)}
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+export function ExercisesScreen({ initialTab = 'recommendations' }) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -235,6 +283,10 @@ export function ExercisesScreen() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [userPrograms, setUserPrograms] = useState([]);
+  const [programsLoading, setProgramsLoading] = useState(false);
+  const [programsError, setProgramsError] = useState('');
+  const [programsReloadKey, setProgramsReloadKey] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -267,6 +319,40 @@ export function ExercisesScreen() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'your-programs') return undefined;
+
+    let active = true;
+
+    async function loadPrograms() {
+      setProgramsLoading(true);
+      setProgramsError('');
+
+      const { data, error: requestError } = await supabase
+        .from('programs')
+        .select('id, name, description, week_count, categories, training_place, equipment, level, status, updated_at')
+        .order('updated_at', { ascending: false });
+
+      if (!active) return;
+
+      if (requestError) {
+        console.error('Unable to load user programs:', requestError);
+        setProgramsError('Не удалось загрузить ваши программы. Попробуйте ещё раз.');
+        setUserPrograms([]);
+      } else {
+        setUserPrograms(data ?? []);
+      }
+
+      setProgramsLoading(false);
+    }
+
+    loadPrograms();
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, programsReloadKey]);
 
   useEffect(() => {
     setQuery('');
@@ -303,6 +389,28 @@ export function ExercisesScreen() {
       return sortDirection === 'asc' ? result : -result;
     });
   }, [exercises, query, selectedGroup, sortDirection]);
+
+  const filteredUserPrograms = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase('ru');
+    const filtered = userPrograms.filter((program) => {
+      if (!normalizedQuery) return true;
+      return [
+        program.name,
+        program.description,
+        program.training_place,
+        program.equipment,
+        program.level,
+        ...(program.categories ?? []),
+      ]
+        .filter(Boolean)
+        .some((value) => value.toLocaleLowerCase('ru').includes(normalizedQuery));
+    });
+
+    return filtered.sort((a, b) => {
+      const result = a.name.localeCompare(b.name, 'ru');
+      return sortDirection === 'asc' ? result : -result;
+    });
+  }, [userPrograms, query, sortDirection]);
 
   const activeTabConfig = TRAINING_TABS.find((tab) => tab.id === activeTab);
   const isCreateTab = activeTab === 'create';
@@ -347,6 +455,8 @@ export function ExercisesScreen() {
               className={tab.id === activeTab ? 'active' : ''}
               type="button"
               key={tab.id}
+              data-tab-id={tab.id}
+              data-action={tab.id === 'create' ? 'create-program' : undefined}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -399,7 +509,7 @@ export function ExercisesScreen() {
           <div className="training-filter-placeholder">Фильтры программ подключим вместе с каталогом программ.</div>
         )}
 
-        <button className="create-program-wide" type="button" onClick={openCreateProgram}>
+        <button className="create-program-wide" type="button" data-action="create-program" onClick={openCreateProgram}>
           <span className="create-program-plus"><PlusIcon /></span>
           <span className="create-program-copy">
             <strong>Создать свою программу</strong>
@@ -408,7 +518,16 @@ export function ExercisesScreen() {
           <span className="create-program-arrow" aria-hidden="true">›</span>
         </button>
 
-        {!isCreateTab && <EmptyPrograms tabId={activeTab} />}
+        {activeTab === 'your-programs' && (
+          <UserPrograms
+            programs={filteredUserPrograms}
+            loading={programsLoading}
+            error={programsError}
+            onRetry={() => setProgramsReloadKey((value) => value + 1)}
+          />
+        )}
+
+        {!isCreateTab && activeTab !== 'your-programs' && <EmptyPrograms tabId={activeTab} />}
 
         {isCreateTab && (
           <section className="training-builder">
