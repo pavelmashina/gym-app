@@ -2,11 +2,37 @@ import { useMemo, useState } from 'react';
 import '../create-program-schedule.css';
 
 const PRESETS = [
-  { id: '1-1', label: 'Через день', trainBlock: 1, restDays: 1 },
-  { id: '2-1', label: '2 трен. / 1 отдых', trainBlock: 2, restDays: 1 },
-  { id: '2-2', label: '2 трен. / 2 отдыха', trainBlock: 2, restDays: 2 },
-  { id: '3-1', label: '3 трен. / 1 отдых', trainBlock: 3, restDays: 1 },
+  {
+    id: 'custom',
+    label: 'Выбрать самому',
+    description: 'Настройте количество полных дней отдыха после каждой тренировки вручную.',
+  },
+  {
+    id: 'weekly_mwf',
+    label: '3 раза / нед',
+    sublabel: 'Пн · Ср · Пт',
+    description: 'Тренировки всегда ставятся на понедельник, среду и пятницу.',
+  },
+  {
+    id: 'weekly_tts',
+    label: '3 раза / нед',
+    sublabel: 'Вт · Чт · Сб',
+    description: 'Тренировки всегда ставятся на вторник, четверг и субботу.',
+  },
+  {
+    id: 'cycle_2_2',
+    label: '2 тренировки',
+    sublabel: '2 дня отдыха',
+    description: 'Две тренировки идут подряд, затем два полных дня отдыха, после чего цикл повторяется.',
+  },
 ];
+
+const WEEKLY_DAYS = {
+  weekly_mwf: [1, 3, 5],
+  weekly_tts: [2, 4, 6],
+};
+
+const WEEKDAY_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
 function BackIcon() {
   return (
@@ -63,8 +89,12 @@ function localInputDate(date = new Date()) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 }
 
+function parseLocalDate(dateString) {
+  return new Date(`${dateString}T12:00:00`);
+}
+
 function addDays(dateString, days) {
-  const date = new Date(`${dateString}T12:00:00`);
+  const date = parseLocalDate(dateString);
   date.setDate(date.getDate() + days);
   return localInputDate(date);
 }
@@ -74,13 +104,36 @@ function formatCalendarDate(dateString) {
   return new Intl.DateTimeFormat('ru-RU', {
     day: 'numeric',
     month: 'short',
-  }).format(new Date(`${dateString}T12:00:00`));
+  }).format(parseLocalDate(dateString));
+}
+
+function daysUntilNextAllowed(currentWeekday, allowedDays) {
+  for (let delta = 1; delta <= 7; delta += 1) {
+    const candidate = (currentWeekday + delta) % 7;
+    if (allowedDays.includes(candidate)) return delta;
+  }
+  return 7;
+}
+
+function isAllowedStartDate(startDate, scheduleMode) {
+  if (!startDate) return true;
+  const allowedDays = WEEKLY_DAYS[scheduleMode];
+  if (!allowedDays) return true;
+  return allowedDays.includes(parseLocalDate(startDate).getDay());
+}
+
+function scheduleModeStartHint(scheduleMode) {
+  if (scheduleMode === 'weekly_mwf') return 'Первая тренировка должна быть в понедельник, среду или пятницу.';
+  if (scheduleMode === 'weekly_tts') return 'Первая тренировка должна быть во вторник, четверг или субботу.';
+  return null;
 }
 
 export function CreateProgramScheduleScreen({
   programName,
   programWeeks,
   onProgramWeeksChange,
+  scheduleMode = 'custom',
+  onScheduleModeChange,
   onBack,
   onAction,
   saving,
@@ -91,28 +144,58 @@ export function CreateProgramScheduleScreen({
 }) {
   const [startDate, setStartDate] = useState('');
   const workouts = useMemo(() => flattenWorkouts(programWeeks), [programWeeks]);
-  const canEditRhythm = !launchOnly;
+  const canChangePreset = !launchOnly;
+  const canEditIntervals = !launchOnly && scheduleMode === 'custom';
   const showStartChoice = !isEditing || launchOnly;
+  const startDateAllowed = isAllowedStartDate(startDate, scheduleMode);
+  const selectedPreset = PRESETS.find((preset) => preset.id === scheduleMode) ?? PRESETS[0];
 
   const schedule = useMemo(() => {
+    const allowedDays = WEEKLY_DAYS[scheduleMode];
+
+    if (allowedDays) {
+      let day = 1;
+      let virtualWeekday = startDate ? parseLocalDate(startDate).getDay() : allowedDays[0];
+      let currentDate = startDate || null;
+
+      return workouts.map((item, index) => {
+        const scheduled = {
+          ...item,
+          day,
+          date: currentDate,
+          weekday: virtualWeekday,
+        };
+
+        if (index < workouts.length - 1) {
+          const delta = daysUntilNextAllowed(virtualWeekday, allowedDays);
+          day += delta;
+          virtualWeekday = (virtualWeekday + delta) % 7;
+          if (currentDate) currentDate = addDays(currentDate, delta);
+        }
+
+        return scheduled;
+      });
+    }
+
     let day = 1;
     return workouts.map((item, index) => {
       const scheduled = {
         ...item,
         day,
         date: startDate ? addDays(startDate, day - 1) : null,
+        weekday: startDate ? parseLocalDate(addDays(startDate, day - 1)).getDay() : null,
       };
       if (index < workouts.length - 1) {
         day += 1 + Number(item.workout.restDaysAfter ?? 1);
       }
       return scheduled;
     });
-  }, [workouts, startDate]);
+  }, [workouts, startDate, scheduleMode]);
 
   const durationDays = schedule.at(-1)?.day ?? 0;
 
   function updateRestDays(weekId, workoutId, nextValue) {
-    if (!canEditRhythm) return;
+    if (!canEditIntervals) return;
     const normalized = Math.max(0, Math.min(30, Number(nextValue) || 0));
     onProgramWeeksChange((current) => current.map((week) => (
       week.id !== weekId
@@ -128,8 +211,7 @@ export function CreateProgramScheduleScreen({
     )));
   }
 
-  function applyPreset(trainBlock, restDays) {
-    if (!canEditRhythm) return;
+  function applyTwoOnTwoPattern() {
     let globalIndex = 0;
     const lastIndex = workouts.length - 1;
 
@@ -137,17 +219,26 @@ export function CreateProgramScheduleScreen({
       ...week,
       workouts: week.workouts.map((workout) => {
         const isLast = globalIndex === lastIndex;
-        const closesTrainingBlock = (globalIndex + 1) % trainBlock === 0;
-        const nextRestDays = isLast ? 0 : (closesTrainingBlock ? restDays : 0);
+        const closesTrainingPair = (globalIndex + 1) % 2 === 0;
+        const nextRestDays = isLast ? 0 : (closesTrainingPair ? 2 : 0);
         globalIndex += 1;
         return { ...workout, restDaysAfter: nextRestDays };
       }),
     })));
   }
 
+  function selectPreset(presetId) {
+    if (!canChangePreset || saving) return;
+    onScheduleModeChange?.(presetId);
+    if (presetId === 'cycle_2_2') applyTwoOnTwoPattern();
+  }
+
   const headerTitle = launchOnly
     ? 'Начать программу'
     : (isEditing ? 'Редактировать программу' : 'Создать программу');
+
+  const startHint = scheduleModeStartHint(scheduleMode);
+  const canStart = Boolean(startDate) && startDateAllowed && workouts.length > 0 && !saving;
 
   return (
     <div className="phone create-program-phone program-schedule-phone">
@@ -166,7 +257,7 @@ export function CreateProgramScheduleScreen({
           <p>
             {launchOnly
               ? 'Проверьте ритм программы и выберите дату первой тренировки. После присоединения мы создадим календарь тренировок.'
-              : 'Настройте интервалы между тренировками. Дату начала можно выбрать сейчас или присоединиться к программе позже.'}
+              : 'Выберите готовый ритм или настройте интервалы самостоятельно. Дату начала можно выбрать сейчас или позже.'}
           </p>
         </section>
 
@@ -187,38 +278,48 @@ export function CreateProgramScheduleScreen({
           </div>
         </section>
 
-        {canEditRhythm && (
-          <section className="program-schedule-section">
-            <div className="program-schedule-section-head">
-              <div>
-                <span>Быстрая настройка</span>
-                <h2>Выберите готовый ритм</h2>
-              </div>
+        <section className="program-schedule-section">
+          <div className="program-schedule-section-head">
+            <div>
+              <span>{canChangePreset ? 'Ритм тренировок' : 'Выбранный ритм'}</span>
+              <h2>{canChangePreset ? 'Как распределить тренировки' : selectedPreset.label}</h2>
             </div>
+          </div>
 
+          {canChangePreset ? (
             <div className="program-schedule-presets">
-              {PRESETS.map((preset) => (
-                <button
-                  type="button"
-                  key={preset.id}
-                  onClick={() => applyPreset(preset.trainBlock, preset.restDays)}
-                  disabled={saving}
-                >
-                  {preset.label}
-                </button>
-              ))}
+              {PRESETS.map((preset) => {
+                const selected = preset.id === scheduleMode;
+                return (
+                  <button
+                    className={selected ? 'selected' : ''}
+                    type="button"
+                    key={preset.id}
+                    onClick={() => selectPreset(preset.id)}
+                    disabled={saving}
+                    aria-pressed={selected}
+                  >
+                    <strong>{preset.label}</strong>
+                    {preset.sublabel && <span>{preset.sublabel}</span>}
+                  </button>
+                );
+              })}
             </div>
-            <p className="program-schedule-hint">
-              Например, «2 трен. / 2 отдыха»: две тренировки идут в соседние дни, затем два полных дня отдыха.
-            </p>
-          </section>
-        )}
+          ) : (
+            <div className="program-selected-rhythm">
+              <strong>{selectedPreset.label}</strong>
+              {selectedPreset.sublabel && <span>{selectedPreset.sublabel}</span>}
+            </div>
+          )}
+
+          <p className="program-schedule-hint">{selectedPreset.description}</p>
+        </section>
 
         <section className="program-schedule-section">
           <div className="program-schedule-section-head">
             <div>
-              <span>{canEditRhythm ? 'Точная настройка' : 'Ритм программы'}</span>
-              <h2>Интервалы между тренировками</h2>
+              <span>{canEditIntervals ? 'Точная настройка' : 'Предпросмотр'}</span>
+              <h2>{canEditIntervals ? 'Интервалы между тренировками' : 'Дни тренировок'}</h2>
             </div>
           </div>
 
@@ -226,15 +327,22 @@ export function CreateProgramScheduleScreen({
             {schedule.map((item, index) => {
               const isLast = index === schedule.length - 1;
               const restDays = Number(item.workout.restDaysAfter ?? 1);
+              const nextItem = schedule[index + 1];
+              const weeklyMode = Boolean(WEEKLY_DAYS[scheduleMode]);
 
               return (
                 <article className="program-schedule-item" key={`${item.weekId}:${item.workoutId}`}>
                   <div className="program-schedule-workout">
                     <span className="program-schedule-day">
-                      {item.date ? formatCalendarDate(item.date) : `День ${item.day}`}
+                      {item.date
+                        ? formatCalendarDate(item.date)
+                        : (weeklyMode ? WEEKDAY_SHORT[item.weekday] : `День ${item.day}`)}
                     </span>
                     <div>
-                      <small>Неделя {item.weekNumber}{item.date ? ` · день ${item.day}` : ''}</small>
+                      <small>
+                        Неделя {item.weekNumber}
+                        {item.date ? ` · ${WEEKDAY_SHORT[item.weekday]}` : (weeklyMode ? ` · день ${item.day}` : '')}
+                      </small>
                       <strong>{item.workout.name}</strong>
                     </div>
                   </div>
@@ -242,10 +350,14 @@ export function CreateProgramScheduleScreen({
                   {!isLast ? (
                     <div className="program-schedule-rest">
                       <div>
-                        <span>После тренировки</span>
-                        <strong>{restDays === 0 ? 'Без дня отдыха' : formatDays(restDays)}</strong>
+                        <span>{weeklyMode ? 'Следующая тренировка' : 'После тренировки'}</span>
+                        <strong>
+                          {weeklyMode
+                            ? `${WEEKDAY_SHORT[nextItem.weekday]} · через ${formatDays(nextItem.day - item.day)}`
+                            : (restDays === 0 ? 'Без дня отдыха' : formatDays(restDays))}
+                        </strong>
                       </div>
-                      {canEditRhythm && (
+                      {canEditIntervals && (
                         <div className="program-schedule-stepper" aria-label={`Дни отдыха после ${item.workout.name}`}>
                           <button
                             type="button"
@@ -297,18 +409,26 @@ export function CreateProgramScheduleScreen({
                 />
               </label>
 
-              {startDate ? (
+              {startHint && (
+                <div className={`program-start-weekday-note${startDate && !startDateAllowed ? ' invalid' : ''}`}>
+                  {startDate && !startDateAllowed
+                    ? `Эта дата не подходит. ${startHint}`
+                    : startHint}
+                </div>
+              )}
+
+              {startDate && startDateAllowed ? (
                 <div className="program-start-preview">
                   <span>Первая тренировка</span>
-                  <strong>{new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${startDate}T12:00:00`))}</strong>
-                  <small>После присоединения все тренировки появятся в вашем персональном расписании.</small>
+                  <strong>{new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' }).format(parseLocalDate(startDate))}</strong>
+                  <small>После присоединения все тренировки появятся в вашем персональном расписании и календаре.</small>
                 </div>
-              ) : (
+              ) : !startDate ? (
                 <div className="program-start-later-note">
                   <strong>Можно начать позже</strong>
                   <span>Дата не обязательна. Программа сохранится в «Мои программы» со статусом «Не начата», и вы сможете выбрать дату присоединения позже.</span>
                 </div>
-              )}
+              ) : null}
             </div>
           </section>
         )}
@@ -324,7 +444,7 @@ export function CreateProgramScheduleScreen({
             className="create-program-next"
             type="button"
             onClick={() => onAction('start', startDate)}
-            disabled={saving || workouts.length === 0 || !startDate}
+            disabled={!canStart}
           >
             {savingAction === 'start' ? 'Присоединяем…' : 'Присоединиться к программе'}
           </button>
@@ -351,7 +471,7 @@ export function CreateProgramScheduleScreen({
               className="create-program-next"
               type="button"
               onClick={() => onAction('start', startDate)}
-              disabled={saving || workouts.length === 0 || !startDate}
+              disabled={!canStart}
             >
               {savingAction === 'start' ? 'Сохраняем и присоединяем…' : 'Сохранить и присоединиться'}
             </button>
