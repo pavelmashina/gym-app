@@ -1,5 +1,5 @@
 .program-detail-phone {
-  padding-bottom: 102px;
+  padding-bottom: 154px;
 }
 
 .program-detail-header {
@@ -112,6 +112,48 @@
   font-weight: 760;
 }
 
+.program-detail-start-state {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.program-detail-start-state.not-started {
+  background: #fafaf8;
+}
+
+.program-detail-start-state.joined {
+  background: var(--accent-soft);
+}
+
+.program-detail-status-badge {
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 8px;
+  font-weight: 820;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.program-detail-start-state > strong {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.program-detail-start-state p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
 .program-detail-stats {
   margin-top: 18px;
   display: grid;
@@ -214,6 +256,7 @@
   place-items: center;
   font-size: 9px;
   font-weight: 820;
+  white-space: nowrap;
 }
 
 .program-detail-workout-copy {
@@ -299,15 +342,15 @@
   background: rgba(255, 255, 255, 0.96);
   border-top: 1px solid var(--line);
   backdrop-filter: blur(16px);
+  display: grid;
+  gap: 8px;
 }
 
 .program-detail-footer button {
   width: 100%;
-  min-height: 50px;
+  min-height: 48px;
   border: 0;
   border-radius: 16px;
-  background: var(--ink);
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,6 +359,21 @@
   font-size: 11px;
   font-weight: 820;
   cursor: pointer;
+}
+
+.program-detail-start-button {
+  background: var(--ink);
+  color: #fff;
+}
+
+.program-detail-edit-button {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.program-detail-footer:not(.two-actions) .program-detail-edit-button {
+  background: var(--ink);
+  color: #fff;
 }
 
 .program-detail-footer svg {
