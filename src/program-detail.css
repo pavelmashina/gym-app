@@ -1,0 +1,324 @@
+.program-detail-phone {
+  padding-bottom: 102px;
+}
+
+.program-detail-header {
+  min-height: 64px;
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 15;
+}
+
+.program-detail-header button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.program-detail-header button svg {
+  width: 21px;
+  height: 21px;
+}
+
+.program-detail-header > strong {
+  text-align: center;
+  font-size: 13px;
+}
+
+.program-detail-content {
+  padding: 16px 18px 34px;
+}
+
+.program-detail-state {
+  min-height: 50vh;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.program-detail-state.error {
+  color: #8a3029;
+}
+
+.program-detail-cover {
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 22px;
+  background: #ecece8;
+  margin-bottom: 18px;
+}
+
+.program-detail-cover img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.program-detail-hero > span,
+.program-detail-section-head > span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.program-detail-hero h1 {
+  margin: 7px 0 8px;
+  font-size: 29px;
+  line-height: 1.05;
+  letter-spacing: -0.9px;
+}
+
+.program-detail-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.program-detail-tags {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.program-detail-tags span {
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 9px;
+  font-weight: 760;
+}
+
+.program-detail-stats {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.program-detail-stats > div {
+  min-height: 67px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.program-detail-stats span,
+.program-detail-meta-card span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+}
+
+.program-detail-stats strong {
+  font-size: 16px;
+}
+
+.program-detail-meta-card {
+  margin-top: 10px;
+  padding: 4px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.program-detail-meta-card > div {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.program-detail-meta-card > div + div {
+  border-top: 1px solid var(--line);
+}
+
+.program-detail-meta-card strong {
+  max-width: 58%;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.program-detail-section {
+  margin-top: 24px;
+}
+
+.program-detail-section-head {
+  margin: 0 2px 11px;
+}
+
+.program-detail-section-head h2 {
+  margin: 5px 0 0;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.45px;
+}
+
+.program-detail-schedule,
+.program-detail-weeks {
+  display: grid;
+  gap: 9px;
+}
+
+.program-detail-schedule article {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.program-detail-day {
+  min-width: 56px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 820;
+}
+
+.program-detail-workout-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.program-detail-workout-copy small,
+.program-detail-workout-copy span {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.program-detail-workout-copy strong {
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.program-detail-rest {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 720;
+}
+
+.program-detail-weeks > section {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.program-detail-weeks header {
+  min-height: 50px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fafaf8;
+}
+
+.program-detail-weeks header strong {
+  font-size: 11px;
+}
+
+.program-detail-weeks header span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.program-detail-week-workout {
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.program-detail-week-workout + .program-detail-week-workout {
+  border-top: 1px solid var(--line);
+}
+
+.program-detail-week-workout strong {
+  font-size: 10px;
+}
+
+.program-detail-week-workout span {
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.program-detail-footer {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 20;
+  width: min(100%, 430px);
+  transform: translateX(-50%);
+  padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+}
+
+.program-detail-footer button {
+  width: 100%;
+  min-height: 50px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.program-detail-footer svg {
+  width: 16px;
+  height: 16px;
+}
