@@ -1,0 +1,265 @@
+.program-schedule-phone {
+  padding-bottom: 110px;
+}
+
+.program-schedule-content {
+  padding-bottom: 34px;
+}
+
+.program-schedule-intro {
+  padding-bottom: 18px;
+}
+
+.program-schedule-summary {
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.program-schedule-summary > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.program-schedule-summary span,
+.program-schedule-section-head span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.program-schedule-summary > div:first-child strong {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.program-schedule-summary-grid {
+  padding-top: 13px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.program-schedule-summary-grid > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.program-schedule-summary-grid strong {
+  font-size: 13px;
+}
+
+.program-schedule-section {
+  margin-top: 20px;
+}
+
+.program-schedule-section-head {
+  margin: 0 2px 11px;
+}
+
+.program-schedule-section-head h2 {
+  margin: 5px 0 0;
+  font-size: 20px;
+  line-height: 1.16;
+  letter-spacing: -0.45px;
+}
+
+.program-schedule-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.program-schedule-presets button {
+  min-height: 47px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 790;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.program-schedule-presets button:active {
+  transform: scale(0.98);
+  background: var(--accent-soft);
+}
+
+.program-schedule-presets button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.program-schedule-hint {
+  margin: 10px 2px 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.program-schedule-list {
+  display: grid;
+  gap: 10px;
+}
+
+.program-schedule-item {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: var(--surface);
+}
+
+.program-schedule-workout {
+  min-height: 66px;
+  padding: 12px 13px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+}
+
+.program-schedule-day {
+  min-width: 59px;
+  min-height: 34px;
+  padding: 0 9px;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 820;
+  white-space: nowrap;
+}
+
+.program-schedule-workout > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.program-schedule-workout small {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 720;
+}
+
+.program-schedule-workout strong {
+  font-size: 12px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.program-schedule-rest {
+  min-height: 64px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  background: #fafaf8;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.program-schedule-rest > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.program-schedule-rest span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 780;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.program-schedule-rest strong {
+  font-size: 11px;
+}
+
+.program-schedule-stepper {
+  display: grid;
+  grid-template-columns: 34px 34px 34px;
+  align-items: center;
+  gap: 4px;
+}
+
+.program-schedule-stepper button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #deded9;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.program-schedule-stepper button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.program-schedule-stepper svg {
+  width: 15px;
+  height: 15px;
+}
+
+.program-schedule-stepper output {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.program-schedule-finish {
+  min-height: 42px;
+  padding: 0 13px;
+  border-top: 1px solid var(--line);
+  background: #fafaf8;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.program-schedule-error {
+  margin-top: 14px;
+  padding: 12px 13px;
+  border: 1px solid #e8caca;
+  border-radius: 14px;
+  background: #fff6f6;
+  color: #8f3030;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.program-schedule-footer {
+  z-index: 20;
+}
