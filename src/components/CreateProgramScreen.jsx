@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { createProgram } from '../lib/programs.js';
+import { createProgram, getProgram, updateProgram } from '../lib/programs.js';
+import { CreateProgramScheduleScreen } from './CreateProgramScheduleScreen.jsx';
 import { CreateProgramStructureScreen } from './CreateProgramStructureScreen.jsx';
 import '../create-program.css';
 import '../program-persistence.css';
@@ -76,13 +77,15 @@ function reconcileProgramWeeks(currentWeeks, weekCount) {
   });
 }
 
-export function CreateProgramScreen({ onBack, onCreated }) {
+export function CreateProgramScreen({ onBack, onCreated, programId = null }) {
+  const isEditing = Boolean(programId);
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [weeks, setWeeks] = useState('');
   const [description, setDescription] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
   const [coverFile, setCoverFile] = useState(null);
+  const [existingCoverPath, setExistingCoverPath] = useState(null);
   const [categories, setCategories] = useState([]);
   const [place, setPlace] = useState('');
   const [equipment, setEquipment] = useState('');
@@ -90,10 +93,53 @@ export function CreateProgramScreen({ onBack, onCreated }) {
   const [programWeeks, setProgramWeeks] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [initialLoading, setInitialLoading] = useState(isEditing);
+  const [initialError, setInitialError] = useState('');
 
   useEffect(() => () => {
-    if (coverUrl) URL.revokeObjectURL(coverUrl);
+    if (coverUrl?.startsWith('blob:')) URL.revokeObjectURL(coverUrl);
   }, [coverUrl]);
+
+  useEffect(() => {
+    if (!programId) {
+      setInitialLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+
+    async function loadProgramForEditing() {
+      setInitialLoading(true);
+      setInitialError('');
+
+      try {
+        const program = await getProgram(programId);
+        if (!active) return;
+
+        setName(program.name);
+        setWeeks(String(program.weekCount));
+        setDescription(program.description);
+        setCategories(program.categories);
+        setPlace(program.trainingPlace);
+        setEquipment(program.equipment);
+        setLevel(program.level);
+        setProgramWeeks(program.programWeeks);
+        setExistingCoverPath(program.coverPath);
+        setCoverUrl(program.coverUrl ?? '');
+      } catch (error) {
+        if (!active) return;
+        console.error('Unable to prepare program editor:', error);
+        setInitialError(error?.message || 'Не удалось открыть программу.');
+      } finally {
+        if (active) setInitialLoading(false);
+      }
+    }
+
+    loadProgramForEditing();
+    return () => {
+      active = false;
+    };
+  }, [programId]);
 
   const weekCount = Math.max(0, Math.min(52, Number(weeks) || 0));
   const canContinue = name.trim().length > 0 && weekCount > 0;
@@ -103,27 +149,36 @@ export function CreateProgramScreen({ onBack, onCreated }) {
       && week.workouts.every((workout) => workout.name.trim() && workout.exercises.length > 0)
     ));
 
-  async function handleCreateProgram() {
+  async function handleSaveProgram() {
     if (!structureReady || saving) return;
 
     setSaving(true);
     setSaveError('');
 
+    const payload = {
+      name,
+      description,
+      weekCount,
+      categories,
+      trainingPlace: place,
+      equipment,
+      level,
+      programWeeks,
+      coverFile,
+    };
+
     try {
-      const createdProgram = await createProgram({
-        name,
-        description,
-        weekCount,
-        categories,
-        trainingPlace: place,
-        equipment,
-        level,
-        programWeeks,
-        coverFile,
-      });
-      onCreated?.(createdProgram);
+      const savedProgram = isEditing
+        ? await updateProgram({
+            programId,
+            existingCoverPath,
+            ...payload,
+          })
+        : await createProgram(payload);
+
+      onCreated?.(savedProgram);
     } catch (error) {
-      console.error('Program creation failed:', error);
+      console.error('Program save failed:', error);
       setSaveError(error?.message || 'Не удалось сохранить программу. Попробуйте ещё раз.');
     } finally {
       setSaving(false);
@@ -138,23 +193,26 @@ export function CreateProgramScreen({ onBack, onCreated }) {
     );
     if (!button) return undefined;
 
-    button.textContent = saving ? 'Сохраняем…' : 'Создать программу';
-    button.disabled = saving || !structureReady;
+    button.textContent = 'Далее';
+    button.disabled = !structureReady;
 
     function handleClick(event) {
       event.preventDefault();
-      handleCreateProgram();
+      if (!structureReady) return;
+      setSaveError('');
+      setStep(3);
+      scrollCreateProgramToTop();
     }
 
     button.addEventListener('click', handleClick);
     return () => button.removeEventListener('click', handleClick);
-  }, [step, saving, structureReady, name, description, weekCount, categories, place, equipment, level, programWeeks, coverFile]);
+  }, [step, structureReady]);
 
   function handleCoverChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (coverUrl) URL.revokeObjectURL(coverUrl);
+    if (coverUrl?.startsWith('blob:')) URL.revokeObjectURL(coverUrl);
     setCoverFile(file);
     setCoverUrl(URL.createObjectURL(file));
   }
@@ -193,24 +251,68 @@ export function CreateProgramScreen({ onBack, onCreated }) {
     scrollCreateProgramToTop();
   }
 
+  function handleBackFromSchedule() {
+    if (saving) return;
+    setSaveError('');
+    setStep(2);
+    scrollCreateProgramToTop();
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="phone create-program-phone">
+        <main className="create-program-content">
+          <div className="program-persistence-loading">
+            <div className="exercise-list-spinner" aria-hidden="true" />
+            <span>Загружаем программу…</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (initialError) {
+    return (
+      <div className="phone create-program-phone">
+        <header className="create-program-header">
+          <button className="create-program-back" type="button" aria-label="Назад" onClick={onBack}>
+            <BackIcon />
+          </button>
+          <strong>Редактировать программу</strong>
+          <span className="create-program-header-spacer" />
+        </header>
+        <main className="create-program-content">
+          <div className="program-persistence-message" role="alert">{initialError}</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (step === 3) {
+    return (
+      <CreateProgramScheduleScreen
+        programName={name.trim()}
+        programWeeks={programWeeks}
+        onProgramWeeksChange={setProgramWeeks}
+        onBack={handleBackFromSchedule}
+        onSave={handleSaveProgram}
+        saving={saving}
+        saveError={saveError}
+        isEditing={isEditing}
+      />
+    );
+  }
+
   if (step === 2) {
     return (
-      <>
-        <CreateProgramStructureScreen
-          programName={name.trim()}
-          weekCount={weekCount}
-          categories={categories}
-          programWeeks={programWeeks}
-          onProgramWeeksChange={setProgramWeeks}
-          onBack={handleBackFromStepTwo}
-        />
-        {saveError && (
-          <div className="program-persistence-message" role="alert">
-            <span>{saveError}</span>
-            <button type="button" aria-label="Закрыть сообщение" onClick={() => setSaveError('')}>×</button>
-          </div>
-        )}
-      </>
+      <CreateProgramStructureScreen
+        programName={name.trim()}
+        weekCount={weekCount}
+        categories={categories}
+        programWeeks={programWeeks}
+        onProgramWeeksChange={setProgramWeeks}
+        onBack={handleBackFromStepTwo}
+      />
     );
   }
 
@@ -220,15 +322,15 @@ export function CreateProgramScreen({ onBack, onCreated }) {
         <button className="create-program-back" type="button" aria-label="Назад к тренировкам" onClick={onBack}>
           <BackIcon />
         </button>
-        <strong>Создать программу</strong>
+        <strong>{isEditing ? 'Редактировать программу' : 'Создать программу'}</strong>
         <span className="create-program-header-spacer" />
       </header>
 
       <main className="create-program-content">
         <section className="create-program-intro">
           <span>Шаг 1</span>
-          <h1>Новая программа</h1>
-          <p>Заполните основную информацию. Тренировочные дни и упражнения добавим на следующем шаге.</p>
+          <h1>{isEditing ? 'Основная информация' : 'Новая программа'}</h1>
+          <p>Заполните основную информацию. Тренировки и интервалы между ними настроим на следующих шагах.</p>
         </section>
 
         <section className="create-program-form-card">
