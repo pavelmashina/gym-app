@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
+import { listPrograms } from '../lib/programs.js';
 import { supabase } from '../lib/supabase.js';
+import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
 import '../exercise-catalog.css';
+import '../program-list.css';
 
 const ALL_GROUPS = 'Все';
 
 const TRAINING_TABS = [
   { id: 'recommendations', label: 'Рекомендации' },
   { id: 'catalog', label: 'Каталог' },
-  { id: 'your-programs', label: 'Ваши программы' },
+  { id: 'your-programs', label: 'Мои программы' },
   { id: 'completed', label: 'Пройденные программы' },
   { id: 'create', label: 'Создать свою программу' },
 ];
@@ -22,8 +25,8 @@ const EMPTY_COPY = {
     text: 'Здесь будет общий каталог готовых тренировочных программ.',
   },
   'your-programs': {
-    title: 'Ваши программы',
-    text: 'Здесь будут программы, к которым вы присоединились или которые создали сами.',
+    title: 'Мои программы',
+    text: 'Здесь будут программы, которые вы создали или к которым присоединились.',
   },
   completed: {
     title: 'Пройденные программы',
@@ -225,16 +228,55 @@ function EmptyPrograms({ tabId }) {
   );
 }
 
-export function ExercisesScreen() {
-  const [activeTab, setActiveTab] = useState('recommendations');
+function ProgramCard({ program, onOpen }) {
+  const initial = program.name?.trim()?.slice(0, 1)?.toUpperCase() || 'P';
+
+  return (
+    <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
+      <span className="my-program-cover">
+        {program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span>{initial}</span>}
+      </span>
+      <span className="my-program-copy">
+        <strong>{program.name}</strong>
+        <span className="my-program-meta">
+          <span>{program.weekCount} нед.</span>
+          {program.level && <span>{program.level}</span>}
+        </span>
+        {program.categories.length > 0 && (
+          <span className="my-program-tags">
+            {program.categories.slice(0, 2).map((category) => <span key={category}>{category}</span>)}
+          </span>
+        )}
+      </span>
+      <span className="my-program-arrow" aria-hidden="true">›</span>
+    </button>
+  );
+}
+
+export function ExercisesScreen({
+  initialTab = 'recommendations',
+  refreshKey = 0,
+  onCreateProgram,
+  onEditProgram,
+}) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [programs, setPrograms] = useState([]);
+  const [programsLoading, setProgramsLoading] = useState(false);
+  const [programsError, setProgramsError] = useState('');
+  const [programsReloadKey, setProgramsReloadKey] = useState(0);
   const [query, setQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState(ALL_GROUPS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     let active = true;
@@ -267,6 +309,33 @@ export function ExercisesScreen() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'your-programs') return undefined;
+
+    let active = true;
+
+    async function loadMyPrograms() {
+      setProgramsLoading(true);
+      setProgramsError('');
+
+      try {
+        const data = await listPrograms();
+        if (active) setPrograms(data);
+      } catch (requestError) {
+        if (!active) return;
+        console.error('Unable to load my programs:', requestError);
+        setProgramsError(requestError?.message || 'Не удалось загрузить ваши программы.');
+      } finally {
+        if (active) setProgramsLoading(false);
+      }
+    }
+
+    loadMyPrograms();
+    return () => {
+      active = false;
+    };
+  }, [activeTab, refreshKey, programsReloadKey]);
 
   useEffect(() => {
     setQuery('');
@@ -304,14 +373,53 @@ export function ExercisesScreen() {
     });
   }, [exercises, query, selectedGroup, sortDirection]);
 
+  const filteredPrograms = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase('ru');
+    const filtered = programs.filter((program) => {
+      if (!normalizedQuery) return true;
+      return [program.name, program.description, program.level, ...program.categories]
+        .filter(Boolean)
+        .some((value) => value.toLocaleLowerCase('ru').includes(normalizedQuery));
+    });
+
+    return filtered.sort((a, b) => {
+      const result = a.name.localeCompare(b.name, 'ru');
+      return sortDirection === 'asc' ? result : -result;
+    });
+  }, [programs, query, sortDirection]);
+
   const activeTabConfig = TRAINING_TABS.find((tab) => tab.id === activeTab);
   const isCreateTab = activeTab === 'create';
+  const isMyProgramsTab = activeTab === 'your-programs';
 
   function openCreateProgram() {
+    if (onCreateProgram) {
+      onCreateProgram();
+      return;
+    }
+
     setActiveTab('create');
     window.requestAnimationFrame(() => {
       document.querySelector('.training-builder')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+  }
+
+  function handleTabClick(tabId) {
+    if (tabId === 'create') {
+      openCreateProgram();
+      return;
+    }
+    setActiveTab(tabId);
+  }
+
+  if (selectedProgramId) {
+    return (
+      <ProgramDetailScreen
+        programId={selectedProgramId}
+        onBack={() => setSelectedProgramId(null)}
+        onEdit={(programId) => onEditProgram?.(programId)}
+      />
+    );
   }
 
   return (
@@ -347,7 +455,7 @@ export function ExercisesScreen() {
               className={tab.id === activeTab ? 'active' : ''}
               type="button"
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
             >
               {tab.label}
             </button>
@@ -375,7 +483,7 @@ export function ExercisesScreen() {
               onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}
             >
               <SortIcon />
-              <span>{isCreateTab ? (sortDirection === 'asc' ? 'А–Я' : 'Я–А') : 'Сортировка'}</span>
+              <span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span>
             </button>
           </div>
         </section>
@@ -396,7 +504,11 @@ export function ExercisesScreen() {
         )}
 
         {!isCreateTab && filtersOpen && (
-          <div className="training-filter-placeholder">Фильтры программ подключим вместе с каталогом программ.</div>
+          <div className="training-filter-placeholder">
+            {isMyProgramsTab
+              ? 'Фильтрацию по цели, уровню и месту тренировок подключим следующим шагом.'
+              : 'Фильтры программ подключим вместе с каталогом программ.'}
+          </div>
         )}
 
         <button className="create-program-wide" type="button" onClick={openCreateProgram}>
@@ -408,7 +520,37 @@ export function ExercisesScreen() {
           <span className="create-program-arrow" aria-hidden="true">›</span>
         </button>
 
-        {!isCreateTab && <EmptyPrograms tabId={activeTab} />}
+        {isMyProgramsTab && programsLoading && (
+          <div className="my-programs-state">
+            <div className="exercise-list-spinner" aria-hidden="true" />
+            <span>Загружаем ваши программы…</span>
+          </div>
+        )}
+
+        {isMyProgramsTab && !programsLoading && programsError && (
+          <div className="my-programs-state error">
+            <span>{programsError}</span>
+            <button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button>
+          </div>
+        )}
+
+        {isMyProgramsTab && !programsLoading && !programsError && filteredPrograms.length > 0 && (
+          <section className="my-programs-list" aria-label="Мои программы">
+            {filteredPrograms.map((program) => (
+              <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />
+            ))}
+          </section>
+        )}
+
+        {isMyProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (
+          query ? (
+            <div className="my-programs-state">По вашему запросу программы не найдены.</div>
+          ) : (
+            <EmptyPrograms tabId={activeTab} />
+          )
+        )}
+
+        {!isCreateTab && !isMyProgramsTab && <EmptyPrograms tabId={activeTab} />}
 
         {isCreateTab && (
           <section className="training-builder">
