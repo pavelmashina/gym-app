@@ -1,0 +1,35 @@
+.program-persistence-message {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  z-index: 120;
+  width: min(calc(100vw - 36px), 390px);
+  transform: translateX(-50%);
+  padding: 12px 14px;
+  border: 1px solid #e3c9c6;
+  border-radius: 15px;
+  background: #fff7f5;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+  color: #8a3029;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 720;
+  line-height: 1.4;
+}
+
+.program-persistence-message button {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(138, 48, 41, 0.08);
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
