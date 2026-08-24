@@ -215,7 +215,12 @@ export default function App() {
 
   function renderActiveScreen() {
     if (activeScreen === 'create-program') {
-      return <CreateProgramScreen onBack={() => setActiveScreen('training')} />;
+      return (
+        <CreateProgramScreen
+          onBack={() => setActiveScreen('training')}
+          onCreated={() => setActiveScreen('training')}
+        />
+      );
     }
 
     if (activeScreen === 'training') return <ExercisesScreen />;
