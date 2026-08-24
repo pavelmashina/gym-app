@@ -6,13 +6,7 @@ import { HomeScreen } from './components/HomeScreen.jsx';
 import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
-const NAVIGATION_LABELS = {
-  'Тренировки': 'training',
-  'Статистика': 'statistics',
-  'Главная': 'home',
-  'Питание': 'nutrition',
-  'СпортПит': 'sportpit',
-};
+const SCREEN_IDS = new Set(['training', 'statistics', 'home', 'nutrition', 'sportpit']);
 
 function isPasswordRecoveryUrl() {
   if (typeof window === 'undefined') return false;
@@ -63,6 +57,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [activeScreen, setActiveScreen] = useState('home');
+  const [trainingInitialTab, setTrainingInitialTab] = useState('recommendations');
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
@@ -103,6 +98,7 @@ export default function App() {
         setProfile(null);
         setMenuOpen(false);
         setAccountOpen(false);
+        setTrainingInitialTab('recommendations');
         setActiveScreen('home');
       }
     });
@@ -161,25 +157,23 @@ export default function App() {
         return;
       }
 
-      const createProgramTrigger = event.target.closest('.create-program-wide, .training-tabs button');
-      if (createProgramTrigger?.textContent?.trim().startsWith('Создать свою программу')) {
+      const createProgramTrigger = event.target.closest('[data-action="create-program"]');
+      if (createProgramTrigger) {
         setMenuOpen(false);
         setAccountOpen(false);
         setActiveScreen('create-program');
         return;
       }
 
-      const navItem = event.target.closest('.bottom-nav .nav-item');
+      const navItem = event.target.closest('.bottom-nav .nav-item[data-screen]');
       if (!navItem) return;
 
-      const label = navItem.textContent?.trim();
-      const nextScreen = Object.entries(NAVIGATION_LABELS)
-        .find(([navigationLabel]) => label?.startsWith(navigationLabel))?.[1];
-
-      if (!nextScreen) return;
+      const nextScreen = navItem.dataset.screen;
+      if (!SCREEN_IDS.has(nextScreen)) return;
 
       setMenuOpen(false);
       setAccountOpen(false);
+      if (nextScreen === 'training') setTrainingInitialTab('recommendations');
       setActiveScreen(nextScreen);
     }
 
@@ -210,15 +204,28 @@ export default function App() {
 
     setSignOutLoading(false);
     setAccountOpen(false);
+    setTrainingInitialTab('recommendations');
     setActiveScreen('home');
+  }
+
+  function handleProgramSaved() {
+    setTrainingInitialTab('your-programs');
+    setActiveScreen('training');
   }
 
   function renderActiveScreen() {
     if (activeScreen === 'create-program') {
-      return <CreateProgramScreen onBack={() => setActiveScreen('training')} />;
+      return (
+        <CreateProgramScreen
+          onBack={() => setActiveScreen('training')}
+          onProgramSaved={handleProgramSaved}
+        />
+      );
     }
 
-    if (activeScreen === 'training') return <ExercisesScreen />;
+    if (activeScreen === 'training') {
+      return <ExercisesScreen initialTab={trainingInitialTab} />;
+    }
 
     if (['statistics', 'nutrition', 'sportpit'].includes(activeScreen)) {
       return <SectionPlaceholder section={activeScreen} />;
