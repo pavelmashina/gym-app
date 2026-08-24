@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../lib/supabase.js';
 import '../home-dynamic.css';
 
 const MONTHS = [
@@ -400,6 +401,51 @@ export function HomeScreen({
   nutritionPlan = null,
 }) {
   const today = useDeviceDate();
+  const [scheduledWorkoutDates, setScheduledWorkoutDates] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadScheduledWorkoutDates() {
+      const { data, error } = await supabase
+        .from('scheduled_workouts')
+        .select('scheduled_date, status')
+        .neq('status', 'cancelled')
+        .order('scheduled_date', { ascending: true });
+
+      if (!active) return;
+
+      if (error) {
+        console.error('Unable to load home calendar workout dates:', error);
+        setScheduledWorkoutDates([]);
+        return;
+      }
+
+      setScheduledWorkoutDates([
+        ...new Set((data ?? []).map((row) => row.scheduled_date).filter(Boolean)),
+      ]);
+    }
+
+    loadScheduledWorkoutDates();
+
+    function refreshOnFocus() {
+      loadScheduledWorkoutDates();
+    }
+
+    window.addEventListener('focus', refreshOnFocus);
+    document.addEventListener('visibilitychange', refreshOnFocus);
+
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refreshOnFocus);
+      document.removeEventListener('visibilitychange', refreshOnFocus);
+    };
+  }, []);
+
+  const effectiveWorkoutDates = useMemo(
+    () => [...new Set([...workoutDates, ...scheduledWorkoutDates])],
+    [workoutDates, scheduledWorkoutDates],
+  );
 
   return (
     <div className={`phone${menuOpen ? ' menu-open' : ''}`}>
@@ -407,7 +453,7 @@ export function HomeScreen({
 
       <main className="content">
         <PromoBanner />
-        <CalendarCard today={today} workoutDates={workoutDates} />
+        <CalendarCard today={today} workoutDates={effectiveWorkoutDates} />
         <DailySummary
           today={today}
           workout={todaysWorkout}
