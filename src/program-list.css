@@ -1,0 +1,126 @@
+.my-programs-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.my-program-card {
+  width: 100%;
+  min-height: 112px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 32px;
+  align-items: stretch;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.my-program-card:active {
+  transform: scale(0.99);
+}
+
+.my-program-cover {
+  min-height: 112px;
+  background: var(--accent-soft);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.my-program-cover img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.my-program-cover span {
+  font-size: 22px;
+  font-weight: 880;
+}
+
+.my-program-copy {
+  min-width: 0;
+  padding: 13px 10px 12px 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.my-program-copy > strong {
+  font-size: 13px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.my-program-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.my-program-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.my-program-tags span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fafaf8;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 720;
+}
+
+.my-program-arrow {
+  align-self: center;
+  color: var(--muted);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.my-programs-state {
+  min-height: 150px;
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.my-programs-state.error {
+  color: #8a3029;
+}
+
+.my-programs-state button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 790;
+  cursor: pointer;
+}
