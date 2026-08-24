@@ -3,6 +3,13 @@ import { getProgram } from '../lib/programs.js';
 import { supabase } from '../lib/supabase.js';
 import '../program-detail.css';
 
+const WEEKLY_DAYS = {
+  weekly_mwf: [1, 3, 5],
+  weekly_tts: [2, 4, 6],
+};
+
+const WEEKDAY_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
 function BackIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -50,6 +57,14 @@ function formatDate(dateString) {
     month: 'long',
     year: 'numeric',
   }).format(new Date(`${dateString}T12:00:00`));
+}
+
+function daysUntilNextAllowed(currentWeekday, allowedDays) {
+  for (let delta = 1; delta <= 7; delta += 1) {
+    const candidate = (currentWeekday + delta) % 7;
+    if (allowedDays.includes(candidate)) return delta;
+  }
+  return 7;
 }
 
 function participationLabel(participation) {
@@ -191,6 +206,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
         weekNumber: scheduled.weekNumber,
         day: null,
         date: scheduled.scheduledDate,
+        weekday: null,
         workout: {
           id: scheduled.id,
           name: scheduled.workoutName,
@@ -200,9 +216,25 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       }));
     }
 
+    const allowedDays = WEEKLY_DAYS[program.scheduleMode];
+    if (allowedDays) {
+      let day = 1;
+      let weekday = allowedDays[0];
+
+      return templateWorkouts.map((item, index) => {
+        const scheduled = { ...item, day, date: null, weekday };
+        if (index < templateWorkouts.length - 1) {
+          const delta = daysUntilNextAllowed(weekday, allowedDays);
+          day += delta;
+          weekday = (weekday + delta) % 7;
+        }
+        return scheduled;
+      });
+    }
+
     let day = 1;
     return templateWorkouts.map((item, index) => {
-      const scheduled = { ...item, day, date: null };
+      const scheduled = { ...item, day, date: null, weekday: null };
       if (index < templateWorkouts.length - 1) {
         day += 1 + Number(item.workout.restDaysAfter ?? 1);
       }
@@ -241,6 +273,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   );
   const participation = program.participation;
   const canStart = !participation || ['completed', 'abandoned'].includes(participation.status);
+  const weeklyMode = Boolean(WEEKLY_DAYS[program.scheduleMode]);
 
   return (
     <div className="phone program-detail-phone">
@@ -309,7 +342,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
                 <div className="program-detail-day">
                   {item.date
                     ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${item.date}T12:00:00`))
-                    : `День ${item.day}`}
+                    : (item.weekday !== null ? WEEKDAY_SHORT[item.weekday] : `День ${item.day}`)}
                 </div>
                 <div className="program-detail-workout-copy">
                   <small>Неделя {item.weekNumber}</small>
@@ -317,7 +350,11 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
                   <span>{formatCount(item.workout.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span>
                 </div>
                 {!participation && index < schedule.length - 1 && (
-                  <div className="program-detail-rest">{formatRestDays(Number(item.workout.restDaysAfter ?? 1))}</div>
+                  <div className="program-detail-rest">
+                    {weeklyMode
+                      ? `Следующая — ${WEEKDAY_SHORT[schedule[index + 1].weekday]}`
+                      : formatRestDays(Number(item.workout.restDaysAfter ?? 1))}
+                  </div>
                 )}
               </article>
             ))}
