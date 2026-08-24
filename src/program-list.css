@@ -46,11 +46,40 @@
 
 .my-program-copy {
   min-width: 0;
-  padding: 13px 10px 12px 13px;
+  padding: 11px 10px 11px 13px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
+}
+
+.my-program-status {
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #f2f2ee;
+  color: var(--muted);
+  font-size: 7.5px;
+  font-weight: 820;
+  letter-spacing: 0.25px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.my-program-status.active,
+.my-program-status.scheduled {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.my-program-status.paused {
+  background: #f4f0e7;
+}
+
+.my-program-status.completed {
+  background: #eef3ee;
 }
 
 .my-program-copy > strong {
