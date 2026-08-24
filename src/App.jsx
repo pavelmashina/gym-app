@@ -69,6 +69,7 @@ export default function App() {
   const [signOutLoading, setSignOutLoading] = useState(false);
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(isPasswordRecoveryUrl);
   const [editingProgramId, setEditingProgramId] = useState(null);
+  const [launchingProgramId, setLaunchingProgramId] = useState(null);
   const [trainingInitialTab, setTrainingInitialTab] = useState('recommendations');
   const [trainingRefreshKey, setTrainingRefreshKey] = useState(0);
 
@@ -102,6 +103,7 @@ export default function App() {
         setMenuOpen(false);
         setAccountOpen(false);
         setEditingProgramId(null);
+        setLaunchingProgramId(null);
         setTrainingInitialTab('recommendations');
         setActiveScreen('home');
       }
@@ -154,6 +156,7 @@ export default function App() {
         setActiveScreen((current) => {
           if (current === 'create-program') {
             setEditingProgramId(null);
+            setLaunchingProgramId(null);
             return 'training';
           }
           return current;
@@ -179,6 +182,7 @@ export default function App() {
       setMenuOpen(false);
       setAccountOpen(false);
       setEditingProgramId(null);
+      setLaunchingProgramId(null);
       setActiveScreen(nextScreen);
     }
 
@@ -210,6 +214,7 @@ export default function App() {
     setSignOutLoading(false);
     setAccountOpen(false);
     setEditingProgramId(null);
+    setLaunchingProgramId(null);
     setActiveScreen('home');
   }
 
@@ -217,6 +222,7 @@ export default function App() {
     setMenuOpen(false);
     setAccountOpen(false);
     setEditingProgramId(null);
+    setLaunchingProgramId(null);
     setActiveScreen('create-program');
   }
 
@@ -224,12 +230,23 @@ export default function App() {
     setMenuOpen(false);
     setAccountOpen(false);
     setTrainingInitialTab('your-programs');
+    setLaunchingProgramId(null);
     setEditingProgramId(programId);
+    setActiveScreen('create-program');
+  }
+
+  function openProgramLauncher(programId) {
+    setMenuOpen(false);
+    setAccountOpen(false);
+    setTrainingInitialTab('your-programs');
+    setEditingProgramId(null);
+    setLaunchingProgramId(programId);
     setActiveScreen('create-program');
   }
 
   function finishProgramSave() {
     setEditingProgramId(null);
+    setLaunchingProgramId(null);
     setTrainingInitialTab('your-programs');
     setTrainingRefreshKey((value) => value + 1);
     setActiveScreen('training');
@@ -239,9 +256,11 @@ export default function App() {
     if (activeScreen === 'create-program') {
       return (
         <CreateProgramScreen
-          programId={editingProgramId}
+          programId={launchingProgramId ?? editingProgramId}
+          launchOnly={Boolean(launchingProgramId)}
           onBack={() => {
             setEditingProgramId(null);
+            setLaunchingProgramId(null);
             setActiveScreen('training');
           }}
           onCreated={finishProgramSave}
@@ -256,6 +275,7 @@ export default function App() {
           refreshKey={trainingRefreshKey}
           onCreateProgram={openCreateProgram}
           onEditProgram={openProgramEditor}
+          onStartProgram={openProgramLauncher}
         />
       );
     }
