@@ -1,5 +1,5 @@
 .program-schedule-phone {
-  padding-bottom: 110px;
+  padding-bottom: 152px;
 }
 
 .program-schedule-content {
@@ -249,6 +249,74 @@
   letter-spacing: 0.4px;
 }
 
+.program-start-section {
+  margin-top: 24px;
+}
+
+.program-start-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: var(--surface);
+  display: grid;
+  gap: 12px;
+}
+
+.program-start-date-field {
+  display: grid;
+  gap: 7px;
+}
+
+.program-start-date-field > span,
+.program-start-preview > span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.program-start-date-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid #dcdcd7;
+  border-radius: 14px;
+  outline: 0;
+  background: #fafaf8;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.program-start-date-field input:focus {
+  border-color: var(--ink);
+}
+
+.program-start-preview,
+.program-start-later-note {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.program-start-preview strong,
+.program-start-later-note strong {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.program-start-preview small,
+.program-start-later-note span {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
 .program-schedule-error {
   margin-top: 14px;
   padding: 12px 13px;
@@ -262,4 +330,29 @@
 
 .program-schedule-footer {
   z-index: 20;
+}
+
+.program-schedule-footer.dual {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.program-save-later {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 810;
+  cursor: pointer;
+}
+
+.program-save-later:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
