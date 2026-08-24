@@ -95,6 +95,7 @@ export function CreateProgramScreen({
   const [place, setPlace] = useState('');
   const [equipment, setEquipment] = useState('');
   const [level, setLevel] = useState('');
+  const [scheduleMode, setScheduleMode] = useState('custom');
   const [programWeeks, setProgramWeeks] = useState([]);
   const [saving, setSaving] = useState(false);
   const [savingAction, setSavingAction] = useState('');
@@ -129,6 +130,7 @@ export function CreateProgramScreen({
         setPlace(program.trainingPlace);
         setEquipment(program.equipment);
         setLevel(program.level);
+        setScheduleMode(program.scheduleMode ?? 'custom');
         setProgramWeeks(program.programWeeks);
         setExistingCoverPath(program.coverPath);
         setCoverUrl(program.coverUrl ?? '');
@@ -165,6 +167,7 @@ export function CreateProgramScreen({
       trainingPlace: place,
       equipment,
       level,
+      scheduleMode,
       programWeeks,
       coverFile,
     };
@@ -319,6 +322,8 @@ export function CreateProgramScreen({
         programName={name.trim()}
         programWeeks={programWeeks}
         onProgramWeeksChange={setProgramWeeks}
+        scheduleMode={scheduleMode}
+        onScheduleModeChange={setScheduleMode}
         onBack={handleBackFromSchedule}
         onAction={handleScheduleAction}
         saving={saving}
