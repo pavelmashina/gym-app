@@ -70,6 +70,12 @@ function validateCover(coverFile) {
   }
 }
 
+function validateStartDate(startDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate ?? '')) {
+    throw new Error('Выберите дату начала программы.');
+  }
+}
+
 async function requireCurrentUser() {
   const {
     data: { user },
@@ -159,8 +165,66 @@ function mapProgramRow(row) {
   };
 }
 
-export async function createProgram({ coverFile = null, ...program }) {
+function mapParticipationRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    programId: row.program_id,
+    status: row.status,
+    startDate: row.start_date,
+    joinedAt: row.joined_at,
+    pausedAt: row.paused_at ?? null,
+    completedAt: row.completed_at ?? null,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function loadLatestParticipations(programIds) {
+  if (programIds.length === 0) return new Map();
+
+  const { data, error } = await supabase
+    .from('user_programs')
+    .select('id, program_id, status, start_date, joined_at, paused_at, completed_at, updated_at')
+    .in('program_id', programIds)
+    .order('joined_at', { ascending: false });
+
+  if (error) {
+    console.error('Unable to load program participation:', error);
+    throw new Error('Не удалось загрузить статус программ.');
+  }
+
+  const latestByProgram = new Map();
+  (data ?? []).forEach((row) => {
+    if (!latestByProgram.has(row.program_id)) {
+      latestByProgram.set(row.program_id, mapParticipationRow(row));
+    }
+  });
+  return latestByProgram;
+}
+
+export async function startProgram(programId, startDate) {
+  validateStartDate(startDate);
+  await requireCurrentUser();
+
+  const { data: userProgramId, error } = await supabase.rpc('start_program', {
+    p_program_id: programId,
+    p_start_date: startDate,
+  });
+
+  if (error || !userProgramId) {
+    console.error('Unable to start program:', error);
+    if (error?.code === '23505' || error?.message?.includes('already active')) {
+      throw new Error('Вы уже присоединились к этой программе.');
+    }
+    throw new Error('Не удалось присоединиться к программе. Попробуйте ещё раз.');
+  }
+
+  return { id: userProgramId, programId, startDate, status: 'active' };
+}
+
+export async function createProgram({ coverFile = null, startDate = null, ...program }) {
   validateCover(coverFile);
+  if (startDate) validateStartDate(startDate);
   const user = await requireCurrentUser();
 
   const payload = buildProgramPayload(program);
@@ -174,10 +238,13 @@ export async function createProgram({ coverFile = null, ...program }) {
     throw new Error('Не удалось сохранить программу. Попробуйте ещё раз.');
   }
 
+  let coverPath = null;
   try {
-    const coverPath = await saveCover({ coverFile, programId, userId: user.id });
-    return { id: programId, coverPath };
+    coverPath = await saveCover({ coverFile, programId, userId: user.id });
+    const participation = startDate ? await startProgram(programId, startDate) : null;
+    return { id: programId, coverPath, participation };
   } catch (error) {
+    await removeCoverQuietly(coverPath);
     await removeProgramQuietly(programId);
     throw error;
   }
@@ -227,8 +294,12 @@ export async function listPrograms() {
     throw new Error('Не удалось загрузить ваши программы.');
   }
 
-  return Promise.all((data ?? []).map(async (row) => ({
+  const rows = data ?? [];
+  const participationByProgram = await loadLatestParticipations(rows.map((row) => row.id));
+
+  return Promise.all(rows.map(async (row) => ({
     ...mapProgramRow(row),
+    participation: participationByProgram.get(row.id) ?? null,
     coverUrl: await getSignedCoverUrl(row.cover_path),
   })));
 }
@@ -362,9 +433,48 @@ export async function getProgram(programId) {
     })),
   }));
 
+  const { data: participationRow, error: participationError } = await supabase
+    .from('user_programs')
+    .select('id, program_id, status, start_date, joined_at, paused_at, completed_at, updated_at')
+    .eq('program_id', programId)
+    .order('joined_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (participationError) {
+    console.error('Unable to load program participation:', participationError);
+    throw new Error('Не удалось загрузить статус программы.');
+  }
+
+  const participation = mapParticipationRow(participationRow);
+  let scheduledWorkouts = [];
+  if (participation) {
+    const response = await supabase
+      .from('scheduled_workouts')
+      .select('id, sequence_number, week_number, workout_name, scheduled_date, status')
+      .eq('user_program_id', participation.id)
+      .order('sequence_number', { ascending: true });
+
+    if (response.error) {
+      console.error('Unable to load scheduled workouts:', response.error);
+      throw new Error('Не удалось загрузить календарь программы.');
+    }
+
+    scheduledWorkouts = (response.data ?? []).map((row) => ({
+      id: row.id,
+      sequenceNumber: row.sequence_number,
+      weekNumber: row.week_number,
+      workoutName: row.workout_name,
+      scheduledDate: row.scheduled_date,
+      status: row.status,
+    }));
+  }
+
   return {
     ...mapProgramRow(programRow),
     coverUrl: await getSignedCoverUrl(programRow.cover_path),
     programWeeks,
+    participation,
+    scheduledWorkouts,
   };
 }
