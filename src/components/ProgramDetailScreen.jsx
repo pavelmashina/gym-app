@@ -19,6 +19,15 @@ function PencilIcon() {
   );
 }
 
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <rect x="3.5" y="5.5" width="17" height="15" rx="3" />
+      <path d="M8 3.5v4M16 3.5v4M3.5 10h17" />
+    </svg>
+  );
+}
+
 function formatCount(count, forms) {
   const mod100 = count % 100;
   const mod10 = count % 10;
@@ -33,7 +42,28 @@ function formatRestDays(count) {
   return `${formatCount(count, ['день', 'дня', 'дней'])} отдыха`;
 }
 
-export function ProgramDetailScreen({ programId, onBack, onEdit }) {
+function formatDate(dateString) {
+  if (!dateString) return '';
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(`${dateString}T12:00:00`));
+}
+
+function participationLabel(participation) {
+  if (!participation) return 'Не начата';
+  if (participation.status === 'paused') return 'На паузе';
+  if (participation.status === 'completed') return 'Завершена';
+  if (participation.status === 'abandoned') return 'Остановлена';
+
+  const today = new Date();
+  const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+  if (participation.startDate > localToday) return `Старт ${formatDate(participation.startDate)}`;
+  return 'Активна';
+}
+
+export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,20 +93,43 @@ export function ProgramDetailScreen({ programId, onBack, onEdit }) {
     };
   }, [programId]);
 
-  const schedule = useMemo(() => {
+  const templateWorkouts = useMemo(() => {
     if (!program) return [];
-    const workouts = program.programWeeks.flatMap((week) => week.workouts.map((workout) => ({
+    return program.programWeeks.flatMap((week) => week.workouts.map((workout) => ({
       weekNumber: week.number,
       workout,
     })));
+  }, [program]);
+
+  const schedule = useMemo(() => {
+    if (!program) return [];
+
+    if (program.participation && program.scheduledWorkouts.length > 0) {
+      return program.scheduledWorkouts.map((scheduled, index) => {
+        const template = templateWorkouts[index];
+        return {
+          weekNumber: scheduled.weekNumber,
+          day: null,
+          date: scheduled.scheduledDate,
+          workout: {
+            id: scheduled.id,
+            name: scheduled.workoutName,
+            exercises: template?.workout?.exercises ?? [],
+            restDaysAfter: template?.workout?.restDaysAfter ?? 0,
+          },
+        };
+      });
+    }
 
     let day = 1;
-    return workouts.map((item, index) => {
-      const scheduled = { ...item, day };
-      if (index < workouts.length - 1) day += 1 + Number(item.workout.restDaysAfter ?? 1);
+    return templateWorkouts.map((item, index) => {
+      const scheduled = { ...item, day, date: null };
+      if (index < templateWorkouts.length - 1) {
+        day += 1 + Number(item.workout.restDaysAfter ?? 1);
+      }
       return scheduled;
     });
-  }, [program]);
+  }, [program, templateWorkouts]);
 
   if (loading) {
     return (
@@ -102,11 +155,13 @@ export function ProgramDetailScreen({ programId, onBack, onEdit }) {
     );
   }
 
-  const totalWorkouts = schedule.length;
+  const totalWorkouts = templateWorkouts.length;
   const totalExercises = program.programWeeks.reduce(
     (sum, week) => sum + week.workouts.reduce((weekSum, workout) => weekSum + workout.exercises.length, 0),
     0,
   );
+  const participation = program.participation;
+  const canStart = !participation || ['completed', 'abandoned'].includes(participation.status);
 
   return (
     <div className="phone program-detail-phone">
@@ -134,6 +189,21 @@ export function ProgramDetailScreen({ programId, onBack, onEdit }) {
           )}
         </section>
 
+        <section className={`program-detail-start-state${canStart ? ' not-started' : ' joined'}`}>
+          <span className="program-detail-status-badge">{participationLabel(participation)}</span>
+          {canStart ? (
+            <>
+              <strong>Начните, когда будете готовы</strong>
+              <p>Программа уже сохранена. Дату первой тренировки и присоединения можно выбрать позже — расписание создастся только после подтверждения даты.</p>
+            </>
+          ) : (
+            <>
+              <strong>Вы присоединились к программе</strong>
+              <p>Первая тренировка запланирована на {formatDate(participation.startDate)}. Ниже показан ваш персональный календарь.</p>
+            </>
+          )}
+        </section>
+
         <section className="program-detail-stats">
           <div><span>Недель</span><strong>{program.weekCount}</strong></div>
           <div><span>Тренировок</span><strong>{totalWorkouts}</strong></div>
@@ -150,20 +220,24 @@ export function ProgramDetailScreen({ programId, onBack, onEdit }) {
 
         <section className="program-detail-section">
           <div className="program-detail-section-head">
-            <span>Расписание</span>
-            <h2>Последовательность тренировок</h2>
+            <span>{participation ? 'Календарь' : 'Ритм'}</span>
+            <h2>{participation ? 'Запланированные тренировки' : 'Последовательность тренировок'}</h2>
           </div>
 
           <div className="program-detail-schedule">
             {schedule.map((item, index) => (
               <article key={item.workout.id}>
-                <div className="program-detail-day">День {item.day}</div>
+                <div className="program-detail-day">
+                  {item.date
+                    ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${item.date}T12:00:00`))
+                    : `День ${item.day}`}
+                </div>
                 <div className="program-detail-workout-copy">
                   <small>Неделя {item.weekNumber}</small>
                   <strong>{item.workout.name}</strong>
                   <span>{formatCount(item.workout.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span>
                 </div>
-                {index < schedule.length - 1 && (
+                {!participation && index < schedule.length - 1 && (
                   <div className="program-detail-rest">{formatRestDays(Number(item.workout.restDaysAfter ?? 1))}</div>
                 )}
               </article>
@@ -196,8 +270,14 @@ export function ProgramDetailScreen({ programId, onBack, onEdit }) {
         </section>
       </main>
 
-      <footer className="program-detail-footer">
-        <button type="button" onClick={() => onEdit(program.id)}>
+      <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>
+        {canStart && (
+          <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}>
+            <CalendarIcon />
+            <span>{participation ? 'Начать программу заново' : 'Начать программу'}</span>
+          </button>
+        )}
+        <button className="program-detail-edit-button" type="button" onClick={() => onEdit?.(program.id)}>
           <PencilIcon />
           <span>Редактировать программу</span>
         </button>
