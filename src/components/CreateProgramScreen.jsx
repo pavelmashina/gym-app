@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { createProgram } from '../lib/programs.js';
 import { CreateProgramStructureScreen } from './CreateProgramStructureScreen.jsx';
 import '../create-program.css';
+import '../program-persistence.css';
 
 const CATEGORY_OPTIONS = [
   'Кардио',
@@ -74,17 +76,20 @@ function reconcileProgramWeeks(currentWeeks, weekCount) {
   });
 }
 
-export function CreateProgramScreen({ onBack }) {
+export function CreateProgramScreen({ onBack, onCreated }) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [weeks, setWeeks] = useState('');
   const [description, setDescription] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
+  const [coverFile, setCoverFile] = useState(null);
   const [categories, setCategories] = useState([]);
   const [place, setPlace] = useState('');
   const [equipment, setEquipment] = useState('');
   const [level, setLevel] = useState('');
   const [programWeeks, setProgramWeeks] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => () => {
     if (coverUrl) URL.revokeObjectURL(coverUrl);
@@ -92,12 +97,65 @@ export function CreateProgramScreen({ onBack }) {
 
   const weekCount = Math.max(0, Math.min(52, Number(weeks) || 0));
   const canContinue = name.trim().length > 0 && weekCount > 0;
+  const structureReady = programWeeks.length === weekCount
+    && programWeeks.every((week) => (
+      week.workouts.length > 0
+      && week.workouts.every((workout) => workout.name.trim() && workout.exercises.length > 0)
+    ));
+
+  async function handleCreateProgram() {
+    if (!structureReady || saving) return;
+
+    setSaving(true);
+    setSaveError('');
+
+    try {
+      const createdProgram = await createProgram({
+        name,
+        description,
+        weekCount,
+        categories,
+        trainingPlace: place,
+        equipment,
+        level,
+        programWeeks,
+        coverFile,
+      });
+      onCreated?.(createdProgram);
+    } catch (error) {
+      console.error('Program creation failed:', error);
+      setSaveError(error?.message || 'Не удалось сохранить программу. Попробуйте ещё раз.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  useEffect(() => {
+    if (step !== 2) return undefined;
+
+    const button = document.querySelector(
+      '.create-program-step2-phone > .create-program-footer .create-program-next',
+    );
+    if (!button) return undefined;
+
+    button.textContent = saving ? 'Сохраняем…' : 'Создать программу';
+    button.disabled = saving || !structureReady;
+
+    function handleClick(event) {
+      event.preventDefault();
+      handleCreateProgram();
+    }
+
+    button.addEventListener('click', handleClick);
+    return () => button.removeEventListener('click', handleClick);
+  }, [step, saving, structureReady, name, description, weekCount, categories, place, equipment, level, programWeeks, coverFile]);
 
   function handleCoverChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (coverUrl) URL.revokeObjectURL(coverUrl);
+    setCoverFile(file);
     setCoverUrl(URL.createObjectURL(file));
   }
 
@@ -122,26 +180,37 @@ export function CreateProgramScreen({ onBack }) {
 
   function handleNext() {
     if (!canContinue) return;
+    setSaveError('');
     setProgramWeeks((current) => reconcileProgramWeeks(current, weekCount));
     setStep(2);
     scrollCreateProgramToTop();
   }
 
   function handleBackFromStepTwo() {
+    if (saving) return;
+    setSaveError('');
     setStep(1);
     scrollCreateProgramToTop();
   }
 
   if (step === 2) {
     return (
-      <CreateProgramStructureScreen
-        programName={name.trim()}
-        weekCount={weekCount}
-        categories={categories}
-        programWeeks={programWeeks}
-        onProgramWeeksChange={setProgramWeeks}
-        onBack={handleBackFromStepTwo}
-      />
+      <>
+        <CreateProgramStructureScreen
+          programName={name.trim()}
+          weekCount={weekCount}
+          categories={categories}
+          programWeeks={programWeeks}
+          onProgramWeeksChange={setProgramWeeks}
+          onBack={handleBackFromStepTwo}
+        />
+        {saveError && (
+          <div className="program-persistence-message" role="alert">
+            <span>{saveError}</span>
+            <button type="button" aria-label="Закрыть сообщение" onClick={() => setSaveError('')}>×</button>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -207,7 +276,7 @@ export function CreateProgramScreen({ onBack }) {
               <span>Обложка</span>
               <h2>Фото программы</h2>
             </div>
-            <small>Необязательно</small>
+            <small>Необязательно · до 5 МБ</small>
           </div>
 
           <label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>
