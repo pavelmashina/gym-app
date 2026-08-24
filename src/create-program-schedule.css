@@ -1,9 +1,9 @@
 .program-schedule-phone {
-  padding-bottom: 152px;
+  padding-bottom: 194px;
 }
 
 .program-schedule-content {
-  padding-bottom: 34px;
+  padding-bottom: 54px;
 }
 
 .program-schedule-intro {
@@ -80,27 +80,74 @@
 }
 
 .program-schedule-presets button {
-  min-height: 47px;
-  padding: 8px 10px;
+  min-height: 62px;
+  padding: 10px 11px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 10px;
-  font-weight: 790;
-  line-height: 1.25;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.program-schedule-presets button strong {
+  font-size: 10px;
+  font-weight: 810;
+  line-height: 1.25;
+}
+
+.program-schedule-presets button span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.program-schedule-presets button.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.13);
+}
+
+.program-schedule-presets button.selected span {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .program-schedule-presets button:active {
   transform: scale(0.98);
-  background: var(--accent-soft);
 }
 
 .program-schedule-presets button:disabled {
-  opacity: 0.55;
   cursor: default;
+}
+
+.program-selected-rhythm {
+  min-height: 58px;
+  padding: 12px 14px;
+  border-radius: 15px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.program-selected-rhythm strong {
+  font-size: 11px;
+}
+
+.program-selected-rhythm span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+  font-weight: 760;
 }
 
 .program-schedule-hint {
@@ -251,6 +298,7 @@
 
 .program-start-section {
   margin-top: 24px;
+  margin-bottom: 18px;
 }
 
 .program-start-card {
@@ -317,6 +365,20 @@
   line-height: 1.45;
 }
 
+.program-start-weekday-note {
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: #f4f4f0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.program-start-weekday-note.invalid {
+  background: #fff1f1;
+  color: #9a3434;
+}
+
 .program-schedule-error {
   margin-top: 14px;
   padding: 12px 13px;
@@ -340,15 +402,15 @@
 
 .program-save-later {
   width: 100%;
-  min-height: 46px;
+  min-height: 54px;
   padding: 0 14px;
   border: 1px solid var(--line);
-  border-radius: 15px;
+  border-radius: 17px;
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 10px;
-  font-weight: 810;
+  font-size: 14px;
+  font-weight: 820;
   cursor: pointer;
 }
 
