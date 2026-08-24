@@ -1,13 +1,14 @@
 # Supabase schema source of truth
 
-`profiles` and `exercises` existed in the production project before migration tracking was introduced. Their current DDL is captured in this directory as a recovery baseline.
+`profiles`, `exercises` and `user_exercises` existed in the production project before migration tracking was introduced. Their current DDL is captured in this directory as a recovery baseline.
 
-All new production schema changes must be represented in `supabase/migrations/` and applied as a single reviewed migration. Do not make untracked production DDL changes in the Dashboard.
+All new production schema changes must be represented in `supabase/migrations/` and applied as a reviewed migration. Do not make untracked production DDL changes in the Dashboard.
 
 Current application tables:
 
 - `profiles` — one row per Supabase Auth user.
 - `exercises` — system exercise catalog.
+- `user_exercises` — exercises created by an individual user.
 - `programs` — user-owned training programs.
 - `program_weeks` — ordered weeks inside a program.
 - `program_workouts` — ordered workouts inside a week.
