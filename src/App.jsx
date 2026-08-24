@@ -68,6 +68,9 @@ export default function App() {
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [signOutLoading, setSignOutLoading] = useState(false);
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(isPasswordRecoveryUrl);
+  const [editingProgramId, setEditingProgramId] = useState(null);
+  const [trainingInitialTab, setTrainingInitialTab] = useState('recommendations');
+  const [trainingRefreshKey, setTrainingRefreshKey] = useState(0);
 
   const user = session?.user ?? null;
   const userId = user?.id ?? null;
@@ -89,13 +92,8 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!active) return;
 
-      if (event === 'PASSWORD_RECOVERY') {
-        setPasswordRecoveryActive(true);
-      }
-
-      if (event === 'SIGNED_OUT') {
-        setPasswordRecoveryActive(false);
-      }
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecoveryActive(true);
+      if (event === 'SIGNED_OUT') setPasswordRecoveryActive(false);
 
       setSession(nextSession ?? null);
       setAuthReady(true);
@@ -103,6 +101,8 @@ export default function App() {
         setProfile(null);
         setMenuOpen(false);
         setAccountOpen(false);
+        setEditingProgramId(null);
+        setTrainingInitialTab('recommendations');
         setActiveScreen('home');
       }
     });
@@ -151,21 +151,19 @@ export default function App() {
       if (event.key === 'Escape') {
         setMenuOpen(false);
         setAccountOpen(false);
-        setActiveScreen((current) => (current === 'create-program' ? 'training' : current));
+        setActiveScreen((current) => {
+          if (current === 'create-program') {
+            setEditingProgramId(null);
+            return 'training';
+          }
+          return current;
+        });
       }
     }
 
     function handleDocumentClick(event) {
       if (userId && event.target.closest('.profile-btn')) {
         setAccountOpen((current) => !current);
-        return;
-      }
-
-      const createProgramTrigger = event.target.closest('.create-program-wide, .training-tabs button');
-      if (createProgramTrigger?.textContent?.trim().startsWith('Создать свою программу')) {
-        setMenuOpen(false);
-        setAccountOpen(false);
-        setActiveScreen('create-program');
         return;
       }
 
@@ -180,6 +178,7 @@ export default function App() {
 
       setMenuOpen(false);
       setAccountOpen(false);
+      setEditingProgramId(null);
       setActiveScreen(nextScreen);
     }
 
@@ -210,20 +209,56 @@ export default function App() {
 
     setSignOutLoading(false);
     setAccountOpen(false);
+    setEditingProgramId(null);
     setActiveScreen('home');
+  }
+
+  function openCreateProgram() {
+    setMenuOpen(false);
+    setAccountOpen(false);
+    setEditingProgramId(null);
+    setActiveScreen('create-program');
+  }
+
+  function openProgramEditor(programId) {
+    setMenuOpen(false);
+    setAccountOpen(false);
+    setTrainingInitialTab('your-programs');
+    setEditingProgramId(programId);
+    setActiveScreen('create-program');
+  }
+
+  function finishProgramSave() {
+    setEditingProgramId(null);
+    setTrainingInitialTab('your-programs');
+    setTrainingRefreshKey((value) => value + 1);
+    setActiveScreen('training');
   }
 
   function renderActiveScreen() {
     if (activeScreen === 'create-program') {
       return (
         <CreateProgramScreen
-          onBack={() => setActiveScreen('training')}
-          onCreated={() => setActiveScreen('training')}
+          programId={editingProgramId}
+          onBack={() => {
+            setEditingProgramId(null);
+            setActiveScreen('training');
+          }}
+          onCreated={finishProgramSave}
         />
       );
     }
 
-    if (activeScreen === 'training') return <ExercisesScreen />;
+    if (activeScreen === 'training') {
+      return (
+        <ExercisesScreen
+          initialTab={trainingInitialTab}
+          refreshKey={trainingRefreshKey}
+          onCreateProgram={openCreateProgram}
+          onEditProgram={openProgramEditor}
+        />
+      );
+    }
 
     if (['statistics', 'nutrition', 'sportpit'].includes(activeScreen)) {
       return <SectionPlaceholder section={activeScreen} />;
