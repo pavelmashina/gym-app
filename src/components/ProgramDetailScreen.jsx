@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram } from '../lib/programs.js';
+import { supabase } from '../lib/supabase.js';
 import '../program-detail.css';
 
 function BackIcon() {
@@ -63,6 +64,86 @@ function participationLabel(participation) {
   return 'Активна';
 }
 
+async function attachScheduledSnapshot(program) {
+  if (!program?.participation || program.scheduledWorkouts.length === 0) return program;
+
+  const scheduledWorkoutIds = program.scheduledWorkouts.map((workout) => workout.id);
+  const { data: scheduledExercises, error: exercisesError } = await supabase
+    .from('scheduled_workout_exercises')
+    .select('id, scheduled_workout_id, exercise_id, position')
+    .in('scheduled_workout_id', scheduledWorkoutIds)
+    .order('position', { ascending: true });
+
+  if (exercisesError) {
+    console.error('Unable to load scheduled workout exercises:', exercisesError);
+    throw new Error('Не удалось загрузить сохранённый состав тренировок.');
+  }
+
+  const rows = scheduledExercises ?? [];
+  const scheduledExerciseIds = rows.map((row) => row.id);
+  const exerciseIds = [...new Set(rows.map((row) => row.exercise_id))];
+
+  let sets = [];
+  if (scheduledExerciseIds.length > 0) {
+    const response = await supabase
+      .from('scheduled_sets')
+      .select('id, scheduled_workout_exercise_id, set_number, planned_reps')
+      .in('scheduled_workout_exercise_id', scheduledExerciseIds)
+      .order('set_number', { ascending: true });
+
+    if (response.error) {
+      console.error('Unable to load scheduled sets:', response.error);
+      throw new Error('Не удалось загрузить сохранённые подходы программы.');
+    }
+    sets = response.data ?? [];
+  }
+
+  let exercises = [];
+  if (exerciseIds.length > 0) {
+    const response = await supabase
+      .from('exercises')
+      .select('id, name, muscle_group, movement_type, difficulty')
+      .in('id', exerciseIds);
+
+    if (response.error) {
+      console.error('Unable to load scheduled exercise names:', response.error);
+      throw new Error('Не удалось загрузить данные упражнений программы.');
+    }
+    exercises = response.data ?? [];
+  }
+
+  const exerciseById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
+  const setsByScheduledExercise = new Map();
+  sets.forEach((set) => {
+    const list = setsByScheduledExercise.get(set.scheduled_workout_exercise_id) ?? [];
+    list.push({ id: set.id, reps: set.planned_reps ?? '' });
+    setsByScheduledExercise.set(set.scheduled_workout_exercise_id, list);
+  });
+
+  const exercisesByWorkout = new Map();
+  rows.forEach((row) => {
+    const exercise = exerciseById.get(row.exercise_id) ?? {};
+    const list = exercisesByWorkout.get(row.scheduled_workout_id) ?? [];
+    list.push({
+      id: row.exercise_id,
+      name: exercise.name ?? 'Упражнение',
+      muscle_group: exercise.muscle_group ?? '',
+      movement_type: exercise.movement_type ?? '',
+      difficulty: exercise.difficulty ?? null,
+      sets: setsByScheduledExercise.get(row.id) ?? [],
+    });
+    exercisesByWorkout.set(row.scheduled_workout_id, list);
+  });
+
+  return {
+    ...program,
+    scheduledWorkouts: program.scheduledWorkouts.map((workout) => ({
+      ...workout,
+      exercises: exercisesByWorkout.get(workout.id) ?? [],
+    })),
+  };
+}
+
 export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +158,8 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
       try {
         const data = await getProgram(programId);
-        if (active) setProgram(data);
+        const hydratedProgram = await attachScheduledSnapshot(data);
+        if (active) setProgram(hydratedProgram);
       } catch (requestError) {
         if (!active) return;
         console.error('Unable to open program details:', requestError);
@@ -105,20 +187,17 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
     if (!program) return [];
 
     if (program.participation && program.scheduledWorkouts.length > 0) {
-      return program.scheduledWorkouts.map((scheduled, index) => {
-        const template = templateWorkouts[index];
-        return {
-          weekNumber: scheduled.weekNumber,
-          day: null,
-          date: scheduled.scheduledDate,
-          workout: {
-            id: scheduled.id,
-            name: scheduled.workoutName,
-            exercises: template?.workout?.exercises ?? [],
-            restDaysAfter: template?.workout?.restDaysAfter ?? 0,
-          },
-        };
-      });
+      return program.scheduledWorkouts.map((scheduled) => ({
+        weekNumber: scheduled.weekNumber,
+        day: null,
+        date: scheduled.scheduledDate,
+        workout: {
+          id: scheduled.id,
+          name: scheduled.workoutName,
+          exercises: scheduled.exercises ?? [],
+          restDaysAfter: 0,
+        },
+      }));
     }
 
     let day = 1;
