@@ -33,6 +33,7 @@ function buildProgramPayload({
   trainingPlace,
   equipment,
   level,
+  scheduleMode = 'custom',
   programWeeks,
 }) {
   return {
@@ -43,6 +44,7 @@ function buildProgramPayload({
     training_place: nullableText(trainingPlace),
     equipment: nullableText(equipment),
     level: nullableText(level),
+    schedule_mode: scheduleMode,
     weeks: programWeeks.map((week) => ({
       workouts: week.workouts.map((workout) => ({
         name: workout.name.trim(),
@@ -158,6 +160,7 @@ function mapProgramRow(row) {
     trainingPlace: row.training_place ?? '',
     equipment: row.equipment ?? '',
     level: row.level ?? '',
+    scheduleMode: row.schedule_mode ?? 'custom',
     coverPath: row.cover_path ?? null,
     status: row.status,
     createdAt: row.created_at,
@@ -216,6 +219,12 @@ export async function startProgram(programId, startDate) {
     if (error?.code === '23505' || error?.message?.includes('already active')) {
       throw new Error('Вы уже присоединились к этой программе.');
     }
+    if (error?.message?.includes('Monday, Wednesday or Friday')) {
+      throw new Error('Первая тренировка должна быть в понедельник, среду или пятницу.');
+    }
+    if (error?.message?.includes('Tuesday, Thursday or Saturday')) {
+      throw new Error('Первая тренировка должна быть во вторник, четверг или субботу.');
+    }
     throw new Error('Не удалось присоединиться к программе. Попробуйте ещё раз.');
   }
 
@@ -229,7 +238,7 @@ export async function createProgram({ coverFile = null, startDate = null, ...pro
 
   const payload = buildProgramPayload(program);
   const { data: programId, error: createError } = await supabase.rpc(
-    'create_program_with_structure',
+    'create_program_with_schedule',
     { p_program: payload },
   );
 
@@ -261,7 +270,7 @@ export async function updateProgram({
   const payload = buildProgramPayload(program);
 
   const { data: updatedProgramId, error: updateError } = await supabase.rpc(
-    'update_program_with_structure',
+    'update_program_with_schedule',
     { p_program_id: programId, p_program: payload },
   );
 
@@ -285,7 +294,7 @@ export async function updateProgram({
 export async function listPrograms() {
   const { data, error } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, categories, training_place, equipment, level, cover_path, status, created_at, updated_at')
+    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, status, created_at, updated_at')
     .neq('status', 'archived')
     .order('updated_at', { ascending: false });
 
@@ -307,7 +316,7 @@ export async function listPrograms() {
 export async function getProgram(programId) {
   const { data: programRow, error: programError } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, categories, training_place, equipment, level, cover_path, status, created_at, updated_at')
+    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, status, created_at, updated_at')
     .eq('id', programId)
     .single();
 
