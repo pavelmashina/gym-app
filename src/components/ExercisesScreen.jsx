@@ -228,8 +228,30 @@ function EmptyPrograms({ tabId }) {
   );
 }
 
+function formatShortDate(dateString) {
+  if (!dateString) return '';
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' })
+    .format(new Date(`${dateString}T12:00:00`));
+}
+
+function programState(program) {
+  const participation = program.participation;
+  if (!participation) return { label: 'Не начата', tone: 'not-started' };
+  if (participation.status === 'paused') return { label: 'На паузе', tone: 'paused' };
+  if (participation.status === 'completed') return { label: 'Завершена', tone: 'completed' };
+  if (participation.status === 'abandoned') return { label: 'Остановлена', tone: 'abandoned' };
+
+  const now = new Date();
+  const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+  if (participation.startDate > localToday) {
+    return { label: `Старт ${formatShortDate(participation.startDate)}`, tone: 'scheduled' };
+  }
+  return { label: 'Активна', tone: 'active' };
+}
+
 function ProgramCard({ program, onOpen }) {
   const initial = program.name?.trim()?.slice(0, 1)?.toUpperCase() || 'P';
+  const state = programState(program);
 
   return (
     <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
@@ -237,6 +259,7 @@ function ProgramCard({ program, onOpen }) {
         {program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span>{initial}</span>}
       </span>
       <span className="my-program-copy">
+        <span className={`my-program-status ${state.tone}`}>{state.label}</span>
         <strong>{program.name}</strong>
         <span className="my-program-meta">
           <span>{program.weekCount} нед.</span>
@@ -258,6 +281,7 @@ export function ExercisesScreen({
   refreshKey = 0,
   onCreateProgram,
   onEditProgram,
+  onStartProgram,
 }) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [exercises, setExercises] = useState([]);
@@ -418,6 +442,7 @@ export function ExercisesScreen({
         programId={selectedProgramId}
         onBack={() => setSelectedProgramId(null)}
         onEdit={(programId) => onEditProgram?.(programId)}
+        onStart={(programId) => onStartProgram?.(programId)}
       />
     );
   }
