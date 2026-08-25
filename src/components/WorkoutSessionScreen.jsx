@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  abandonWorkout,
   addPerformedSet,
   completeWorkout,
   deletePerformedSet,
@@ -64,9 +65,41 @@ function fromDisplayWeight(displayValue, unit) {
   return String(Math.round(kg * 100) / 100);
 }
 
-function formatWeight(weightKg, unit) {
+function formatWeight(weightKg, unit = 'kg') {
   const display = toDisplayWeight(weightKg, unit);
   return display === '' ? '—' : `${display} ${unit === 'lb' ? 'lb' : 'кг'}`;
+}
+
+function bestWorkingSet(sets) {
+  let best = null;
+  for (const set of sets ?? []) {
+    if (!set.completed || set.setType !== 'working') continue;
+    const weight = Number(set.weight || 0);
+    const reps = Number(set.reps || 0);
+    if (weight <= 0 || reps <= 0) continue;
+    const metric = weight * (1 + reps / 30);
+    if (!best || metric > best.metric) best = { set, metric };
+  }
+  return best;
+}
+
+function workingTonnage(sets) {
+  return (sets ?? [])
+    .filter((set) => set.completed && set.setType === 'working')
+    .reduce((sum, set) => sum + Number(set.weight || 0) * Number(set.reps || 0), 0);
+}
+
+function progressTone(delta) {
+  if (delta === null) return 'new';
+  if (delta > 1) return 'up';
+  if (delta < -1) return 'down';
+  return 'same';
+}
+
+function progressLabel(delta) {
+  if (delta === null) return 'Первый результат';
+  if (Math.abs(delta) <= 1) return 'Без изменений';
+  return `${delta > 0 ? '+' : ''}${delta.toFixed(1).replace('.', ',')}%`;
 }
 
 function BackIcon() {
@@ -217,7 +250,7 @@ function ReplaceExerciseModal({ exercises, currentExerciseId, onSelect, onClose 
   );
 }
 
-function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
+function ActiveWorkout({ entry, onEntryChange, onFinish, onAbandon, finishing, abandoning, error }) {
   const { workout, session } = entry;
   const [now, setNow] = useState(() => Date.now());
   const [savingSetId, setSavingSetId] = useState(null);
@@ -524,8 +557,11 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
         {(error || localError) && <div className="workout-session-error">{error || localError}</div>}
       </main>
 
-      <footer className="workout-session-footer">
-        <button type="button" onClick={onFinish} disabled={finishing}>
+      <footer className="workout-session-footer workout-session-footer-dual">
+        <button className="workout-abandon-button" type="button" onClick={onAbandon} disabled={finishing || abandoning}>
+          {abandoning ? 'Прерываем…' : 'Прервать тренировку'}
+        </button>
+        <button type="button" onClick={onFinish} disabled={finishing || abandoning}>
           {finishing ? 'Завершаем…' : 'Завершить тренировку'}
         </button>
       </footer>
@@ -552,18 +588,60 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
 }
 
 function CompletedWorkout({ entry, onDone }) {
+  const [comparisons, setComparisons] = useState([]);
+  const [comparisonLoading, setComparisonLoading] = useState(true);
   const completedSets = entry.workout.exercises.flatMap((exercise) => exercise.sets).filter((set) => set.completed);
   const workingSets = completedSets.filter((set) => set.setType === 'working');
   const warmupSets = completedSets.filter((set) => set.setType === 'warmup');
-  const tonnage = workingSets.reduce((sum, set) => {
-    const weight = Number(set.weight || 0);
-    const reps = Number(set.reps || 0);
-    return sum + weight * reps;
-  }, 0);
+  const tonnage = workingTonnage(completedSets);
+  const completedExerciseCount = entry.workout.exercises.filter((exercise) => (
+    exercise.sets.some((set) => set.completed && set.setType === 'working')
+  )).length;
+
+  useEffect(() => {
+    let active = true;
+    setComparisonLoading(true);
+
+    Promise.all(entry.workout.exercises.map(async (exercise) => {
+      const currentBest = bestWorkingSet(exercise.sets);
+      const currentTonnage = workingTonnage(exercise.sets);
+      const history = await getExerciseHistorySummary(exercise.exerciseId, entry.session.id);
+      const previousBest = bestWorkingSet(history.previous?.sets ?? []);
+      const previousTonnage = workingTonnage(history.previous?.sets ?? []);
+      const delta = currentBest && previousBest
+        ? ((currentBest.metric / previousBest.metric) - 1) * 100
+        : null;
+      const isNewBest = Boolean(
+        currentBest
+        && (!history.best || currentBest.metric > history.best.estimatedOneRepMax + 0.0001),
+      );
+
+      return {
+        id: exercise.id,
+        name: exercise.name,
+        currentBest,
+        previousBest,
+        currentTonnage,
+        previousTonnage,
+        delta,
+        isNewBest,
+        previousDate: history.previous?.date ?? null,
+      };
+    }))
+      .then((rows) => { if (active) setComparisons(rows); })
+      .catch(() => { if (active) setComparisons([]); })
+      .finally(() => { if (active) setComparisonLoading(false); });
+
+    return () => { active = false; };
+  }, [entry.session.id, entry.workout.exercises]);
+
+  const improved = comparisons.filter((item) => item.delta !== null && item.delta > 1).length;
+  const declined = comparisons.filter((item) => item.delta !== null && item.delta < -1).length;
+  const records = comparisons.filter((item) => item.isNewBest).length;
 
   return (
     <>
-      <main className="workout-session-content completed">
+      <main className="workout-session-content completed workout-completed-expanded">
         <section className="workout-complete-hero">
           <div className="workout-complete-mark"><CheckIcon /></div>
           <span>Тренировка завершена</span>
@@ -571,12 +649,103 @@ function CompletedWorkout({ entry, onDone }) {
           <p>{formatDate(entry.workout.scheduledDate)}</p>
         </section>
 
-        <section className="workout-result-grid">
+        <section className="workout-result-grid workout-result-grid-expanded">
           <div><span>Время</span><strong>{formatTime(entry.session.activeDurationSeconds)}</strong></div>
+          <div><span>Тоннаж</span><strong>{Math.round(tonnage).toLocaleString('ru-RU')} кг</strong></div>
+          <div><span>Упражнений</span><strong>{completedExerciseCount}/{entry.workout.exercises.length}</strong></div>
           <div><span>Рабочих подходов</span><strong>{workingSets.length}</strong></div>
           <div><span>Разминочных</span><strong>{warmupSets.length}</strong></div>
-          <div><span>Тоннаж</span><strong>{Math.round(tonnage).toLocaleString('ru-RU')} кг</strong></div>
+          <div><span>Новых лучших</span><strong>{comparisonLoading ? '…' : records}</strong></div>
         </section>
+
+        <section className="workout-progress-section">
+          <div className="workout-progress-heading">
+            <div>
+              <span>Сравнение</span>
+              <h2>Прогресс к прошлому результату</h2>
+            </div>
+            {!comparisonLoading && comparisons.length > 0 && (
+              <div className="workout-progress-balance">
+                <span className="up">↑ {improved}</span>
+                <span className="down">↓ {declined}</span>
+              </div>
+            )}
+          </div>
+
+          {comparisonLoading && <div className="workout-progress-loading">Сравниваем с историей…</div>}
+
+          {!comparisonLoading && comparisons.map((item) => {
+            const tone = progressTone(item.delta);
+            return (
+              <article className="workout-progress-card" key={item.id}>
+                <div className="workout-progress-card-head">
+                  <strong>{item.name}</strong>
+                  <span className={`workout-progress-chip ${tone}`}>{progressLabel(item.delta)}</span>
+                </div>
+
+                {item.isNewBest && <div className="workout-new-record">Новый лучший подход</div>}
+
+                <div className="workout-progress-values">
+                  <div>
+                    <span>Сегодня</span>
+                    <strong>
+                      {item.currentBest
+                        ? `${formatWeight(item.currentBest.set.weight)} × ${item.currentBest.set.reps}`
+                        : 'Нет рабочего подхода'}
+                    </strong>
+                    <small>Тоннаж {Math.round(item.currentTonnage).toLocaleString('ru-RU')} кг</small>
+                  </div>
+                  <div>
+                    <span>Предыдущий</span>
+                    <strong>
+                      {item.previousBest
+                        ? `${formatWeight(item.previousBest.set.weight)} × ${item.previousBest.set.reps}`
+                        : 'Нет данных'}
+                    </strong>
+                    <small>
+                      {item.previousDate
+                        ? `${formatHistoryDate(item.previousDate)} · ${Math.round(item.previousTonnage).toLocaleString('ru-RU')} кг`
+                        : 'Первое завершённое выполнение'}
+                    </small>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      </main>
+
+      <footer className="workout-session-footer">
+        <button type="button" onClick={onDone}>На главную</button>
+      </footer>
+    </>
+  );
+}
+
+function AbandonedWorkout({ entry, onDone }) {
+  const completedSets = entry.workout.exercises.flatMap((exercise) => exercise.sets).filter((set) => set.completed);
+  const workingSets = completedSets.filter((set) => set.setType === 'working');
+
+  return (
+    <>
+      <main className="workout-session-content completed">
+        <section className="workout-complete-hero abandoned">
+          <div className="workout-abandoned-mark">×</div>
+          <span>Тренировка прервана</span>
+          <h1>{entry.workout.name}</h1>
+          <p>Она отмечена как пропущенная. Следующая тренировка программы останется в расписании.</p>
+        </section>
+
+        <section className="workout-result-grid">
+          <div><span>Время до остановки</span><strong>{formatTime(entry.session.activeDurationSeconds)}</strong></div>
+          <div><span>Выполнено подходов</span><strong>{completedSets.length}</strong></div>
+          <div><span>Рабочих</span><strong>{workingSets.length}</strong></div>
+          <div><span>Статус</span><strong>Пропущена</strong></div>
+        </section>
+
+        <div className="workout-abandoned-note">
+          Выполненные подходы сохранены внутри этой сессии, но не используются как завершённый результат для «Предыдущего результата» и личных рекордов.
+        </div>
       </main>
 
       <footer className="workout-session-footer">
@@ -591,6 +760,7 @@ export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted }
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [abandoning, setAbandoning] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -629,6 +799,22 @@ export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted }
     }
   }
 
+  async function handleAbandon() {
+    if (!entry?.session?.id) return;
+    const confirmed = window.confirm('Прервать тренировку? Она будет отмечена как пропущенная, а выполненные подходы не попадут в завершённую историю.');
+    if (!confirmed) return;
+
+    setAbandoning(true);
+    setError('');
+    try {
+      setEntry(await abandonWorkout(entry.session.id));
+    } catch (abandonError) {
+      setError(abandonError.message);
+    } finally {
+      setAbandoning(false);
+    }
+  }
+
   return (
     <div className="phone workout-session-phone">
       <header className="workout-session-header">
@@ -643,10 +829,21 @@ export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted }
         <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />
       )}
       {!loading && entry?.mode === 'active' && (
-        <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} finishing={finishing} error={error} />
+        <ActiveWorkout
+          entry={entry}
+          onEntryChange={setEntry}
+          onFinish={handleFinish}
+          onAbandon={handleAbandon}
+          finishing={finishing}
+          abandoning={abandoning}
+          error={error}
+        />
       )}
       {!loading && entry?.mode === 'completed' && (
         <CompletedWorkout entry={entry} onDone={onCompleted} />
+      )}
+      {!loading && entry?.mode === 'abandoned' && (
+        <AbandonedWorkout entry={entry} onDone={onCompleted} />
       )}
     </div>
   );
