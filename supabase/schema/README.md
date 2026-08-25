@@ -30,7 +30,20 @@ All 12 public tables have RLS enabled in the live project. `exercises` is read-o
 - User enrollment and immutable scheduled-workout snapshot tables/RLS: `program-enrollment.sql`
 - Snapshot source FK indexes: `program-enrollment-indexes.sql`
 - Server-side start-date guard: `program-enrollment-date-guard.sql`
-- Final schedule modes (`custom`, `weekly_mwf`, `weekly_tts`, `cycle_2_2`) and current schedule-aware RPCs: `program-schedule-modes.sql`
+- Final schedule modes (`custom`, `weekly_mwf`, `weekly_tts`, `cycle_2_2`) and schedule-aware start RPC: `program-schedule-modes.sql`
+- Future schedule resync after editing a joined program: `program-reschedule-on-edit.sql`
+
+### Schedule edit behavior
+
+Editing a program remains a template edit, but if the owner already has that program in `active` or `paused` state, the calendar is synchronized with the new rhythm:
+
+- workouts before `current_date` remain unchanged;
+- `completed` and `skipped` workouts remain unchanged even if their status is changed manually;
+- only upcoming rows with status `scheduled` are moved;
+- if the program has not started yet, the future `user_programs.start_date` is synchronized with the newly calculated first workout;
+- snapshot exercise/set content remains unchanged; the resync changes dates only.
+
+This keeps workout history immutable while allowing the user to change the future cadence of an already joined program.
 
 ## Fresh-project apply order
 
@@ -46,7 +59,8 @@ The files are intentionally kept as readable schema milestones rather than one o
 8. `program-enrollment-indexes.sql`
 9. `program-enrollment-date-guard.sql`
 10. `program-schedule-modes.sql`
-11. `verify-schema.sql` (verification only; it does not create objects)
+11. `program-reschedule-on-edit.sql`
+12. `verify-schema.sql` (verification only; it does not create objects)
 
 `program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they also contain the historical/current RPC definitions that bring a fresh database to the same final behavior as production.
 
