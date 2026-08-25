@@ -41,7 +41,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
   if (sessionError) throw new Error('Не удалось проверить состояние тренировки.');
 
   const latestSession = sessionRows?.[0] ?? null;
-  if (latestSession?.status === 'active' || latestSession?.status === 'completed') {
+  if (['active', 'completed', 'abandoned'].includes(latestSession?.status)) {
     return loadWorkoutSession(latestSession.id);
   }
 
@@ -94,7 +94,7 @@ export async function loadWorkoutSession(sessionId) {
     .select('id, scheduled_workout_id, status, started_at, ended_at, active_duration_seconds')
     .eq('id', sessionId)
     .single();
-  if (sessionError || !session) throw new Error('Не удалось загрузить активную тренировку.');
+  if (sessionError || !session) throw new Error('Не удалось загрузить тренировку.');
 
   const { data: workout, error: workoutError } = await supabase
     .from('scheduled_workouts')
@@ -123,8 +123,12 @@ export async function loadWorkoutSession(sessionId) {
     setRows = response.data ?? [];
   }
 
+  const mode = session.status === 'completed'
+    ? 'completed'
+    : (session.status === 'abandoned' ? 'abandoned' : 'active');
+
   return {
-    mode: session.status === 'completed' ? 'completed' : 'active',
+    mode,
     session: {
       id: session.id,
       scheduledWorkoutId: session.scheduled_workout_id,
@@ -164,6 +168,7 @@ export async function startWorkout(scheduledWorkoutId) {
       throw new Error('У вас уже есть другая активная тренировка. Сначала завершите её.');
     }
     if (error?.message?.includes('already completed')) throw new Error('Эта тренировка уже завершена.');
+    if (error?.message?.includes('Skipped or cancelled')) throw new Error('Эта тренировка уже пропущена или отменена.');
     throw new Error('Не удалось начать тренировку.');
   }
   return loadWorkoutSession(data);
@@ -311,5 +316,13 @@ export async function completeWorkout(sessionId) {
     p_workout_session_id: sessionId,
   });
   if (error || !data) throw new Error('Не удалось завершить тренировку.');
+  return loadWorkoutSession(data);
+}
+
+export async function abandonWorkout(sessionId) {
+  const { data, error } = await supabase.rpc('abandon_workout', {
+    p_workout_session_id: sessionId,
+  });
+  if (error || !data) throw new Error('Не удалось прервать тренировку.');
   return loadWorkoutSession(data);
 }
