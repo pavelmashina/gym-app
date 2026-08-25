@@ -335,7 +335,7 @@ export function ExercisesScreen({
   }, []);
 
   useEffect(() => {
-    if (activeTab !== 'your-programs') return undefined;
+    if (!['your-programs', 'completed'].includes(activeTab)) return undefined;
 
     let active = true;
 
@@ -400,6 +400,9 @@ export function ExercisesScreen({
   const filteredPrograms = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ru');
     const filtered = programs.filter((program) => {
+      const isCompleted = program.participation?.status === 'completed';
+      if (activeTab === 'completed' && !isCompleted) return false;
+      if (activeTab === 'your-programs' && isCompleted) return false;
       if (!normalizedQuery) return true;
       return [program.name, program.description, program.level, ...program.categories]
         .filter(Boolean)
@@ -410,11 +413,13 @@ export function ExercisesScreen({
       const result = a.name.localeCompare(b.name, 'ru');
       return sortDirection === 'asc' ? result : -result;
     });
-  }, [programs, query, sortDirection]);
+  }, [programs, query, sortDirection, activeTab]);
 
   const activeTabConfig = TRAINING_TABS.find((tab) => tab.id === activeTab);
   const isCreateTab = activeTab === 'create';
   const isMyProgramsTab = activeTab === 'your-programs';
+  const isCompletedTab = activeTab === 'completed';
+  const isProgramsTab = isMyProgramsTab || isCompletedTab;
 
   function openCreateProgram() {
     if (onCreateProgram) {
@@ -530,44 +535,46 @@ export function ExercisesScreen({
 
         {!isCreateTab && filtersOpen && (
           <div className="training-filter-placeholder">
-            {isMyProgramsTab
+            {isProgramsTab
               ? 'Фильтрацию по цели, уровню и месту тренировок подключим следующим шагом.'
               : 'Фильтры программ подключим вместе с каталогом программ.'}
           </div>
         )}
 
-        <button className="create-program-wide" type="button" onClick={openCreateProgram}>
-          <span className="create-program-plus"><PlusIcon /></span>
-          <span className="create-program-copy">
-            <strong>Создать свою программу</strong>
-            <small>Соберите тренировочную программу из упражнений</small>
-          </span>
-          <span className="create-program-arrow" aria-hidden="true">›</span>
-        </button>
+        {!isCompletedTab && (
+          <button className="create-program-wide" type="button" onClick={openCreateProgram}>
+            <span className="create-program-plus"><PlusIcon /></span>
+            <span className="create-program-copy">
+              <strong>Создать свою программу</strong>
+              <small>Соберите тренировочную программу из упражнений</small>
+            </span>
+            <span className="create-program-arrow" aria-hidden="true">›</span>
+          </button>
+        )}
 
-        {isMyProgramsTab && programsLoading && (
+        {isProgramsTab && programsLoading && (
           <div className="my-programs-state">
             <div className="exercise-list-spinner" aria-hidden="true" />
-            <span>Загружаем ваши программы…</span>
+            <span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span>
           </div>
         )}
 
-        {isMyProgramsTab && !programsLoading && programsError && (
+        {isProgramsTab && !programsLoading && programsError && (
           <div className="my-programs-state error">
             <span>{programsError}</span>
             <button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button>
           </div>
         )}
 
-        {isMyProgramsTab && !programsLoading && !programsError && filteredPrograms.length > 0 && (
-          <section className="my-programs-list" aria-label="Мои программы">
+        {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length > 0 && (
+          <section className="my-programs-list" aria-label={isCompletedTab ? 'Пройденные программы' : 'Мои программы'}>
             {filteredPrograms.map((program) => (
               <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />
             ))}
           </section>
         )}
 
-        {isMyProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (
+        {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (
           query ? (
             <div className="my-programs-state">По вашему запросу программы не найдены.</div>
           ) : (
@@ -575,7 +582,7 @@ export function ExercisesScreen({
           )
         )}
 
-        {!isCreateTab && !isMyProgramsTab && <EmptyPrograms tabId={activeTab} />}
+        {!isCreateTab && !isProgramsTab && <EmptyPrograms tabId={activeTab} />}
 
         {isCreateTab && (
           <section className="training-builder">
