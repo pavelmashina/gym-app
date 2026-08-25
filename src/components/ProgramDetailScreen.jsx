@@ -59,6 +59,24 @@ function formatDate(dateString) {
   }).format(new Date(`${dateString}T12:00:00`));
 }
 
+function localToday() {
+  const today = new Date();
+  return new Date(today.getTime() - today.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+function isAllowedStartDate(dateString, scheduleMode) {
+  if (!dateString) return false;
+  const allowed = WEEKLY_DAYS[scheduleMode];
+  if (!allowed) return true;
+  return allowed.includes(new Date(`${dateString}T12:00:00`).getDay());
+}
+
+function startDateHint(scheduleMode) {
+  if (scheduleMode === 'weekly_mwf') return 'Выберите понедельник, среду или пятницу.';
+  if (scheduleMode === 'weekly_tts') return 'Выберите вторник, четверг или субботу.';
+  return '';
+}
+
 function daysUntilNextAllowed(currentWeekday, allowedDays) {
   for (let delta = 1; delta <= 7; delta += 1) {
     const candidate = (currentWeekday + delta) % 7;
@@ -73,9 +91,7 @@ function participationLabel(participation) {
   if (participation.status === 'completed') return 'Завершена';
   if (participation.status === 'abandoned') return 'Остановлена';
 
-  const today = new Date();
-  const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
-  if (participation.startDate > localToday) return `Старт ${formatDate(participation.startDate)}`;
+  if (participation.startDate > localToday()) return `Старт ${formatDate(participation.startDate)}`;
   return 'Активна';
 }
 
@@ -163,6 +179,18 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingStartDate, setEditingStartDate] = useState(false);
+  const [startDateDraft, setStartDateDraft] = useState('');
+  const [startDateSaving, setStartDateSaving] = useState(false);
+  const [startDateError, setStartDateError] = useState('');
+
+  async function reloadProgram() {
+    const data = await getProgram(programId);
+    const hydratedProgram = await attachScheduledSnapshot(data);
+    setProgram(hydratedProgram);
+    setStartDateDraft(hydratedProgram.participation?.startDate ?? '');
+    return hydratedProgram;
+  }
 
   useEffect(() => {
     let active = true;
@@ -174,7 +202,10 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       try {
         const data = await getProgram(programId);
         const hydratedProgram = await attachScheduledSnapshot(data);
-        if (active) setProgram(hydratedProgram);
+        if (active) {
+          setProgram(hydratedProgram);
+          setStartDateDraft(hydratedProgram.participation?.startDate ?? '');
+        }
       } catch (requestError) {
         if (!active) return;
         console.error('Unable to open program details:', requestError);
@@ -273,7 +304,52 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   );
   const participation = program.participation;
   const canStart = !participation || ['completed', 'abandoned'].includes(participation.status);
+  const canEditStartDate = Boolean(
+    participation
+    && ['active', 'paused'].includes(participation.status)
+    && program.scheduledWorkouts.length > 0
+    && program.scheduledWorkouts.every((workout) => workout.status === 'scheduled'),
+  );
   const weeklyMode = Boolean(WEEKLY_DAYS[program.scheduleMode]);
+  const dateAllowed = isAllowedStartDate(startDateDraft, program.scheduleMode);
+  const dateChanged = startDateDraft && startDateDraft !== participation?.startDate;
+
+  async function saveStartDate() {
+    if (!canEditStartDate || startDateSaving || !dateChanged) return;
+    if (startDateDraft < localToday()) {
+      setStartDateError('Дата начала не может быть в прошлом.');
+      return;
+    }
+    if (!dateAllowed) {
+      setStartDateError(startDateHint(program.scheduleMode));
+      return;
+    }
+
+    setStartDateSaving(true);
+    setStartDateError('');
+    try {
+      const { error: changeError } = await supabase.rpc('change_program_start_date', {
+        p_user_program_id: participation.id,
+        p_start_date: startDateDraft,
+      });
+      if (changeError) throw changeError;
+      await reloadProgram();
+      setEditingStartDate(false);
+    } catch (changeError) {
+      console.error('Unable to change program start date:', changeError);
+      if (changeError?.message?.includes('already started') || changeError?.message?.includes('workout history')) {
+        setStartDateError('Программа уже фактически началась. Дату начала больше нельзя изменить.');
+      } else if (changeError?.message?.includes('Monday, Wednesday or Friday')) {
+        setStartDateError('Выберите понедельник, среду или пятницу.');
+      } else if (changeError?.message?.includes('Tuesday, Thursday or Saturday')) {
+        setStartDateError('Выберите вторник, четверг или субботу.');
+      } else {
+        setStartDateError('Не удалось изменить дату начала. Попробуйте ещё раз.');
+      }
+    } finally {
+      setStartDateSaving(false);
+    }
+  }
 
   return (
     <div className="phone program-detail-phone">
@@ -312,6 +388,120 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
             <>
               <strong>Вы присоединились к программе</strong>
               <p>Первая тренировка запланирована на {formatDate(participation.startDate)}. Ниже показан ваш персональный календарь.</p>
+
+              {canEditStartDate && !editingStartDate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStartDateDraft(participation.startDate);
+                    setStartDateError('');
+                    setEditingStartDate(true);
+                  }}
+                  style={{
+                    marginTop: '10px',
+                    minHeight: '42px',
+                    padding: '0 14px',
+                    border: '1px solid var(--line)',
+                    borderRadius: '13px',
+                    background: 'var(--surface)',
+                    color: 'var(--ink)',
+                    font: 'inherit',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
+                >
+                  Изменить дату начала
+                </button>
+              )}
+
+              {canEditStartDate && editingStartDate && (
+                <div
+                  style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    borderRadius: '14px',
+                    background: 'var(--surface)',
+                    display: 'grid',
+                    gap: '9px',
+                  }}
+                >
+                  <label style={{ display: 'grid', gap: '6px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase' }}>
+                      Новая дата первой тренировки
+                    </span>
+                    <input
+                      type="date"
+                      min={localToday()}
+                      value={startDateDraft}
+                      onChange={(event) => {
+                        setStartDateDraft(event.target.value);
+                        setStartDateError('');
+                      }}
+                      disabled={startDateSaving}
+                      style={{
+                        width: '100%',
+                        minHeight: '46px',
+                        padding: '0 11px',
+                        border: '1px solid var(--line)',
+                        borderRadius: '12px',
+                        background: '#fafaf8',
+                        color: 'var(--ink)',
+                        font: 'inherit',
+                        fontSize: '12px',
+                        fontWeight: 760,
+                      }}
+                    />
+                  </label>
+                  {startDateHint(program.scheduleMode) && (
+                    <span style={{ fontSize: '9px', lineHeight: 1.4, color: dateAllowed ? 'var(--muted)' : '#9a3434' }}>
+                      {startDateHint(program.scheduleMode)}
+                    </span>
+                  )}
+                  {startDateError && (
+                    <span style={{ fontSize: '9px', lineHeight: 1.4, color: '#9a3434' }}>{startDateError}</span>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingStartDate(false);
+                        setStartDateDraft(participation.startDate);
+                        setStartDateError('');
+                      }}
+                      disabled={startDateSaving}
+                      style={{
+                        minHeight: '42px',
+                        border: '1px solid var(--line)',
+                        borderRadius: '12px',
+                        background: 'transparent',
+                        color: 'var(--ink)',
+                        font: 'inherit',
+                        fontSize: '10px',
+                        fontWeight: 800,
+                      }}
+                    >
+                      Отмена
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveStartDate}
+                      disabled={startDateSaving || !dateChanged || !dateAllowed}
+                      style={{
+                        minHeight: '42px',
+                        border: 0,
+                        borderRadius: '12px',
+                        background: startDateSaving || !dateChanged || !dateAllowed ? '#d7d7d2' : 'var(--ink)',
+                        color: startDateSaving || !dateChanged || !dateAllowed ? '#999992' : '#fff',
+                        font: 'inherit',
+                        fontSize: '10px',
+                        fontWeight: 820,
+                      }}
+                    >
+                      {startDateSaving ? 'Сохраняем…' : 'Сохранить'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </section>
