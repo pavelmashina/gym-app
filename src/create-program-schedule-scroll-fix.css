@@ -1,0 +1,13 @@
+/* Extra scroll runway for Step 3 so the launch/date block can clear the fixed dual-action footer. */
+.phone.program-schedule-phone {
+  padding-bottom: calc(300px + env(safe-area-inset-bottom));
+  scroll-padding-bottom: calc(180px + env(safe-area-inset-bottom));
+}
+
+.create-program-content.program-schedule-content {
+  padding-bottom: calc(180px + env(safe-area-inset-bottom));
+}
+
+.program-schedule-section.program-start-section {
+  margin-bottom: 48px;
+}
