@@ -2,17 +2,31 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   addPerformedSet,
   completeWorkout,
+  deletePerformedSet,
+  getExerciseHistorySummary,
   getWorkoutEntry,
+  listWorkoutExerciseCatalog,
+  loadWorkoutSession,
+  moveSessionExercise,
+  replaceSessionExercise,
   startWorkout,
   updateExerciseNote,
   updatePerformedSet,
 } from '../lib/workoutSessions.js';
 import '../workout-session.css';
 
+const KG_PER_LB = 0.45359237;
+
 function formatDate(dateString) {
   if (!dateString) return '';
   return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
     .format(new Date(`${dateString}T12:00:00`));
+}
+
+function formatHistoryDate(dateString) {
+  if (!dateString) return '';
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+    .format(new Date(dateString));
 }
 
 function formatTime(totalSeconds) {
@@ -23,8 +37,36 @@ function formatTime(totalSeconds) {
   return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
 }
 
+function formatRestTime(totalSeconds) {
+  const safe = Math.max(0, Math.floor(totalSeconds || 0));
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
 function plannedSetLabel(set) {
   return set.plannedReps ? `${set.plannedReps} повт.` : 'Повторы не заданы';
+}
+
+function toDisplayWeight(weightKg, unit) {
+  if (weightKg === '' || weightKg === null || weightKg === undefined) return '';
+  const value = Number(weightKg);
+  if (!Number.isFinite(value)) return '';
+  const converted = unit === 'lb' ? value / KG_PER_LB : value;
+  return String(Math.round(converted * 100) / 100);
+}
+
+function fromDisplayWeight(displayValue, unit) {
+  if (displayValue === '') return '';
+  const value = Number(String(displayValue).replace(',', '.'));
+  if (!Number.isFinite(value)) return '';
+  const kg = unit === 'lb' ? value * KG_PER_LB : value;
+  return String(Math.round(kg * 100) / 100);
+}
+
+function formatWeight(weightKg, unit) {
+  const display = toDisplayWeight(weightKg, unit);
+  return display === '' ? '—' : `${display} ${unit === 'lb' ? 'lb' : 'кг'}`;
 }
 
 function BackIcon() {
@@ -39,6 +81,14 @@ function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
       <path d="m5 12 4 4L19 6" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" />
     </svg>
   );
 }
@@ -82,11 +132,106 @@ function PlannedWorkout({ workout, onStart, starting, error }) {
   );
 }
 
+function HistoryModal({ data, exerciseName, unit, onClose }) {
+  return (
+    <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label={`История ${exerciseName}`}>
+      <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={onClose} />
+      <section className="workout-modal-card history-modal">
+        <div className="workout-modal-head">
+          <div>
+            <span>История упражнения</span>
+            <h3>{exerciseName}</h3>
+          </div>
+          <button type="button" onClick={onClose}>×</button>
+        </div>
+
+        {data?.best && (
+          <div className="history-best-card">
+            <span>Лучший подход</span>
+            <strong>{formatWeight(data.best.set.weight, unit)} × {data.best.set.reps}</strong>
+            <small>{formatHistoryDate(data.best.date)}</small>
+          </div>
+        )}
+
+        <div className="history-section-title">Предыдущий результат</div>
+        {!data?.previous ? (
+          <p className="history-empty">Это упражнение ещё не выполнялось в завершённой тренировке.</p>
+        ) : (
+          <>
+            <div className="history-date">{formatHistoryDate(data.previous.date)}</div>
+            <div className="history-table">
+              <div className="history-row head"><span>Подход</span><span>Вес</span><span>Повторы</span></div>
+              {data.previous.sets.map((set) => (
+                <div className="history-row" key={set.id}>
+                  <span>{set.setType === 'warmup' ? 'Разм.' : set.setNumber}</span>
+                  <strong>{formatWeight(set.weight, unit)}</strong>
+                  <strong>{set.reps || '—'}</strong>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function ReplaceExerciseModal({ exercises, currentExerciseId, onSelect, onClose }) {
+  const [query, setQuery] = useState('');
+  const filtered = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return exercises.filter((exercise) => (
+      exercise.id !== currentExerciseId
+      && (!normalized
+        || exercise.name.toLowerCase().includes(normalized)
+        || (exercise.muscle_group || '').toLowerCase().includes(normalized))
+    )).slice(0, 80);
+  }, [currentExerciseId, exercises, query]);
+
+  return (
+    <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label="Заменить упражнение">
+      <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={onClose} />
+      <section className="workout-modal-card replace-modal">
+        <div className="workout-modal-head">
+          <div><span>Текущая тренировка</span><h3>Заменить упражнение</h3></div>
+          <button type="button" onClick={onClose}>×</button>
+        </div>
+        <input
+          className="replace-exercise-search"
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Поиск упражнения"
+          autoFocus
+        />
+        <div className="replace-exercise-list">
+          {filtered.map((exercise) => (
+            <button key={exercise.id} type="button" onClick={() => onSelect(exercise)}>
+              <strong>{exercise.name}</strong>
+              <span>{exercise.muscle_group || 'Без группы'}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
   const { workout, session } = entry;
   const [now, setNow] = useState(() => Date.now());
   const [savingSetId, setSavingSetId] = useState(null);
   const [localError, setLocalError] = useState('');
+  const [history, setHistory] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [replaceTarget, setReplaceTarget] = useState(null);
+  const [catalog, setCatalog] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [restStartedAt, setRestStartedAt] = useState(null);
+  const [weightUnit, setWeightUnit] = useState(() => {
+    const stored = window.localStorage.getItem('gym-weight-unit');
+    return stored === 'lb' ? 'lb' : 'kg';
+  });
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -97,6 +242,13 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
     const started = new Date(session.startedAt).getTime();
     return session.activeDurationSeconds + Math.max(0, Math.floor((now - started) / 1000));
   }, [now, session.activeDurationSeconds, session.startedAt]);
+
+  const restElapsed = restStartedAt ? Math.max(0, Math.floor((now - restStartedAt) / 1000)) : 0;
+
+  function setUnit(nextUnit) {
+    setWeightUnit(nextUnit);
+    window.localStorage.setItem('gym-weight-unit', nextUnit);
+  }
 
   function patchSet(exerciseId, setId, patch) {
     onEntryChange((current) => ({
@@ -135,13 +287,14 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
     const next = { ...set, completed: !set.completed };
     patchSet(exerciseId, set.id, { completed: next.completed });
     await saveSet(exerciseId, next);
+    if (next.completed) setRestStartedAt(Date.now());
   }
 
-  async function addSet(exercise) {
+  async function addSet(exercise, setType) {
     setLocalError('');
     const nextNumber = Math.max(0, ...exercise.sets.map((set) => set.setNumber)) + 1;
     try {
-      const created = await addPerformedSet(exercise.id, nextNumber);
+      const created = await addPerformedSet(exercise.id, nextNumber, setType);
       onEntryChange((current) => ({
         ...current,
         workout: {
@@ -156,11 +309,80 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
     }
   }
 
+  async function removeSet(exercise, set) {
+    setLocalError('');
+    try {
+      await deletePerformedSet(set.id);
+      onEntryChange((current) => ({
+        ...current,
+        workout: {
+          ...current.workout,
+          exercises: current.workout.exercises.map((item) => (
+            item.id === exercise.id
+              ? { ...item, sets: item.sets.filter((candidate) => candidate.id !== set.id) }
+              : item
+          )),
+        },
+      }));
+    } catch (deleteError) {
+      setLocalError(deleteError.message);
+    }
+  }
+
   async function saveNote(exercise) {
     try {
       await updateExerciseNote(exercise.id, exercise.note ?? '');
     } catch (noteError) {
       setLocalError(noteError.message);
+    }
+  }
+
+  async function openHistory(exercise) {
+    setHistoryLoading(true);
+    setLocalError('');
+    try {
+      const data = await getExerciseHistorySummary(exercise.exerciseId, session.id);
+      setHistory({ exerciseName: exercise.name, data });
+    } catch (historyError) {
+      setLocalError(historyError.message);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
+  async function openReplacement(exercise) {
+    setReplaceTarget(exercise);
+    if (catalog.length > 0) return;
+    setCatalogLoading(true);
+    try {
+      setCatalog(await listWorkoutExerciseCatalog());
+    } catch (catalogError) {
+      setLocalError(catalogError.message);
+      setReplaceTarget(null);
+    } finally {
+      setCatalogLoading(false);
+    }
+  }
+
+  async function chooseReplacement(exercise) {
+    if (!replaceTarget) return;
+    setLocalError('');
+    try {
+      await replaceSessionExercise(replaceTarget.id, exercise.id);
+      setReplaceTarget(null);
+      onEntryChange(await loadWorkoutSession(session.id));
+    } catch (replaceError) {
+      setLocalError(replaceError.message);
+    }
+  }
+
+  async function moveExercise(exercise, direction) {
+    setLocalError('');
+    try {
+      await moveSessionExercise(exercise.id, direction);
+      onEntryChange(await loadWorkoutSession(session.id));
+    } catch (moveError) {
+      setLocalError(moveError.message);
     }
   }
 
@@ -175,21 +397,48 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
           <div className="workout-timer" aria-label="Время тренировки">{formatTime(elapsed)}</div>
         </section>
 
+        <div className="workout-active-tools">
+          <div className="weight-unit-toggle" aria-label="Единица веса">
+            <button className={weightUnit === 'kg' ? 'active' : ''} type="button" onClick={() => setUnit('kg')}>kg</button>
+            <button className={weightUnit === 'lb' ? 'active' : ''} type="button" onClick={() => setUnit('lb')}>lbs</button>
+          </div>
+          {restStartedAt && (
+            <div className="rest-timer" aria-live="polite">
+              <span>Отдых</span>
+              <strong>{formatRestTime(restElapsed)}</strong>
+              <button type="button" onClick={() => setRestStartedAt(null)}>Сбросить</button>
+            </div>
+          )}
+        </div>
+
         <section className="workout-execution-list">
           {workout.exercises.map((exercise, exerciseIndex) => (
             <article className="workout-exercise-card" key={exercise.id}>
-              <div className="workout-exercise-title">
-                <span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span>
-                <h2>{exercise.name}</h2>
+              <div className="workout-exercise-title-row">
+                <div className="workout-exercise-title">
+                  <span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span>
+                  <h2>{exercise.name}</h2>
+                </div>
+                <div className="exercise-order-buttons">
+                  <button type="button" aria-label="Выше" disabled={exerciseIndex === 0} onClick={() => moveExercise(exercise, -1)}>↑</button>
+                  <button type="button" aria-label="Ниже" disabled={exerciseIndex === workout.exercises.length - 1} onClick={() => moveExercise(exercise, 1)}>↓</button>
+                </div>
               </div>
 
-              <div className="performed-set-head">
-                <span>Тип</span><span>Вес</span><span>Повт.</span><span />
+              <div className="exercise-secondary-actions">
+                <button type="button" onClick={() => openHistory(exercise)} disabled={historyLoading}>
+                  {historyLoading ? 'Загружаем…' : 'Предыдущий результат'}
+                </button>
+                <button type="button" onClick={() => openReplacement(exercise)}>Заменить</button>
+              </div>
+
+              <div className="performed-set-head five-columns">
+                <span>Тип</span><span>Вес</span><span>Повт.</span><span /><span />
               </div>
 
               <div className="performed-set-list">
                 {exercise.sets.map((set) => (
-                  <div className={`performed-set-row${set.completed ? ' done' : ''}`} key={set.id}>
+                  <div className={`performed-set-row five-columns${set.completed ? ' done' : ''}`} key={set.id}>
                     <button
                       className="set-type-toggle"
                       type="button"
@@ -205,9 +454,11 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
                     </button>
                     <input
                       inputMode="decimal"
-                      placeholder="кг"
-                      value={set.weight}
-                      onChange={(event) => patchSet(exercise.id, set.id, { weight: event.target.value })}
+                      placeholder={weightUnit === 'lb' ? 'lb' : 'кг'}
+                      value={toDisplayWeight(set.weight, weightUnit)}
+                      onChange={(event) => patchSet(exercise.id, set.id, {
+                        weight: fromDisplayWeight(event.target.value, weightUnit),
+                      })}
                       onBlur={() => saveSet(exercise.id, set)}
                     />
                     <input
@@ -226,13 +477,27 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
                     >
                       <CheckIcon />
                     </button>
+                    <button
+                      className="set-delete-button"
+                      type="button"
+                      aria-label="Удалить подход"
+                      onClick={() => removeSet(exercise, set)}
+                      disabled={savingSetId === set.id}
+                    >
+                      <TrashIcon />
+                    </button>
                   </div>
                 ))}
               </div>
 
-              <button className="add-set-button" type="button" onClick={() => addSet(exercise)}>
-                + Добавить подход
-              </button>
+              <div className="add-set-actions">
+                <button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>
+                  + Рабочий подход
+                </button>
+                <button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>
+                  + Разминочный
+                </button>
+              </div>
 
               <label className="exercise-note-field">
                 <span>Заметка к упражнению</span>
@@ -264,6 +529,24 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, finishing, error }) {
           {finishing ? 'Завершаем…' : 'Завершить тренировку'}
         </button>
       </footer>
+
+      {history && (
+        <HistoryModal
+          data={history.data}
+          exerciseName={history.exerciseName}
+          unit={weightUnit}
+          onClose={() => setHistory(null)}
+        />
+      )}
+
+      {replaceTarget && !catalogLoading && (
+        <ReplaceExerciseModal
+          exercises={catalog}
+          currentExerciseId={replaceTarget.exerciseId}
+          onSelect={chooseReplacement}
+          onClose={() => setReplaceTarget(null)}
+        />
+      )}
     </>
   );
 }
