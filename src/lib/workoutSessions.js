@@ -182,14 +182,23 @@ export async function updatePerformedSet(setId, values) {
   if (error) throw new Error('Не удалось сохранить подход.');
 }
 
-export async function addPerformedSet(sessionExerciseId, setNumber) {
+export async function addPerformedSet(sessionExerciseId, setNumber, setType = 'working') {
   const { data, error } = await supabase
     .from('performed_sets')
-    .insert({ workout_session_exercise_id: sessionExerciseId, set_number: setNumber, set_type: 'working' })
+    .insert({
+      workout_session_exercise_id: sessionExerciseId,
+      set_number: setNumber,
+      set_type: setType,
+    })
     .select('id, workout_session_exercise_id, source_scheduled_set_id, set_number, set_type, planned_reps, weight, reps, completed, completed_at')
     .single();
   if (error || !data) throw new Error('Не удалось добавить подход.');
   return mapSet(data);
+}
+
+export async function deletePerformedSet(setId) {
+  const { error } = await supabase.from('performed_sets').delete().eq('id', setId);
+  if (error) throw new Error('Не удалось удалить подход.');
 }
 
 export async function updateExerciseNote(sessionExerciseId, note) {
@@ -198,6 +207,103 @@ export async function updateExerciseNote(sessionExerciseId, note) {
     .update({ note })
     .eq('id', sessionExerciseId);
   if (error) throw new Error('Не удалось сохранить заметку.');
+}
+
+export async function getExerciseHistorySummary(exerciseId, currentSessionId = null) {
+  const { data: exerciseRows, error: exerciseError } = await supabase
+    .from('workout_session_exercises')
+    .select('id, workout_session_id')
+    .eq('exercise_id', exerciseId);
+  if (exerciseError) throw new Error('Не удалось загрузить историю упражнения.');
+
+  const rows = exerciseRows ?? [];
+  if (rows.length === 0) return { previous: null, best: null };
+
+  const sessionIds = [...new Set(rows.map((row) => row.workout_session_id))];
+  let sessionQuery = supabase
+    .from('workout_sessions')
+    .select('id, started_at, ended_at, status')
+    .in('id', sessionIds)
+    .eq('status', 'completed')
+    .order('ended_at', { ascending: false });
+  if (currentSessionId) sessionQuery = sessionQuery.neq('id', currentSessionId);
+
+  const { data: sessions, error: sessionsError } = await sessionQuery;
+  if (sessionsError) throw new Error('Не удалось загрузить историю упражнения.');
+
+  const completedSessions = sessions ?? [];
+  if (completedSessions.length === 0) return { previous: null, best: null };
+
+  const completedSessionIds = new Set(completedSessions.map((session) => session.id));
+  const completedExerciseRows = rows.filter((row) => completedSessionIds.has(row.workout_session_id));
+  const completedExerciseIds = completedExerciseRows.map((row) => row.id);
+
+  const { data: setRows, error: setsError } = await supabase
+    .from('performed_sets')
+    .select('id, workout_session_exercise_id, source_scheduled_set_id, set_number, set_type, planned_reps, weight, reps, completed, completed_at')
+    .in('workout_session_exercise_id', completedExerciseIds)
+    .eq('completed', true)
+    .order('set_number', { ascending: true });
+  if (setsError) throw new Error('Не удалось загрузить подходы из истории.');
+
+  const sets = setRows ?? [];
+  const exerciseBySession = new Map(completedExerciseRows.map((row) => [row.workout_session_id, row.id]));
+  const previousSession = completedSessions[0];
+  const previousExerciseId = exerciseBySession.get(previousSession.id);
+  const previousSets = sets
+    .filter((set) => set.workout_session_exercise_id === previousExerciseId)
+    .map(mapSet);
+
+  let best = null;
+  for (const row of sets) {
+    if (row.set_type !== 'working') continue;
+    const weight = Number(row.weight || 0);
+    const reps = Number(row.reps || 0);
+    if (weight <= 0 || reps <= 0) continue;
+    const estimatedOneRepMax = weight * (1 + reps / 30);
+    if (!best || estimatedOneRepMax > best.estimatedOneRepMax) {
+      const ownerExercise = completedExerciseRows.find((item) => item.id === row.workout_session_exercise_id);
+      const ownerSession = completedSessions.find((item) => item.id === ownerExercise?.workout_session_id);
+      best = {
+        set: mapSet(row),
+        date: ownerSession?.ended_at ?? ownerSession?.started_at ?? null,
+        estimatedOneRepMax,
+      };
+    }
+  }
+
+  return {
+    previous: {
+      date: previousSession.ended_at ?? previousSession.started_at,
+      sets: previousSets,
+    },
+    best,
+  };
+}
+
+export async function listWorkoutExerciseCatalog() {
+  const { data, error } = await supabase
+    .from('exercises')
+    .select('id, name, muscle_group')
+    .order('name', { ascending: true });
+  if (error) throw new Error('Не удалось загрузить каталог упражнений.');
+  return data ?? [];
+}
+
+export async function replaceSessionExercise(sessionExerciseId, exerciseId) {
+  const { error } = await supabase
+    .from('workout_session_exercises')
+    .update({ exercise_id: exerciseId, note: null })
+    .eq('id', sessionExerciseId);
+  if (error) throw new Error('Не удалось заменить упражнение.');
+}
+
+export async function moveSessionExercise(sessionExerciseId, direction) {
+  const { error } = await supabase.rpc('move_workout_session_exercise', {
+    p_session_exercise_id: sessionExerciseId,
+    p_direction: direction,
+  });
+  if (error) throw new Error('Не удалось изменить порядок упражнений.');
 }
 
 export async function completeWorkout(sessionId) {
