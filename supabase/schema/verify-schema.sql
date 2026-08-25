@@ -6,7 +6,8 @@ declare
   v_required_tables text[] := array[
     'profiles','exercises','user_exercises','programs','program_weeks','program_workouts',
     'program_workout_exercises','program_exercise_sets','user_programs','scheduled_workouts',
-    'scheduled_workout_exercises','scheduled_sets'
+    'scheduled_workout_exercises','scheduled_sets','workout_sessions',
+    'workout_session_exercises','performed_sets'
   ];
   v_table_count integer;
   v_rls_count integer;
@@ -23,7 +24,7 @@ begin
     and table_name = any(v_required_tables);
 
   if v_table_count <> array_length(v_required_tables, 1) then
-    raise exception 'Schema verification failed: expected 12 public application tables, found %', v_table_count;
+    raise exception 'Schema verification failed: expected 15 public application tables, found %', v_table_count;
   end if;
 
   select count(*) into v_rls_count
@@ -34,7 +35,7 @@ begin
     and c.relrowsecurity;
 
   if v_rls_count <> array_length(v_required_tables, 1) then
-    raise exception 'Schema verification failed: RLS enabled on % of 12 tables', v_rls_count;
+    raise exception 'Schema verification failed: RLS enabled on % of 15 tables', v_rls_count;
   end if;
 
   select count(*) into v_policy_count
@@ -42,8 +43,8 @@ begin
   where schemaname = 'public'
     and tablename = any(v_required_tables);
 
-  if v_policy_count <> 44 then
-    raise exception 'Schema verification failed: expected 44 application RLS policies, found %', v_policy_count;
+  if v_policy_count <> 56 then
+    raise exception 'Schema verification failed: expected 56 application RLS policies, found %', v_policy_count;
   end if;
 
   select count(*) into v_anon_grants
@@ -64,10 +65,12 @@ begin
       (p.proname = 'create_program_with_schedule' and pg_get_function_identity_arguments(p.oid) = 'p_program jsonb' and not p.prosecdef)
       or (p.proname = 'update_program_with_schedule' and pg_get_function_identity_arguments(p.oid) = 'p_program_id uuid, p_program jsonb' and not p.prosecdef)
       or (p.proname = 'start_program' and pg_get_function_identity_arguments(p.oid) = 'p_program_id uuid, p_start_date date' and not p.prosecdef)
+      or (p.proname = 'start_workout' and pg_get_function_identity_arguments(p.oid) = 'p_scheduled_workout_id uuid' and not p.prosecdef)
+      or (p.proname = 'complete_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid' and not p.prosecdef)
     );
 
-  if v_rpc_count <> 3 then
-    raise exception 'Schema verification failed: expected 3 current SECURITY INVOKER program RPCs, found %', v_rpc_count;
+  if v_rpc_count <> 5 then
+    raise exception 'Schema verification failed: expected 5 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
   end if;
 
   select count(*) into v_bucket_count
@@ -97,6 +100,6 @@ begin
     raise exception 'Schema verification failed: expected 4 program cover Storage policies, found %', v_storage_policy_count;
   end if;
 
-  raise notice 'Schema verification passed: 12 tables, RLS, policies, RPCs and Storage match the repository inventory.';
+  raise notice 'Schema verification passed: 15 tables, RLS, policies, RPCs and Storage match the repository inventory.';
 end
 $verify$;
