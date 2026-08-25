@@ -3,7 +3,7 @@
 This directory is the repository source of truth for the application database structure.
 It mirrors the linked Supabase project as of 2026-08-25.
 
-## Public tables (12)
+## Public tables (15)
 
 | Table | Source file |
 | --- | --- |
@@ -19,8 +19,11 @@ It mirrors the linked Supabase project as of 2026-08-25.
 | `scheduled_workouts` | `program-enrollment.sql` |
 | `scheduled_workout_exercises` | `program-enrollment.sql` |
 | `scheduled_sets` | `program-enrollment.sql` |
+| `workout_sessions` | `workout-session.sql` |
+| `workout_session_exercises` | `workout-session.sql` |
+| `performed_sets` | `workout-session.sql` |
 
-All 12 public tables have RLS enabled in the live project. `exercises` is read-only for authenticated users; user-owned tables use ownership policies. Program child tables inherit ownership through the parent `programs.owner_id`; scheduled snapshot tables inherit ownership through `user_programs.user_id`.
+All 15 public tables have RLS enabled in the live project. `exercises` is read-only for authenticated users; user-owned tables use ownership policies. Program child tables inherit ownership through `programs.owner_id`; scheduled snapshot tables inherit ownership through `user_programs.user_id`; workout execution tables inherit ownership through `workout_sessions.user_id`.
 
 ## Other database objects
 
@@ -32,18 +35,29 @@ All 12 public tables have RLS enabled in the live project. `exercises` is read-o
 - Server-side start-date guard: `program-enrollment-date-guard.sql`
 - Final schedule modes (`custom`, `weekly_mwf`, `weekly_tts`, `cycle_2_2`) and schedule-aware start RPC: `program-schedule-modes.sql`
 - Future schedule resync after editing a joined program: `program-reschedule-on-edit.sql`
+- Actual workout execution snapshot, one-active-session rule and `start_workout` / `complete_workout` RPCs: `workout-session.sql`
 
 ### Schedule edit behavior
 
 Editing a program remains a template edit, but if the owner already has that program in `active` or `paused` state, the calendar is synchronized with the new rhythm:
 
 - workouts before `current_date` remain unchanged;
-- `completed` and `skipped` workouts remain unchanged even if their status is changed manually;
+- `completed` and `skipped` workouts remain unchanged;
 - only upcoming rows with status `scheduled` are moved;
-- if the program has not started yet, the future `user_programs.start_date` is synchronized with the newly calculated first workout;
+- if the program has not started yet, `user_programs.start_date` is synchronized with the newly calculated first workout;
 - snapshot exercise/set content remains unchanged; the resync changes dates only.
 
-This keeps workout history immutable while allowing the user to change the future cadence of an already joined program.
+### Workout execution behavior
+
+`ScheduledWorkout` is the user's plan. Pressing “Начать тренировку” creates a separate `WorkoutSession` snapshot:
+
+- one user can have only one `active` workout session at a time;
+- restarting the same active scheduled workout is idempotent and returns the existing session;
+- exercises and planned sets are copied into `workout_session_exercises` and `performed_sets`;
+- performed sets store warm-up/working type, planned reps, actual weight/reps and completion state;
+- completing a session sets both `workout_sessions.status` and the linked `scheduled_workouts.status` to `completed`;
+- when no scheduled workouts remain, the corresponding `user_programs` row is completed automatically;
+- the timer is derived from server `started_at`, so page reloads do not reset workout duration.
 
 ## Fresh-project apply order
 
@@ -60,23 +74,24 @@ The files are intentionally kept as readable schema milestones rather than one o
 9. `program-enrollment-date-guard.sql`
 10. `program-schedule-modes.sql`
 11. `program-reschedule-on-edit.sql`
-12. `verify-schema.sql` (verification only; it does not create objects)
+12. `workout-session.sql`
+13. `verify-schema.sql` (verification only; it does not create objects)
 
-`program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they also contain the historical/current RPC definitions that bring a fresh database to the same final behavior as production.
+`program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they contain the current RPC definitions that bring a fresh database to the same final behavior as production.
 
 ## Verification
 
 Run `verify-schema.sql` after provisioning. It checks:
 
-- all 12 required public tables exist;
+- all 15 required public tables exist;
 - RLS is enabled on every required public table;
 - the expected RLS policy counts are present;
-- `anon` has no table privileges on the application tables;
-- the current program RPCs have the expected security mode;
+- `anon` has no table privileges on application tables;
+- the current program/workout RPCs have the expected security mode;
 - the private `program-covers` bucket exists with the correct 5 MB/MIME restrictions;
 - all four owner-only Storage policies exist.
 
-For a full local restore test, use the Supabase CLI and rebuild a disposable local database from the repository schema/migrations. Supabase's current documentation recommends `supabase db dump`/`db pull` for capturing remote schema and `supabase db reset` for testing rebuilds from source-controlled SQL.
+For a full local restore test, use the Supabase CLI and rebuild a disposable local database from the repository schema/migrations.
 
 ## Rule for future DB changes
 
