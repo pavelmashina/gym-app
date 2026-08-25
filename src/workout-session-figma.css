@@ -287,3 +287,178 @@
 
 .replace-exercise-list strong { font-size: 11px; }
 .replace-exercise-list span { color: var(--muted); font-size: 8px; text-transform: uppercase; }
+
+.workout-session-footer-dual {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: 8px;
+}
+
+.workout-session-footer-dual .workout-abandon-button {
+  border: 1px solid #dfc4c4;
+  background: var(--surface);
+  color: #8f3b3b;
+  font-size: 11px;
+}
+
+.workout-completed-expanded {
+  padding-bottom: 130px;
+}
+
+.workout-result-grid-expanded {
+  grid-template-columns: 1fr 1fr;
+}
+
+.workout-progress-section {
+  margin-top: 24px;
+}
+
+.workout-progress-heading {
+  margin-bottom: 11px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workout-progress-heading > div:first-child > span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.workout-progress-heading h2 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  line-height: 1.18;
+}
+
+.workout-progress-balance {
+  display: flex;
+  gap: 6px;
+}
+
+.workout-progress-balance span {
+  min-width: 34px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.workout-progress-balance .up { background: #edf7ed; color: #347245; }
+.workout-progress-balance .down { background: #fff0f0; color: #963f3f; }
+
+.workout-progress-loading {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.workout-progress-card {
+  margin-top: 9px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+}
+
+.workout-progress-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workout-progress-card-head > strong {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.workout-progress-chip {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 850;
+}
+
+.workout-progress-chip.up { background: #edf7ed; color: #347245; }
+.workout-progress-chip.down { background: #fff0f0; color: #963f3f; }
+.workout-progress-chip.same { background: #f0f0ec; color: var(--muted); }
+.workout-progress-chip.new { background: var(--accent-soft); color: var(--ink); }
+
+.workout-new-record {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .28px;
+}
+
+.workout-progress-values {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.workout-progress-values > div {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f7f7f3;
+  display: grid;
+  gap: 4px;
+}
+
+.workout-progress-values span {
+  color: var(--muted);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.workout-progress-values strong {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.workout-progress-values small {
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.workout-complete-hero.abandoned .workout-abandoned-mark {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  background: #8d4646;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.workout-abandoned-note {
+  margin-top: 14px;
+  padding: 12px 13px;
+  border: 1px solid #e3d4d4;
+  border-radius: 14px;
+  background: #fff8f8;
+  color: #785151;
+  font-size: 9px;
+  line-height: 1.5;
+}
