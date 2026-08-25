@@ -11,3 +11,26 @@
 .program-schedule-section.program-start-section {
   margin-bottom: 48px;
 }
+
+/* Native mobile date controls can have an intrinsic minimum width wider than their card. */
+.program-start-card,
+.program-start-date-field {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.program-start-date-field input[type='date'] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.program-start-date-field input[type='date']::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
