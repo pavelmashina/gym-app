@@ -35,6 +35,7 @@ All 15 public tables have RLS enabled in the live project. `exercises` is read-o
 - Server-side start-date guard: `program-enrollment-date-guard.sql`
 - Final schedule modes (`custom`, `weekly_mwf`, `weekly_tts`, `cycle_2_2`) and schedule-aware start RPC: `program-schedule-modes.sql`
 - Future schedule resync after editing a joined program: `program-reschedule-on-edit.sql`
+- Editable joined-program start date before workout execution begins: `program-start-date-edit.sql`
 - Actual workout execution snapshot, one-active-session rule and `start_workout` / `complete_workout` RPCs: `workout-session.sql`
 
 ### Schedule edit behavior
@@ -46,6 +47,17 @@ Editing a program remains a template edit, but if the owner already has that pro
 - only upcoming rows with status `scheduled` are moved;
 - if the program has not started yet, `user_programs.start_date` is synchronized with the newly calculated first workout;
 - snapshot exercise/set content remains unchanged; the resync changes dates only.
+
+### Start-date edit behavior
+
+A joined program can change its first-workout date while it has not actually started:
+
+- the new date cannot be in the past;
+- weekly modes still require a valid weekday (`Пн/Ср/Пт` or `Вт/Чт/Сб`);
+- all `scheduled_workouts` dates are recalculated from the new date using the current schedule mode;
+- `user_programs.start_date` is updated at the same time;
+- exercise/set snapshots are not recreated;
+- once any `workout_session` exists, the original start date becomes history and can no longer be rewritten.
 
 ### Workout execution behavior
 
@@ -75,7 +87,8 @@ The files are intentionally kept as readable schema milestones rather than one o
 10. `program-schedule-modes.sql`
 11. `program-reschedule-on-edit.sql`
 12. `workout-session.sql`
-13. `verify-schema.sql` (verification only; it does not create objects)
+13. `program-start-date-edit.sql`
+14. `verify-schema.sql` (verification only; it does not create objects)
 
 `program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they contain the current RPC definitions that bring a fresh database to the same final behavior as production.
 
@@ -87,7 +100,7 @@ Run `verify-schema.sql` after provisioning. It checks:
 - RLS is enabled on every required public table;
 - the expected RLS policy counts are present;
 - `anon` has no table privileges on application tables;
-- the current program/workout RPCs have the expected security mode;
+- all six current program/workout RPCs have the expected `SECURITY INVOKER` mode;
 - the private `program-covers` bucket exists with the correct 5 MB/MIME restrictions;
 - all four owner-only Storage policies exist.
 
