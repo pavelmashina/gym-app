@@ -37,6 +37,7 @@ All 15 public tables have RLS enabled in the live project. `exercises` is read-o
 - Future schedule resync after editing a joined program: `program-reschedule-on-edit.sql`
 - Editable joined-program start date before workout execution begins: `program-start-date-edit.sql`
 - Actual workout execution snapshot, one-active-session rule and `start_workout` / `complete_workout` RPCs: `workout-session.sql`
+- Reordering exercises inside an active workout session without changing the source program: `workout-session-editing.sql`
 
 ### Schedule edit behavior
 
@@ -67,9 +68,12 @@ A joined program can change its first-workout date while it has not actually sta
 - restarting the same active scheduled workout is idempotent and returns the existing session;
 - exercises and planned sets are copied into `workout_session_exercises` and `performed_sets`;
 - performed sets store warm-up/working type, planned reps, actual weight/reps and completion state;
+- a user can add/delete sets, replace an exercise, or reorder exercises inside the current active session without modifying the source program;
+- previous exercise results are read from completed workout-session history regardless of program;
+- best set uses completed working sets only; warm-up sets stay visible in history but are excluded from best-set and tonnage calculations;
 - completing a session sets both `workout_sessions.status` and the linked `scheduled_workouts.status` to `completed`;
 - when no scheduled workouts remain, the corresponding `user_programs` row is completed automatically;
-- the timer is derived from server `started_at`, so page reloads do not reset workout duration.
+- the workout timer is derived from server `started_at`, so page reloads do not reset workout duration.
 
 ## Fresh-project apply order
 
@@ -88,7 +92,8 @@ The files are intentionally kept as readable schema milestones rather than one o
 11. `program-reschedule-on-edit.sql`
 12. `workout-session.sql`
 13. `program-start-date-edit.sql`
-14. `verify-schema.sql` (verification only; it does not create objects)
+14. `workout-session-editing.sql`
+15. `verify-schema.sql` (verification only; it does not create objects)
 
 `program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they contain the current RPC definitions that bring a fresh database to the same final behavior as production.
 
@@ -100,7 +105,7 @@ Run `verify-schema.sql` after provisioning. It checks:
 - RLS is enabled on every required public table;
 - the expected RLS policy counts are present;
 - `anon` has no table privileges on application tables;
-- all six current program/workout RPCs have the expected `SECURITY INVOKER` mode;
+- all seven current program/workout RPCs have the expected `SECURITY INVOKER` mode;
 - the private `program-covers` bucket exists with the correct 5 MB/MIME restrictions;
 - all four owner-only Storage policies exist.
 
