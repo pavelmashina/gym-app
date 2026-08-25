@@ -68,10 +68,11 @@ begin
       or (p.proname = 'change_program_start_date' and pg_get_function_identity_arguments(p.oid) = 'p_user_program_id uuid, p_start_date date' and not p.prosecdef)
       or (p.proname = 'start_workout' and pg_get_function_identity_arguments(p.oid) = 'p_scheduled_workout_id uuid' and not p.prosecdef)
       or (p.proname = 'complete_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid' and not p.prosecdef)
+      or (p.proname = 'move_workout_session_exercise' and pg_get_function_identity_arguments(p.oid) = 'p_session_exercise_id uuid, p_direction integer' and not p.prosecdef)
     );
 
-  if v_rpc_count <> 6 then
-    raise exception 'Schema verification failed: expected 6 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
+  if v_rpc_count <> 7 then
+    raise exception 'Schema verification failed: expected 7 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
   end if;
 
   select count(*) into v_bucket_count
