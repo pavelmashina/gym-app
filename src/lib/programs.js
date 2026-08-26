@@ -62,33 +62,20 @@ function buildProgramPayload({
 
 function validateCover(coverFile) {
   if (!coverFile) return;
-
-  if (!COVER_EXTENSIONS[coverFile.type]) {
-    throw new Error('Обложка должна быть в формате JPG, PNG или WEBP.');
-  }
-
-  if (coverFile.size > MAX_COVER_SIZE) {
-    throw new Error('Размер обложки не должен превышать 5 МБ.');
-  }
+  if (!COVER_EXTENSIONS[coverFile.type]) throw new Error('Обложка должна быть в формате JPG, PNG или WEBP.');
+  if (coverFile.size > MAX_COVER_SIZE) throw new Error('Размер обложки не должен превышать 5 МБ.');
 }
 
 function validateStartDate(startDate) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate ?? '')) {
-    throw new Error('Выберите дату начала программы.');
-  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate ?? '')) throw new Error('Выберите дату начала программы.');
 }
 
 async function requireCurrentUser() {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
+  const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {
     console.error('Unable to verify current user:', error);
     throw new Error('Сессия истекла. Войдите в аккаунт ещё раз.');
   }
-
   return user;
 }
 
@@ -105,48 +92,31 @@ async function removeCoverQuietly(coverPath) {
 
 async function getSignedCoverUrl(coverPath) {
   if (!coverPath) return null;
-
-  const { data, error } = await supabase.storage
-    .from(PROGRAM_COVERS_BUCKET)
-    .createSignedUrl(coverPath, 60 * 60);
-
+  const { data, error } = await supabase.storage.from(PROGRAM_COVERS_BUCKET).createSignedUrl(coverPath, 60 * 60);
   if (error) {
     console.error('Unable to create program cover URL:', error);
     return null;
   }
-
   return data?.signedUrl ?? null;
 }
 
 async function saveCover({ coverFile, programId, userId }) {
   if (!coverFile) return null;
-
   const extension = COVER_EXTENSIONS[coverFile.type];
   const coverPath = `${userId}/${programId}/${crypto.randomUUID()}.${extension}`;
-  const { error: uploadError } = await supabase.storage
-    .from(PROGRAM_COVERS_BUCKET)
-    .upload(coverPath, coverFile, {
-      cacheControl: '3600',
-      contentType: coverFile.type,
-      upsert: false,
-    });
-
+  const { error: uploadError } = await supabase.storage.from(PROGRAM_COVERS_BUCKET).upload(coverPath, coverFile, {
+    cacheControl: '3600', contentType: coverFile.type, upsert: false,
+  });
   if (uploadError) {
     console.error('Unable to upload program cover:', uploadError);
     throw new Error('Не удалось загрузить обложку программы.');
   }
-
-  const { error: updateError } = await supabase
-    .from('programs')
-    .update({ cover_path: coverPath, updated_at: new Date().toISOString() })
-    .eq('id', programId);
-
+  const { error: updateError } = await supabase.from('programs').update({ cover_path: coverPath, updated_at: new Date().toISOString() }).eq('id', programId);
   if (updateError) {
     console.error('Unable to attach program cover:', updateError);
     await removeCoverQuietly(coverPath);
     throw new Error('Не удалось сохранить обложку программы.');
   }
-
   return coverPath;
 }
 
@@ -162,6 +132,7 @@ function mapProgramRow(row) {
     level: row.level ?? '',
     scheduleMode: row.schedule_mode ?? 'custom',
     coverPath: row.cover_path ?? null,
+    sourceCatalogProgramId: row.source_catalog_program_id ?? null,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -184,23 +155,18 @@ function mapParticipationRow(row) {
 
 async function loadLatestParticipations(programIds) {
   if (programIds.length === 0) return new Map();
-
   const { data, error } = await supabase
     .from('user_programs')
     .select('id, program_id, status, start_date, joined_at, paused_at, completed_at, updated_at')
     .in('program_id', programIds)
     .order('joined_at', { ascending: false });
-
   if (error) {
     console.error('Unable to load program participation:', error);
     throw new Error('Не удалось загрузить статус программ.');
   }
-
   const latestByProgram = new Map();
   (data ?? []).forEach((row) => {
-    if (!latestByProgram.has(row.program_id)) {
-      latestByProgram.set(row.program_id, mapParticipationRow(row));
-    }
+    if (!latestByProgram.has(row.program_id)) latestByProgram.set(row.program_id, mapParticipationRow(row));
   });
   return latestByProgram;
 }
@@ -208,26 +174,17 @@ async function loadLatestParticipations(programIds) {
 export async function startProgram(programId, startDate) {
   validateStartDate(startDate);
   await requireCurrentUser();
-
   const { data: userProgramId, error } = await supabase.rpc('start_program', {
     p_program_id: programId,
     p_start_date: startDate,
   });
-
   if (error || !userProgramId) {
     console.error('Unable to start program:', error);
-    if (error?.code === '23505' || error?.message?.includes('already active')) {
-      throw new Error('Вы уже присоединились к этой программе.');
-    }
-    if (error?.message?.includes('Monday, Wednesday or Friday')) {
-      throw new Error('Первая тренировка должна быть в понедельник, среду или пятницу.');
-    }
-    if (error?.message?.includes('Tuesday, Thursday or Saturday')) {
-      throw new Error('Первая тренировка должна быть во вторник, четверг или субботу.');
-    }
+    if (error?.code === '23505' || error?.message?.includes('already active')) throw new Error('Вы уже присоединились к этой программе.');
+    if (error?.message?.includes('Monday, Wednesday or Friday')) throw new Error('Первая тренировка должна быть в понедельник, среду или пятницу.');
+    if (error?.message?.includes('Tuesday, Thursday or Saturday')) throw new Error('Первая тренировка должна быть во вторник, четверг или субботу.');
     throw new Error('Не удалось присоединиться к программе. Попробуйте ещё раз.');
   }
-
   return { id: userProgramId, programId, startDate, status: 'active' };
 }
 
@@ -235,18 +192,12 @@ export async function createProgram({ coverFile = null, startDate = null, ...pro
   validateCover(coverFile);
   if (startDate) validateStartDate(startDate);
   const user = await requireCurrentUser();
-
   const payload = buildProgramPayload(program);
-  const { data: programId, error: createError } = await supabase.rpc(
-    'create_program_with_schedule',
-    { p_program: payload },
-  );
-
+  const { data: programId, error: createError } = await supabase.rpc('create_program_with_schedule', { p_program: payload });
   if (createError || !programId) {
     console.error('Unable to create program:', createError);
     throw new Error('Не удалось сохранить программу. Попробуйте ещё раз.');
   }
-
   let coverPath = null;
   try {
     coverPath = await saveCover({ coverFile, programId, userId: user.id });
@@ -259,53 +210,38 @@ export async function createProgram({ coverFile = null, startDate = null, ...pro
   }
 }
 
-export async function updateProgram({
-  programId,
-  coverFile = null,
-  existingCoverPath = null,
-  ...program
-}) {
+export async function updateProgram({ programId, coverFile = null, existingCoverPath = null, ...program }) {
   validateCover(coverFile);
   const user = await requireCurrentUser();
   const payload = buildProgramPayload(program);
-
-  const { data: updatedProgramId, error: updateError } = await supabase.rpc(
-    'update_program_with_schedule',
-    { p_program_id: programId, p_program: payload },
-  );
-
+  const { data: updatedProgramId, error: updateError } = await supabase.rpc('update_program_with_schedule', {
+    p_program_id: programId, p_program: payload,
+  });
   if (updateError || !updatedProgramId) {
     console.error('Unable to update program:', updateError);
     throw new Error('Не удалось сохранить изменения программы. Попробуйте ещё раз.');
   }
-
   let coverPath = existingCoverPath;
   if (coverFile) {
     const previousCoverPath = existingCoverPath;
     coverPath = await saveCover({ coverFile, programId, userId: user.id });
-    if (previousCoverPath && previousCoverPath !== coverPath) {
-      await removeCoverQuietly(previousCoverPath);
-    }
+    if (previousCoverPath && previousCoverPath !== coverPath) await removeCoverQuietly(previousCoverPath);
   }
-
   return { id: updatedProgramId, coverPath };
 }
 
 export async function listPrograms() {
   const { data, error } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, status, created_at, updated_at')
+    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .neq('status', 'archived')
     .order('updated_at', { ascending: false });
-
   if (error) {
     console.error('Unable to load programs:', error);
     throw new Error('Не удалось загрузить ваши программы.');
   }
-
   const rows = data ?? [];
   const participationByProgram = await loadLatestParticipations(rows.map((row) => row.id));
-
   return Promise.all(rows.map(async (row) => ({
     ...mapProgramRow(row),
     participation: participationByProgram.get(row.id) ?? null,
@@ -316,38 +252,23 @@ export async function listPrograms() {
 export async function getProgram(programId) {
   const { data: programRow, error: programError } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, status, created_at, updated_at')
+    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .eq('id', programId)
     .single();
-
   if (programError || !programRow) {
     console.error('Unable to load program:', programError);
     throw new Error('Не удалось открыть программу.');
   }
 
   const { data: weeks, error: weeksError } = await supabase
-    .from('program_weeks')
-    .select('id, week_number, position')
-    .eq('program_id', programId)
-    .order('position', { ascending: true });
-
-  if (weeksError) {
-    console.error('Unable to load program weeks:', weeksError);
-    throw new Error('Не удалось загрузить структуру программы.');
-  }
+    .from('program_weeks').select('id, week_number, position').eq('program_id', programId).order('position', { ascending: true });
+  if (weeksError) throw new Error('Не удалось загрузить структуру программы.');
 
   const weekIds = (weeks ?? []).map((week) => week.id);
   let workouts = [];
   if (weekIds.length > 0) {
-    const response = await supabase
-      .from('program_workouts')
-      .select('id, week_id, name, position, rest_days_after')
-      .in('week_id', weekIds)
-      .order('position', { ascending: true });
-    if (response.error) {
-      console.error('Unable to load program workouts:', response.error);
-      throw new Error('Не удалось загрузить тренировки программы.');
-    }
+    const response = await supabase.from('program_workouts').select('id, week_id, name, position, rest_days_after').in('week_id', weekIds).order('position', { ascending: true });
+    if (response.error) throw new Error('Не удалось загрузить тренировки программы.');
     workouts = response.data ?? [];
   }
 
@@ -356,13 +277,10 @@ export async function getProgram(programId) {
   if (workoutIds.length > 0) {
     const response = await supabase
       .from('program_workout_exercises')
-      .select('id, workout_id, exercise_id, position')
+      .select('id, workout_id, exercise_id, exercise_name_snapshot, prescription_snapshot, position')
       .in('workout_id', workoutIds)
       .order('position', { ascending: true });
-    if (response.error) {
-      console.error('Unable to load workout exercises:', response.error);
-      throw new Error('Не удалось загрузить упражнения программы.');
-    }
+    if (response.error) throw new Error('Не удалось загрузить упражнения программы.');
     workoutExercises = response.data ?? [];
   }
 
@@ -374,24 +292,18 @@ export async function getProgram(programId) {
       .select('id, workout_exercise_id, set_number, reps')
       .in('workout_exercise_id', workoutExerciseIds)
       .order('set_number', { ascending: true });
-    if (response.error) {
-      console.error('Unable to load exercise sets:', response.error);
-      throw new Error('Не удалось загрузить подходы программы.');
-    }
+    if (response.error) throw new Error('Не удалось загрузить подходы программы.');
     sets = response.data ?? [];
   }
 
-  const exerciseIds = [...new Set(workoutExercises.map((item) => item.exercise_id))];
+  const exerciseIds = [...new Set(workoutExercises.map((item) => item.exercise_id).filter(Boolean))];
   let exercises = [];
   if (exerciseIds.length > 0) {
     const response = await supabase
       .from('exercises')
       .select('id, name, muscle_group, movement_type, difficulty')
       .in('id', exerciseIds);
-    if (response.error) {
-      console.error('Unable to load exercise catalog data:', response.error);
-      throw new Error('Не удалось загрузить данные упражнений.');
-    }
+    if (response.error) throw new Error('Не удалось загрузить данные упражнений.');
     exercises = response.data ?? [];
   }
 
@@ -401,21 +313,18 @@ export async function getProgram(programId) {
     list.push(workout);
     workoutsByWeek.set(workout.week_id, list);
   });
-
   const workoutExercisesByWorkout = new Map();
   workoutExercises.forEach((item) => {
     const list = workoutExercisesByWorkout.get(item.workout_id) ?? [];
     list.push(item);
     workoutExercisesByWorkout.set(item.workout_id, list);
   });
-
   const setsByWorkoutExercise = new Map();
   sets.forEach((set) => {
     const list = setsByWorkoutExercise.get(set.workout_exercise_id) ?? [];
     list.push(set);
     setsByWorkoutExercise.set(set.workout_exercise_id, list);
   });
-
   const exerciseById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
 
   const programWeeks = (weeks ?? []).map((week) => ({
@@ -426,17 +335,17 @@ export async function getProgram(programId) {
       name: workout.name,
       restDaysAfter: workout.rest_days_after ?? 1,
       exercises: (workoutExercisesByWorkout.get(workout.id) ?? []).map((item) => {
-        const exercise = exerciseById.get(item.exercise_id) ?? {};
+        const exercise = item.exercise_id ? (exerciseById.get(item.exercise_id) ?? {}) : {};
         return {
-          id: item.exercise_id,
-          name: exercise.name ?? 'Упражнение',
+          id: item.exercise_id ?? item.id,
+          linkedExerciseId: item.exercise_id ?? null,
+          sourceWorkoutExerciseId: item.id,
+          name: item.exercise_name_snapshot || exercise.name || 'Упражнение',
+          prescription: item.prescription_snapshot ?? '',
           muscle_group: exercise.muscle_group ?? '',
           movement_type: exercise.movement_type ?? '',
           difficulty: exercise.difficulty ?? null,
-          sets: (setsByWorkoutExercise.get(item.id) ?? []).map((set) => ({
-            id: set.id,
-            reps: set.reps ?? '',
-          })),
+          sets: (setsByWorkoutExercise.get(item.id) ?? []).map((set) => ({ id: set.id, reps: set.reps ?? '' })),
         };
       }),
     })),
@@ -449,11 +358,7 @@ export async function getProgram(programId) {
     .order('joined_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-
-  if (participationError) {
-    console.error('Unable to load program participation:', participationError);
-    throw new Error('Не удалось загрузить статус программы.');
-  }
+  if (participationError) throw new Error('Не удалось загрузить статус программы.');
 
   const participation = mapParticipationRow(participationRow);
   let scheduledWorkouts = [];
@@ -463,12 +368,7 @@ export async function getProgram(programId) {
       .select('id, sequence_number, week_number, workout_name, scheduled_date, status')
       .eq('user_program_id', participation.id)
       .order('sequence_number', { ascending: true });
-
-    if (response.error) {
-      console.error('Unable to load scheduled workouts:', response.error);
-      throw new Error('Не удалось загрузить календарь программы.');
-    }
-
+    if (response.error) throw new Error('Не удалось загрузить календарь программы.');
     scheduledWorkouts = (response.data ?? []).map((row) => ({
       id: row.id,
       sequenceNumber: row.sequence_number,
