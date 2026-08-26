@@ -204,11 +204,10 @@ function programState(program) {
 }
 
 function ProgramCard({ program, onOpen }) {
-  const initial = program.name?.trim()?.slice(0, 1)?.toUpperCase() || 'P';
   const state = programState(program);
   return (
     <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
-      <span className="my-program-cover">{program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span>{initial}</span>}</span>
+      <span className="my-program-cover">{program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}</span>
       <span className="my-program-copy">
         <span className={`my-program-status ${state.tone}`}>{state.label}</span>
         <strong>{program.name}</strong>
@@ -409,7 +408,14 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
           </button>
         )}
 
-        {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} />}
+        {isCatalogTab && (
+          <CatalogProgramsPanel
+            query={query}
+            sortDirection={sortDirection}
+            filtersOpen={filtersOpen}
+            onJoin={(programId) => onStartProgram?.(programId)}
+          />
+        )}
 
         {isProgramsTab && programsLoading && (
           <div className="my-programs-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>
