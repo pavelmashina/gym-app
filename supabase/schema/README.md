@@ -42,6 +42,7 @@ All 16 public tables have RLS enabled in the live project. `exercises` and publi
 - Abandoned workout lifecycle and skipped-workout restart guard: `workout-session-abandon.sql`
 - Shared published catalog of ready-made program payloads imported from structured source files: `catalog-programs.sql`
 - Conversion of a catalog program into a user-owned Program plus exercise-name/prescription snapshot propagation: `catalog-program-adoption.sql`
+- Covering index for the catalog source foreign key on user-owned programs: `catalog-program-adoption-index.sql`
 
 ### Catalog behavior
 
@@ -125,9 +126,10 @@ The files are intentionally kept as readable schema milestones rather than one o
 15. `workout-session-abandon.sql`
 16. `catalog-programs.sql`
 17. `catalog-program-adoption.sql`
-18. `verify-schema.sql` (verification only; it does not create objects)
+18. `catalog-program-adoption-index.sql`
+19. `verify-schema.sql` (verification only; it does not create objects)
 
-`program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule/catalog files are still required because they contain the current RPC definitions and snapshot extensions that bring a fresh database to the same final behavior as production.
+`program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule/catalog files are still required because they contain the current RPC definitions, snapshot extensions and supporting indexes that bring a fresh database to the same final behavior as production.
 
 ## Verification
 
@@ -140,6 +142,7 @@ Run `verify-schema.sql` after provisioning. It checks:
 - all nine current program/workout/catalog RPCs have the expected `SECURITY INVOKER` mode;
 - the catalog-adoption snapshot columns exist in the template, schedule and workout-session layers;
 - `authenticated` can execute `adopt_catalog_program(uuid)` while `anon` cannot;
+- the `programs.source_catalog_program_id` foreign key has its covering index;
 - the private `program-covers` bucket exists with the correct 5 MB/MIME restrictions;
 - all four owner-only Storage policies exist.
 
