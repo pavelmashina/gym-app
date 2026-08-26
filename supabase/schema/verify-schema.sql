@@ -16,6 +16,9 @@ declare
   v_bucket_count integer;
   v_storage_policy_count integer;
   v_rpc_count integer;
+  v_snapshot_column_count integer;
+  v_adopt_authenticated boolean;
+  v_adopt_anon boolean;
 begin
   select count(*) into v_table_count
   from information_schema.tables
@@ -70,10 +73,34 @@ begin
       or (p.proname = 'complete_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid' and not p.prosecdef)
       or (p.proname = 'abandon_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid' and not p.prosecdef)
       or (p.proname = 'move_workout_session_exercise' and pg_get_function_identity_arguments(p.oid) = 'p_session_exercise_id uuid, p_direction integer' and not p.prosecdef)
+      or (p.proname = 'adopt_catalog_program' and pg_get_function_identity_arguments(p.oid) = 'p_catalog_program_id uuid' and not p.prosecdef)
     );
 
-  if v_rpc_count <> 8 then
-    raise exception 'Schema verification failed: expected 8 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
+  if v_rpc_count <> 9 then
+    raise exception 'Schema verification failed: expected 9 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
+  end if;
+
+  select count(*) into v_snapshot_column_count
+  from information_schema.columns
+  where table_schema = 'public'
+    and (
+      (table_name = 'programs' and column_name = 'source_catalog_program_id')
+      or (table_name = 'program_workout_exercises' and column_name in ('exercise_name_snapshot','prescription_snapshot'))
+      or (table_name = 'scheduled_workout_exercises' and column_name in ('exercise_name_snapshot','prescription_snapshot'))
+      or (table_name = 'workout_session_exercises' and column_name in ('exercise_name_snapshot','prescription_snapshot'))
+    );
+
+  if v_snapshot_column_count <> 7 then
+    raise exception 'Schema verification failed: expected 7 catalog-adoption snapshot/source columns, found %', v_snapshot_column_count;
+  end if;
+
+  select has_function_privilege('authenticated', 'public.adopt_catalog_program(uuid)', 'EXECUTE')
+    into v_adopt_authenticated;
+  select has_function_privilege('anon', 'public.adopt_catalog_program(uuid)', 'EXECUTE')
+    into v_adopt_anon;
+
+  if not v_adopt_authenticated or v_adopt_anon then
+    raise exception 'Schema verification failed: adopt_catalog_program execute grants are incorrect (authenticated %, anon %)', v_adopt_authenticated, v_adopt_anon;
   end if;
 
   select count(*) into v_bucket_count
@@ -103,6 +130,6 @@ begin
     raise exception 'Schema verification failed: expected 4 program cover Storage policies, found %', v_storage_policy_count;
   end if;
 
-  raise notice 'Schema verification passed: 16 tables, RLS, policies, RPCs and Storage match the repository inventory.';
+  raise notice 'Schema verification passed: 16 tables, RLS, policies, 9 RPCs, catalog snapshots and Storage match the repository inventory.';
 end
 $verify$;
