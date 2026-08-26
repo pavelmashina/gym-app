@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
+import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
 import '../catalog-programs.css';
 
 const ALL = 'Все';
+const NO_DATA = 'Нет данных';
 
 function BackIcon() {
   return (
@@ -22,13 +23,11 @@ function ChevronIcon() {
 
 function CatalogCard({ program, onOpen }) {
   const category = program.categories[0] || 'Готовая программа';
-  const initial = program.name?.trim()?.slice(0, 1)?.toUpperCase() || 'P';
 
   return (
     <button className="catalog-program-card" type="button" onClick={() => onOpen(program.id)}>
-      <span className="catalog-program-cover" aria-hidden="true">
-        <span>{initial}</span>
-        <small>{program.trainingPlace || 'Тренировки'}</small>
+      <span className="catalog-program-cover catalog-program-placeholder" aria-hidden="true">
+        <span className="catalog-placeholder-icon" />
       </span>
       <span className="catalog-program-card-copy">
         <span className="catalog-program-category">{category}</span>
@@ -83,12 +82,14 @@ function WorkoutBlock({ workout, index }) {
 
       {open && (
         <div className="catalog-workout-exercises">
-          {exercises.map((exercise, exerciseIndex) => (
+          {exercises.length === 0 ? (
+            <div className="catalog-no-data-row">{NO_DATA}</div>
+          ) : exercises.map((exercise, exerciseIndex) => (
             <div className="catalog-workout-exercise" key={`${exercise.name}-${exerciseIndex}`}>
               <span className="catalog-exercise-number">{exerciseIndex + 1}</span>
               <span className="catalog-exercise-copy">
-                <strong>{exercise.name}</strong>
-                {exercise.prescription && <span>{exercise.prescription}</span>}
+                <strong>{exercise.name || NO_DATA}</strong>
+                <span>{exercise.prescription || NO_DATA}</span>
               </span>
             </div>
           ))}
@@ -98,15 +99,28 @@ function WorkoutBlock({ workout, index }) {
   );
 }
 
-function CatalogProgramDetail({ programId, onBack }) {
+function InfoRow({ label, value }) {
+  return (
+    <div className="catalog-info-row">
+      <span>{label}</span>
+      <strong className={!value ? 'empty' : ''}>{value || NO_DATA}</strong>
+    </div>
+  );
+}
+
+function CatalogProgramDetail({ programId, onBack, onJoin }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('info');
+  const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState('');
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError('');
+    setActiveTab('info');
     getCatalogProgram(programId)
       .then((result) => { if (active) setProgram(result); })
       .catch((requestError) => { if (active) setError(requestError.message); })
@@ -116,6 +130,19 @@ function CatalogProgramDetail({ programId, onBack }) {
 
   const weeks = program?.sourcePayload?.weeks ?? [];
   const workouts = weeks.flatMap((week) => week.workouts ?? []);
+
+  async function handleJoin() {
+    if (!program || joining) return;
+    setJoining(true);
+    setJoinError('');
+    try {
+      const adoptedProgramId = await adoptCatalogProgram(program.id);
+      onJoin?.(adoptedProgramId);
+    } catch (requestError) {
+      setJoinError(requestError?.message || 'Не удалось присоединиться к программе.');
+      setJoining(false);
+    }
+  }
 
   return (
     <div className="catalog-detail-layer" role="dialog" aria-modal="true" aria-label="Программа из каталога">
@@ -130,51 +157,94 @@ function CatalogProgramDetail({ programId, onBack }) {
         {!loading && error && <div className="catalog-detail-state error">{error}</div>}
 
         {!loading && program && (
-          <main className="catalog-detail-content">
-            <section className="catalog-detail-hero">
-              <span className="catalog-detail-kicker">{program.categories[0] || 'Готовая программа'}</span>
-              <h1>{program.name}</h1>
-              <div className="catalog-detail-tags">
-                {program.trainingPlace && <span>{program.trainingPlace}</span>}
-                <span>{program.workoutCount} тренировок</span>
-                <span>{program.weekCount} нед.</span>
-                {program.level && <span>{program.level}</span>}
-              </div>
-              {program.description && <p>{program.description}</p>}
-            </section>
+          <>
+            <nav className="catalog-detail-tabs" aria-label="Разделы программы">
+              <button
+                className={activeTab === 'info' ? 'active' : ''}
+                type="button"
+                onClick={() => setActiveTab('info')}
+              >
+                О программе
+              </button>
+              <button
+                className={activeTab === 'workouts' ? 'active' : ''}
+                type="button"
+                onClick={() => setActiveTab('workouts')}
+              >
+                Тренировки
+              </button>
+            </nav>
 
-            {program.categories.length > 1 && (
-              <section className="catalog-detail-section">
-                <div className="catalog-detail-section-head"><span>Направления</span></div>
-                <div className="catalog-detail-category-list">
-                  {program.categories.map((category) => <span key={category}>{category}</span>)}
-                </div>
-              </section>
-            )}
+            <main className="catalog-detail-content has-footer">
+              {activeTab === 'info' && (
+                <>
+                  <div className="catalog-detail-cover-placeholder catalog-program-placeholder" aria-hidden="true">
+                    <span className="catalog-placeholder-icon" />
+                  </div>
 
-            <section className="catalog-detail-section">
-              <div className="catalog-detail-section-head">
-                <span>Структура программы</span>
-                <strong>{workouts.length} тренировок</strong>
-              </div>
-              <div className="catalog-workout-list">
-                {workouts.map((workout, index) => (
-                  <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />
-                ))}
-              </div>
-            </section>
+                  <section className="catalog-detail-hero catalog-detail-hero-light">
+                    <span className="catalog-detail-kicker">{program.categories[0] || 'Готовая программа'}</span>
+                    <h1>{program.name}</h1>
+                  </section>
 
-            <div className="catalog-source-note">
-              Схемы подходов и повторений показаны в формулировках из загруженного каталога.
-            </div>
-          </main>
+                  <section className="catalog-detail-section catalog-about-section">
+                    <div className="catalog-detail-section-head"><span>Информация о программе</span></div>
+                    <div className="catalog-info-card">
+                      <InfoRow label="Направление" value={program.categories.length ? program.categories.join(', ') : ''} />
+                      <InfoRow label="Место тренировок" value={program.trainingPlace} />
+                      <InfoRow label="Уровень" value={program.level} />
+                      <InfoRow label="Оборудование" value="" />
+                      <InfoRow label="Продолжительность" value={program.weekCount ? `${program.weekCount} нед.` : ''} />
+                      <InfoRow label="Количество тренировок" value={program.workoutCount ? String(program.workoutCount) : ''} />
+                    </div>
+                  </section>
+
+                  <section className="catalog-detail-section">
+                    <div className="catalog-detail-section-head"><span>Описание</span></div>
+                    <div className={`catalog-description-card${program.description ? '' : ' empty'}`}>
+                      {program.description || NO_DATA}
+                    </div>
+                  </section>
+                </>
+              )}
+
+              {activeTab === 'workouts' && (
+                <section className="catalog-detail-section catalog-workouts-tab-section">
+                  <div className="catalog-detail-section-head">
+                    <span>Тренировки программы</span>
+                    <strong>{workouts.length ? `${workouts.length} тренировок` : NO_DATA}</strong>
+                  </div>
+                  {workouts.length > 0 ? (
+                    <div className="catalog-workout-list">
+                      {workouts.map((workout, index) => (
+                        <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="catalog-detail-empty-card">{NO_DATA}</div>
+                  )}
+                  <div className="catalog-source-note">
+                    Схемы подходов и повторений показаны в формулировках из загруженного каталога.
+                  </div>
+                </section>
+              )}
+
+              {joinError && <div className="catalog-join-error">{joinError}</div>}
+            </main>
+
+            <footer className="catalog-detail-footer">
+              <button type="button" onClick={handleJoin} disabled={joining}>
+                {joining ? 'Добавляем программу…' : 'Присоединиться к программе'}
+              </button>
+            </footer>
+          </>
         )}
       </div>
     </div>
   );
 }
 
-export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filtersOpen = false }) {
+export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filtersOpen = false, onJoin }) {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -286,7 +356,11 @@ export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filter
       )}
 
       {selectedProgramId && (
-        <CatalogProgramDetail programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} />
+        <CatalogProgramDetail
+          programId={selectedProgramId}
+          onBack={() => setSelectedProgramId(null)}
+          onJoin={onJoin}
+        />
       )}
     </>
   );
