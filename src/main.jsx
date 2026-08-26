@@ -7,6 +7,7 @@ import './training-icon-tabs.css';
 import './training-icon-tabs-adjustments.css';
 import './create-program-schedule-scroll-fix.css';
 import './workout-session-figma.css';
+import './catalog-programs-polish.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
