@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listPrograms } from '../lib/programs.js';
 import { supabase } from '../lib/supabase.js';
+import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
 import '../exercise-catalog.css';
 import '../program-list.css';
@@ -22,7 +23,7 @@ const EMPTY_COPY = {
   },
   catalog: {
     title: 'Каталог программ',
-    text: 'Здесь будет общий каталог готовых тренировочных программ.',
+    text: 'Готовые программы тренировок.',
   },
   'your-programs': {
     title: 'Мои программы',
@@ -87,12 +88,9 @@ function PlusIcon() {
 
 function Difficulty({ value }) {
   if (!value) return null;
-
   return (
     <span className="exercise-difficulty" aria-label={`Сложность ${value} из 3`}>
-      {Array.from({ length: 3 }, (_, index) => (
-        <i className={index < value ? 'active' : ''} key={index} />
-      ))}
+      {Array.from({ length: 3 }, (_, index) => <i className={index < value ? 'active' : ''} key={index} />)}
     </span>
   );
 }
@@ -120,13 +118,10 @@ function ExerciseDetail({ exercise, onClose }) {
     <div className="exercise-detail-layer" role="dialog" aria-modal="true" aria-label={exercise.name}>
       <div className="exercise-detail-phone">
         <header className="exercise-detail-header">
-          <button className="exercise-back" type="button" aria-label="Назад к списку" onClick={onClose}>
-            <BackIcon />
-          </button>
+          <button className="exercise-back" type="button" aria-label="Назад к списку" onClick={onClose}><BackIcon /></button>
           <span>Упражнение</span>
           <span className="exercise-header-spacer" />
         </header>
-
         <main className="exercise-detail-content">
           <section className="exercise-detail-hero">
             <div className="exercise-detail-kicker">{exercise.muscle_group}</div>
@@ -137,31 +132,15 @@ function ExerciseDetail({ exercise, onClose }) {
               {exercise.difficulty && <span>Сложность {exercise.difficulty}/3</span>}
             </div>
           </section>
-
           {(exercise.target_muscle || exercise.synergists) && (
             <section className="exercise-info-card">
-              {exercise.target_muscle && (
-                <div className="exercise-info-row">
-                  <span>Основная мышца</span>
-                  <strong>{exercise.target_muscle}</strong>
-                </div>
-              )}
-              {exercise.synergists && (
-                <div className="exercise-info-row">
-                  <span>Дополнительно работают</span>
-                  <strong>{exercise.synergists}</strong>
-                </div>
-              )}
+              {exercise.target_muscle && <div className="exercise-info-row"><span>Основная мышца</span><strong>{exercise.target_muscle}</strong></div>}
+              {exercise.synergists && <div className="exercise-info-row"><span>Дополнительно работают</span><strong>{exercise.synergists}</strong></div>}
             </section>
           )}
-
           <section className="exercise-technique-card">
             <div className="exercise-section-label">Техника выполнения</div>
-            {exercise.technique ? (
-              <p>{exercise.technique}</p>
-            ) : (
-              <div className="exercise-technique-empty">Описание техники пока не добавлено.</div>
-            )}
+            {exercise.technique ? <p>{exercise.technique}</p> : <div className="exercise-technique-empty">Описание техники пока не добавлено.</div>}
           </section>
         </main>
       </div>
@@ -173,43 +152,23 @@ function TrainingBottomNav() {
   return (
     <nav className="bottom-nav exercise-bottom-nav" aria-label="Основная навигация">
       <button className="nav-item exercise-nav-active" type="button">
-        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8">
-          <path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" />
-          <path d="m4 21 7 7M21 4l7 7" />
-        </svg>
+        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8"><path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" /><path d="m4 21 7 7M21 4l7 7" /></svg>
         <span>Тренировки</span>
       </button>
-
       <button className="nav-item" type="button">
-        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7">
-          <rect x="5" y="16" width="4" height="10" rx="1" />
-          <rect x="14" y="7" width="4" height="19" rx="1" />
-          <rect x="23" y="12" width="4" height="14" rx="1" />
-        </svg>
+        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7"><rect x="5" y="16" width="4" height="10" rx="1" /><rect x="14" y="7" width="4" height="19" rx="1" /><rect x="23" y="12" width="4" height="14" rx="1" /></svg>
         <span>Статистика</span>
       </button>
-
       <button className="nav-item home" type="button">
-        <span className="home-circle">
-          <svg viewBox="0 0 32 32" fill="none">
-            <path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" />
-          </svg>
-        </span>
+        <span className="home-circle"><svg viewBox="0 0 32 32" fill="none"><path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" /></svg></span>
         <span>Главная</span>
       </button>
-
       <button className="nav-item" type="button">
-        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6">
-          <path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" />
-        </svg>
+        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6"><path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" /></svg>
         <span>Питание</span>
       </button>
-
       <button className="nav-item" type="button">
-        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5">
-          <path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" />
-          <path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" />
-        </svg>
+        <svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5"><path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" /><path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" /></svg>
         <span>СпортПит</span>
       </button>
     </nav>
@@ -218,7 +177,6 @@ function TrainingBottomNav() {
 
 function EmptyPrograms({ tabId }) {
   const copy = EMPTY_COPY[tabId];
-
   return (
     <section className="training-empty-programs">
       <div className="training-empty-mark" aria-hidden="true">—</div>
@@ -230,8 +188,7 @@ function EmptyPrograms({ tabId }) {
 
 function formatShortDate(dateString) {
   if (!dateString) return '';
-  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' })
-    .format(new Date(`${dateString}T12:00:00`));
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${dateString}T12:00:00`));
 }
 
 function programState(program) {
@@ -240,49 +197,30 @@ function programState(program) {
   if (participation.status === 'paused') return { label: 'На паузе', tone: 'paused' };
   if (participation.status === 'completed') return { label: 'Завершена', tone: 'completed' };
   if (participation.status === 'abandoned') return { label: 'Остановлена', tone: 'abandoned' };
-
   const now = new Date();
   const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
-  if (participation.startDate > localToday) {
-    return { label: `Старт ${formatShortDate(participation.startDate)}`, tone: 'scheduled' };
-  }
+  if (participation.startDate > localToday) return { label: `Старт ${formatShortDate(participation.startDate)}`, tone: 'scheduled' };
   return { label: 'Активна', tone: 'active' };
 }
 
 function ProgramCard({ program, onOpen }) {
   const initial = program.name?.trim()?.slice(0, 1)?.toUpperCase() || 'P';
   const state = programState(program);
-
   return (
     <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
-      <span className="my-program-cover">
-        {program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span>{initial}</span>}
-      </span>
+      <span className="my-program-cover">{program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span>{initial}</span>}</span>
       <span className="my-program-copy">
         <span className={`my-program-status ${state.tone}`}>{state.label}</span>
         <strong>{program.name}</strong>
-        <span className="my-program-meta">
-          <span>{program.weekCount} нед.</span>
-          {program.level && <span>{program.level}</span>}
-        </span>
-        {program.categories.length > 0 && (
-          <span className="my-program-tags">
-            {program.categories.slice(0, 2).map((category) => <span key={category}>{category}</span>)}
-          </span>
-        )}
+        <span className="my-program-meta"><span>{program.weekCount} нед.</span>{program.level && <span>{program.level}</span>}</span>
+        {program.categories.length > 0 && <span className="my-program-tags">{program.categories.slice(0, 2).map((category) => <span key={category}>{category}</span>)}</span>}
       </span>
       <span className="my-program-arrow" aria-hidden="true">›</span>
     </button>
   );
 }
 
-export function ExercisesScreen({
-  initialTab = 'recommendations',
-  refreshKey = 0,
-  onCreateProgram,
-  onEditProgram,
-  onStartProgram,
-}) {
+export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0, onCreateProgram, onEditProgram, onStartProgram }) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -298,67 +236,42 @@ export function ExercisesScreen({
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
 
-  useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+  useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
 
   useEffect(() => {
     let active = true;
-
-    async function loadExercises() {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: requestError } = await supabase
-        .from('exercises')
-        .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique')
-        .order('name', { ascending: true });
-
-      if (!active) return;
-
-      if (requestError) {
-        console.error('Unable to load exercise catalog:', requestError);
-        setError('Не удалось загрузить упражнения. Проверьте соединение и попробуйте ещё раз.');
-        setExercises([]);
-      } else {
-        setExercises(data ?? []);
-      }
-
-      setLoading(false);
-    }
-
-    loadExercises();
-
-    return () => {
-      active = false;
-    };
+    setLoading(true);
+    setError(null);
+    supabase
+      .from('exercises')
+      .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique')
+      .order('name', { ascending: true })
+      .then(({ data, error: requestError }) => {
+        if (!active) return;
+        if (requestError) {
+          console.error('Unable to load exercise catalog:', requestError);
+          setError('Не удалось загрузить упражнения. Проверьте соединение и попробуйте ещё раз.');
+          setExercises([]);
+        } else setExercises(data ?? []);
+        setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
     if (!['your-programs', 'completed'].includes(activeTab)) return undefined;
-
     let active = true;
-
-    async function loadMyPrograms() {
-      setProgramsLoading(true);
-      setProgramsError('');
-
-      try {
-        const data = await listPrograms();
-        if (active) setPrograms(data);
-      } catch (requestError) {
+    setProgramsLoading(true);
+    setProgramsError('');
+    listPrograms()
+      .then((data) => { if (active) setPrograms(data); })
+      .catch((requestError) => {
         if (!active) return;
         console.error('Unable to load my programs:', requestError);
         setProgramsError(requestError?.message || 'Не удалось загрузить ваши программы.');
-      } finally {
-        if (active) setProgramsLoading(false);
-      }
-    }
-
-    loadMyPrograms();
-    return () => {
-      active = false;
-    };
+      })
+      .finally(() => { if (active) setProgramsLoading(false); });
+    return () => { active = false; };
   }, [activeTab, refreshKey, programsReloadKey]);
 
   useEffect(() => {
@@ -368,8 +281,7 @@ export function ExercisesScreen({
   }, [activeTab]);
 
   const groups = useMemo(() => {
-    const values = [...new Set(exercises.map((item) => item.muscle_group).filter(Boolean))]
-      .sort((a, b) => a.localeCompare(b, 'ru'));
+    const values = [...new Set(exercises.map((item) => item.muscle_group).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
     return [ALL_GROUPS, ...values];
   }, [exercises]);
 
@@ -378,19 +290,10 @@ export function ExercisesScreen({
     const filtered = exercises.filter((exercise) => {
       if (selectedGroup !== ALL_GROUPS && exercise.muscle_group !== selectedGroup) return false;
       if (!normalizedQuery) return true;
-
-      return [
-        exercise.name,
-        exercise.muscle_group,
-        exercise.target_muscle,
-        exercise.synergists,
-        exercise.exercise_type,
-        exercise.movement_type,
-      ]
+      return [exercise.name, exercise.muscle_group, exercise.target_muscle, exercise.synergists, exercise.exercise_type, exercise.movement_type]
         .filter(Boolean)
         .some((value) => value.toLocaleLowerCase('ru').includes(normalizedQuery));
     });
-
     return filtered.sort((a, b) => {
       const result = a.name.localeCompare(b.name, 'ru');
       return sortDirection === 'asc' ? result : -result;
@@ -408,7 +311,6 @@ export function ExercisesScreen({
         .filter(Boolean)
         .some((value) => value.toLocaleLowerCase('ru').includes(normalizedQuery));
     });
-
     return filtered.sort((a, b) => {
       const result = a.name.localeCompare(b.name, 'ru');
       return sortDirection === 'asc' ? result : -result;
@@ -417,27 +319,19 @@ export function ExercisesScreen({
 
   const activeTabConfig = TRAINING_TABS.find((tab) => tab.id === activeTab);
   const isCreateTab = activeTab === 'create';
+  const isCatalogTab = activeTab === 'catalog';
   const isMyProgramsTab = activeTab === 'your-programs';
   const isCompletedTab = activeTab === 'completed';
   const isProgramsTab = isMyProgramsTab || isCompletedTab;
 
   function openCreateProgram() {
-    if (onCreateProgram) {
-      onCreateProgram();
-      return;
-    }
-
+    if (onCreateProgram) return onCreateProgram();
     setActiveTab('create');
-    window.requestAnimationFrame(() => {
-      document.querySelector('.training-builder')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    window.requestAnimationFrame(() => document.querySelector('.training-builder')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   function handleTabClick(tabId) {
-    if (tabId === 'create') {
-      openCreateProgram();
-      return;
-    }
+    if (tabId === 'create') return openCreateProgram();
     setActiveTab(tabId);
   }
 
@@ -455,13 +349,8 @@ export function ExercisesScreen({
   return (
     <div className="phone exercise-phone">
       <header className="exercise-appbar">
-        <div>
-          <span className="exercise-eyebrow">Раздел</span>
-          <h1>Тренировки</h1>
-        </div>
-        <button className="profile-btn" type="button" aria-label="Профиль">
-          <ProfileIcon />
-        </button>
+        <div><span className="exercise-eyebrow">Раздел</span><h1>Тренировки</h1></div>
+        <button className="profile-btn" type="button" aria-label="Профиль"><ProfileIcon /></button>
       </header>
 
       <main className="exercise-catalog-content">
@@ -474,21 +363,12 @@ export function ExercisesScreen({
             placeholder={isCreateTab ? 'Найти упражнение' : 'Найти программу'}
             aria-label={isCreateTab ? 'Поиск упражнений' : 'Поиск программ'}
           />
-          {query && (
-            <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>
-          )}
+          {query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}
         </label>
 
         <nav className="training-tabs" aria-label="Разделы тренировок">
           {TRAINING_TABS.map((tab) => (
-            <button
-              className={tab.id === activeTab ? 'active' : ''}
-              type="button"
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-            >
-              {tab.label}
-            </button>
+            <button className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>
           ))}
         </nav>
 
@@ -497,23 +377,12 @@ export function ExercisesScreen({
             <span>Программы</span>
             <h2>{isCreateTab ? 'Создать свою программу' : (EMPTY_COPY[activeTab]?.title ?? activeTabConfig?.label)}</h2>
           </div>
-
           <div className="training-tools">
-            <button
-              className={filtersOpen ? 'active' : ''}
-              type="button"
-              onClick={() => setFiltersOpen((current) => !current)}
-              aria-pressed={filtersOpen}
-            >
-              <FilterIcon />
-              <span>Фильтры</span>
+            <button className={filtersOpen ? 'active' : ''} type="button" onClick={() => setFiltersOpen((current) => !current)} aria-pressed={filtersOpen}>
+              <FilterIcon /><span>Фильтры</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}
-            >
-              <SortIcon />
-              <span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span>
+            <button type="button" onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}>
+              <SortIcon /><span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span>
             </button>
           </div>
         </section>
@@ -521,102 +390,56 @@ export function ExercisesScreen({
         {isCreateTab && filtersOpen && (
           <div className="exercise-groups training-filter-groups" role="group" aria-label="Группа мышц">
             {groups.map((group) => (
-              <button
-                className={group === selectedGroup ? 'active' : ''}
-                type="button"
-                key={group}
-                onClick={() => setSelectedGroup(group)}
-              >
-                {group}
-              </button>
+              <button className={group === selectedGroup ? 'active' : ''} type="button" key={group} onClick={() => setSelectedGroup(group)}>{group}</button>
             ))}
           </div>
         )}
 
-        {!isCreateTab && filtersOpen && (
+        {!isCreateTab && !isCatalogTab && filtersOpen && (
           <div className="training-filter-placeholder">
-            {isProgramsTab
-              ? 'Фильтрацию по цели, уровню и месту тренировок подключим следующим шагом.'
-              : 'Фильтры программ подключим вместе с каталогом программ.'}
+            {isProgramsTab ? 'Фильтрацию по цели, уровню и месту тренировок подключим следующим шагом.' : 'Фильтры рекомендаций подключим вместе с рекомендациями.'}
           </div>
         )}
 
-        {!isCompletedTab && (
+        {!isCompletedTab && !isCatalogTab && (
           <button className="create-program-wide" type="button" onClick={openCreateProgram}>
             <span className="create-program-plus"><PlusIcon /></span>
-            <span className="create-program-copy">
-              <strong>Создать свою программу</strong>
-              <small>Соберите тренировочную программу из упражнений</small>
-            </span>
+            <span className="create-program-copy"><strong>Создать свою программу</strong><small>Соберите тренировочную программу из упражнений</small></span>
             <span className="create-program-arrow" aria-hidden="true">›</span>
           </button>
         )}
 
+        {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} />}
+
         {isProgramsTab && programsLoading && (
-          <div className="my-programs-state">
-            <div className="exercise-list-spinner" aria-hidden="true" />
-            <span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span>
-          </div>
+          <div className="my-programs-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>
         )}
 
         {isProgramsTab && !programsLoading && programsError && (
-          <div className="my-programs-state error">
-            <span>{programsError}</span>
-            <button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button>
-          </div>
+          <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>
         )}
 
         {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length > 0 && (
           <section className="my-programs-list" aria-label={isCompletedTab ? 'Пройденные программы' : 'Мои программы'}>
-            {filteredPrograms.map((program) => (
-              <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />
-            ))}
+            {filteredPrograms.map((program) => <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}
           </section>
         )}
 
         {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (
-          query ? (
-            <div className="my-programs-state">По вашему запросу программы не найдены.</div>
-          ) : (
-            <EmptyPrograms tabId={activeTab} />
-          )
+          query ? <div className="my-programs-state">По вашему запросу программы не найдены.</div> : <EmptyPrograms tabId={activeTab} />
         )}
 
-        {!isCreateTab && !isProgramsTab && <EmptyPrograms tabId={activeTab} />}
+        {!isCreateTab && !isProgramsTab && !isCatalogTab && <EmptyPrograms tabId={activeTab} />}
 
         {isCreateTab && (
           <section className="training-builder">
-            <div className="training-builder-heading">
-              <div>
-                <span>Шаг 1</span>
-                <h3>Выберите упражнения</h3>
-              </div>
-              <strong>{loading ? '…' : filteredExercises.length}</strong>
-            </div>
-
-            {loading && (
-              <div className="exercise-state-card">
-                <div className="exercise-list-spinner" aria-hidden="true" />
-                <span>Загружаем базу упражнений…</span>
-              </div>
-            )}
-
-            {!loading && error && (
-              <div className="exercise-state-card exercise-state-error">{error}</div>
-            )}
-
-            {!loading && !error && filteredExercises.length === 0 && (
-              <div className="exercise-state-card">
-                <strong>Ничего не найдено</strong>
-                <span>Попробуйте изменить запрос или фильтры.</span>
-              </div>
-            )}
-
+            <div className="training-builder-heading"><div><span>Шаг 1</span><h3>Выберите упражнения</h3></div><strong>{loading ? '…' : filteredExercises.length}</strong></div>
+            {loading && <div className="exercise-state-card"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем базу упражнений…</span></div>}
+            {!loading && error && <div className="exercise-state-card exercise-state-error">{error}</div>}
+            {!loading && !error && filteredExercises.length === 0 && <div className="exercise-state-card"><strong>Ничего не найдено</strong><span>Попробуйте изменить запрос или фильтры.</span></div>}
             {!loading && !error && filteredExercises.length > 0 && (
               <section className="exercise-list" aria-label="Список упражнений">
-                {filteredExercises.map((exercise) => (
-                  <ExerciseRow key={exercise.id} exercise={exercise} onOpen={setSelectedExercise} />
-                ))}
+                {filteredExercises.map((exercise) => <ExerciseRow key={exercise.id} exercise={exercise} onOpen={setSelectedExercise} />)}
               </section>
             )}
           </section>
@@ -624,10 +447,7 @@ export function ExercisesScreen({
       </main>
 
       <TrainingBottomNav />
-
-      {selectedExercise && (
-        <ExerciseDetail exercise={selectedExercise} onClose={() => setSelectedExercise(null)} />
-      )}
+      {selectedExercise && <ExerciseDetail exercise={selectedExercise} onClose={() => setSelectedExercise(null)} />}
     </div>
   );
 }
