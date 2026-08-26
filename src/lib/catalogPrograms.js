@@ -44,3 +44,16 @@ export async function getCatalogProgram(programId) {
 
   return mapCatalogProgram(data);
 }
+
+export async function adoptCatalogProgram(programId) {
+  const { data, error } = await supabase.rpc('adopt_catalog_program', {
+    p_catalog_program_id: programId,
+  });
+
+  if (error || !data) {
+    console.error('Unable to adopt catalog program:', error);
+    throw new Error('Не удалось добавить программу. Попробуйте ещё раз.');
+  }
+
+  return data;
+}
