@@ -10,17 +10,17 @@ It mirrors the linked Supabase project as of 2026-08-26.
 | `profiles` | `profiles.sql` |
 | `exercises` | `exercises.sql` |
 | `user_exercises` | `user-exercises.sql` |
-| `programs` | `program-core.sql` |
+| `programs` | `program-core.sql` + `catalog-program-adoption.sql` |
 | `program_weeks` | `program-core.sql` |
 | `program_workouts` | `program-core.sql` |
-| `program_workout_exercises` | `program-core.sql` |
+| `program_workout_exercises` | `program-core.sql` + `catalog-program-adoption.sql` |
 | `program_exercise_sets` | `program-core.sql` |
 | `user_programs` | `program-enrollment.sql` |
 | `scheduled_workouts` | `program-enrollment.sql` |
-| `scheduled_workout_exercises` | `program-enrollment.sql` |
+| `scheduled_workout_exercises` | `program-enrollment.sql` + `catalog-program-adoption.sql` |
 | `scheduled_sets` | `program-enrollment.sql` |
 | `workout_sessions` | `workout-session.sql` |
-| `workout_session_exercises` | `workout-session.sql` |
+| `workout_session_exercises` | `workout-session.sql` + `catalog-program-adoption.sql` |
 | `performed_sets` | `workout-session.sql` |
 | `catalog_programs` | `catalog-programs.sql` |
 
@@ -41,6 +41,7 @@ All 16 public tables have RLS enabled in the live project. `exercises` and publi
 - Reordering exercises inside an active workout session without changing the source program: `workout-session-editing.sql`
 - Abandoned workout lifecycle and skipped-workout restart guard: `workout-session-abandon.sql`
 - Shared published catalog of ready-made program payloads imported from structured source files: `catalog-programs.sql`
+- Conversion of a catalog program into a user-owned Program plus exercise-name/prescription snapshot propagation: `catalog-program-adoption.sql`
 
 ### Catalog behavior
 
@@ -51,6 +52,17 @@ All 16 public tables have RLS enabled in the live project. `exercises` and publi
 - `anon` has no table access;
 - the structured source is kept in `source_payload` so original workout and exercise prescriptions are not lost during import;
 - user-created and joined programs remain isolated in the existing `programs` / `user_programs` lifecycle.
+
+Joining a catalog program uses `adopt_catalog_program(uuid)` before the normal Step 3/start flow:
+
+- the catalog row is copied into a normal user-owned `programs` template;
+- `programs.source_catalog_program_id` records where the copy came from;
+- adoption is idempotent for one user/catalog pair, so repeated taps do not create duplicate user templates;
+- a source exercise is linked to `exercises.id` only when its name matches the canonical catalog exactly;
+- unmatched or compound source exercises keep `exercise_id = null` and preserve `exercise_name_snapshot` plus `prescription_snapshot`;
+- those snapshot fields propagate through `program_workout_exercises` → `scheduled_workout_exercises` → `workout_session_exercises`, so the program stays executable even before all legacy names are mapped to the canonical exercise catalog;
+- the old `(workout_id, exercise_id)` uniqueness constraint is intentionally removed because the imported catalog contains workouts where the same exercise can occur more than once; position remains unique;
+- common textual prescriptions are converted to planned sets when they can be parsed safely, while the original prescription text is always retained.
 
 ### Schedule edit behavior
 
@@ -83,6 +95,7 @@ A joined program can change its first-workout date while it has not actually sta
 - performed sets store warm-up/working type, planned reps, actual weight/reps and completion state;
 - a user can add/delete sets, replace an exercise, or reorder exercises inside the current active session without modifying the source program;
 - previous exercise results are read from completed workout-session history regardless of program;
+- snapshot-only catalog exercises are grouped by their preserved exercise name until a canonical `exercise_id` is assigned;
 - best set uses completed working sets only; warm-up sets stay visible in history but are excluded from best-set and tonnage calculations;
 - completing a session sets both `workout_sessions.status` and the linked `scheduled_workouts.status` to `completed`;
 - abandoning a session sets `workout_sessions.status = abandoned` and the linked `scheduled_workouts.status = skipped`;
@@ -111,9 +124,10 @@ The files are intentionally kept as readable schema milestones rather than one o
 14. `workout-session-editing.sql`
 15. `workout-session-abandon.sql`
 16. `catalog-programs.sql`
-17. `verify-schema.sql` (verification only; it does not create objects)
+17. `catalog-program-adoption.sql`
+18. `verify-schema.sql` (verification only; it does not create objects)
 
-`program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they contain the current RPC definitions that bring a fresh database to the same final behavior as production.
+`program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule/catalog files are still required because they contain the current RPC definitions and snapshot extensions that bring a fresh database to the same final behavior as production.
 
 ## Verification
 
@@ -123,7 +137,9 @@ Run `verify-schema.sql` after provisioning. It checks:
 - RLS is enabled on every required public table;
 - the expected RLS policy counts are present;
 - `anon` has no table privileges on application tables;
-- all eight current program/workout RPCs have the expected `SECURITY INVOKER` mode;
+- all nine current program/workout/catalog RPCs have the expected `SECURITY INVOKER` mode;
+- the catalog-adoption snapshot columns exist in the template, schedule and workout-session layers;
+- `authenticated` can execute `adopt_catalog_program(uuid)` while `anon` cannot;
 - the private `program-covers` bucket exists with the correct 5 MB/MIME restrictions;
 - all four owner-only Storage policies exist.
 
