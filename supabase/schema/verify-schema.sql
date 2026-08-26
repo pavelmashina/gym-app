@@ -17,6 +17,7 @@ declare
   v_storage_policy_count integer;
   v_rpc_count integer;
   v_snapshot_column_count integer;
+  v_source_index_count integer;
   v_adopt_authenticated boolean;
   v_adopt_anon boolean;
 begin
@@ -94,6 +95,17 @@ begin
     raise exception 'Schema verification failed: expected 7 catalog-adoption snapshot/source columns, found %', v_snapshot_column_count;
   end if;
 
+  select count(*) into v_source_index_count
+  from pg_indexes
+  where schemaname = 'public'
+    and tablename = 'programs'
+    and indexname = 'programs_source_catalog_idx'
+    and indexdef like '%(source_catalog_program_id)%';
+
+  if v_source_index_count <> 1 then
+    raise exception 'Schema verification failed: programs_source_catalog_idx is missing';
+  end if;
+
   select has_function_privilege('authenticated', 'public.adopt_catalog_program(uuid)', 'EXECUTE')
     into v_adopt_authenticated;
   select has_function_privilege('anon', 'public.adopt_catalog_program(uuid)', 'EXECUTE')
@@ -130,6 +142,6 @@ begin
     raise exception 'Schema verification failed: expected 4 program cover Storage policies, found %', v_storage_policy_count;
   end if;
 
-  raise notice 'Schema verification passed: 16 tables, RLS, policies, 9 RPCs, catalog snapshots and Storage match the repository inventory.';
+  raise notice 'Schema verification passed: 16 tables, RLS, policies, 9 RPCs, catalog snapshots/index and Storage match the repository inventory.';
 end
 $verify$;
