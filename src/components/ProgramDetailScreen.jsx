@@ -52,11 +52,8 @@ function formatRestDays(count) {
 
 function formatDate(dateString) {
   if (!dateString) return '';
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(`${dateString}T12:00:00`));
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+    .format(new Date(`${dateString}T12:00:00`));
 }
 
 function localToday() {
@@ -90,7 +87,6 @@ function participationLabel(participation) {
   if (participation.status === 'paused') return 'На паузе';
   if (participation.status === 'completed') return 'Завершена';
   if (participation.status === 'abandoned') return 'Остановлена';
-
   if (participation.startDate > localToday()) return `Старт ${formatDate(participation.startDate)}`;
   return 'Активна';
 }
@@ -101,7 +97,7 @@ async function attachScheduledSnapshot(program) {
   const scheduledWorkoutIds = program.scheduledWorkouts.map((workout) => workout.id);
   const { data: scheduledExercises, error: exercisesError } = await supabase
     .from('scheduled_workout_exercises')
-    .select('id, scheduled_workout_id, exercise_id, position')
+    .select('id, scheduled_workout_id, exercise_id, exercise_name_snapshot, prescription_snapshot, position')
     .in('scheduled_workout_id', scheduledWorkoutIds)
     .order('position', { ascending: true });
 
@@ -112,7 +108,7 @@ async function attachScheduledSnapshot(program) {
 
   const rows = scheduledExercises ?? [];
   const scheduledExerciseIds = rows.map((row) => row.id);
-  const exerciseIds = [...new Set(rows.map((row) => row.exercise_id))];
+  const exerciseIds = [...new Set(rows.map((row) => row.exercise_id).filter(Boolean))];
 
   let sets = [];
   if (scheduledExerciseIds.length > 0) {
@@ -121,11 +117,7 @@ async function attachScheduledSnapshot(program) {
       .select('id, scheduled_workout_exercise_id, set_number, planned_reps')
       .in('scheduled_workout_exercise_id', scheduledExerciseIds)
       .order('set_number', { ascending: true });
-
-    if (response.error) {
-      console.error('Unable to load scheduled sets:', response.error);
-      throw new Error('Не удалось загрузить сохранённые подходы программы.');
-    }
+    if (response.error) throw new Error('Не удалось загрузить сохранённые подходы программы.');
     sets = response.data ?? [];
   }
 
@@ -135,11 +127,7 @@ async function attachScheduledSnapshot(program) {
       .from('exercises')
       .select('id, name, muscle_group, movement_type, difficulty')
       .in('id', exerciseIds);
-
-    if (response.error) {
-      console.error('Unable to load scheduled exercise names:', response.error);
-      throw new Error('Не удалось загрузить данные упражнений программы.');
-    }
+    if (response.error) throw new Error('Не удалось загрузить данные упражнений программы.');
     exercises = response.data ?? [];
   }
 
@@ -153,11 +141,13 @@ async function attachScheduledSnapshot(program) {
 
   const exercisesByWorkout = new Map();
   rows.forEach((row) => {
-    const exercise = exerciseById.get(row.exercise_id) ?? {};
+    const exercise = row.exercise_id ? (exerciseById.get(row.exercise_id) ?? {}) : {};
     const list = exercisesByWorkout.get(row.scheduled_workout_id) ?? [];
     list.push({
-      id: row.exercise_id,
-      name: exercise.name ?? 'Упражнение',
+      id: row.exercise_id ?? row.id,
+      linkedExerciseId: row.exercise_id ?? null,
+      name: row.exercise_name_snapshot || exercise.name || 'Упражнение',
+      prescription: row.prescription_snapshot ?? '',
       muscle_group: exercise.muscle_group ?? '',
       movement_type: exercise.movement_type ?? '',
       difficulty: exercise.difficulty ?? null,
@@ -194,44 +184,31 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
   useEffect(() => {
     let active = true;
-
-    async function loadProgram() {
-      setLoading(true);
-      setError('');
-
-      try {
-        const data = await getProgram(programId);
-        const hydratedProgram = await attachScheduledSnapshot(data);
-        if (active) {
-          setProgram(hydratedProgram);
-          setStartDateDraft(hydratedProgram.participation?.startDate ?? '');
-        }
-      } catch (requestError) {
+    setLoading(true);
+    setError('');
+    getProgram(programId)
+      .then(attachScheduledSnapshot)
+      .then((data) => {
+        if (!active) return;
+        setProgram(data);
+        setStartDateDraft(data.participation?.startDate ?? '');
+      })
+      .catch((requestError) => {
         if (!active) return;
         console.error('Unable to open program details:', requestError);
         setError(requestError?.message || 'Не удалось открыть программу.');
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    loadProgram();
-    return () => {
-      active = false;
-    };
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [programId]);
 
   const templateWorkouts = useMemo(() => {
     if (!program) return [];
-    return program.programWeeks.flatMap((week) => week.workouts.map((workout) => ({
-      weekNumber: week.number,
-      workout,
-    })));
+    return program.programWeeks.flatMap((week) => week.workouts.map((workout) => ({ weekNumber: week.number, workout })));
   }, [program]);
 
   const schedule = useMemo(() => {
     if (!program) return [];
-
     if (program.participation && program.scheduledWorkouts.length > 0) {
       return program.scheduledWorkouts.map((scheduled) => ({
         weekNumber: scheduled.weekNumber,
@@ -251,7 +228,6 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
     if (allowedDays) {
       let day = 1;
       let weekday = allowedDays[0];
-
       return templateWorkouts.map((item, index) => {
         const scheduled = { ...item, day, date: null, weekday };
         if (index < templateWorkouts.length - 1) {
@@ -266,44 +242,29 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
     let day = 1;
     return templateWorkouts.map((item, index) => {
       const scheduled = { ...item, day, date: null, weekday: null };
-      if (index < templateWorkouts.length - 1) {
-        day += 1 + Number(item.workout.restDaysAfter ?? 1);
-      }
+      if (index < templateWorkouts.length - 1) day += 1 + Number(item.workout.restDaysAfter ?? 1);
       return scheduled;
     });
   }, [program, templateWorkouts]);
 
   if (loading) {
-    return (
-      <div className="phone program-detail-phone">
-        <div className="program-detail-state">
-          <div className="exercise-list-spinner" aria-hidden="true" />
-          <span>Загружаем программу…</span>
-        </div>
-      </div>
-    );
+    return <div className="phone program-detail-phone"><div className="program-detail-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем программу…</span></div></div>;
   }
 
   if (error || !program) {
     return (
       <div className="phone program-detail-phone">
-        <header className="program-detail-header">
-          <button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button>
-          <strong>Программа</strong>
-          <span />
-        </header>
+        <header className="program-detail-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Программа</strong><span /></header>
         <div className="program-detail-state error">{error || 'Программа не найдена.'}</div>
       </div>
     );
   }
 
   const totalWorkouts = templateWorkouts.length;
-  const totalExercises = program.programWeeks.reduce(
-    (sum, week) => sum + week.workouts.reduce((weekSum, workout) => weekSum + workout.exercises.length, 0),
-    0,
-  );
+  const totalExercises = program.programWeeks.reduce((sum, week) => sum + week.workouts.reduce((weekSum, workout) => weekSum + workout.exercises.length, 0), 0);
   const participation = program.participation;
   const canStart = !participation || ['completed', 'abandoned'].includes(participation.status);
+  const canEditProgram = !program.sourceCatalogProgramId;
   const canEditStartDate = Boolean(
     participation
     && ['active', 'paused'].includes(participation.status)
@@ -316,15 +277,8 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
   async function saveStartDate() {
     if (!canEditStartDate || startDateSaving || !dateChanged) return;
-    if (startDateDraft < localToday()) {
-      setStartDateError('Дата начала не может быть в прошлом.');
-      return;
-    }
-    if (!dateAllowed) {
-      setStartDateError(startDateHint(program.scheduleMode));
-      return;
-    }
-
+    if (startDateDraft < localToday()) { setStartDateError('Дата начала не может быть в прошлом.'); return; }
+    if (!dateAllowed) { setStartDateError(startDateHint(program.scheduleMode)); return; }
     setStartDateSaving(true);
     setStartDateError('');
     try {
@@ -337,15 +291,10 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       setEditingStartDate(false);
     } catch (changeError) {
       console.error('Unable to change program start date:', changeError);
-      if (changeError?.message?.includes('already started') || changeError?.message?.includes('workout history')) {
-        setStartDateError('Программа уже фактически началась. Дату начала больше нельзя изменить.');
-      } else if (changeError?.message?.includes('Monday, Wednesday or Friday')) {
-        setStartDateError('Выберите понедельник, среду или пятницу.');
-      } else if (changeError?.message?.includes('Tuesday, Thursday or Saturday')) {
-        setStartDateError('Выберите вторник, четверг или субботу.');
-      } else {
-        setStartDateError('Не удалось изменить дату начала. Попробуйте ещё раз.');
-      }
+      if (changeError?.message?.includes('already started') || changeError?.message?.includes('workout history')) setStartDateError('Программа уже фактически началась. Дату начала больше нельзя изменить.');
+      else if (changeError?.message?.includes('Monday, Wednesday or Friday')) setStartDateError('Выберите понедельник, среду или пятницу.');
+      else if (changeError?.message?.includes('Tuesday, Thursday or Saturday')) setStartDateError('Выберите вторник, четверг или субботу.');
+      else setStartDateError('Не удалось изменить дату начала. Попробуйте ещё раз.');
     } finally {
       setStartDateSaving(false);
     }
@@ -360,145 +309,39 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       </header>
 
       <main className="program-detail-content">
-        {program.coverUrl && (
-          <div className="program-detail-cover">
-            <img src={program.coverUrl} alt="" />
-          </div>
-        )}
+        {program.coverUrl
+          ? <div className="program-detail-cover"><img src={program.coverUrl} alt="" /></div>
+          : <div className="program-detail-cover program-neutral-placeholder" aria-hidden="true" />}
 
         <section className="program-detail-hero">
           <span>Тренировочная программа</span>
           <h1>{program.name}</h1>
           {program.description && <p>{program.description}</p>}
-          {program.categories.length > 0 && (
-            <div className="program-detail-tags">
-              {program.categories.map((category) => <span key={category}>{category}</span>)}
-            </div>
-          )}
+          {program.categories.length > 0 && <div className="program-detail-tags">{program.categories.map((category) => <span key={category}>{category}</span>)}</div>}
         </section>
 
         <section className={`program-detail-start-state${canStart ? ' not-started' : ' joined'}`}>
           <span className="program-detail-status-badge">{participationLabel(participation)}</span>
           {canStart ? (
-            <>
-              <strong>Начните, когда будете готовы</strong>
-              <p>Программа уже сохранена. Дату первой тренировки и присоединения можно выбрать позже — расписание создастся только после подтверждения даты.</p>
-            </>
+            <><strong>Начните, когда будете готовы</strong><p>Программа уже сохранена. Дату первой тренировки и присоединения можно выбрать позже — расписание создастся только после подтверждения даты.</p></>
           ) : (
             <>
               <strong>Вы присоединились к программе</strong>
               <p>Первая тренировка запланирована на {formatDate(participation.startDate)}. Ниже показан ваш персональный календарь.</p>
-
               {canEditStartDate && !editingStartDate && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStartDateDraft(participation.startDate);
-                    setStartDateError('');
-                    setEditingStartDate(true);
-                  }}
-                  style={{
-                    marginTop: '10px',
-                    minHeight: '42px',
-                    padding: '0 14px',
-                    border: '1px solid var(--line)',
-                    borderRadius: '13px',
-                    background: 'var(--surface)',
-                    color: 'var(--ink)',
-                    font: 'inherit',
-                    fontSize: '11px',
-                    fontWeight: 800,
-                  }}
-                >
-                  Изменить дату начала
-                </button>
+                <button type="button" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }} style={{ marginTop:'10px',minHeight:'42px',padding:'0 14px',border:'1px solid var(--line)',borderRadius:'13px',background:'var(--surface)',color:'var(--ink)',font:'inherit',fontSize:'11px',fontWeight:800 }}>Изменить дату начала</button>
               )}
-
               {canEditStartDate && editingStartDate && (
-                <div
-                  style={{
-                    marginTop: '12px',
-                    padding: '12px',
-                    borderRadius: '14px',
-                    background: 'var(--surface)',
-                    display: 'grid',
-                    gap: '9px',
-                  }}
-                >
-                  <label style={{ display: 'grid', gap: '6px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase' }}>
-                      Новая дата первой тренировки
-                    </span>
-                    <input
-                      type="date"
-                      min={localToday()}
-                      value={startDateDraft}
-                      onChange={(event) => {
-                        setStartDateDraft(event.target.value);
-                        setStartDateError('');
-                      }}
-                      disabled={startDateSaving}
-                      style={{
-                        width: '100%',
-                        minHeight: '46px',
-                        padding: '0 11px',
-                        border: '1px solid var(--line)',
-                        borderRadius: '12px',
-                        background: '#fafaf8',
-                        color: 'var(--ink)',
-                        font: 'inherit',
-                        fontSize: '12px',
-                        fontWeight: 760,
-                      }}
-                    />
+                <div style={{ marginTop:'12px',padding:'12px',borderRadius:'14px',background:'var(--surface)',display:'grid',gap:'9px' }}>
+                  <label style={{ display:'grid',gap:'6px',minWidth:0 }}>
+                    <span style={{ fontSize:'9px',fontWeight:800,color:'var(--muted)',textTransform:'uppercase' }}>Новая дата первой тренировки</span>
+                    <input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} disabled={startDateSaving} style={{ width:'100%',minWidth:0,maxWidth:'100%',boxSizing:'border-box',minHeight:'46px',padding:'0 11px',border:'1px solid var(--line)',borderRadius:'12px',background:'#fafaf8',color:'var(--ink)',font:'inherit',fontSize:'12px',fontWeight:760 }} />
                   </label>
-                  {startDateHint(program.scheduleMode) && (
-                    <span style={{ fontSize: '9px', lineHeight: 1.4, color: dateAllowed ? 'var(--muted)' : '#9a3434' }}>
-                      {startDateHint(program.scheduleMode)}
-                    </span>
-                  )}
-                  {startDateError && (
-                    <span style={{ fontSize: '9px', lineHeight: 1.4, color: '#9a3434' }}>{startDateError}</span>
-                  )}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingStartDate(false);
-                        setStartDateDraft(participation.startDate);
-                        setStartDateError('');
-                      }}
-                      disabled={startDateSaving}
-                      style={{
-                        minHeight: '42px',
-                        border: '1px solid var(--line)',
-                        borderRadius: '12px',
-                        background: 'transparent',
-                        color: 'var(--ink)',
-                        font: 'inherit',
-                        fontSize: '10px',
-                        fontWeight: 800,
-                      }}
-                    >
-                      Отмена
-                    </button>
-                    <button
-                      type="button"
-                      onClick={saveStartDate}
-                      disabled={startDateSaving || !dateChanged || !dateAllowed}
-                      style={{
-                        minHeight: '42px',
-                        border: 0,
-                        borderRadius: '12px',
-                        background: startDateSaving || !dateChanged || !dateAllowed ? '#d7d7d2' : 'var(--ink)',
-                        color: startDateSaving || !dateChanged || !dateAllowed ? '#999992' : '#fff',
-                        font: 'inherit',
-                        fontSize: '10px',
-                        fontWeight: 820,
-                      }}
-                    >
-                      {startDateSaving ? 'Сохраняем…' : 'Сохранить'}
-                    </button>
+                  {startDateHint(program.scheduleMode) && <span style={{ fontSize:'9px',lineHeight:1.4,color:dateAllowed?'var(--muted)':'#9a3434' }}>{startDateHint(program.scheduleMode)}</span>}
+                  {startDateError && <span style={{ fontSize:'9px',lineHeight:1.4,color:'#9a3434' }}>{startDateError}</span>}
+                  <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px' }}>
+                    <button type="button" onClick={() => { setEditingStartDate(false); setStartDateDraft(participation.startDate); setStartDateError(''); }} disabled={startDateSaving} style={{ minHeight:'42px',border:'1px solid var(--line)',borderRadius:'12px',background:'transparent',color:'var(--ink)',font:'inherit',fontSize:'10px',fontWeight:800 }}>Отмена</button>
+                    <button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed} style={{ minHeight:'42px',border:0,borderRadius:'12px',background:startDateSaving||!dateChanged||!dateAllowed?'#d7d7d2':'var(--ink)',color:startDateSaving||!dateChanged||!dateAllowed?'#999992':'#fff',font:'inherit',fontSize:'10px',fontWeight:820 }}>{startDateSaving?'Сохраняем…':'Сохранить'}</button>
                   </div>
                 </div>
               )}
@@ -521,49 +364,24 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
         )}
 
         <section className="program-detail-section">
-          <div className="program-detail-section-head">
-            <span>{participation ? 'Календарь' : 'Ритм'}</span>
-            <h2>{participation ? 'Запланированные тренировки' : 'Последовательность тренировок'}</h2>
-          </div>
-
+          <div className="program-detail-section-head"><span>{participation ? 'Календарь' : 'Ритм'}</span><h2>{participation ? 'Запланированные тренировки' : 'Последовательность тренировок'}</h2></div>
           <div className="program-detail-schedule">
             {schedule.map((item, index) => (
               <article key={item.workout.id}>
-                <div className="program-detail-day">
-                  {item.date
-                    ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${item.date}T12:00:00`))
-                    : (item.weekday !== null ? WEEKDAY_SHORT[item.weekday] : `День ${item.day}`)}
-                </div>
-                <div className="program-detail-workout-copy">
-                  <small>Неделя {item.weekNumber}</small>
-                  <strong>{item.workout.name}</strong>
-                  <span>{formatCount(item.workout.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span>
-                </div>
-                {!participation && index < schedule.length - 1 && (
-                  <div className="program-detail-rest">
-                    {weeklyMode
-                      ? `Следующая — ${WEEKDAY_SHORT[schedule[index + 1].weekday]}`
-                      : formatRestDays(Number(item.workout.restDaysAfter ?? 1))}
-                  </div>
-                )}
+                <div className="program-detail-day">{item.date ? new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(new Date(`${item.date}T12:00:00`)) : (item.weekday !== null ? WEEKDAY_SHORT[item.weekday] : `День ${item.day}`)}</div>
+                <div className="program-detail-workout-copy"><small>Неделя {item.weekNumber}</small><strong>{item.workout.name}</strong><span>{formatCount(item.workout.exercises.length,['упражнение','упражнения','упражнений'])}</span></div>
+                {!participation && index < schedule.length - 1 && <div className="program-detail-rest">{weeklyMode ? `Следующая — ${WEEKDAY_SHORT[schedule[index + 1].weekday]}` : formatRestDays(Number(item.workout.restDaysAfter ?? 1))}</div>}
               </article>
             ))}
           </div>
         </section>
 
         <section className="program-detail-section">
-          <div className="program-detail-section-head">
-            <span>Структура</span>
-            <h2>Недели и упражнения</h2>
-          </div>
-
+          <div className="program-detail-section-head"><span>Структура</span><h2>Недели и упражнения</h2></div>
           <div className="program-detail-weeks">
             {program.programWeeks.map((week) => (
               <section key={week.id}>
-                <header>
-                  <strong>Неделя {week.number}</strong>
-                  <span>{formatCount(week.workouts.length, ['тренировка', 'тренировки', 'тренировок'])}</span>
-                </header>
+                <header><strong>Неделя {week.number}</strong><span>{formatCount(week.workouts.length,['тренировка','тренировки','тренировок'])}</span></header>
                 {week.workouts.map((workout) => (
                   <div className="program-detail-week-workout" key={workout.id}>
                     <strong>{workout.name}</strong>
@@ -576,17 +394,17 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
         </section>
       </main>
 
-      <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>
+      <footer className={`program-detail-footer${canStart && canEditProgram ? ' two-actions' : ''}`}>
         {canStart && (
           <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}>
-            <CalendarIcon />
-            <span>{participation ? 'Начать программу заново' : 'Начать программу'}</span>
+            <CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span>
           </button>
         )}
-        <button className="program-detail-edit-button" type="button" onClick={() => onEdit?.(program.id)}>
-          <PencilIcon />
-          <span>Редактировать программу</span>
-        </button>
+        {canEditProgram && (
+          <button className="program-detail-edit-button" type="button" onClick={() => onEdit?.(program.id)}>
+            <PencilIcon /><span>Редактировать программу</span>
+          </button>
+        )}
       </footer>
     </div>
   );
