@@ -1,9 +1,9 @@
 # Supabase database schema
 
 This directory is the repository source of truth for the application database structure.
-It mirrors the linked Supabase project as of 2026-08-25.
+It mirrors the linked Supabase project as of 2026-08-26.
 
-## Public tables (15)
+## Public tables (16)
 
 | Table | Source file |
 | --- | --- |
@@ -22,8 +22,9 @@ It mirrors the linked Supabase project as of 2026-08-25.
 | `workout_sessions` | `workout-session.sql` |
 | `workout_session_exercises` | `workout-session.sql` |
 | `performed_sets` | `workout-session.sql` |
+| `catalog_programs` | `catalog-programs.sql` |
 
-All 15 public tables have RLS enabled in the live project. `exercises` is read-only for authenticated users; user-owned tables use ownership policies. Program child tables inherit ownership through `programs.owner_id`; scheduled snapshot tables inherit ownership through `user_programs.user_id`; workout execution tables inherit ownership through `workout_sessions.user_id`.
+All 16 public tables have RLS enabled in the live project. `exercises` and published `catalog_programs` are read-only for authenticated users; user-owned tables use ownership policies. Program child tables inherit ownership through `programs.owner_id`; scheduled snapshot tables inherit ownership through `user_programs.user_id`; workout execution tables inherit ownership through `workout_sessions.user_id`.
 
 ## Other database objects
 
@@ -39,6 +40,17 @@ All 15 public tables have RLS enabled in the live project. `exercises` is read-o
 - Actual workout execution snapshot, one-active-session rule and `start_workout` / `complete_workout` RPCs: `workout-session.sql`
 - Reordering exercises inside an active workout session without changing the source program: `workout-session-editing.sql`
 - Abandoned workout lifecycle and skipped-workout restart guard: `workout-session-abandon.sql`
+- Shared published catalog of ready-made program payloads imported from structured source files: `catalog-programs.sql`
+
+### Catalog behavior
+
+`catalog_programs` is separate from user-owned `programs`:
+
+- catalog rows are shared content and are not owned or edited by app users;
+- authenticated users can read only rows with `published = true`;
+- `anon` has no table access;
+- the structured source is kept in `source_payload` so original workout and exercise prescriptions are not lost during import;
+- user-created and joined programs remain isolated in the existing `programs` / `user_programs` lifecycle.
 
 ### Schedule edit behavior
 
@@ -98,7 +110,8 @@ The files are intentionally kept as readable schema milestones rather than one o
 13. `program-start-date-edit.sql`
 14. `workout-session-editing.sql`
 15. `workout-session-abandon.sql`
-16. `verify-schema.sql` (verification only; it does not create objects)
+16. `catalog-programs.sql`
+17. `verify-schema.sql` (verification only; it does not create objects)
 
 `program-core.sql` already contains the current `rest_days_after` and `schedule_mode` columns. The later schedule files are still required because they contain the current RPC definitions that bring a fresh database to the same final behavior as production.
 
@@ -106,7 +119,7 @@ The files are intentionally kept as readable schema milestones rather than one o
 
 Run `verify-schema.sql` after provisioning. It checks:
 
-- all 15 required public tables exist;
+- all 16 required public tables exist;
 - RLS is enabled on every required public table;
 - the expected RLS policy counts are present;
 - `anon` has no table privileges on application tables;
