@@ -2,11 +2,7 @@ import { supabase } from './supabase.js';
 
 const PROGRAM_COVERS_BUCKET = 'program-covers';
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
-const COVER_EXTENSIONS = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
+const COVER_EXTENSIONS = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 
 function nullableText(value) {
   const normalized = value?.trim?.() ?? '';
@@ -67,9 +63,7 @@ function buildProgramPayload({
             exercise_id: exerciseId,
             exercise_name_snapshot: nullableText(exercise.name),
             prescription_snapshot: nullableText(exercise.prescription),
-            sets: (exercise.sets ?? []).map((set) => ({
-              reps: normalizeReps(set.reps),
-            })),
+            sets: (exercise.sets ?? []).map((set) => ({ reps: normalizeReps(set.reps) })),
           };
         }),
       })),
@@ -89,10 +83,7 @@ function validateStartDate(startDate) {
 
 async function requireCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
-    console.error('Unable to verify current user:', error);
-    throw new Error('Сессия истекла. Войдите в аккаунт ещё раз.');
-  }
+  if (error || !user) throw new Error('Сессия истекла. Войдите в аккаунт ещё раз.');
   return user;
 }
 
@@ -110,10 +101,7 @@ async function removeCoverQuietly(coverPath) {
 async function getSignedCoverUrl(coverPath) {
   if (!coverPath) return null;
   const { data, error } = await supabase.storage.from(PROGRAM_COVERS_BUCKET).createSignedUrl(coverPath, 60 * 60);
-  if (error) {
-    console.error('Unable to create program cover URL:', error);
-    return null;
-  }
+  if (error) return null;
   return data?.signedUrl ?? null;
 }
 
@@ -124,13 +112,12 @@ async function saveCover({ coverFile, programId, userId }) {
   const { error: uploadError } = await supabase.storage.from(PROGRAM_COVERS_BUCKET).upload(coverPath, coverFile, {
     cacheControl: '3600', contentType: coverFile.type, upsert: false,
   });
-  if (uploadError) {
-    console.error('Unable to upload program cover:', uploadError);
-    throw new Error('Не удалось загрузить обложку программы.');
-  }
-  const { error: updateError } = await supabase.from('programs').update({ cover_path: coverPath, updated_at: new Date().toISOString() }).eq('id', programId);
+  if (uploadError) throw new Error('Не удалось загрузить обложку программы.');
+  const { error: updateError } = await supabase
+    .from('programs')
+    .update({ cover_path: coverPath, updated_at: new Date().toISOString() })
+    .eq('id', programId);
   if (updateError) {
-    console.error('Unable to attach program cover:', updateError);
     await removeCoverQuietly(coverPath);
     throw new Error('Не удалось сохранить обложку программы.');
   }
@@ -173,21 +160,41 @@ function mapParticipationRow(row) {
 }
 
 async function loadLatestParticipations(programIds) {
-  if (programIds.length === 0) return new Map();
+  if (!programIds.length) return new Map();
   const { data, error } = await supabase
     .from('user_programs')
     .select('id, program_id, status, start_date, joined_at, paused_at, completed_at, updated_at')
     .in('program_id', programIds)
     .order('joined_at', { ascending: false });
-  if (error) {
-    console.error('Unable to load program participation:', error);
-    throw new Error('Не удалось загрузить статус программ.');
-  }
-  const latestByProgram = new Map();
+  if (error) throw new Error('Не удалось загрузить статус программ.');
+  const map = new Map();
   (data ?? []).forEach((row) => {
-    if (!latestByProgram.has(row.program_id)) latestByProgram.set(row.program_id, mapParticipationRow(row));
+    if (!map.has(row.program_id)) map.set(row.program_id, mapParticipationRow(row));
   });
-  return latestByProgram;
+  return map;
+}
+
+async function loadTemplateWorkoutCounts(programIds) {
+  const counts = new Map(programIds.map((id) => [id, 0]));
+  if (!programIds.length) return counts;
+  const { data: weeks, error: weeksError } = await supabase
+    .from('program_weeks')
+    .select('id, program_id')
+    .in('program_id', programIds);
+  if (weeksError) return counts;
+  const weekIds = (weeks ?? []).map((row) => row.id);
+  if (!weekIds.length) return counts;
+  const { data: workouts, error: workoutsError } = await supabase
+    .from('program_workouts')
+    .select('id, week_id')
+    .in('week_id', weekIds);
+  if (workoutsError) return counts;
+  const programByWeek = new Map((weeks ?? []).map((row) => [row.id, row.program_id]));
+  (workouts ?? []).forEach((row) => {
+    const programId = programByWeek.get(row.week_id);
+    if (programId) counts.set(programId, (counts.get(programId) ?? 0) + 1);
+  });
+  return counts;
 }
 
 export async function startProgram(programId, startDate) {
@@ -198,7 +205,6 @@ export async function startProgram(programId, startDate) {
     p_start_date: startDate,
   });
   if (error || !userProgramId) {
-    console.error('Unable to start program:', error);
     if (error?.code === '23505' || error?.message?.includes('already active')) throw new Error('Вы уже присоединились к этой программе.');
     if (error?.message?.includes('Monday, Wednesday or Friday')) throw new Error('Первая тренировка должна быть в понедельник, среду или пятницу.');
     if (error?.message?.includes('Tuesday, Thursday or Saturday')) throw new Error('Первая тренировка должна быть во вторник, четверг или субботу.');
@@ -213,10 +219,7 @@ export async function createProgram({ coverFile = null, startDate = null, ...pro
   const user = await requireCurrentUser();
   const payload = buildProgramPayload(program);
   const { data: programId, error: createError } = await supabase.rpc('create_program_with_schedule', { p_program: payload });
-  if (createError || !programId) {
-    console.error('Unable to create program:', createError);
-    throw new Error('Не удалось сохранить программу. Попробуйте ещё раз.');
-  }
+  if (createError || !programId) throw new Error('Не удалось сохранить программу. Попробуйте ещё раз.');
   let coverPath = null;
   try {
     coverPath = await saveCover({ coverFile, programId, userId: user.id });
@@ -234,10 +237,13 @@ export async function updateProgram({ programId, coverFile = null, existingCover
   const user = await requireCurrentUser();
   const payload = buildProgramPayload(program);
   const { data: updatedProgramId, error: updateError } = await supabase.rpc('update_program_with_schedule', {
-    p_program_id: programId, p_program: payload,
+    p_program_id: programId,
+    p_program: payload,
   });
   if (updateError || !updatedProgramId) {
-    console.error('Unable to update program:', updateError);
+    if (updateError?.message?.includes('Cycle configuration cannot change')) {
+      throw new Error('Количество повторений цикла нельзя менять, пока программа активна или находится на паузе.');
+    }
     throw new Error('Не удалось сохранить изменения программы. Попробуйте ещё раз.');
   }
   let coverPath = existingCoverPath;
@@ -255,17 +261,26 @@ export async function listPrograms() {
     .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .neq('status', 'archived')
     .order('updated_at', { ascending: false });
-  if (error) {
-    console.error('Unable to load programs:', error);
-    throw new Error('Не удалось загрузить ваши программы.');
-  }
+  if (error) throw new Error('Не удалось загрузить ваши программы.');
   const rows = data ?? [];
-  const participationByProgram = await loadLatestParticipations(rows.map((row) => row.id));
-  return Promise.all(rows.map(async (row) => ({
-    ...mapProgramRow(row),
-    participation: participationByProgram.get(row.id) ?? null,
-    coverUrl: await getSignedCoverUrl(row.cover_path),
-  })));
+  const programIds = rows.map((row) => row.id);
+  const [participationByProgram, workoutCounts] = await Promise.all([
+    loadLatestParticipations(programIds),
+    loadTemplateWorkoutCounts(programIds),
+  ]);
+  return Promise.all(rows.map(async (row) => {
+    const mapped = mapProgramRow(row);
+    const templateWorkoutCount = workoutCounts.get(row.id) ?? 0;
+    return {
+      ...mapped,
+      templateWorkoutCount,
+      totalPlannedWorkoutCount: mapped.structureMode === 'cycle'
+        ? templateWorkoutCount * mapped.cycleRepeatCount
+        : templateWorkoutCount,
+      participation: participationByProgram.get(row.id) ?? null,
+      coverUrl: await getSignedCoverUrl(row.cover_path),
+    };
+  }));
 }
 
 export async function getProgram(programId) {
@@ -274,26 +289,30 @@ export async function getProgram(programId) {
     .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .eq('id', programId)
     .single();
-  if (programError || !programRow) {
-    console.error('Unable to load program:', programError);
-    throw new Error('Не удалось открыть программу.');
-  }
+  if (programError || !programRow) throw new Error('Не удалось открыть программу.');
 
   const { data: weeks, error: weeksError } = await supabase
-    .from('program_weeks').select('id, week_number, position').eq('program_id', programId).order('position', { ascending: true });
+    .from('program_weeks')
+    .select('id, week_number, position')
+    .eq('program_id', programId)
+    .order('position', { ascending: true });
   if (weeksError) throw new Error('Не удалось загрузить структуру программы.');
 
   const weekIds = (weeks ?? []).map((week) => week.id);
   let workouts = [];
-  if (weekIds.length > 0) {
-    const response = await supabase.from('program_workouts').select('id, week_id, name, position, rest_days_after').in('week_id', weekIds).order('position', { ascending: true });
+  if (weekIds.length) {
+    const response = await supabase
+      .from('program_workouts')
+      .select('id, week_id, name, position, rest_days_after')
+      .in('week_id', weekIds)
+      .order('position', { ascending: true });
     if (response.error) throw new Error('Не удалось загрузить тренировки программы.');
     workouts = response.data ?? [];
   }
 
   const workoutIds = workouts.map((workout) => workout.id);
   let workoutExercises = [];
-  if (workoutIds.length > 0) {
+  if (workoutIds.length) {
     const response = await supabase
       .from('program_workout_exercises')
       .select('id, workout_id, exercise_id, exercise_name_snapshot, prescription_snapshot, position')
@@ -305,7 +324,7 @@ export async function getProgram(programId) {
 
   const workoutExerciseIds = workoutExercises.map((item) => item.id);
   let sets = [];
-  if (workoutExerciseIds.length > 0) {
+  if (workoutExerciseIds.length) {
     const response = await supabase
       .from('program_exercise_sets')
       .select('id, workout_exercise_id, set_number, reps')
@@ -317,7 +336,7 @@ export async function getProgram(programId) {
 
   const exerciseIds = [...new Set(workoutExercises.map((item) => item.exercise_id).filter(Boolean))];
   let exercises = [];
-  if (exerciseIds.length > 0) {
+  if (exerciseIds.length) {
     const response = await supabase
       .from('exercises')
       .select('id, name, muscle_group, movement_type, difficulty')
