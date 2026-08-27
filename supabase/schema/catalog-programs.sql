@@ -7,6 +7,7 @@ create table if not exists public.catalog_programs (
   description text,
   categories text[] not null default '{}'::text[],
   training_place text,
+  equipment text,
   level text,
   week_count smallint not null default 1 check (week_count between 1 and 52),
   workout_count smallint not null default 0 check (workout_count between 0 and 200),
@@ -38,3 +39,6 @@ on public.catalog_programs
 for select
 to authenticated
 using (published = true);
+
+comment on column public.catalog_programs.equipment is
+  'Equipment explicitly recoverable from the structured source; null when the source does not support a reliable value.';
