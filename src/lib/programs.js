@@ -25,10 +25,18 @@ function normalizeRestDays(value) {
   return Math.max(0, Math.min(30, parsed));
 }
 
+function normalizeRepeatCount(value) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return 1;
+  return Math.max(1, Math.min(52, parsed));
+}
+
 function buildProgramPayload({
   name,
   description,
-  weekCount,
+  weekCount = 1,
+  cycleRepeatCount = 1,
+  structureMode = 'cycle',
   categories,
   trainingPlace,
   equipment,
@@ -39,7 +47,9 @@ function buildProgramPayload({
   return {
     name: name.trim(),
     description: nullableText(description),
-    week_count: weekCount,
+    week_count: structureMode === 'cycle' ? 1 : weekCount,
+    structure_mode: structureMode,
+    cycle_repeat_count: normalizeRepeatCount(cycleRepeatCount),
     categories,
     training_place: nullableText(trainingPlace),
     equipment: nullableText(equipment),
@@ -49,12 +59,19 @@ function buildProgramPayload({
       workouts: week.workouts.map((workout) => ({
         name: workout.name.trim(),
         rest_days_after: normalizeRestDays(workout.restDaysAfter),
-        exercises: workout.exercises.map((exercise) => ({
-          exercise_id: exercise.id,
-          sets: (exercise.sets ?? []).map((set) => ({
-            reps: normalizeReps(set.reps),
-          })),
-        })),
+        exercises: workout.exercises.map((exercise) => {
+          const exerciseId = exercise.linkedExerciseId
+            ?? (exercise.sourceWorkoutExerciseId ? null : exercise.id)
+            ?? null;
+          return {
+            exercise_id: exerciseId,
+            exercise_name_snapshot: nullableText(exercise.name),
+            prescription_snapshot: nullableText(exercise.prescription),
+            sets: (exercise.sets ?? []).map((set) => ({
+              reps: normalizeReps(set.reps),
+            })),
+          };
+        }),
       })),
     })),
   };
@@ -126,6 +143,8 @@ function mapProgramRow(row) {
     name: row.name,
     description: row.description ?? '',
     weekCount: row.week_count,
+    structureMode: row.structure_mode ?? 'legacy_weeks',
+    cycleRepeatCount: row.cycle_repeat_count ?? 1,
     categories: row.categories ?? [],
     trainingPlace: row.training_place ?? '',
     equipment: row.equipment ?? '',
@@ -233,7 +252,7 @@ export async function updateProgram({ programId, coverFile = null, existingCover
 export async function listPrograms() {
   const { data, error } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
+    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .neq('status', 'archived')
     .order('updated_at', { ascending: false });
   if (error) {
@@ -252,7 +271,7 @@ export async function listPrograms() {
 export async function getProgram(programId) {
   const { data: programRow, error: programError } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
+    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .eq('id', programId)
     .single();
   if (programError || !programRow) {
@@ -365,7 +384,7 @@ export async function getProgram(programId) {
   if (participation) {
     const response = await supabase
       .from('scheduled_workouts')
-      .select('id, sequence_number, week_number, workout_name, scheduled_date, status')
+      .select('id, sequence_number, week_number, cycle_number, workout_name, scheduled_date, status')
       .eq('user_program_id', participation.id)
       .order('sequence_number', { ascending: true });
     if (response.error) throw new Error('Не удалось загрузить календарь программы.');
@@ -373,6 +392,7 @@ export async function getProgram(programId) {
       id: row.id,
       sequenceNumber: row.sequence_number,
       weekNumber: row.week_number,
+      cycleNumber: row.cycle_number ?? null,
       workoutName: row.workout_name,
       scheduledDate: row.scheduled_date,
       status: row.status,
