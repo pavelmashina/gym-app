@@ -13,6 +13,10 @@
   gap: 14px;
 }
 
+.cycle-repeat-section.locked .cycle-repeat-card {
+  background: #f7f7f3;
+}
+
 .cycle-repeat-card > div:first-child {
   display: flex;
   align-items: baseline;
@@ -56,7 +60,8 @@
   height: 17px;
 }
 
-.cycle-week-hint {
+.cycle-week-hint,
+.cycle-repeat-lock-note {
   margin-top: 9px;
   padding: 11px 12px;
   border-radius: 13px;
@@ -65,13 +70,20 @@
   gap: 4px;
 }
 
-.cycle-week-hint strong {
+.cycle-repeat-lock-note {
+  background: #f2f1ec;
+  border: 1px solid var(--line);
+}
+
+.cycle-week-hint strong,
+.cycle-repeat-lock-note strong {
   font-size: 8px;
   text-transform: uppercase;
   letter-spacing: .3px;
 }
 
-.cycle-week-hint span {
+.cycle-week-hint span,
+.cycle-repeat-lock-note span {
   color: var(--muted);
   font-size: 9px;
   line-height: 1.45;
