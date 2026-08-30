@@ -4,6 +4,11 @@ import '../home-dynamic.css';
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const HOME_SLIDES = [
+  { src: 'assets/home-slider-ad-1.webp', alt: 'Рекламный баннер для фитнес-клуба или спортивного бренда' },
+  { src: 'assets/home-slider-ad-2.webp', alt: 'Рекламный баннер спортивных турниров, секций и мероприятий' },
+  { src: 'assets/home-slider-ad-3.webp', alt: 'Рекламный баннер спортзалов, секций и спортивных брендов' },
+];
 
 function toDateKey(date) {
   const year = date.getFullYear();
@@ -64,12 +69,40 @@ function Header({ menuOpen, onOpenMenu }) {
 }
 
 function PromoBanner() {
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % HOME_SLIDES.length);
+    }, 6000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  function changeSlide(delta) {
+    setActiveSlide((current) => (current + delta + HOME_SLIDES.length) % HOME_SLIDES.length);
+  }
+
   return (
-    <section className="banner-wrap">
-      <img className="banner" src={`${import.meta.env.BASE_URL}assets/fitness-club-banner.webp`} alt="Fitness Club" />
-      <button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер">‹</button>
-      <button className="carousel-arrow right" type="button" aria-label="Следующий баннер">›</button>
-      <div className="dots" aria-hidden="true"><span className="dot active" /><span className="dot" /></div>
+    <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры">
+      <img
+        className="banner"
+        src={`${import.meta.env.BASE_URL}${HOME_SLIDES[activeSlide].src}`}
+        alt={HOME_SLIDES[activeSlide].alt}
+      />
+      <button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}>‹</button>
+      <button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}>›</button>
+      <div className="dots" aria-label="Выбор баннера">
+        {HOME_SLIDES.map((slide, index) => (
+          <button
+            className={`dot${index === activeSlide ? ' active' : ''}`}
+            type="button"
+            key={slide.src}
+            aria-label={`Баннер ${index + 1}`}
+            aria-current={index === activeSlide ? 'true' : undefined}
+            onClick={() => setActiveSlide(index)}
+          />
+        ))}
+      </div>
     </section>
   );
 }
@@ -100,18 +133,18 @@ function CalendarCard({ today, workoutDates }) {
 }
 
 function WorkoutSummary({ workout, status, onOpenWorkout, onRetry }) {
-  if (!workout && status === 'loading') {
+  if (status === 'loading') {
     return (
       <section className="summary-col workout home-empty-card" aria-live="polite">
         <div className="summary-label">Тренировка</div>
-        <div className="home-loading-copy"><h3>Загружаем</h3><p>Проверяем тренировку на сегодня</p></div>
+        <div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на сегодня</p></div>
       </section>
     );
   }
 
-  if (!workout && status === 'error') {
+  if (status === 'error' && !workout) {
     return (
-      <section className="summary-col workout home-empty-card home-error-card" role="alert">
+      <section className="summary-col workout home-error-card" role="alert">
         <div className="summary-label">Тренировка</div>
         <div className="home-error-copy">
           <h3>Не удалось загрузить тренировку</h3>
@@ -267,7 +300,7 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
   useEffect(() => {
     let active = true;
     async function loadHomeData() {
-      if (active) setHomeStatus('loading');
+      setHomeStatus((current) => (current === 'success' ? current : 'loading'));
       try {
         const datesResponse = await supabase
           .from('scheduled_workouts')
