@@ -84,12 +84,19 @@ function PromoBanner() {
 
   return (
     <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры">
-      <img
-        className="banner"
-        src={`${import.meta.env.BASE_URL}${HOME_SLIDES[activeSlide].src}`}
-        alt={HOME_SLIDES[activeSlide].alt}
-        loading="eager"
-      />
+      <div className="banner-slides">
+        {HOME_SLIDES.map((slide, index) => (
+          <img
+            className={`banner banner-slide${index === activeSlide ? ' active' : ''}`}
+            src={`${import.meta.env.BASE_URL}${slide.src}?v=3`}
+            alt={slide.alt}
+            loading="eager"
+            decoding="async"
+            aria-hidden={index === activeSlide ? undefined : 'true'}
+            key={slide.src}
+          />
+        ))}
+      </div>
       <button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}>‹</button>
       <button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}>›</button>
       <div className="dots" aria-label="Выбор баннера">
