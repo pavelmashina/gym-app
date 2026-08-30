@@ -99,7 +99,29 @@ function CalendarCard({ today, workoutDates }) {
   );
 }
 
-function WorkoutSummary({ workout, onOpenWorkout }) {
+function WorkoutSummary({ workout, status, onOpenWorkout, onRetry }) {
+  if (!workout && status === 'loading') {
+    return (
+      <section className="summary-col workout home-empty-card" aria-live="polite">
+        <div className="summary-label">Тренировка</div>
+        <div className="home-loading-copy"><h3>Загружаем</h3><p>Проверяем тренировку на сегодня</p></div>
+      </section>
+    );
+  }
+
+  if (!workout && status === 'error') {
+    return (
+      <section className="summary-col workout home-empty-card home-error-card" role="alert">
+        <div className="summary-label">Тренировка</div>
+        <div className="home-error-copy">
+          <h3>Не удалось загрузить тренировку</h3>
+          <p>Это не означает, что на сегодня ничего не запланировано.</p>
+          <button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button>
+        </div>
+      </section>
+    );
+  }
+
   if (!workout) {
     return (
       <section className="summary-col workout home-empty-card">
@@ -142,7 +164,7 @@ function NutritionSummary({ nutritionPlan }) {
   );
 }
 
-function DailySummary({ today, workout, nutritionPlan, onOpenWorkout }) {
+function DailySummary({ today, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry }) {
   return (
     <section className="date-card">
       <div className="date-row">
@@ -152,7 +174,7 @@ function DailySummary({ today, workout, nutritionPlan, onOpenWorkout }) {
         </svg>
       </div>
       <div className="summary">
-        <WorkoutSummary workout={workout} onOpenWorkout={onOpenWorkout} />
+        <WorkoutSummary workout={workout} status={workoutStatus} onOpenWorkout={onOpenWorkout} onRetry={onRetry} />
         <NutritionSummary nutritionPlan={nutritionPlan} />
       </div>
     </section>
@@ -162,11 +184,11 @@ function DailySummary({ today, workout, nutritionPlan, onOpenWorkout }) {
 function BottomNav() {
   return (
     <nav className="bottom-nav" aria-label="Основная навигация">
-      <button className="nav-item" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8"><path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" /><path d="m4 21 7 7M21 4l7 7" /></svg><span>Тренировки</span></button>
-      <button className="nav-item" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7"><rect x="5" y="16" width="4" height="10" rx="1" /><rect x="14" y="7" width="4" height="19" rx="1" /><rect x="23" y="12" width="4" height="14" rx="1" /></svg><span>Статистика</span></button>
-      <button className="nav-item home" type="button"><span className="home-circle"><svg viewBox="0 0 32 32" fill="none"><path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" /></svg></span><span>Главная</span></button>
-      <button className="nav-item" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6"><path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" /></svg><span>Питание</span></button>
-      <button className="nav-item" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5"><path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" /><path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" /></svg><span>СпортПит</span></button>
+      <button className="nav-item" data-screen="training" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8"><path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" /><path d="m4 21 7 7M21 4l7 7" /></svg><span>Тренировки</span></button>
+      <button className="nav-item" data-screen="statistics" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7"><rect x="5" y="16" width="4" height="10" rx="1" /><rect x="14" y="7" width="4" height="19" rx="1" /><rect x="23" y="12" width="4" height="14" rx="1" /></svg><span>Статистика</span></button>
+      <button className="nav-item home" data-screen="home" type="button"><span className="home-circle"><svg viewBox="0 0 32 32" fill="none"><path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" /></svg></span><span>Главная</span></button>
+      <button className="nav-item" data-screen="nutrition" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6"><path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" /></svg><span>Питание</span></button>
+      <button className="nav-item" data-screen="sportpit" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5"><path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" /><path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" /></svg><span>СпортПит</span></button>
     </nav>
   );
 }
@@ -239,54 +261,63 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
   const todayKey = toDateKey(today);
   const [scheduledWorkoutDates, setScheduledWorkoutDates] = useState([]);
   const [loadedWorkout, setLoadedWorkout] = useState(null);
+  const [homeStatus, setHomeStatus] = useState('loading');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let active = true;
     async function loadHomeData() {
-      const datesResponse = await supabase
-        .from('scheduled_workouts')
-        .select('scheduled_date, status')
-        .neq('status', 'cancelled')
-        .order('scheduled_date', { ascending: true });
-
-      if (!active) return;
-      if (datesResponse.error) {
-        console.error('Unable to load home calendar workout dates:', datesResponse.error);
-        setScheduledWorkoutDates([]);
-      } else {
-        setScheduledWorkoutDates([...new Set((datesResponse.data ?? []).map((row) => row.scheduled_date).filter(Boolean))]);
-      }
-
+      if (active) setHomeStatus('loading');
       try {
+        const datesResponse = await supabase
+          .from('scheduled_workouts')
+          .select('scheduled_date, status')
+          .neq('status', 'cancelled')
+          .order('scheduled_date', { ascending: true });
+        if (datesResponse.error) throw datesResponse.error;
+
         const card = await loadWorkoutCard(todayKey);
-        if (active) setLoadedWorkout(card);
+        if (!active) return;
+
+        setScheduledWorkoutDates([...new Set((datesResponse.data ?? []).map((row) => row.scheduled_date).filter(Boolean))]);
+        setLoadedWorkout(card);
+        setHomeStatus('success');
       } catch (error) {
-        console.error('Unable to load today workout:', error);
-        if (active) setLoadedWorkout(null);
+        console.error('Unable to load home data:', error);
+        if (active) setHomeStatus('error');
       }
     }
 
     loadHomeData();
     function refreshOnFocus() { loadHomeData(); }
+    function refreshWhenVisible() { if (document.visibilityState === 'visible') loadHomeData(); }
     window.addEventListener('focus', refreshOnFocus);
-    document.addEventListener('visibilitychange', refreshOnFocus);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
     return () => {
       active = false;
       window.removeEventListener('focus', refreshOnFocus);
-      document.removeEventListener('visibilitychange', refreshOnFocus);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
-  }, [todayKey]);
+  }, [todayKey, reloadKey]);
 
   const effectiveWorkoutDates = useMemo(() => [...new Set([...workoutDates, ...scheduledWorkoutDates])], [workoutDates, scheduledWorkoutDates]);
   const effectiveTodayWorkout = todaysWorkout ?? loadedWorkout;
+  const effectiveWorkoutStatus = todaysWorkout ? 'success' : homeStatus;
+  const retryHomeData = () => setReloadKey((value) => value + 1);
 
   return (
     <div className={`phone${menuOpen ? ' menu-open' : ''}`}>
       <Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} />
       <main className="content">
         <PromoBanner />
+        {homeStatus === 'error' && (
+          <section className="home-data-alert" role="alert">
+            <div><strong>Не удалось обновить данные</strong><span>Проверьте соединение. Если данные уже загружались, ниже показана их последняя успешная версия.</span></div>
+            <button type="button" onClick={retryHomeData}>Повторить</button>
+          </section>
+        )}
         <CalendarCard today={today} workoutDates={effectiveWorkoutDates} />
-        <DailySummary today={today} workout={effectiveTodayWorkout} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} />
+        <DailySummary today={today} workout={effectiveTodayWorkout} workoutStatus={effectiveWorkoutStatus} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} onRetry={retryHomeData} />
       </main>
       <BottomNav />
       <Drawer onCloseMenu={onCloseMenu} />
