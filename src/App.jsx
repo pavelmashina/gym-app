@@ -7,13 +7,19 @@ import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
-const NAVIGATION_LABELS = {
-  'Тренировки': 'training',
-  'Статистика': 'statistics',
-  'Главная': 'home',
-  'Питание': 'nutrition',
-  'СпортПит': 'sportpit',
-};
+const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
+
+function resolveBottomNavScreen(navItem) {
+  const explicitScreen = navItem?.dataset?.screen;
+  if (BOTTOM_NAV_SCREENS.includes(explicitScreen)) return explicitScreen;
+
+  const nav = navItem?.closest('.bottom-nav');
+  if (!nav) return null;
+  const items = Array.from(nav.querySelectorAll('.nav-item'));
+  const screen = BOTTOM_NAV_SCREENS[items.indexOf(navItem)] ?? null;
+  if (screen) navItem.dataset.screen = screen;
+  return screen;
+}
 
 function isPasswordRecoveryUrl() {
   if (typeof window === 'undefined') return false;
@@ -134,8 +140,7 @@ export default function App() {
       }
       const navItem = event.target.closest('.bottom-nav .nav-item');
       if (!navItem) return;
-      const label = navItem.textContent?.trim();
-      const nextScreen = Object.entries(NAVIGATION_LABELS).find(([navigationLabel]) => label?.startsWith(navigationLabel))?.[1];
+      const nextScreen = resolveBottomNavScreen(navItem);
       if (!nextScreen) return;
       setMenuOpen(false);
       setAccountOpen(false);
