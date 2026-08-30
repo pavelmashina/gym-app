@@ -88,6 +88,7 @@ function PromoBanner() {
         className="banner"
         src={`${import.meta.env.BASE_URL}${HOME_SLIDES[activeSlide].src}`}
         alt={HOME_SLIDES[activeSlide].alt}
+        loading="eager"
       />
       <button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}>‹</button>
       <button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}>›</button>
