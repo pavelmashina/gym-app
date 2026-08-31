@@ -51,6 +51,19 @@
   transition: opacity 0.28s ease;
 }
 
+/* Vector replacements keep the advertising banners crisp on Retina screens. */
+.banner-wrap .banner-slide:nth-child(1) {
+  content: url('/gym-app/assets/home-slider-hq-1.svg');
+}
+
+.banner-wrap .banner-slide:nth-child(2) {
+  content: url('/gym-app/assets/home-slider-hq-2.svg');
+}
+
+.banner-wrap .banner-slide:nth-child(3) {
+  content: url('/gym-app/assets/home-slider-hq-3.svg');
+}
+
 .banner-wrap .banner-slide.active {
   opacity: 1;
   visibility: visible;
