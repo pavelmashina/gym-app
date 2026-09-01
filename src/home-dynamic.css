@@ -1,4 +1,25 @@
-.day.today span {
+button.day {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day.today:not(.selected) span {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  border: 1.5px solid #171717;
+  background: transparent;
+  color: #171717;
+  font-weight: 800;
+}
+
+.day.selected span {
   display: grid;
   place-items: center;
   width: 31px;
@@ -8,6 +29,15 @@
   color: white;
   font-weight: 800;
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.16);
+}
+
+.day.selected:not(.workout)::after {
+  display: none;
+}
+
+button.day:focus-visible span {
+  outline: 2px solid #171717;
+  outline-offset: 2px;
 }
 
 .home-empty-card {
