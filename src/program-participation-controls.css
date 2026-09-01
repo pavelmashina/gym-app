@@ -1,0 +1,121 @@
+.program-participation-controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.program-participation-controls.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.program-participation-action {
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.program-participation-action.primary {
+  background: #171717;
+  color: #fff;
+}
+
+.program-participation-action.secondary {
+  background: #ecece8;
+  color: #171717;
+}
+
+.program-participation-action.danger {
+  background: #fff0ef;
+  color: #9f2f29;
+}
+
+.program-participation-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.program-participation-message {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  background: #fff4f2;
+  color: #9f2f29;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.program-resume-editor,
+.program-complete-confirm {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #f3f3f0;
+}
+
+.program-resume-editor label {
+  display: grid;
+  gap: 6px;
+}
+
+.program-resume-editor label span,
+.program-complete-confirm span {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #777772;
+}
+
+.program-resume-editor input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #deded8;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: #fff;
+  font: inherit;
+}
+
+.program-resume-editor small.error {
+  color: #9f2f29;
+}
+
+.program-resume-actions,
+.program-complete-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.program-resume-actions button,
+.program-complete-actions button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.program-resume-actions button:first-child,
+.program-complete-actions button:first-child {
+  background: #fff;
+  color: #171717;
+}
+
+.program-resume-actions button:last-child {
+  background: #171717;
+  color: #fff;
+}
+
+.program-complete-actions button:last-child {
+  background: #9f2f29;
+  color: #fff;
+}
