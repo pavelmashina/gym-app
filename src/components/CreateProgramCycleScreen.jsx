@@ -57,6 +57,7 @@ function ExercisePicker({ workout, onBack, onSave }) {
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const [query, setQuery] = useState('');
   const existingCanonicalIds = useMemo(() => workout.exercises.map((exercise) => exercise.linkedExerciseId ?? (!exercise.sourceWorkoutExerciseId ? exercise.id : null)).filter(Boolean), [workout.exercises]);
   const [selectedIds, setSelectedIds] = useState(existingCanonicalIds);
@@ -75,7 +76,7 @@ function ExercisePicker({ workout, onBack, onSave }) {
         setLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [reloadKey]);
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase('ru');
@@ -116,7 +117,7 @@ function ExercisePicker({ workout, onBack, onSave }) {
         </section>
         <label className="program-exercise-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти упражнение" /></label>
         {loading && <div className="program-exercise-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
-        {!loading && error && <div className="program-exercise-state error">{error}</div>}
+        {!loading && error && <div className="program-exercise-state error"><span>{error}</span><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></div>}
         {!loading && !error && (
           <section className="program-exercise-picker-list">
             {filtered.map((exercise) => {

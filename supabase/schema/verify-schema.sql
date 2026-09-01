@@ -80,6 +80,8 @@ begin
         or (p.proname = 'pause_program' and pg_get_function_identity_arguments(p.oid) = 'p_user_program_id uuid')
         or (p.proname = 'resume_program' and pg_get_function_identity_arguments(p.oid) = 'p_user_program_id uuid, p_resume_date date')
         or (p.proname = 'complete_program' and pg_get_function_identity_arguments(p.oid) = 'p_user_program_id uuid')
+        or (p.proname = 'reschedule_scheduled_workout' and pg_get_function_identity_arguments(p.oid) = 'p_scheduled_workout_id uuid, p_new_date date')
+        or (p.proname = 'skip_scheduled_workout' and pg_get_function_identity_arguments(p.oid) = 'p_scheduled_workout_id uuid')
         or (p.proname = 'start_workout' and pg_get_function_identity_arguments(p.oid) = 'p_scheduled_workout_id uuid')
         or (p.proname = 'complete_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid')
         or (p.proname = 'abandon_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid')
@@ -97,12 +99,12 @@ begin
   into v_rpc_count, v_rpc_restricted_count
   from current_rpcs;
 
-  if v_rpc_count <> 14 then
-    raise exception 'Schema verification failed: expected 14 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
+  if v_rpc_count <> 16 then
+    raise exception 'Schema verification failed: expected 16 current SECURITY INVOKER application RPCs, found %', v_rpc_count;
   end if;
 
-  if v_rpc_restricted_count <> 14 then
-    raise exception 'Schema verification failed: authenticated/anon execute grants are correct on % of 14 application RPCs', v_rpc_restricted_count;
+  if v_rpc_restricted_count <> 16 then
+    raise exception 'Schema verification failed: authenticated/anon execute grants are correct on % of 16 application RPCs', v_rpc_restricted_count;
   end if;
 
   select count(*) into v_snapshot_column_count
@@ -219,6 +221,6 @@ begin
     raise exception 'Schema verification failed: expected 4 program cover Storage policies, found %', v_storage_policy_count;
   end if;
 
-  raise notice 'Schema verification passed: 16 tables, RLS/policies, 14 restricted SECURITY INVOKER RPCs, cycle model/guard, participation controls, normalized catalog, snapshots/index and Storage match the repository inventory.';
+  raise notice 'Schema verification passed: 16 tables, RLS/policies, 16 restricted SECURITY INVOKER RPCs, cycle model/guard, participation and scheduled-workout controls, normalized catalog, snapshots/index and Storage match the repository inventory.';
 end
 $verify$;

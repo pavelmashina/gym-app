@@ -65,6 +65,15 @@ A program cannot be paused or manually completed while one of its `WorkoutSessio
 
 Paused programs stay visible in the user's program list/detail screen but their scheduled workouts are intentionally excluded from the Home calendar. Resuming makes the recalculated remaining schedule visible again.
 
+## Individual scheduled-workout controls
+
+`scheduled-workout-controls.sql` adds two authenticated `SECURITY INVOKER` RPCs:
+
+- `reschedule_scheduled_workout(uuid, date)` — moves one scheduled workout to today or a future date and recalculates only the remaining `scheduled` tail according to the program rhythm; snapshots and completed/skipped history are preserved;
+- `skip_scheduled_workout(uuid)` — marks one not-yet-started workout as `skipped` without changing later dates and completes the participation automatically when no scheduled workouts remain.
+
+Overdue workouts remain `scheduled` until the user explicitly reschedules or skips them. Neither action is allowed while the affected program has an active Workout Session.
+
 ## Start date and joined-program schedule editing
 
 Before workout execution begins, `change_program_start_date(uuid, date)` can change the first workout date and recalculate the schedule while preserving snapshots. Once workout history exists, the original start date is treated as history.
@@ -91,6 +100,7 @@ Completing a workout marks the session and scheduled workout `completed`. Abando
 - `program-cycle-model.sql`, `program-cycle-schedule.sql`, `program-cycle-catalog-adoption.sql` — final cycle-aware program behavior;
 - `program-cycle-edit-guard.sql` — freezes active/paused cycle size;
 - `program-participation-controls.sql` — pause/resume/manual completion lifecycle;
+- `scheduled-workout-controls.sql` — reschedule/skip controls and overdue-workout rules;
 - `verify-schema.sql` — read-only final inventory verification.
 
 ## Fresh-project apply order
@@ -121,7 +131,8 @@ Apply the readable schema milestones in this order:
 22. `program-cycle-catalog-adoption.sql`
 23. `program-cycle-edit-guard.sql`
 24. `program-participation-controls.sql`
-25. `verify-schema.sql` (verification only)
+25. `scheduled-workout-controls.sql`
+26. `verify-schema.sql` (verification only)
 
 Later milestone files intentionally replace function definitions from earlier files so a fresh database reaches the same final behavior as production.
 
@@ -132,7 +143,7 @@ Later milestone files intentionally replace function definitions from earlier fi
 - all 16 public application tables exist and have RLS enabled;
 - exactly 57 application RLS policies exist;
 - `anon` has no application-table grants;
-- all 14 current app-facing program/workout/catalog RPCs are `SECURITY INVOKER`, executable by `authenticated` and not by `anon`;
+- all 16 current app-facing program/workout/catalog RPCs are `SECURITY INVOKER`, executable by `authenticated` and not by `anon`;
 - catalog snapshot/source columns, cycle columns and cycle constraints exist;
 - the active-cycle guard function/trigger exist;
 - published catalog rows are normalized to non-empty cycles;

@@ -482,6 +482,17 @@
   color: #6e3232;
 }
 
+.exercise-state-error button {
+  margin-top: 6px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
 .exercise-list-spinner {
   width: 24px;
   height: 24px;

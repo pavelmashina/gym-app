@@ -100,6 +100,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [exerciseReloadKey, setExerciseReloadKey] = useState(0);
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   const [programsError, setProgramsError] = useState('');
@@ -123,7 +124,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       setLoading(false);
     });
     return () => { active = false; };
-  }, []);
+  }, [exerciseReloadKey]);
 
   useEffect(() => {
     if (!['your-programs', 'completed'].includes(activeTab)) return undefined;
@@ -188,7 +189,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (query ? <div className="my-programs-state">По вашему запросу программы не найдены.</div> : <EmptyPrograms tabId={activeTab} />)}
       {!isCreateTab && !isProgramsTab && !isCatalogTab && <EmptyPrograms tabId={activeTab} />}
 
-      {isCreateTab && <section className="training-builder"><div className="training-builder-heading"><div><span>База упражнений</span><h3>Выберите упражнения</h3></div><strong>{loading ? '…' : filteredExercises.length}</strong></div>{loading && <div className="exercise-state-card"><div className="exercise-list-spinner" /><span>Загружаем базу упражнений…</span></div>}{!loading && error && <div className="exercise-state-card exercise-state-error">{error}</div>}{!loading && !error && filteredExercises.length === 0 && <div className="exercise-state-card"><strong>Ничего не найдено</strong></div>}{!loading && !error && filteredExercises.length > 0 && <section className="exercise-list">{filteredExercises.map((exercise) => <ExerciseRow key={exercise.id} exercise={exercise} onOpen={setSelectedExercise} />)}</section>}</section>}
+      {isCreateTab && <section className="training-builder"><div className="training-builder-heading"><div><span>База упражнений</span><h3>Выберите упражнения</h3></div><strong>{loading ? '…' : filteredExercises.length}</strong></div>{loading && <div className="exercise-state-card"><div className="exercise-list-spinner" /><span>Загружаем базу упражнений…</span></div>}{!loading && error && <div className="exercise-state-card exercise-state-error"><span>{error}</span><button type="button" onClick={() => setExerciseReloadKey((value) => value + 1)}>Повторить</button></div>}{!loading && !error && filteredExercises.length === 0 && <div className="exercise-state-card"><strong>Ничего не найдено</strong></div>}{!loading && !error && filteredExercises.length > 0 && <section className="exercise-list">{filteredExercises.map((exercise) => <ExerciseRow key={exercise.id} exercise={exercise} onOpen={setSelectedExercise} />)}</section>}</section>}
     </main>
     <TrainingBottomNav />
     {selectedExercise && <ExerciseDetail exercise={selectedExercise} onClose={() => setSelectedExercise(null)} />}

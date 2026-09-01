@@ -510,3 +510,17 @@
   background: #f3e9e7;
   color: #8b3930;
 }
+
+.program-exercise-state.error {
+  flex-direction: column;
+}
+
+.program-exercise-state.error button {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
