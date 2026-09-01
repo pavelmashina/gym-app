@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram } from '../lib/programs.js';
+import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { supabase } from '../lib/supabase.js';
 import '../program-detail.css';
+import '../program-participation-controls.css';
 
 const WEEKLY_DAYS = { weekly_mwf: [1, 3, 5], weekly_tts: [2, 4, 6] };
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 5-7 7 7 7" /></svg>; }
@@ -45,10 +47,18 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const [startDateDraft, setStartDateDraft] = useState('');
   const [startDateSaving, setStartDateSaving] = useState(false);
   const [startDateError, setStartDateError] = useState('');
+  const [participationAction, setParticipationAction] = useState('');
+  const [participationError, setParticipationError] = useState('');
+  const [resumeOpen, setResumeOpen] = useState(false);
+  const [resumeDate, setResumeDate] = useState(localToday());
+  const [resumeError, setResumeError] = useState('');
+  const [completeConfirmOpen, setCompleteConfirmOpen] = useState(false);
 
   async function reloadProgram() {
     const hydrated = await attachScheduledSnapshot(await getProgram(programId));
-    setProgram(hydrated); setStartDateDraft(hydrated.participation?.startDate ?? ''); return hydrated;
+    setProgram(hydrated);
+    setStartDateDraft(hydrated.participation?.startDate ?? '');
+    return hydrated;
   }
 
   useEffect(() => {
@@ -64,15 +74,18 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
   const isCycle = program.structureMode === 'cycle';
   const participation = program.participation;
-  const liveParticipation = Boolean(participation && ['active', 'paused'].includes(participation.status));
+  const isActive = participation?.status === 'active';
+  const isPaused = participation?.status === 'paused';
+  const liveParticipation = Boolean(isActive || isPaused);
   const canStart = !participation || ['completed', 'abandoned'].includes(participation.status);
   const canEditProgram = !(liveParticipation && !isCycle);
-  const canEditStartDate = Boolean(liveParticipation && program.scheduledWorkouts.length && program.scheduledWorkouts.every((item) => item.status === 'scheduled'));
+  const canEditStartDate = Boolean(isActive && program.scheduledWorkouts.length && program.scheduledWorkouts.every((item) => item.status === 'scheduled'));
   const totalTemplateWorkouts = templateWorkouts.length;
   const totalPlannedWorkouts = isCycle ? totalTemplateWorkouts * program.cycleRepeatCount : totalTemplateWorkouts;
   const totalExercises = templateWorkouts.reduce((sum, item) => sum + item.workout.exercises.length, 0);
   const dateAllowed = isAllowedStartDate(startDateDraft, program.scheduleMode);
   const dateChanged = startDateDraft && startDateDraft !== participation?.startDate;
+  const resumeDateAllowed = isAllowedStartDate(resumeDate, program.scheduleMode);
 
   async function saveStartDate() {
     if (!canEditStartDate || startDateSaving || !dateChanged) return;
@@ -89,6 +102,51 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
     } finally { setStartDateSaving(false); }
   }
 
+  async function handlePause() {
+    if (!isActive || participationAction) return;
+    setParticipationAction('pause'); setParticipationError('');
+    try {
+      await pauseProgram(participation.id);
+      await reloadProgram();
+      setEditingStartDate(false);
+    } catch (actionError) {
+      setParticipationError(actionError?.message || 'Не удалось поставить программу на паузу.');
+    } finally {
+      setParticipationAction('');
+    }
+  }
+
+  async function handleResume() {
+    if (!isPaused || participationAction) return;
+    if (resumeDate < localToday()) { setResumeError('Дата следующей тренировки не может быть в прошлом.'); return; }
+    if (!resumeDateAllowed) { setResumeError(startDateHint(program.scheduleMode)); return; }
+    setParticipationAction('resume'); setResumeError(''); setParticipationError('');
+    try {
+      await resumeProgram(participation.id, resumeDate);
+      await reloadProgram();
+      setResumeOpen(false);
+    } catch (actionError) {
+      setResumeError(actionError?.message || 'Не удалось возобновить программу.');
+    } finally {
+      setParticipationAction('');
+    }
+  }
+
+  async function handleComplete() {
+    if (!liveParticipation || participationAction) return;
+    setParticipationAction('complete'); setParticipationError('');
+    try {
+      await completeProgram(participation.id);
+      await reloadProgram();
+      setCompleteConfirmOpen(false);
+      setResumeOpen(false);
+    } catch (actionError) {
+      setParticipationError(actionError?.message || 'Не удалось завершить программу.');
+    } finally {
+      setParticipationAction('');
+    }
+  }
+
   const preview = participation ? program.scheduledWorkouts : templateWorkouts.map((item, index) => ({ id: item.workout.id, sequenceNumber: index + 1, cycleNumber: isCycle ? 1 : null, weekNumber: item.sourceGroup, workoutName: item.workout.name, scheduledDate: null, exercises: item.workout.exercises }));
 
   return <div className="phone program-detail-phone">
@@ -98,7 +156,19 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       <section className="program-detail-hero"><span>Тренировочная программа</span><h1>{program.name}</h1>{program.description && <p>{program.description}</p>}{program.categories.length > 0 && <div className="program-detail-tags">{program.categories.map((item) => <span key={item}>{item}</span>)}</div>}</section>
 
       <section className={`program-detail-start-state${canStart ? ' not-started' : ' joined'}`}><span className="program-detail-status-badge">{participationLabel(participation)}</span>
-        {canStart ? <><strong>Начните, когда будете готовы</strong><p>{isCycle ? `В цикле ${totalTemplateWorkouts} тренировок · повторений цикла: ${program.cycleRepeatCount}.` : 'Программа создана в старом формате и сохраняет исходную последовательность тренировок.'}</p></> : <><strong>Вы присоединились к программе</strong><p>Первая тренировка запланирована на {formatDate(participation.startDate)}.</p>{canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}{canEditStartDate && editingStartDate && <div className="program-detail-date-editor"><label><span>Новая дата первой тренировки</span><input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{startDateError && <small className="error">{startDateError}</small>}<div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div></div>}</>}
+        {canStart ? <><strong>Начните, когда будете готовы</strong><p>{isCycle ? `В цикле ${totalTemplateWorkouts} тренировок · повторений цикла: ${program.cycleRepeatCount}.` : 'Программа создана в старом формате и сохраняет исходную последовательность тренировок.'}</p></> : isPaused ? <><strong>Программа на паузе</strong><p>Будущие тренировки временно скрыты из календаря. История и сохранённый состав тренировок не изменяются.</p></> : <><strong>Вы присоединились к программе</strong><p>Первая тренировка запланирована на {formatDate(participation.startDate)}.</p>{canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}{canEditStartDate && editingStartDate && <div className="program-detail-date-editor"><label><span>Новая дата первой тренировки</span><input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{startDateError && <small className="error">{startDateError}</small>}<div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div></div>}</>}
+
+        {liveParticipation && <div className={`program-participation-controls${isPaused ? ' two' : ''}`}>
+          {isActive && <button className="program-participation-action secondary" type="button" disabled={Boolean(participationAction)} onClick={handlePause}>{participationAction === 'pause' ? 'Ставим на паузу…' : 'Поставить на паузу'}</button>}
+          {isPaused && <button className="program-participation-action primary" type="button" disabled={Boolean(participationAction)} onClick={() => { setResumeDate(localToday()); setResumeError(''); setResumeOpen(true); setCompleteConfirmOpen(false); }}>Возобновить</button>}
+          <button className="program-participation-action danger" type="button" disabled={Boolean(participationAction)} onClick={() => { setCompleteConfirmOpen(true); setResumeOpen(false); }}>Завершить программу</button>
+        </div>}
+
+        {isPaused && resumeOpen && <div className="program-resume-editor"><label><span>Дата следующей тренировки</span><input type="date" min={localToday()} value={resumeDate} onChange={(event) => { setResumeDate(event.target.value); setResumeError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{resumeError && <small className="error">{resumeError}</small>}<div className="program-resume-actions"><button type="button" disabled={Boolean(participationAction)} onClick={() => setResumeOpen(false)}>Отмена</button><button type="button" disabled={Boolean(participationAction) || !resumeDate || !resumeDateAllowed} onClick={handleResume}>{participationAction === 'resume' ? 'Возобновляем…' : 'Возобновить'}</button></div></div>}
+
+        {liveParticipation && completeConfirmOpen && <div className="program-complete-confirm"><strong>Завершить программу?</strong><span>Выполненная история сохранится. Все оставшиеся невыполненные тренировки будут убраны из календаря.</span><div className="program-complete-actions"><button type="button" disabled={Boolean(participationAction)} onClick={() => setCompleteConfirmOpen(false)}>Отмена</button><button type="button" disabled={Boolean(participationAction)} onClick={handleComplete}>{participationAction === 'complete' ? 'Завершаем…' : 'Да, завершить'}</button></div></div>}
+
+        {participationError && <div className="program-participation-message" role="alert">{participationError}</div>}
         {!canEditProgram && <div className="program-detail-compat-note">Редактирование структуры станет доступно после завершения или остановки текущего запуска. История и расписание сохраняются.</div>}
       </section>
 
