@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import '../home-dynamic.css';
 
@@ -17,11 +17,16 @@ function toDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+function dateFromKey(value) {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0);
+}
+
 function startOfMonth(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
 function formatMonth(date) { return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`; }
 function formatFullDate(date) { return `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]} ${date.getFullYear()}`; }
 
-function buildCalendarDays(monthDate, today, workoutDateSet) {
+function buildCalendarDays(monthDate, today, selectedDateKey, workoutDateSet) {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -31,14 +36,23 @@ function buildCalendarDays(monthDate, today, workoutDateSet) {
   const todayKey = toDateKey(today);
 
   return Array.from({ length: totalCells }, (_, index) => {
-    const date = new Date(year, month, index - mondayOffset + 1);
+    const date = new Date(year, month, index - mondayOffset + 1, 12, 0, 0);
     const key = toDateKey(date);
-    return { key, label: String(date.getDate()), out: date.getMonth() !== month, workout: workoutDateSet.has(key), today: key === todayKey };
+    return {
+      key,
+      date,
+      label: String(date.getDate()),
+      out: date.getMonth() !== month,
+      workout: workoutDateSet.has(key),
+      today: key === todayKey,
+      selected: key === selectedDateKey,
+    };
   });
 }
 
 function useDeviceDate() {
   const [today, setToday] = useState(() => new Date());
+
   useEffect(() => {
     const syncWithDevice = () => setToday(new Date());
     const intervalId = window.setInterval(syncWithDevice, 60_000);
@@ -50,6 +64,7 @@ function useDeviceDate() {
       document.removeEventListener('visibilitychange', syncWithDevice);
     };
   }, []);
+
   return today;
 }
 
@@ -115,12 +130,29 @@ function PromoBanner() {
   );
 }
 
-function CalendarCard({ today, workoutDates }) {
-  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(today));
-  useEffect(() => { setDisplayMonth(startOfMonth(today)); }, [today.getFullYear(), today.getMonth()]);
+function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {
+  const selectedDate = useMemo(() => dateFromKey(selectedDateKey), [selectedDateKey]);
+  const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(selectedDate));
+
+  useEffect(() => {
+    if (selectedDate.getFullYear() === displayMonth.getFullYear() && selectedDate.getMonth() === displayMonth.getMonth()) return;
+    setDisplayMonth(startOfMonth(selectedDate));
+  }, [selectedDateKey]);
+
   const workoutDateSet = useMemo(() => new Set(workoutDates), [workoutDates]);
-  const calendarDays = useMemo(() => buildCalendarDays(displayMonth, today, workoutDateSet), [displayMonth, today, workoutDateSet]);
-  function changeMonth(delta) { setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1)); }
+  const calendarDays = useMemo(
+    () => buildCalendarDays(displayMonth, today, selectedDateKey, workoutDateSet),
+    [displayMonth, today, selectedDateKey, workoutDateSet],
+  );
+
+  function changeMonth(delta) {
+    setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
+  }
+
+  function selectDay(day) {
+    if (day.out) setDisplayMonth(startOfMonth(day.date));
+    onSelectDate?.(day.key);
+  }
 
   return (
     <section className="calendar-card">
@@ -132,20 +164,39 @@ function CalendarCard({ today, workoutDates }) {
       <div className="weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
       <div className="days">
         {calendarDays.map((day) => {
-          const classNames = ['day', day.out ? 'out' : '', day.workout ? 'workout' : '', day.today ? 'today' : ''].filter(Boolean).join(' ');
-          return <div className={classNames} key={day.key} aria-current={day.today ? 'date' : undefined}><span>{day.label}</span></div>;
+          const classNames = [
+            'day',
+            day.out ? 'out' : '',
+            day.workout ? 'workout' : '',
+            day.today ? 'today' : '',
+            day.selected ? 'selected' : '',
+          ].filter(Boolean).join(' ');
+
+          return (
+            <button
+              className={classNames}
+              type="button"
+              key={day.key}
+              aria-label={`${formatFullDate(day.date)}${day.workout ? ', запланирована тренировка' : ''}`}
+              aria-pressed={day.selected}
+              aria-current={day.today ? 'date' : undefined}
+              onClick={() => selectDay(day)}
+            >
+              <span>{day.label}</span>
+            </button>
+          );
         })}
       </div>
     </section>
   );
 }
 
-function WorkoutSummary({ workout, status, onOpenWorkout, onRetry }) {
+function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry }) {
   if (status === 'loading') {
     return (
       <section className="summary-col workout home-empty-card" aria-live="polite">
         <div className="summary-label">Тренировка</div>
-        <div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на сегодня</p></div>
+        <div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на выбранную дату</p></div>
       </section>
     );
   }
@@ -156,7 +207,7 @@ function WorkoutSummary({ workout, status, onOpenWorkout, onRetry }) {
         <div className="summary-label">Тренировка</div>
         <div className="home-error-copy">
           <h3>Не удалось загрузить тренировку</h3>
-          <p>Это не означает, что на сегодня ничего не запланировано.</p>
+          <p>Это не означает, что на выбранную дату ничего не запланировано.</p>
           <button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button>
         </div>
       </section>
@@ -167,12 +218,16 @@ function WorkoutSummary({ workout, status, onOpenWorkout, onRetry }) {
     return (
       <section className="summary-col workout home-empty-card">
         <div className="summary-label">Тренировка</div>
-        <div className="home-empty-copy"><h3>Нет тренировки</h3><p>На сегодня ничего не запланировано</p></div>
+        <div className="home-empty-copy">
+          <h3>Нет тренировки</h3>
+          <p>{isToday ? 'На сегодня ничего не запланировано' : 'На эту дату ничего не запланировано'}</p>
+        </div>
       </section>
     );
   }
 
   const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : 'К тренировке');
+
   return (
     <section className="summary-col workout">
       <div className="summary-label">{workout.active ? 'Активная тренировка' : 'Тренировка'}</div>
@@ -192,9 +247,12 @@ function NutritionSummary({ nutritionPlan }) {
       </section>
     );
   }
+
   return (
     <section className="summary-col food">
-      <div className="summary-label">Питание</div><h3>{nutritionPlan.calories}</h3><p className="food-caption">ккал на день</p>
+      <div className="summary-label">Питание</div>
+      <h3>{nutritionPlan.calories}</h3>
+      <p className="food-caption">ккал на день</p>
       <div className="food-grid">
         <div className="food-stat"><strong>{nutritionPlan.protein} г</strong><span>Белки</span></div>
         <div className="food-stat"><strong>{nutritionPlan.fat} г</strong><span>Жиры</span></div>
@@ -205,17 +263,17 @@ function NutritionSummary({ nutritionPlan }) {
   );
 }
 
-function DailySummary({ today, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry }) {
+function DailySummary({ date, isToday, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry }) {
   return (
     <section className="date-card">
       <div className="date-row">
-        <div className="date-title">{formatFullDate(today)}</div>
+        <div className="date-title">{formatFullDate(date)}</div>
         <svg className="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
           <path d="M4 20h4l11-11-4-4L4 16v4Z" /><path d="m13.7 6.3 4 4" />
         </svg>
       </div>
       <div className="summary">
-        <WorkoutSummary workout={workout} status={workoutStatus} onOpenWorkout={onOpenWorkout} onRetry={onRetry} />
+        <WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} />
         <NutritionSummary nutritionPlan={nutritionPlan} />
       </div>
     </section>
@@ -242,7 +300,13 @@ function Drawer({ onCloseMenu }) {
         <div className="drawer-head"><div className="drawer-title">Меню</div><button className="close-button" type="button" aria-label="Закрыть меню" onClick={onCloseMenu}>×</button></div>
         <div className="drawer-profile"><div className="avatar">Д</div><div><strong>Дмитрий</strong><span>Мой профиль</span></div></div>
         <nav>
-          <button className="drawer-link" type="button">Подписка</button><button className="drawer-link" type="button">Настройки</button><button className="drawer-link" type="button">Политика конфиденциальности</button><button className="drawer-link" type="button">Поддержка</button><button className="drawer-link" type="button">Частые вопросы</button><button className="drawer-link" type="button">Рассказать о приложении</button><button className="drawer-link" type="button">Оценить приложение</button>
+          <button className="drawer-link" type="button">Подписка</button>
+          <button className="drawer-link" type="button">Настройки</button>
+          <button className="drawer-link" type="button">Политика конфиденциальности</button>
+          <button className="drawer-link" type="button">Поддержка</button>
+          <button className="drawer-link" type="button">Частые вопросы</button>
+          <button className="drawer-link" type="button">Рассказать о приложении</button>
+          <button className="drawer-link" type="button">Оценить приложение</button>
         </nav>
         <div className="version">Prototype v0.3.3 · React migration</div>
       </aside>
@@ -250,7 +314,7 @@ function Drawer({ onCloseMenu }) {
   );
 }
 
-async function loadWorkoutCard(todayKey) {
+async function loadWorkoutCard(dateKey) {
   const { data: activeRows, error: activeError } = await supabase
     .from('workout_sessions')
     .select('id, scheduled_workout_id')
@@ -260,20 +324,26 @@ async function loadWorkoutCard(todayKey) {
 
   let workoutRow = null;
   let active = false;
-  if (activeRows?.[0]) {
-    const response = await supabase
+
+  if (activeRows?.[0]?.scheduled_workout_id) {
+    const activeResponse = await supabase
       .from('scheduled_workouts')
       .select('id, workout_name, scheduled_date, status')
       .eq('id', activeRows[0].scheduled_workout_id)
       .single();
-    if (response.error) throw response.error;
-    workoutRow = response.data;
-    active = true;
-  } else {
+    if (activeResponse.error) throw activeResponse.error;
+
+    if (activeResponse.data?.scheduled_date === dateKey) {
+      workoutRow = activeResponse.data;
+      active = true;
+    }
+  }
+
+  if (!workoutRow) {
     const response = await supabase
       .from('scheduled_workouts')
       .select('id, workout_name, scheduled_date, status, sequence_number')
-      .eq('scheduled_date', todayKey)
+      .eq('scheduled_date', dateKey)
       .neq('status', 'cancelled')
       .order('sequence_number', { ascending: true })
       .limit(1);
@@ -282,6 +352,7 @@ async function loadWorkoutCard(todayKey) {
   }
 
   if (!workoutRow) return null;
+
   const { count, error: countError } = await supabase
     .from('scheduled_workout_exercises')
     .select('id', { count: 'exact', head: true })
@@ -297,68 +368,171 @@ async function loadWorkoutCard(todayKey) {
   };
 }
 
-export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, workoutDates = [], todaysWorkout = null, nutritionPlan = null }) {
+export function HomeScreen({
+  menuOpen,
+  onOpenMenu,
+  onCloseMenu,
+  onOpenWorkout,
+  workoutDates = [],
+  todaysWorkout = null,
+  nutritionPlan = null,
+}) {
   const today = useDeviceDate();
   const todayKey = toDateKey(today);
+  const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
+  const [selectionPinned, setSelectionPinned] = useState(false);
   const [scheduledWorkoutDates, setScheduledWorkoutDates] = useState([]);
+  const [calendarStatus, setCalendarStatus] = useState('loading');
   const [loadedWorkout, setLoadedWorkout] = useState(null);
-  const [homeStatus, setHomeStatus] = useState('loading');
+  const [loadedWorkoutDateKey, setLoadedWorkoutDateKey] = useState(null);
+  const [workoutStatus, setWorkoutStatus] = useState('loading');
+  const [workoutStatusDateKey, setWorkoutStatusDateKey] = useState(todayKey);
   const [reloadKey, setReloadKey] = useState(0);
+  const workoutCacheRef = useRef(new Map());
+
+  useEffect(() => {
+    if (!selectionPinned) setSelectedDateKey(todayKey);
+  }, [todayKey, selectionPinned]);
+
+  useEffect(() => {
+    const refresh = () => setReloadKey((value) => value + 1);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
-    async function loadHomeData() {
-      setHomeStatus((current) => (current === 'success' ? current : 'loading'));
+
+    async function loadCalendarDates() {
       try {
-        const datesResponse = await supabase
+        const response = await supabase
           .from('scheduled_workouts')
           .select('scheduled_date, status')
           .neq('status', 'cancelled')
           .order('scheduled_date', { ascending: true });
-        if (datesResponse.error) throw datesResponse.error;
-
-        const card = await loadWorkoutCard(todayKey);
+        if (response.error) throw response.error;
         if (!active) return;
 
-        setScheduledWorkoutDates([...new Set((datesResponse.data ?? []).map((row) => row.scheduled_date).filter(Boolean))]);
-        setLoadedWorkout(card);
-        setHomeStatus('success');
+        setScheduledWorkoutDates([...new Set((response.data ?? []).map((row) => row.scheduled_date).filter(Boolean))]);
+        setCalendarStatus('success');
       } catch (error) {
-        console.error('Unable to load home data:', error);
-        if (active) setHomeStatus('error');
+        console.error('Unable to load home calendar:', error);
+        if (active) setCalendarStatus('error');
       }
     }
 
-    loadHomeData();
-    function refreshOnFocus() { loadHomeData(); }
-    function refreshWhenVisible() { if (document.visibilityState === 'visible') loadHomeData(); }
-    window.addEventListener('focus', refreshOnFocus);
-    document.addEventListener('visibilitychange', refreshWhenVisible);
-    return () => {
-      active = false;
-      window.removeEventListener('focus', refreshOnFocus);
-      document.removeEventListener('visibilitychange', refreshWhenVisible);
-    };
-  }, [todayKey, reloadKey]);
+    loadCalendarDates();
+    return () => { active = false; };
+  }, [reloadKey]);
 
-  const effectiveWorkoutDates = useMemo(() => [...new Set([...workoutDates, ...scheduledWorkoutDates])], [workoutDates, scheduledWorkoutDates]);
-  const effectiveTodayWorkout = todaysWorkout ?? loadedWorkout;
-  const effectiveWorkoutStatus = todaysWorkout ? 'success' : homeStatus;
-  const retryHomeData = () => setReloadKey((value) => value + 1);
+  useEffect(() => {
+    let active = true;
+    const cached = workoutCacheRef.current.get(selectedDateKey);
+
+    setWorkoutStatusDateKey(selectedDateKey);
+    if (workoutCacheRef.current.has(selectedDateKey)) {
+      setLoadedWorkout(cached ?? null);
+      setLoadedWorkoutDateKey(selectedDateKey);
+      setWorkoutStatus('success');
+    } else {
+      setLoadedWorkout(null);
+      setLoadedWorkoutDateKey(null);
+      setWorkoutStatus('loading');
+    }
+
+    async function loadSelectedWorkout() {
+      try {
+        const card = await loadWorkoutCard(selectedDateKey);
+        if (!active) return;
+
+        workoutCacheRef.current.set(selectedDateKey, card);
+        setLoadedWorkout(card);
+        setLoadedWorkoutDateKey(selectedDateKey);
+        setWorkoutStatus('success');
+      } catch (error) {
+        console.error(`Unable to load home workout for ${selectedDateKey}:`, error);
+        if (!active) return;
+
+        if (workoutCacheRef.current.has(selectedDateKey)) {
+          setLoadedWorkout(workoutCacheRef.current.get(selectedDateKey) ?? null);
+          setLoadedWorkoutDateKey(selectedDateKey);
+        } else {
+          setLoadedWorkout(null);
+          setLoadedWorkoutDateKey(null);
+        }
+        setWorkoutStatus('error');
+      }
+    }
+
+    loadSelectedWorkout();
+    return () => { active = false; };
+  }, [selectedDateKey, reloadKey]);
+
+  const selectedDate = useMemo(() => dateFromKey(selectedDateKey), [selectedDateKey]);
+  const isTodaySelected = selectedDateKey === todayKey;
+  const effectiveWorkoutDates = useMemo(
+    () => [...new Set([...workoutDates, ...scheduledWorkoutDates])],
+    [workoutDates, scheduledWorkoutDates],
+  );
+
+  const loadedForSelectedDate = loadedWorkoutDateKey === selectedDateKey ? loadedWorkout : null;
+  const propTodayWorkout = isTodaySelected ? todaysWorkout : null;
+  const effectiveWorkout = propTodayWorkout ?? loadedForSelectedDate;
+  const effectiveWorkoutStatus = propTodayWorkout
+    ? 'success'
+    : (workoutStatusDateKey === selectedDateKey ? workoutStatus : 'loading');
+
+  function selectDate(dateKey) {
+    setSelectedDateKey(dateKey);
+    setSelectionPinned(dateKey !== todayKey);
+  }
+
+  function retryHomeData() {
+    setReloadKey((value) => value + 1);
+  }
+
+  const hasRefreshError = calendarStatus === 'error'
+    || (effectiveWorkoutStatus === 'error' && Boolean(effectiveWorkout));
 
   return (
     <div className={`phone${menuOpen ? ' menu-open' : ''}`}>
       <Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} />
       <main className="content">
         <PromoBanner />
-        {homeStatus === 'error' && (
+
+        {hasRefreshError && (
           <section className="home-data-alert" role="alert">
-            <div><strong>Не удалось обновить данные</strong><span>Проверьте соединение. Если данные уже загружались, ниже показана их последняя успешная версия.</span></div>
+            <div>
+              <strong>Не удалось обновить данные</strong>
+              <span>Проверьте соединение. Ниже показана последняя успешная версия данных для выбранной даты.</span>
+            </div>
             <button type="button" onClick={retryHomeData}>Повторить</button>
           </section>
         )}
-        <CalendarCard today={today} workoutDates={effectiveWorkoutDates} />
-        <DailySummary today={today} workout={effectiveTodayWorkout} workoutStatus={effectiveWorkoutStatus} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} onRetry={retryHomeData} />
+
+        <CalendarCard
+          today={today}
+          selectedDateKey={selectedDateKey}
+          workoutDates={effectiveWorkoutDates}
+          onSelectDate={selectDate}
+        />
+
+        <DailySummary
+          date={selectedDate}
+          isToday={isTodaySelected}
+          workout={effectiveWorkout}
+          workoutStatus={effectiveWorkoutStatus}
+          nutritionPlan={nutritionPlan}
+          onOpenWorkout={onOpenWorkout}
+          onRetry={retryHomeData}
+        />
       </main>
       <BottomNav />
       <Drawer onCloseMenu={onCloseMenu} />
