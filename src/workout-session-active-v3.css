@@ -41,6 +41,14 @@
   outline-offset: 1px;
 }
 
+/* Показываем единицу веса в заголовке для конкретного упражнения. */
+.workout-exercise-card.v3 .performed-set-head:has(+ .performed-set-list input[placeholder="кг"]) > span:nth-child(2)::after {
+  content: " · кг";
+}
+.workout-exercise-card.v3 .performed-set-head:has(+ .performed-set-list input[placeholder="lb"]) > span:nth-child(2)::after {
+  content: " · lb";
+}
+
 /* Разминочные подходы всегда визуально идут перед рабочими. */
 .workout-exercise-card.v3 .performed-set-list {
   display: flex;
@@ -50,7 +58,7 @@
   order: -1;
 }
 
-/* Предыдущий результат — простая текстовая ссылка без отдельной карточки. */
+/* Предыдущий результат — простая текстовая ссылка с компактной i-иконкой. */
 .workout-exercise-card.v3 .previous-result-button {
   width: auto;
   min-height: 0;
@@ -59,12 +67,28 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: #4f4f4b;
   font-size: 13px;
   font-weight: 700;
   text-align: left;
   box-shadow: none;
+}
+.workout-exercise-card.v3 .previous-result-button::before {
+  content: "i";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 1.4px solid #777772;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  color: #777772;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
 }
 .workout-exercise-card.v3 .previous-result-button .previous-result-icon,
 .workout-exercise-card.v3 .previous-result-button > svg {
