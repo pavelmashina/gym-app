@@ -1,0 +1,82 @@
+.workout-session-content.active.v3 {
+  padding-top: 12px;
+}
+
+.exercise-navigator {
+  position: sticky;
+  top: 64px;
+  z-index: 8;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #e5e5df;
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  backdrop-filter: blur(12px);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.06);
+}
+.exercise-navigator > div:first-child span { display:block; font-size:9px; text-transform:uppercase; color:#8a8a84; font-weight:800; letter-spacing:.4px; }
+.exercise-navigator > div:first-child strong { display:block; margin-top:2px; font-size:13px; }
+.exercise-navigator-dots { display:flex; justify-content:center; gap:5px; min-width:0; }
+.exercise-navigator-dots button { width:6px; height:6px; padding:0; border:0; border-radius:999px; background:#cfcfca; }
+.exercise-navigator-dots button.active { width:18px; background:#171717; }
+.exercise-navigator-buttons { display:flex; gap:5px; }
+.exercise-navigator-buttons button { width:34px; height:34px; border:0; border-radius:11px; background:#efefeb; font-size:16px; font-weight:800; }
+.exercise-navigator-buttons button:disabled { opacity:.28; }
+
+.rest-countdown {
+  margin: 0 0 12px;
+  padding: 13px 14px;
+  border-radius: 18px;
+  background: #171717;
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(0,0,0,.14);
+}
+.rest-countdown.finished { background:#2c2c2a; }
+.rest-countdown-copy { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.rest-countdown-copy span { min-width:0; font-size:11px; color:rgba(255,255,255,.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rest-countdown-copy strong { font-size:24px; line-height:1; letter-spacing:-.6px; }
+.rest-countdown-track { height:4px; margin-top:10px; border-radius:999px; background:rgba(255,255,255,.14); overflow:hidden; }
+.rest-countdown-track span { display:block; width:100%; height:100%; transform-origin:left; background:#fff; transition:transform .45s linear; }
+.rest-countdown-actions { margin-top:10px; display:flex; gap:7px; justify-content:flex-end; }
+.rest-countdown-actions button { min-height:32px; padding:0 10px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; font-size:11px; font-weight:800; }
+
+.exercise-rest-settings {
+  border-top: 1px solid #edede8;
+  padding: 12px 0 2px;
+}
+.exercise-rest-settings > span { display:block; margin-bottom:8px; font-size:13px; font-weight:700; }
+.exercise-rest-settings > div { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.exercise-rest-settings button { height:34px; border:0; border-radius:10px; background:#efefeb; font-size:11px; font-weight:800; }
+.exercise-rest-settings button.active { background:#171717; color:#fff; }
+
+.workout-exercise-card.v3 {
+  scroll-margin-top: 128px;
+}
+
+.workout-exercise-card.v3 .performed-set-row input:focus {
+  outline: 2px solid #171717;
+  outline-offset: 1px;
+}
+
+.exercise-card-next {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ecece7;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.exercise-card-next span { color:#8a8a84; font-size:11px; font-weight:700; }
+.exercise-card-next button { border:0; background:transparent; padding:7px 0; font-size:12px; font-weight:800; }
+
+@media (max-width: 360px) {
+  .exercise-navigator { grid-template-columns:auto 1fr; }
+  .exercise-navigator-buttons { grid-column:2; justify-content:flex-end; }
+  .exercise-navigator-dots { justify-content:flex-start; }
+  .exercise-rest-settings > div { grid-template-columns:1fr 1fr; }
+}
