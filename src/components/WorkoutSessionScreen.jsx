@@ -1,1 +1,1 @@
-export { WorkoutSessionScreen } from './WorkoutSessionScreenV2.jsx';
+export { WorkoutSessionScreen } from './WorkoutSessionScreenV3.jsx';
