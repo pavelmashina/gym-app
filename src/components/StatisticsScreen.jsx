@@ -179,7 +179,7 @@ function ExerciseDetail({ exerciseKey, exerciseName, filtered, onBack }) {
 }
 
 function WorkoutDetail({ workout, filtered, allData, onBack, onExerciseOpen }) {
-  const sessionExercises = useMemo(() => filtered.exercises.filter((item) => item.sessionId === workout.id), [filtered.exercises, workout.id]);
+  const sessionExercises = useMemo(() => filtered.exercises.filter((item) => item.sessionId === workout.id).sort((a, b) => a.position - b.position), [filtered.exercises, workout.id]);
   const sessionSets = useMemo(() => filtered.sets.filter((item) => item.sessionId === workout.id), [filtered.sets, workout.id]);
   const workingSets = sessionSets.filter((set) => set.setType === 'working');
   const warmupSets = sessionSets.filter((set) => set.setType === 'warmup');
@@ -196,7 +196,16 @@ function WorkoutDetail({ workout, filtered, allData, onBack, onExerciseOpen }) {
 
   const rows = useMemo(() => {
     return sessionExercises.map((exercise) => {
-      const sets = sessionSets.filter((set) => set.sessionExerciseId === exercise.id);
+      const rawSets = sessionSets.filter((set) => set.sessionExerciseId === exercise.id).sort((a, b) => {
+        if (a.setType !== b.setType) return a.setType === 'warmup' ? -1 : 1;
+        return a.setNumber - b.setNumber;
+      });
+      let warmupNumber = 0;
+      let workingNumber = 0;
+      const sets = rawSets.map((set) => ({
+        ...set,
+        displayLabel: set.setType === 'warmup' ? `Р${++warmupNumber}` : String(++workingNumber),
+      }));
       const working = sets.filter((set) => set.setType === 'working');
       const best = working.reduce((current, set) => !current || set.estimatedOneRepMax > current.estimatedOneRepMax ? set : current, null);
       const bestEver = allTimeBestByExercise.get(exercise.exerciseKey) || 0;
@@ -246,9 +255,9 @@ function WorkoutDetail({ workout, filtered, allData, onBack, onExerciseOpen }) {
                 )}
 
                 <div className="workout-detail-set-list">
-                  {exercise.sets.map((set, index) => (
+                  {exercise.sets.map((set) => (
                     <div className={`workout-detail-set-row${set.setType === 'warmup' ? ' warmup' : ''}`} key={set.id}>
-                      <span>{set.setType === 'warmup' ? `Р${index + 1}` : index + 1}</span>
+                      <span>{set.displayLabel}</span>
                       <b>{formatWeight(set.weight)} кг</b>
                       <b>{set.reps} повт.</b>
                       <small>{set.setType === 'working' ? formatVolume(set.volume) : 'разминка'}</small>
