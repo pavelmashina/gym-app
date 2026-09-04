@@ -304,14 +304,6 @@ export async function replaceSessionExercise(sessionExerciseId, exerciseId) {
   if (error) throw new Error('Не удалось заменить упражнение.');
 }
 
-export async function moveSessionExercise(sessionExerciseId, direction) {
-  const { error } = await supabase.rpc('move_workout_session_exercise', {
-    p_session_exercise_id: sessionExerciseId,
-    p_direction: direction,
-  });
-  if (error) throw new Error('Не удалось изменить порядок упражнений.');
-}
-
 export async function completeWorkout(sessionId) {
   const { data, error } = await supabase.rpc('complete_workout', { p_workout_session_id: sessionId });
   if (error || !data) throw new Error('Не удалось завершить тренировку.');
