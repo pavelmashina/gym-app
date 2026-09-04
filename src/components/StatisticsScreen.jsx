@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { loadStatistics } from '../lib/statistics.js';
+import { ActivityCalendar, PeriodComparison, WorkoutVolumeChart } from './StatisticsInsights.jsx';
 import '../section-placeholder.css';
 import '../statistics.css';
 import '../statistics-workout-detail.css';
@@ -330,8 +331,6 @@ export function StatisticsScreen() {
     return [...groups.values()].map((item) => ({ ...item, points: [...item.pointsByDate.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, value]) => ({ date, value })) })).sort((a, b) => b.points.length - a.points.length || b.best - a.best).slice(0, 6);
   }, [filtered]);
 
-  const maxRecentVolume = Math.max(...recentWorkouts.map((item) => item.volume), 1);
-
   if (selectedExercise && status === 'ready') {
     return <ExerciseDetail exerciseKey={selectedExercise.key} exerciseName={selectedExercise.name} filtered={filtered} onBack={() => setSelectedExercise(null)} />;
   }
@@ -356,9 +355,12 @@ export function StatisticsScreen() {
             <article><span>Подходов</span><strong>{metrics.workingSets}</strong><small>рабочих</small></article>
           </section>
 
+          <PeriodComparison data={data} range={range} currentMetrics={metrics} />
+          <ActivityCalendar sessions={data.sessions} />
+
           <section className="statistics-section">
             <div className="statistics-section-head"><div><span>Динамика</span><h2>Последние тренировки</h2></div><small>тоннаж</small></div>
-            {recentWorkouts.length === 0 ? <p className="statistics-muted">В выбранном периоде тренировок нет.</p> : <div className="statistics-volume-chart">{[...recentWorkouts].reverse().map((item) => <div className="statistics-volume-column" key={item.id}><div className="statistics-volume-bar-shell"><span style={{ height: `${Math.max(6, (item.volume / maxRecentVolume) * 100)}%` }} /></div><small>{formatDate(item.date)}</small></div>)}</div>}
+            <WorkoutVolumeChart workouts={recentWorkouts} />
           </section>
 
           <section className="statistics-section">
