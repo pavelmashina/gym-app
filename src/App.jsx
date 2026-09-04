@@ -4,6 +4,7 @@ import { CreateProgramScreen } from './components/CreateProgramScreen.jsx';
 import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
+import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
@@ -212,7 +213,8 @@ export default function App() {
       return <ExercisesScreen initialTab={trainingInitialTab} refreshKey={trainingRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
     }
 
-    if (['statistics', 'nutrition', 'sportpit'].includes(activeScreen)) return <SectionPlaceholder section={activeScreen} />;
+    if (activeScreen === 'statistics') return <StatisticsScreen />;
+    if (['nutrition', 'sportpit'].includes(activeScreen)) return <SectionPlaceholder section={activeScreen} />;
 
     return <HomeScreen menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} />;
   }
