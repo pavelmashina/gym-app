@@ -1,7 +1,7 @@
 # Supabase database schema
 
 This directory is the repository source of truth for the application database structure.
-It mirrors the linked Supabase project as of 2026-09-01.
+It mirrors the linked Supabase project as of 2026-09-04.
 
 ## Public tables (16)
 
@@ -82,7 +82,9 @@ Editing rhythm for a joined program recalculates only future scheduled dates. Pa
 
 ## Workout execution
 
-Starting a scheduled workout creates a separate WorkoutSession snapshot. Only one active session is allowed per user. The session supports warm-up/working sets, weight/reps, notes, previous results, best set, exercise replacement/reordering and abandonment.
+Starting a scheduled workout creates a separate WorkoutSession snapshot. Only one active session is allowed per user. The session supports warm-up/working sets, weight/reps, notes, previous results, best set, exercise replacement, drag-and-drop reordering and abandonment.
+
+`workout-session-reorder-scope.sql` provides the current authenticated `SECURITY INVOKER` reorder RPC. It can change only the current session or, when explicitly requested, the future scheduled copies of the same program workout. The old one-position move RPC is retired and dropped by this milestone.
 
 Completing a workout marks the session and scheduled workout `completed`. Abandoning marks the session `abandoned` and the scheduled workout `skipped`. Skipped/cancelled workouts cannot be started again. When no scheduled workouts remain, the corresponding participation is completed automatically.
 
@@ -95,7 +97,7 @@ Completing a workout marks the session and scheduled workout `completed`. Abando
 - `program-persistence.sql` — atomic program create/update plus private `program-covers` Storage bucket;
 - `program-schedule.sql`, `program-schedule-modes.sql`, `program-reschedule-on-edit.sql` — schedule calculation milestones;
 - `program-start-date-edit.sql` — joined-program start-date edit;
-- `workout-session.sql`, `workout-session-editing.sql`, `workout-session-abandon.sql` — actual workout lifecycle;
+- `workout-session.sql`, `workout-session-abandon.sql`, `workout-session-reorder-scope.sql` — actual workout lifecycle and current reorder behavior;
 - `catalog-program-adoption.sql`, `catalog-program-cycle-normalization.sql` — ready-made program catalog;
 - `program-cycle-model.sql`, `program-cycle-schedule.sql`, `program-cycle-catalog-adoption.sql` — final cycle-aware program behavior;
 - `program-cycle-edit-guard.sql` — freezes active/paused cycle size;
@@ -120,15 +122,15 @@ Apply the readable schema milestones in this order:
 11. `program-reschedule-on-edit.sql`
 12. `workout-session.sql`
 13. `program-start-date-edit.sql`
-14. `workout-session-editing.sql`
-15. `workout-session-abandon.sql`
-16. `catalog-programs.sql`
-17. `catalog-program-adoption.sql`
-18. `catalog-program-adoption-index.sql`
-19. `catalog-program-cycle-normalization.sql`
-20. `program-cycle-model.sql`
-21. `program-cycle-schedule.sql`
-22. `program-cycle-catalog-adoption.sql`
+14. `workout-session-abandon.sql`
+15. `catalog-programs.sql`
+16. `catalog-program-adoption.sql`
+17. `catalog-program-adoption-index.sql`
+18. `catalog-program-cycle-normalization.sql`
+19. `program-cycle-model.sql`
+20. `program-cycle-schedule.sql`
+21. `program-cycle-catalog-adoption.sql`
+22. `workout-session-reorder-scope.sql`
 23. `program-cycle-edit-guard.sql`
 24. `program-participation-controls.sql`
 25. `scheduled-workout-controls.sql`
@@ -143,7 +145,7 @@ Later milestone files intentionally replace function definitions from earlier fi
 - all 16 public application tables exist and have RLS enabled;
 - exactly 57 application RLS policies exist;
 - `anon` has no application-table grants;
-- all 16 current app-facing program/workout/catalog RPCs are `SECURITY INVOKER`, executable by `authenticated` and not by `anon`;
+- all 16 current app-facing program/workout/catalog RPCs are `SECURITY INVOKER`, executable by `authenticated` and not by `anon`; the current drag-reorder RPC is checked instead of the retired one-position move RPC;
 - catalog snapshot/source columns, cycle columns and cycle constraints exist;
 - the active-cycle guard function/trigger exist;
 - published catalog rows are normalized to non-empty cycles;
