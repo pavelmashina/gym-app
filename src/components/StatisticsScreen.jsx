@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { loadStatistics } from '../lib/statistics.js';
 import '../section-placeholder.css';
 import '../statistics.css';
+import '../statistics-workout-detail.css';
 
 const RANGE_OPTIONS = [
   { key: '30d', label: '30 дней', days: 30 },
@@ -57,6 +58,10 @@ function formatVolume(value) {
 function formatDate(value, withYear = false) {
   if (!value) return '—';
   return new Intl.DateTimeFormat('ru-RU', withYear ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' }).format(new Date(`${value}T12:00:00`));
+}
+
+function formatWeight(value) {
+  return Math.round(Number(value || 0) * 10) / 10;
 }
 
 function ExerciseProgress({ record }) {
@@ -139,14 +144,14 @@ function ExerciseDetail({ exerciseKey, exerciseName, filtered, onBack }) {
       <main className="statistics-content exercise-detail-content">
         <section className="exercise-detail-hero">
           <span>Лучший результат</span>
-          <strong>{bestSet ? `${Math.round(bestSet.weight * 10) / 10} кг × ${bestSet.reps}` : '—'}</strong>
-          <small>{bestSet ? `e1RM ${Math.round(bestSet.estimatedOneRepMax * 10) / 10} кг` : 'Нет рабочих подходов'}</small>
+          <strong>{bestSet ? `${formatWeight(bestSet.weight)} кг × ${bestSet.reps}` : '—'}</strong>
+          <small>{bestSet ? `e1RM ${formatWeight(bestSet.estimatedOneRepMax)} кг` : 'Нет рабочих подходов'}</small>
         </section>
 
         <section className="statistics-metric-grid exercise-detail-metrics">
           <article><span>Тренировок</span><strong>{history.length}</strong><small>с упражнением</small></article>
           <article><span>Рабочих подходов</span><strong>{sets.length}</strong><small>выполнено</small></article>
-          <article><span>Макс. вес</span><strong>{Math.round(maxWeight * 10) / 10} кг</strong><small>рабочий подход</small></article>
+          <article><span>Макс. вес</span><strong>{formatWeight(maxWeight)} кг</strong><small>рабочий подход</small></article>
           <article><span>Тоннаж</span><strong>{formatVolume(totalVolume)}</strong><small>по упражнению</small></article>
         </section>
 
@@ -160,9 +165,96 @@ function ExerciseDetail({ exerciseKey, exerciseName, filtered, onBack }) {
           <div className="exercise-history-list">
             {[...history].reverse().map((item) => (
               <article key={item.sessionId}>
-                <div className="exercise-history-head"><div><strong>{formatDate(item.date, true)}</strong><span>{item.workoutName}</span></div><b>e1RM {Math.round(item.bestE1rm * 10) / 10} кг</b></div>
-                <div className="exercise-history-summary"><span>{item.sets.length} раб. подх.</span><span>{formatVolume(item.volume)}</span><span>{item.bestSet ? `${Math.round(item.bestSet.weight * 10) / 10} × ${item.bestSet.reps}` : '—'}</span></div>
-                <div className="exercise-history-sets">{item.sets.map((set, index) => <span key={set.id}>{index + 1}. {Math.round(set.weight * 10) / 10} кг × {set.reps}</span>)}</div>
+                <div className="exercise-history-head"><div><strong>{formatDate(item.date, true)}</strong><span>{item.workoutName}</span></div><b>e1RM {formatWeight(item.bestE1rm)} кг</b></div>
+                <div className="exercise-history-summary"><span>{item.sets.length} раб. подх.</span><span>{formatVolume(item.volume)}</span><span>{item.bestSet ? `${formatWeight(item.bestSet.weight)} × ${item.bestSet.reps}` : '—'}</span></div>
+                <div className="exercise-history-sets">{item.sets.map((set, index) => <span key={set.id}>{index + 1}. {formatWeight(set.weight)} кг × {set.reps}</span>)}</div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+      <StatisticsBottomNav />
+    </div>
+  );
+}
+
+function WorkoutDetail({ workout, filtered, allData, onBack, onExerciseOpen }) {
+  const sessionExercises = useMemo(() => filtered.exercises.filter((item) => item.sessionId === workout.id), [filtered.exercises, workout.id]);
+  const sessionSets = useMemo(() => filtered.sets.filter((item) => item.sessionId === workout.id), [filtered.sets, workout.id]);
+  const workingSets = sessionSets.filter((set) => set.setType === 'working');
+  const warmupSets = sessionSets.filter((set) => set.setType === 'warmup');
+  const volume = workingSets.reduce((sum, set) => sum + set.volume, 0);
+
+  const allTimeBestByExercise = useMemo(() => {
+    const result = new Map();
+    allData.sets.filter((set) => set.setType === 'working').forEach((set) => {
+      const current = result.get(set.exerciseKey) || 0;
+      if (set.estimatedOneRepMax > current) result.set(set.exerciseKey, set.estimatedOneRepMax);
+    });
+    return result;
+  }, [allData.sets]);
+
+  const rows = useMemo(() => {
+    return sessionExercises.map((exercise) => {
+      const sets = sessionSets.filter((set) => set.sessionExerciseId === exercise.id);
+      const working = sets.filter((set) => set.setType === 'working');
+      const best = working.reduce((current, set) => !current || set.estimatedOneRepMax > current.estimatedOneRepMax ? set : current, null);
+      const bestEver = allTimeBestByExercise.get(exercise.exerciseKey) || 0;
+      const isPr = Boolean(best && best.estimatedOneRepMax > 0 && Math.abs(best.estimatedOneRepMax - bestEver) < 0.0001);
+      return { ...exercise, sets, working, best, isPr, volume: working.reduce((sum, set) => sum + set.volume, 0) };
+    });
+  }, [sessionExercises, sessionSets, allTimeBestByExercise]);
+
+  return (
+    <div className="phone statistics-phone workout-detail-phone">
+      <header className="exercise-detail-appbar workout-detail-appbar">
+        <button className="exercise-detail-back" type="button" aria-label="Назад к статистике" onClick={onBack}><BackIcon /></button>
+        <div><span>{formatDate(workout.date, true)}</span><h1>{workout.workoutName}</h1></div>
+      </header>
+
+      <main className="statistics-content workout-detail-content">
+        <section className="workout-detail-hero">
+          <span>Завершённая тренировка</span>
+          <strong>{formatDuration(workout.durationSeconds)}</strong>
+          <small>{rows.length} упр. · {workingSets.length} раб. подх. · {formatVolume(volume)}</small>
+        </section>
+
+        <section className="statistics-metric-grid workout-detail-metrics">
+          <article><span>Тоннаж</span><strong>{formatVolume(volume)}</strong><small>рабочие подходы</small></article>
+          <article><span>Подходов</span><strong>{workingSets.length}</strong><small>рабочих</small></article>
+          <article><span>Разминка</span><strong>{warmupSets.length}</strong><small>подходов</small></article>
+          <article><span>Упражнений</span><strong>{rows.length}</strong><small>в тренировке</small></article>
+        </section>
+
+        <section className="statistics-section workout-detail-exercises">
+          <div className="statistics-section-head"><div><span>Состав</span><h2>Упражнения</h2></div><small>{rows.length}</small></div>
+          <div className="workout-detail-exercise-list">
+            {rows.map((exercise, exerciseIndex) => (
+              <article key={exercise.id} className="workout-detail-exercise-card">
+                <button className="workout-detail-exercise-head" type="button" onClick={() => onExerciseOpen({ key: exercise.exerciseKey, name: exercise.name })}>
+                  <span className="workout-detail-exercise-number">{exerciseIndex + 1}</span>
+                  <div><strong>{exercise.name}</strong><span>{exercise.muscleGroup || 'Упражнение'} · {formatVolume(exercise.volume)}</span></div>
+                  <span className="statistics-exercise-chevron"><ChevronIcon /></span>
+                </button>
+
+                {exercise.best && (
+                  <div className={`workout-detail-best${exercise.isPr ? ' pr' : ''}`}>
+                    <span>{exercise.isPr ? 'Личный рекорд' : 'Лучший подход тренировки'}</span>
+                    <strong>{formatWeight(exercise.best.weight)} кг × {exercise.best.reps}</strong>
+                    <small>e1RM {formatWeight(exercise.best.estimatedOneRepMax)} кг</small>
+                  </div>
+                )}
+
+                <div className="workout-detail-set-list">
+                  {exercise.sets.map((set, index) => (
+                    <div className={`workout-detail-set-row${set.setType === 'warmup' ? ' warmup' : ''}`} key={set.id}>
+                      <span>{set.setType === 'warmup' ? `Р${index + 1}` : index + 1}</span>
+                      <b>{formatWeight(set.weight)} кг</b>
+                      <b>{set.reps} повт.</b>
+                      <small>{set.setType === 'working' ? formatVolume(set.volume) : 'разминка'}</small>
+                    </div>
+                  ))}
+                </div>
               </article>
             ))}
           </div>
@@ -179,6 +271,7 @@ export function StatisticsScreen() {
   const [range, setRange] = useState('90d');
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -234,6 +327,10 @@ export function StatisticsScreen() {
     return <ExerciseDetail exerciseKey={selectedExercise.key} exerciseName={selectedExercise.name} filtered={filtered} onBack={() => setSelectedExercise(null)} />;
   }
 
+  if (selectedWorkout && status === 'ready' && data) {
+    return <WorkoutDetail workout={selectedWorkout} filtered={filtered} allData={data} onBack={() => setSelectedWorkout(null)} onExerciseOpen={(exercise) => { setSelectedWorkout(null); setSelectedExercise(exercise); }} />;
+  }
+
   return (
     <div className="phone statistics-phone">
       <header className="statistics-appbar"><div><span>Аналитика тренировок</span><h1>Статистика</h1></div><button className="profile-btn" type="button" aria-label="Профиль"><ProfileIcon /></button></header>
@@ -257,12 +354,12 @@ export function StatisticsScreen() {
 
           <section className="statistics-section">
             <div className="statistics-section-head"><div><span>Сила</span><h2>Прогресс по упражнениям</h2></div><small>e1RM</small></div>
-            {exerciseRecords.length === 0 ? <p className="statistics-muted">Нужны рабочие подходы с весом и повторами.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <button className="statistics-exercise-row" type="button" key={record.key} onClick={() => setSelectedExercise({ key: record.key, name: record.name })}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>Лучший: {Math.round(record.bestSet.weight * 10) / 10} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span className="statistics-exercise-chevron"><ChevronIcon /></span></button>)}</div>}
+            {exerciseRecords.length === 0 ? <p className="statistics-muted">Нужны рабочие подходы с весом и повторами.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <button className="statistics-exercise-row" type="button" key={record.key} onClick={() => setSelectedExercise({ key: record.key, name: record.name })}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>Лучший: {formatWeight(record.bestSet.weight)} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span className="statistics-exercise-chevron"><ChevronIcon /></span></button>)}</div>}
           </section>
 
           <section className="statistics-section recent-list-section">
             <div className="statistics-section-head"><div><span>История</span><h2>Недавние тренировки</h2></div></div>
-            <div className="statistics-recent-list">{recentWorkouts.slice(0, 5).map((item) => <article key={item.id}><div><strong>{item.workoutName}</strong><span>{formatDate(item.date)} · {formatDuration(item.durationSeconds)}</span></div><b>{formatVolume(item.volume)}</b></article>)}</div>
+            <div className="statistics-recent-list">{recentWorkouts.slice(0, 5).map((item) => <button className="statistics-recent-workout" type="button" key={item.id} onClick={() => setSelectedWorkout(item)}><div><strong>{item.workoutName}</strong><span>{formatDate(item.date)} · {formatDuration(item.durationSeconds)}</span></div><b>{formatVolume(item.volume)}</b><span className="statistics-recent-chevron"><ChevronIcon /></span></button>)}</div>
           </section>
         </>}
       </main>
