@@ -85,7 +85,7 @@ begin
         or (p.proname = 'start_workout' and pg_get_function_identity_arguments(p.oid) = 'p_scheduled_workout_id uuid')
         or (p.proname = 'complete_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid')
         or (p.proname = 'abandon_workout' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid')
-        or (p.proname = 'move_workout_session_exercise' and pg_get_function_identity_arguments(p.oid) = 'p_session_exercise_id uuid, p_direction integer')
+        or (p.proname = 'reorder_workout_session_exercises' and pg_get_function_identity_arguments(p.oid) = 'p_workout_session_id uuid, p_ordered_exercise_ids uuid[], p_scope text')
         or (p.proname = 'adopt_catalog_program' and pg_get_function_identity_arguments(p.oid) = 'p_catalog_program_id uuid')
       )
   )
