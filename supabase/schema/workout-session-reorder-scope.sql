@@ -2,6 +2,9 @@
 -- `session` changes only the current WorkoutSession snapshot.
 -- `program` also applies the source order to future scheduled copies of the same ProgramWorkout.
 -- Completed/skipped/cancelled workouts and historical WorkoutSessions are never rewritten.
+-- The old one-step move RPC is intentionally retired by this milestone.
+
+drop function if exists public.move_workout_session_exercise(uuid, integer);
 
 create or replace function public.reorder_workout_session_exercises(
   p_workout_session_id uuid,
