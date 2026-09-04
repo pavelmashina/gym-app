@@ -45,9 +45,10 @@ export async function loadStatistics() {
     exerciseIds.length
       ? supabase
           .from('performed_sets')
-          .select('id, workout_session_exercise_id, set_type, weight, reps, completed, completed_at')
+          .select('id, workout_session_exercise_id, set_number, set_type, weight, reps, completed, completed_at')
           .in('workout_session_exercise_id', exerciseIds)
           .eq('completed', true)
+          .order('set_number', { ascending: true })
       : Promise.resolve({ data: [], error: null }),
     linkedExerciseIds.length
       ? supabase.from('exercises').select('id, name, muscle_group').in('id', linkedExerciseIds)
@@ -81,6 +82,7 @@ export async function loadStatistics() {
       exerciseKey: row.exercise_id || `snapshot:${row.exercise_name_snapshot || 'Упражнение'}`,
       name: catalog?.name || row.exercise_name_snapshot || 'Упражнение',
       muscleGroup: catalog?.muscle_group || '',
+      position: Number(row.position || 0),
       date: dateKey(session?.ended_at || session?.started_at),
     };
   });
@@ -98,6 +100,7 @@ export async function loadStatistics() {
       sessionExerciseId: row.workout_session_exercise_id,
       exerciseKey: exercise?.exercise_id || `snapshot:${exercise?.exercise_name_snapshot || 'Упражнение'}`,
       exerciseName: name,
+      setNumber: Number(row.set_number || 0),
       setType: row.set_type,
       weight,
       reps,
