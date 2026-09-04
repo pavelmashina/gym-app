@@ -13,6 +13,14 @@ function ProfileIcon() {
   return <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="11" r="5" /><path d="M7 27c1.2-5.7 4.2-8.4 9-8.4s7.8 2.7 9 8.4" /></svg>;
 }
 
+function BackIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>;
+}
+
+function ChevronIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>;
+}
+
 function StatisticsBottomNav() {
   return (
     <nav className="bottom-nav placeholder-bottom-nav" aria-label="Основная навигация">
@@ -46,9 +54,9 @@ function formatVolume(value) {
   return `${number.toLocaleString('ru-RU')} кг`;
 }
 
-function formatDate(value) {
+function formatDate(value, withYear = false) {
   if (!value) return '—';
-  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${value}T12:00:00`));
+  return new Intl.DateTimeFormat('ru-RU', withYear ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' }).format(new Date(`${value}T12:00:00`));
 }
 
 function ExerciseProgress({ record }) {
@@ -66,6 +74,32 @@ function ExerciseProgress({ record }) {
   return <svg className="statistics-mini-line" viewBox={`0 0 ${width} ${height}`} aria-hidden="true"><polyline points={coords} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
+function DetailLineChart({ points }) {
+  const width = 320;
+  const height = 150;
+  const values = points.map((item) => item.value);
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, max);
+  const padding = 14;
+  const span = Math.max(max - min, 1);
+  const coords = points.map((item, index) => {
+    const x = points.length === 1 ? width / 2 : padding + (index / (points.length - 1)) * (width - padding * 2);
+    const y = height - padding - ((item.value - min) / span) * (height - padding * 2);
+    return { ...item, x, y };
+  });
+  const polyline = coords.map((item) => `${item.x},${item.y}`).join(' ');
+  return (
+    <div className="exercise-detail-chart-wrap">
+      <svg className="exercise-detail-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Динамика расчётного максимума">
+        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} className="exercise-chart-axis" />
+        <polyline points={polyline} fill="none" className="exercise-chart-line" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+        {coords.map((item) => <circle key={`${item.date}-${item.x}`} cx={item.x} cy={item.y} r="4" className="exercise-chart-dot" />)}
+      </svg>
+      <div className="exercise-detail-chart-labels"><span>{formatDate(points[0]?.date)}</span><span>{formatDate(points[points.length - 1]?.date)}</span></div>
+    </div>
+  );
+}
+
 function LoadingCard() {
   return <section className="statistics-state-card"><div className="statistics-spinner" /><strong>Собираем статистику…</strong><span>Считаем только завершённые тренировки.</span></section>;
 }
@@ -74,11 +108,77 @@ function EmptyState() {
   return <section className="statistics-state-card"><div className="statistics-empty-mark">↗</div><strong>Пока недостаточно данных</strong><span>Завершите первую тренировку — после этого здесь появятся показатели прогресса.</span></section>;
 }
 
+function ExerciseDetail({ exerciseKey, exerciseName, filtered, onBack }) {
+  const sets = useMemo(() => filtered.sets.filter((set) => set.exerciseKey === exerciseKey && set.setType === 'working'), [filtered, exerciseKey]);
+  const sessionById = useMemo(() => new Map(filtered.sessions.map((session) => [session.id, session])), [filtered.sessions]);
+  const exerciseMeta = filtered.exercises.find((item) => item.exerciseKey === exerciseKey);
+
+  const history = useMemo(() => {
+    const bySession = new Map();
+    sets.forEach((set) => {
+      const group = bySession.get(set.sessionId) || { sessionId: set.sessionId, date: set.date, sets: [], volume: 0, bestE1rm: 0, bestSet: null };
+      group.sets.push(set);
+      group.volume += set.volume;
+      if (set.estimatedOneRepMax > group.bestE1rm) { group.bestE1rm = set.estimatedOneRepMax; group.bestSet = set; }
+      bySession.set(set.sessionId, group);
+    });
+    return [...bySession.values()].map((item) => ({ ...item, workoutName: sessionById.get(item.sessionId)?.workoutName || 'Тренировка' })).sort((a, b) => a.date.localeCompare(b.date));
+  }, [sets, sessionById]);
+
+  const bestSet = useMemo(() => sets.reduce((best, set) => !best || set.estimatedOneRepMax > best.estimatedOneRepMax ? set : best, null), [sets]);
+  const maxWeight = useMemo(() => Math.max(0, ...sets.map((set) => set.weight)), [sets]);
+  const totalVolume = sets.reduce((sum, set) => sum + set.volume, 0);
+  const chartPoints = history.map((item) => ({ date: item.date, value: item.bestE1rm }));
+
+  return (
+    <div className="phone statistics-phone exercise-detail-phone">
+      <header className="exercise-detail-appbar">
+        <button className="exercise-detail-back" type="button" aria-label="Назад к статистике" onClick={onBack}><BackIcon /></button>
+        <div><span>{exerciseMeta?.muscleGroup || 'Упражнение'}</span><h1>{exerciseName}</h1></div>
+      </header>
+      <main className="statistics-content exercise-detail-content">
+        <section className="exercise-detail-hero">
+          <span>Лучший результат</span>
+          <strong>{bestSet ? `${Math.round(bestSet.weight * 10) / 10} кг × ${bestSet.reps}` : '—'}</strong>
+          <small>{bestSet ? `e1RM ${Math.round(bestSet.estimatedOneRepMax * 10) / 10} кг` : 'Нет рабочих подходов'}</small>
+        </section>
+
+        <section className="statistics-metric-grid exercise-detail-metrics">
+          <article><span>Тренировок</span><strong>{history.length}</strong><small>с упражнением</small></article>
+          <article><span>Рабочих подходов</span><strong>{sets.length}</strong><small>выполнено</small></article>
+          <article><span>Макс. вес</span><strong>{Math.round(maxWeight * 10) / 10} кг</strong><small>рабочий подход</small></article>
+          <article><span>Тоннаж</span><strong>{formatVolume(totalVolume)}</strong><small>по упражнению</small></article>
+        </section>
+
+        <section className="statistics-section">
+          <div className="statistics-section-head"><div><span>Динамика силы</span><h2>Расчётный максимум</h2></div><small>e1RM</small></div>
+          {chartPoints.length ? <DetailLineChart points={chartPoints} /> : <p className="statistics-muted">Недостаточно данных для графика.</p>}
+        </section>
+
+        <section className="statistics-section">
+          <div className="statistics-section-head"><div><span>По тренировкам</span><h2>История упражнения</h2></div><small>{history.length}</small></div>
+          <div className="exercise-history-list">
+            {[...history].reverse().map((item) => (
+              <article key={item.sessionId}>
+                <div className="exercise-history-head"><div><strong>{formatDate(item.date, true)}</strong><span>{item.workoutName}</span></div><b>e1RM {Math.round(item.bestE1rm * 10) / 10} кг</b></div>
+                <div className="exercise-history-summary"><span>{item.sets.length} раб. подх.</span><span>{formatVolume(item.volume)}</span><span>{item.bestSet ? `${Math.round(item.bestSet.weight * 10) / 10} × ${item.bestSet.reps}` : '—'}</span></div>
+                <div className="exercise-history-sets">{item.sets.map((set, index) => <span key={set.id}>{index + 1}. {Math.round(set.weight * 10) / 10} кг × {set.reps}</span>)}</div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+      <StatisticsBottomNav />
+    </div>
+  );
+}
+
 export function StatisticsScreen() {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('loading');
   const [range, setRange] = useState('90d');
   const [reloadKey, setReloadKey] = useState(0);
+  const [selectedExercise, setSelectedExercise] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -130,6 +230,10 @@ export function StatisticsScreen() {
 
   const maxRecentVolume = Math.max(...recentWorkouts.map((item) => item.volume), 1);
 
+  if (selectedExercise && status === 'ready') {
+    return <ExerciseDetail exerciseKey={selectedExercise.key} exerciseName={selectedExercise.name} filtered={filtered} onBack={() => setSelectedExercise(null)} />;
+  }
+
   return (
     <div className="phone statistics-phone">
       <header className="statistics-appbar"><div><span>Аналитика тренировок</span><h1>Статистика</h1></div><button className="profile-btn" type="button" aria-label="Профиль"><ProfileIcon /></button></header>
@@ -153,7 +257,7 @@ export function StatisticsScreen() {
 
           <section className="statistics-section">
             <div className="statistics-section-head"><div><span>Сила</span><h2>Прогресс по упражнениям</h2></div><small>e1RM</small></div>
-            {exerciseRecords.length === 0 ? <p className="statistics-muted">Нужны рабочие подходы с весом и повторами.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <article className="statistics-exercise-row" key={record.key}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>Лучший: {Math.round(record.bestSet.weight * 10) / 10} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /></article>)}</div>}
+            {exerciseRecords.length === 0 ? <p className="statistics-muted">Нужны рабочие подходы с весом и повторами.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <button className="statistics-exercise-row" type="button" key={record.key} onClick={() => setSelectedExercise({ key: record.key, name: record.name })}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>Лучший: {Math.round(record.bestSet.weight * 10) / 10} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span className="statistics-exercise-chevron"><ChevronIcon /></span></button>)}</div>}
           </section>
 
           <section className="statistics-section recent-list-section">
