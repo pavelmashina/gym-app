@@ -1,0 +1,236 @@
+.workout-session-phone.completed-reference-mode {
+  background: #f8f7f2;
+}
+
+.completed-reference-screen {
+  min-height: 100dvh;
+  padding: calc(18px + env(safe-area-inset-top)) 22px calc(34px + env(safe-area-inset-bottom));
+  background: #f8f7f2;
+  color: #1a1a1a;
+}
+
+.completed-reference-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.completed-reference-header h1 {
+  margin: 0;
+  font-size: clamp(24px, 6vw, 31px);
+  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -.7px;
+}
+
+.completed-reference-done {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 6px 0 6px 12px;
+  background: transparent;
+  color: #5940d6;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.completed-result-card {
+  padding: 23px 25px 18px;
+  border-radius: 18px;
+  background: #1d1d1d;
+  color: #f4f3f0;
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+}
+
+.completed-result-card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.completed-result-card-top span,
+.completed-result-brand {
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+.completed-result-brand {
+  flex: 0 0 auto;
+  color: #f4f3f0;
+  letter-spacing: -.4px;
+}
+
+.completed-result-card h2 {
+  margin: 8px 0 0;
+  font-size: 18px;
+  line-height: 1.24;
+  font-weight: 500;
+  letter-spacing: -.35px;
+}
+
+.completed-result-date {
+  margin: 7px 0 0;
+  color: #70706d;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.completed-result-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 9px;
+  color: #d2d2ce;
+  font-size: 12px;
+}
+
+.completed-result-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.completed-result-meta svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+.completed-result-table {
+  margin-top: 18px;
+}
+
+.completed-result-table-head,
+.completed-result-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(112px, .85fr);
+  gap: 16px;
+}
+
+.completed-result-table-head {
+  padding: 0 0 8px;
+  border-bottom: 1px solid #373735;
+  color: #72726f;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.completed-result-table-head span:last-child {
+  text-align: left;
+}
+
+.completed-result-row {
+  min-height: 57px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #393937;
+}
+
+.completed-result-exercise {
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.completed-result-best {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.completed-result-trophy {
+  color: #e0b635;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.completed-result-empty {
+  padding: 22px 0 8px;
+  color: #848480;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.completed-share-section {
+  padding: 52px 20px 8px;
+  text-align: center;
+}
+
+.completed-share-section h3 {
+  max-width: 360px;
+  margin: 0 auto;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: -.55px;
+}
+
+.completed-share-button {
+  margin: 25px auto 0;
+  border: 0;
+  background: transparent;
+  color: #202020;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.completed-share-icon {
+  width: 58px;
+  height: 58px;
+  border: 1px solid #dfded8;
+  border-radius: 50%;
+  background: #fbfaf7;
+  display: grid;
+  place-items: center;
+}
+
+.completed-share-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.completed-share-button > span:last-child {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+@media (max-width: 390px) {
+  .completed-reference-screen {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .completed-result-card {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+
+  .completed-result-table-head,
+  .completed-result-row {
+    grid-template-columns: minmax(0, 1.25fr) minmax(105px, .75fr);
+    gap: 10px;
+  }
+
+  .completed-result-exercise,
+  .completed-result-best {
+    font-size: 13px;
+  }
+
+  .completed-share-section h3 {
+    font-size: 19px;
+  }
+}
