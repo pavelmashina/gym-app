@@ -1,1 +1,1 @@
-export { StatisticsScreen } from './StatisticsScreenV2.jsx';
+export { StatisticsScreen } from './StatisticsScreenV3.jsx';
