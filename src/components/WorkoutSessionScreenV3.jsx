@@ -200,13 +200,112 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onAbandon, finishing, a
 }
 
 function CompletedWorkout({ entry, onDone }) {
-  const completedSets = entry.workout.exercises.flatMap((exercise) => exercise.sets).filter((set) => set.completed);
-  const workingSets = completedSets.filter((set) => set.setType === 'working');
-  const warmupSets = completedSets.filter((set) => set.setType === 'warmup');
-  const tonnage = workingTonnage(completedSets);
-  const completedExerciseCount = entry.workout.exercises.filter((exercise) => exercise.sets.some((set) => set.completed && set.setType === 'working')).length;
-  return <><main className="workout-session-content completed workout-completed-expanded"><section className="workout-complete-hero"><div className="workout-complete-mark"><CheckIcon /></div><span>Тренировка завершена</span><h1>{entry.workout.name}</h1><p>{formatDate(entry.workout.scheduledDate)}</p></section><section className="workout-result-grid workout-result-grid-expanded"><div><span>Время</span><strong>{formatTime(entry.session.activeDurationSeconds)}</strong></div><div><span>Тоннаж</span><strong>{Math.round(tonnage).toLocaleString('ru-RU')} кг</strong></div><div><span>Упражнений</span><strong>{completedExerciseCount}/{entry.workout.exercises.length}</strong></div><div><span>Рабочих подходов</span><strong>{workingSets.length}</strong></div><div><span>Разминочных</span><strong>{warmupSets.length}</strong></div></section></main><footer className="workout-session-footer"><button type="button" onClick={onDone}>На главную</button></footer></>;
+  const [recordExerciseIds, setRecordExerciseIds] = useState(() => new Set());
+  const [shareState, setShareState] = useState('idle');
+  const tonnage = workingTonnage(entry.workout.exercises.flatMap((exercise) => exercise.sets));
+
+  function e1rm(set) {
+    const weight = Number(set?.weight || 0);
+    const reps = Number(set?.reps || 0);
+    if (weight <= 0 || reps <= 0) return 0;
+    return weight * (1 + reps / 30);
+  }
+
+  const rows = useMemo(() => entry.workout.exercises.map((exercise) => {
+    const working = exercise.sets.filter((set) => set.completed && set.setType === 'working' && Number(set.weight || 0) > 0 && Number(set.reps || 0) > 0);
+    const best = working.reduce((current, set) => !current || e1rm(set) > e1rm(current) ? set : current, null);
+    return best ? { exercise, best, score: e1rm(best) } : null;
+  }).filter(Boolean), [entry.workout.exercises]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all(rows.map(async (row) => {
+      if (!row.exercise.exerciseId) return null;
+      try {
+        const history = await getExerciseHistorySummary(row.exercise.exerciseId, entry.session.id);
+        const previousBest = history?.best?.set;
+        const previousScore = previousBest ? e1rm(previousBest) : 0;
+        return row.score > previousScore + 0.0001 ? row.exercise.id : null;
+      } catch {
+        return null;
+      }
+    })).then((ids) => {
+      if (!active) return;
+      setRecordExerciseIds(new Set(ids.filter(Boolean)));
+    });
+    return () => { active = false; };
+  }, [entry.session.id, rows]);
+
+  const completedDate = entry.workout.scheduledDate
+    ? new Intl.DateTimeFormat('ru-RU', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${entry.workout.scheduledDate}T12:00:00`))
+    : '';
+  const durationSeconds = Number(entry.session.activeDurationSeconds || 0);
+  const duration = durationSeconds < 3600
+    ? `${String(Math.floor(durationSeconds / 60)).padStart(2, '0')}:${String(durationSeconds % 60).padStart(2, '0')}`
+    : formatTime(durationSeconds);
+
+  const shareText = [
+    `Вы сделали это! ${entry.workout.name}`,
+    completedDate,
+    `Время: ${duration}`,
+    `Тоннаж: ${Math.round(tonnage).toLocaleString('ru-RU')} кг`,
+    '',
+    ...rows.map((row) => `${recordExerciseIds.has(row.exercise.id) ? '🏆 ' : ''}${row.exercise.name}: ${Number(row.best.weight || 0)} кг × ${row.best.reps}`),
+  ].filter((line) => line !== undefined).join('\n');
+
+  async function shareResult() {
+    setShareState('idle');
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Тренировка · ${entry.workout.name}`, text: shareText });
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setShareState('copied');
+      window.setTimeout(() => setShareState('idle'), 1800);
+    } catch {
+      setShareState('error');
+    }
+  }
+
+  return <main className="completed-reference-screen">
+    <header className="completed-reference-header">
+      <h1>Вы сделали это!</h1>
+      <button className="completed-reference-done" type="button" onClick={onDone}>Готово</button>
+    </header>
+
+    <section className="completed-result-card" aria-label="Итог тренировки">
+      <div className="completed-result-card-top"><span>Результат тренировки</span><strong className="completed-result-brand">GYM</strong></div>
+      <h2>{entry.workout.name}</h2>
+      <p className="completed-result-date">{completedDate}</p>
+      <div className="completed-result-meta">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{duration}</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M8 9V7a4 4 0 0 1 8 0v2"/><path d="M6 9h12l2 11H4L6 9Z"/></svg>{Math.round(tonnage).toLocaleString('ru-RU')} кг</span>
+      </div>
+
+      <div className="completed-result-table">
+        <div className="completed-result-table-head"><span>Упражнение</span><span>Лучший подход</span></div>
+        {rows.length ? rows.map((row) => <div className="completed-result-row" key={row.exercise.id}>
+          <span className="completed-result-exercise">{row.exercise.name}</span>
+          <span className="completed-result-best">{recordExerciseIds.has(row.exercise.id) && <span className="completed-result-trophy" aria-label="Личный рекорд">🏆</span>}<span>{Number(row.best.weight || 0)} кг × {row.best.reps}</span></span>
+        </div>) : <div className="completed-result-empty">Нет завершённых рабочих подходов с весом и повторами.</div>}
+      </div>
+    </section>
+
+    <section className="completed-share-section">
+      <h3>Поделитесь результатами тренировки со своими друзьями</h3>
+      <button className="completed-share-button" type="button" onClick={shareResult}>
+        <span className="completed-share-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 9 20 3v6c5 .3 8.4 3.2 9 9.1-2.2-3.1-5.2-4.4-9-4.1v6l-8-7V9Z"/><path d="M20 12H9a6 6 0 0 0-6 6v8"/></svg></span>
+        <span>{shareState === 'copied' ? 'Скопировано' : shareState === 'error' ? 'Не удалось скопировать' : 'Поделиться'}</span>
+      </button>
+    </section>
+  </main>;
 }
+
 function AbandonedWorkout({ entry, onDone }) {
   const completedSets = entry.workout.exercises.flatMap((exercise) => exercise.sets).filter((set) => set.completed);
   const workingSets = completedSets.filter((set) => set.setType === 'working');
@@ -219,5 +318,5 @@ export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted }
   async function handleStart() { setStarting(true); setError(''); try { setEntry(await startWorkout(scheduledWorkoutId)); } catch (e) { setError(e.message); } finally { setStarting(false); } }
   async function handleFinish() { if (!entry?.session?.id) return; setFinishing(true); setError(''); try { setEntry(await completeWorkout(entry.session.id)); } catch (e) { setError(e.message); } finally { setFinishing(false); } }
   async function handleAbandon() { if (!entry?.session?.id || !window.confirm('Прервать тренировку? Она будет отмечена как пропущенная, а выполненные подходы не попадут в завершённую историю.')) return; setAbandoning(true); setError(''); try { setEntry(await abandonWorkout(entry.session.id)); } catch (e) { setError(e.message); } finally { setAbandoning(false); } }
-  return <div className="phone workout-session-phone"><header className="workout-session-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>{loading && <div className="workout-session-loading">Загружаем тренировку…</div>}{!loading && !entry && <div className="workout-session-error standalone">{error || 'Тренировка не найдена.'}</div>}{!loading && entry?.mode === 'planned' && <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />}{!loading && entry?.mode === 'active' && <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} onAbandon={handleAbandon} finishing={finishing} abandoning={abandoning} error={error} />}{!loading && entry?.mode === 'completed' && <CompletedWorkout entry={entry} onDone={onCompleted} />}{!loading && entry?.mode === 'abandoned' && <AbandonedWorkout entry={entry} onDone={onCompleted} />}</div>;
+  return <div className={`phone workout-session-phone${entry?.mode === 'completed' ? ' completed-reference-mode' : ''}`}>{entry?.mode !== 'completed' && <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>}{loading && <div className="workout-session-loading">Загружаем тренировку…</div>}{!loading && !entry && <div className="workout-session-error standalone">{error || 'Тренировка не найдена.'}</div>}{!loading && entry?.mode === 'planned' && <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />}{!loading && entry?.mode === 'active' && <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} onAbandon={handleAbandon} finishing={finishing} abandoning={abandoning} error={error} />}{!loading && entry?.mode === 'completed' && <CompletedWorkout entry={entry} onDone={onCompleted} />}{!loading && entry?.mode === 'abandoned' && <AbandonedWorkout entry={entry} onDone={onCompleted} />}</div>;
 }
