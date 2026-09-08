@@ -3,6 +3,16 @@
   display: none;
 }
 
+.statistics-photo-uploader > small {
+  font-size: 0;
+}
+
+.statistics-photo-uploader > small::after {
+  content: "Фото синхронизируются с вашим аккаунтом и доступны на всех устройствах.";
+  font-size: 8px;
+  line-height: 1.35;
+}
+
 .statistics-sync-loading {
   min-height: 100dvh;
   padding-top: calc(86px + env(safe-area-inset-top));
