@@ -27,7 +27,7 @@ create index if not exists exercises_movement_type_idx
 alter table public.exercises enable row level security;
 
 revoke all on table public.exercises from anon, authenticated;
-grant select on table public.exercises to authenticated;
+grant select, insert, update, delete on table public.exercises to authenticated;
 grant all on table public.exercises to service_role;
 
 drop policy if exists "exercises_authenticated_read" on public.exercises;
