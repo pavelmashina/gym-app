@@ -111,6 +111,8 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
     }
   }
 
+  const canCreate = Boolean(draft.name.trim()) && draft.muscleGroup !== 'Все' && draft.equipment !== 'Все';
+
   return <div className="exercise-library-shell">
     <section className="exercise-library-top">
       <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>
@@ -128,20 +130,20 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
     </button>
 
     {createOpen && <form className="exercise-library-create-form" onSubmit={createExercise}>
-      <div className="exercise-library-create-form-head"><span>Мои упражнения</span><h3>Новое упражнение</h3></div>
-      <label><span>Название</span><input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Например, жим гантелей сидя" autoFocus /></label>
+      <div className="exercise-library-create-form-head"><span>Мои упражнения</span><h3>Новое упражнение</h3><small>Обязательные поля отмечены *</small></div>
+      <label><span>Название *</span><input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Например, жим гантелей сидя" autoFocus /></label>
       <div className="exercise-library-create-form-grid">
-        <label><span>Группа мышц</span><select value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
-        <label><span>Оборудование</span><select value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>Группа мышц *</span><select required value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>Оборудование *</span><select required value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
-      <label><span>Описание</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>
+      <label><span>Описание · необязательно</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>
       <div className="exercise-library-video-fields">
-        <label><span>Ссылка на видео</span><input type="url" value={draft.videoUrl} disabled={Boolean(draft.videoFile)} onChange={(event) => setDraft({ ...draft, videoUrl: event.target.value })} placeholder="https://youtube.com/…" /></label>
+        <label><span>Ссылка на видео · необязательно</span><input type="url" value={draft.videoUrl} disabled={Boolean(draft.videoFile)} onChange={(event) => setDraft({ ...draft, videoUrl: event.target.value })} placeholder="https://youtube.com/…" /></label>
         <div className="exercise-library-video-divider"><span>или</span></div>
-        <label className="exercise-library-video-upload"><span>Загрузить видео</span><input type="file" accept="video/mp4,video/webm,video/quicktime" disabled={Boolean(draft.videoUrl.trim())} onChange={(event) => setDraft({ ...draft, videoFile: event.target.files?.[0] || null })} /><strong>{draft.videoFile ? draft.videoFile.name : 'MP4, WEBM или MOV · до 100 МБ'}</strong></label>
+        <label className="exercise-library-video-upload"><span>Загрузить видео · необязательно</span><input type="file" accept="video/mp4,video/webm,video/quicktime" disabled={Boolean(draft.videoUrl.trim())} onChange={(event) => setDraft({ ...draft, videoFile: event.target.files?.[0] || null })} /><strong>{draft.videoFile ? draft.videoFile.name : 'MP4, WEBM или MOV · до 100 МБ'}</strong></label>
       </div>
       {createError && <div className="exercise-library-error">{createError}</div>}
-      <div className="exercise-library-create-actions"><button type="button" onClick={() => setCreateOpen(false)}>Отмена</button><button className="primary" type="submit" disabled={creating}>{creating ? 'Сохраняем…' : 'Создать'}</button></div>
+      <div className="exercise-library-create-actions"><button type="button" onClick={() => setCreateOpen(false)}>Отмена</button><button className="primary" type="submit" disabled={creating || !canCreate}>{creating ? 'Сохраняем…' : 'Создать'}</button></div>
     </form>}
 
     {loading && <div className="exercise-library-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
