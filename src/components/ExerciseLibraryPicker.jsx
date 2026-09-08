@@ -10,19 +10,25 @@ import {
 import '../exercise-library-picker.css';
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
+function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
+function ChevronIcon({ open = false }) { return <svg className={open ? 'open' : ''} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>; }
 
 function LibraryRow({ exercise, selected, onClick, multi }) {
-  return <button className={`program-exercise-picker-row${selected ? ' selected' : ''}`} type="button" onClick={onClick} aria-pressed={multi ? selected : undefined}>
-    {multi && <span className="program-exercise-check">{selected ? '✓' : ''}</span>}
-    <span className="program-exercise-row-copy"><strong>{exercise.name}</strong><small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small></span>
+  return <button className={`exercise-library-row${selected ? ' selected' : ''}`} type="button" onClick={onClick} aria-pressed={multi ? selected : undefined}>
+    {multi && <span className="exercise-library-check">{selected ? '✓' : ''}</span>}
+    <span className="exercise-library-row-copy"><strong>{exercise.name}</strong><small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small></span>
+    {!multi && <span className="exercise-library-row-chevron">›</span>}
   </button>;
 }
 
 function LibrarySection({ title, items, selectedIds, multi, onPick }) {
   const [open, setOpen] = useState(true);
   return <section className="exercise-library-section">
-    <button className="exercise-library-section-head" type="button" onClick={() => setOpen((value) => !value)}><strong>{title}</strong><span>{items.length} {open ? '⌃' : '⌄'}</span></button>
-    {open && <div className="exercise-library-section-list">{items.length ? items.map((exercise) => <LibraryRow key={exercise.id} exercise={exercise} selected={selectedIds.includes(exercise.id)} multi={multi} onClick={() => onPick(exercise)} />) : <div className="exercise-library-empty">Пока пусто</div>}</div>}
+    <button className="exercise-library-section-head" type="button" onClick={() => setOpen((value) => !value)}>
+      <span className="exercise-library-section-title"><strong>{title}</strong><small>{items.length}</small></span>
+      <ChevronIcon open={open} />
+    </button>
+    {open && <div className="exercise-library-section-list">{items.length ? items.map((exercise) => <LibraryRow key={exercise.id} exercise={exercise} selected={selectedIds.includes(exercise.id)} multi={multi} onClick={() => onPick(exercise)} />) : <div className="exercise-library-empty">Пока здесь ничего нет</div>}</div>}
   </section>;
 }
 
@@ -78,31 +84,39 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
     }
   }
 
-  return <>
-    <div className="exercise-library-toolbar">
-      <label className="program-exercise-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} /></label>
+  return <div className="exercise-library-shell">
+    <section className="exercise-library-top">
+      <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>
+      <label className="exercise-library-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <div className="exercise-library-filter-row">
         <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{EXERCISE_MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
         <label className="exercise-library-filter"><span>Оборудование</span><select value={equipment} onChange={(event) => setEquipment(event.target.value)}>{EXERCISE_EQUIPMENT.map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
-    </div>
+    </section>
 
-    <div className="exercise-library-create"><strong>Моего упражнения нет в базе</strong><button type="button" onClick={() => setCreateOpen((value) => !value)}>{createOpen ? 'Закрыть' : 'Создать'}</button></div>
+    <button className={`exercise-library-create${createOpen ? ' active' : ''}`} type="button" onClick={() => setCreateOpen((value) => !value)}>
+      <span className="exercise-library-create-icon"><PlusIcon /></span>
+      <span className="exercise-library-create-copy"><strong>Создать своё упражнение</strong><small>Добавьте упражнение, которого нет в общей базе</small></span>
+      <span className="exercise-library-create-arrow">›</span>
+    </button>
+
     {createOpen && <form className="exercise-library-create-form" onSubmit={createExercise}>
-      <h3>Новое упражнение</h3>
-      <label><span>Название</span><input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Название упражнения" autoFocus /></label>
-      <label><span>Группа мышц</span><select value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
-      <label><span>Оборудование</span><select value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+      <div className="exercise-library-create-form-head"><span>Мои упражнения</span><h3>Новое упражнение</h3></div>
+      <label><span>Название</span><input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Например, жим гантелей сидя" autoFocus /></label>
+      <div className="exercise-library-create-form-grid">
+        <label><span>Группа мышц</span><select value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>Оборудование</span><select value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+      </div>
       {createError && <div className="exercise-library-error">{createError}</div>}
       <div className="exercise-library-create-actions"><button type="button" onClick={() => setCreateOpen(false)}>Отмена</button><button className="primary" type="submit" disabled={creating}>{creating ? 'Сохраняем…' : 'Создать'}</button></div>
     </form>}
 
-    {loading && <div className="program-exercise-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
-    {!loading && error && <div className="program-exercise-state error"><span>{error}</span><button type="button" onClick={reload}>Повторить</button></div>}
-    {!loading && !error && <>
+    {loading && <div className="exercise-library-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
+    {!loading && error && <div className="exercise-library-state error"><span>{error}</span><button type="button" onClick={reload}>Повторить</button></div>}
+    {!loading && !error && <div className="exercise-library-sections">
       <LibrarySection title="Недавние упражнения" items={visible.recent} selectedIds={selectedIds} multi={multi} onPick={pick} />
       <LibrarySection title="Мои упражнения" items={visible.mine} selectedIds={selectedIds} multi={multi} onPick={pick} />
       <LibrarySection title="Все упражнения" items={visible.all} selectedIds={selectedIds} multi={multi} onPick={pick} />
-    </>}
-  </>;
+    </div>}
+  </div>;
 }
