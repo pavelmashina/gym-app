@@ -11,26 +11,52 @@ import '../exercise-library-picker.css';
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
+function InfoIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7.2v.2"/></svg>; }
 function ChevronIcon({ open = false }) { return <svg className={open ? 'open' : ''} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>; }
 
-function LibraryRow({ exercise, selected, onClick, multi }) {
-  return <button className={`exercise-library-row${selected ? ' selected' : ''}`} type="button" onClick={onClick} aria-pressed={multi ? selected : undefined}>
-    {multi && <span className="exercise-library-check">{selected ? '✓' : ''}</span>}
-    <span className="exercise-library-row-copy"><strong>{exercise.name}</strong><small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small></span>
-    {!multi && <span className="exercise-library-row-chevron">›</span>}
-  </button>;
+function isDirectVideo(url) {
+  return /\.(mp4|webm|mov)(?:$|[?#])/i.test(String(url || '')) || String(url || '').includes('/storage/v1/object/sign/exercise-videos/');
 }
 
-function LibrarySection({ title, items, selectedIds, multi, onPick }) {
+function ExerciseInfoModal({ exercise, onClose }) {
+  const video = exercise.resolvedVideoUrl || exercise.video_url || null;
+  const description = exercise.description || exercise.technique || exercise.notes || '';
+  return <div className="exercise-library-info-shell" role="dialog" aria-modal="true" aria-label={`Информация: ${exercise.name}`}>
+    <button className="exercise-library-info-scrim" type="button" aria-label="Закрыть" onClick={onClose} />
+    <section className="exercise-library-info-card">
+      <header><div><span>Упражнение</span><h3>{exercise.name}</h3></div><button type="button" onClick={onClose}>×</button></header>
+      {video && <div className="exercise-library-info-video">
+        {isDirectVideo(video) ? <video controls playsInline preload="metadata" src={video} /> : <a href={video} target="_blank" rel="noreferrer"><span>▶</span><strong>Открыть видео</strong><small>Видео откроется в новой вкладке</small></a>}
+      </div>}
+      <div className="exercise-library-info-tags"><span>{exercise.display_muscle_group || exercise.muscle_group}</span>{exercise.equipment && <span>{exercise.equipment}</span>}{exercise.isMine && <span>Моё упражнение</span>}</div>
+      <section className="exercise-library-info-description"><span>Описание</span>{description ? <p>{description}</p> : <div>Описание пока не добавлено.</div>}</section>
+    </section>
+  </div>;
+}
+
+function LibraryRow({ exercise, selected, onClick, onInfo, multi }) {
+  return <div className={`exercise-library-row-wrap${selected ? ' selected' : ''}`}>
+    <button className="exercise-library-row" type="button" onClick={onClick} aria-pressed={multi ? selected : undefined}>
+      {multi && <span className="exercise-library-check">{selected ? '✓' : ''}</span>}
+      <span className="exercise-library-row-copy"><strong>{exercise.name}</strong><small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small></span>
+      {!multi && <span className="exercise-library-row-chevron">›</span>}
+    </button>
+    <button className="exercise-library-row-info" type="button" aria-label={`Информация об упражнении ${exercise.name}`} onClick={() => onInfo(exercise)}><InfoIcon /></button>
+  </div>;
+}
+
+function LibrarySection({ title, items, selectedIds, multi, onPick, onInfo }) {
   const [open, setOpen] = useState(true);
   return <section className="exercise-library-section">
     <button className="exercise-library-section-head" type="button" onClick={() => setOpen((value) => !value)}>
       <span className="exercise-library-section-title"><strong>{title}</strong><small>{items.length}</small></span>
       <ChevronIcon open={open} />
     </button>
-    {open && <div className="exercise-library-section-list">{items.length ? items.map((exercise) => <LibraryRow key={exercise.id} exercise={exercise} selected={selectedIds.includes(exercise.id)} multi={multi} onClick={() => onPick(exercise)} />) : <div className="exercise-library-empty">Пока здесь ничего нет</div>}</div>}
+    {open && <div className="exercise-library-section-list">{items.length ? items.map((exercise) => <LibraryRow key={exercise.id} exercise={exercise} selected={selectedIds.includes(exercise.id)} multi={multi} onClick={() => onPick(exercise)} onInfo={onInfo} />) : <div className="exercise-library-empty">Пока здесь ничего нет</div>}</div>}
   </section>;
 }
+
+const EMPTY_DRAFT = { name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '', videoUrl: '', videoFile: null };
 
 export function ExerciseLibraryPicker({ selectedIds = [], multi = false, excludeId = null, onChange, onSelect, searchPlaceholder = 'Название упражнения' }) {
   const [library, setLibrary] = useState({ all: [], mine: [], recent: [] });
@@ -42,7 +68,8 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
-  const [draft, setDraft] = useState({ name: '', muscleGroup: 'Грудь', equipment: 'Гантели' });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [infoExercise, setInfoExercise] = useState(null);
 
   function reload() {
     setLoading(true);
@@ -74,7 +101,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
     try {
       const created = await createCustomExercise(draft);
       setLibrary((current) => ({ all: [...current.all, created].sort((a, b) => a.name.localeCompare(b.name, 'ru')), mine: [created, ...current.mine], recent: current.recent }));
-      setDraft({ name: '', muscleGroup: draft.muscleGroup, equipment: draft.equipment });
+      setDraft({ ...EMPTY_DRAFT, muscleGroup: draft.muscleGroup, equipment: draft.equipment });
       setCreateOpen(false);
       await pick(created);
     } catch (requestError) {
@@ -107,6 +134,12 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
         <label><span>Группа мышц</span><select value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
         <label><span>Оборудование</span><select value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
+      <label><span>Описание</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>
+      <div className="exercise-library-video-fields">
+        <label><span>Ссылка на видео</span><input type="url" value={draft.videoUrl} disabled={Boolean(draft.videoFile)} onChange={(event) => setDraft({ ...draft, videoUrl: event.target.value })} placeholder="https://youtube.com/…" /></label>
+        <div className="exercise-library-video-divider"><span>или</span></div>
+        <label className="exercise-library-video-upload"><span>Загрузить видео</span><input type="file" accept="video/mp4,video/webm,video/quicktime" disabled={Boolean(draft.videoUrl.trim())} onChange={(event) => setDraft({ ...draft, videoFile: event.target.files?.[0] || null })} /><strong>{draft.videoFile ? draft.videoFile.name : 'MP4, WEBM или MOV · до 100 МБ'}</strong></label>
+      </div>
       {createError && <div className="exercise-library-error">{createError}</div>}
       <div className="exercise-library-create-actions"><button type="button" onClick={() => setCreateOpen(false)}>Отмена</button><button className="primary" type="submit" disabled={creating}>{creating ? 'Сохраняем…' : 'Создать'}</button></div>
     </form>}
@@ -114,9 +147,10 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
     {loading && <div className="exercise-library-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
     {!loading && error && <div className="exercise-library-state error"><span>{error}</span><button type="button" onClick={reload}>Повторить</button></div>}
     {!loading && !error && <div className="exercise-library-sections">
-      <LibrarySection title="Недавние упражнения" items={visible.recent} selectedIds={selectedIds} multi={multi} onPick={pick} />
-      <LibrarySection title="Мои упражнения" items={visible.mine} selectedIds={selectedIds} multi={multi} onPick={pick} />
-      <LibrarySection title="Все упражнения" items={visible.all} selectedIds={selectedIds} multi={multi} onPick={pick} />
+      <LibrarySection title="Недавние упражнения" items={visible.recent} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
+      <LibrarySection title="Мои упражнения" items={visible.mine} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
+      <LibrarySection title="Все упражнения" items={visible.all} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
     </div>}
+    {infoExercise && <ExerciseInfoModal exercise={infoExercise} onClose={() => setInfoExercise(null)} />}
   </div>;
 }
