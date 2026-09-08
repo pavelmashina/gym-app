@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import '../statistics-insights.css';
 
 function dateFromKey(value) {
@@ -16,7 +16,12 @@ function dateKey(date) {
 
 function formatShortDate(value) {
   const date = dateFromKey(value);
-  return date ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(date) : '—';
+  return date ? new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit' }).format(date) : '—';
+}
+
+function formatFullDate(value) {
+  const date = dateFromKey(value);
+  return date ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(date) : '—';
 }
 
 function formatCompact(value) {
@@ -61,6 +66,37 @@ function changeCopy(current, previous, formatter = (value) => String(value)) {
   const rounded = Math.round(Math.abs(change));
   if (rounded === 0) return { tone: 'neutral', text: 'без изменений' };
   return { tone: change > 0 ? 'up' : 'down', text: `${change > 0 ? '+' : '−'}${rounded}%` };
+}
+
+function dateTicks(firstKey, lastKey, count = 8) {
+  const first = dateFromKey(firstKey);
+  const last = dateFromKey(lastKey);
+  if (!first || !last) return [];
+  const start = first.getTime();
+  const end = last.getTime();
+  return Array.from({ length: count }, (_, index) => {
+    const ratio = count === 1 ? 0 : index / (count - 1);
+    return dateKey(new Date(start + (end - start) * ratio));
+  });
+}
+
+function numericScale(values, count = 5) {
+  const clean = values.map(Number).filter(Number.isFinite);
+  if (!clean.length) return { min: 0, max: 1, ticks: [1, .75, .5, .25, 0] };
+  const rawMin = Math.min(...clean);
+  const rawMax = Math.max(...clean);
+  let min = rawMin - Math.abs(rawMin) * .1;
+  let max = rawMax + Math.abs(rawMax) * .1;
+  if (min === max) {
+    const padding = Math.max(Math.abs(rawMax) * .1, 1);
+    min -= padding;
+    max += padding;
+  }
+  return {
+    min,
+    max,
+    ticks: Array.from({ length: count }, (_, index) => max - ((max - min) * index) / (count - 1)),
+  };
 }
 
 export function PeriodComparison({ data, range, currentMetrics }) {
@@ -131,9 +167,7 @@ export function ActivityCalendar({ sessions }) {
       cells.push({ key, count: counts.get(key) || 0, future: false });
       cursor.setDate(cursor.getDate() + 1);
     }
-    while (cells.length % 7 !== 0) {
-      cells.push({ key: `future-${cells.length}`, count: 0, future: true });
-    }
+    while (cells.length % 7 !== 0) cells.push({ key: `future-${cells.length}`, count: 0, future: true });
 
     const result = [];
     for (let i = 0; i < cells.length; i += 7) result.push(cells.slice(i, i + 7));
@@ -155,12 +189,7 @@ export function ActivityCalendar({ sessions }) {
           {weeks.map((week, weekIndex) => (
             <div className="statistics-activity-week" key={weekIndex}>
               {week.map((day) => (
-                <span
-                  key={day.key}
-                  className={`statistics-activity-day level-${Math.min(day.count, 3)}${day.future ? ' future' : ''}`}
-                  title={day.future ? '' : `${formatShortDate(day.key)}: ${day.count} тренировок`}
-                  aria-label={day.future ? undefined : `${formatShortDate(day.key)}: ${day.count} тренировок`}
-                />
+                <span key={day.key} className={`statistics-activity-day level-${Math.min(day.count, 3)}${day.future ? ' future' : ''}`} title={day.future ? '' : `${formatShortDate(day.key)}: ${day.count} тренировок`} aria-label={day.future ? undefined : `${formatShortDate(day.key)}: ${day.count} тренировок`} />
               ))}
             </div>
           ))}
@@ -173,31 +202,32 @@ export function ActivityCalendar({ sessions }) {
 
 export function WorkoutVolumeChart({ workouts }) {
   const chartData = useMemo(() => [...workouts].reverse(), [workouts]);
-  const max = Math.max(...chartData.map((item) => Number(item.volume || 0)), 1);
-  const average = chartData.length ? chartData.reduce((sum, item) => sum + Number(item.volume || 0), 0) / chartData.length : 0;
-  const averagePosition = 100 - (average / max) * 100;
-  const ticks = [max, max * .75, max * .5, max * .25, 0];
-
+  const [selectedId, setSelectedId] = useState(null);
   if (!chartData.length) return <p className="statistics-muted">В выбранном периоде тренировок нет.</p>;
 
+  const values = chartData.map((item) => Number(item.volume || 0));
+  const scale = numericScale(values, 5);
+  const range = Math.max(scale.max - scale.min, 1);
+  const ticks = dateTicks(chartData[0].date, chartData[chartData.length - 1].date, 8);
+  const selected = chartData.find((item) => item.id === selectedId) || null;
+
   return (
-    <div className="statistics-volume-axis-shell">
+    <div className="statistics-volume-axis-shell statistics-volume-scaled-shell">
+      {selected && <div className="statistics-chart-selected"><span>{formatFullDate(selected.date)}</span><strong>{Math.round(Number(selected.volume || 0)).toLocaleString('ru-RU')} кг</strong></div>}
       <div className="statistics-chart-y-title">Тоннаж, кг</div>
-      <div className="statistics-volume-enhanced">
-        <div className="statistics-volume-scale">{ticks.map((tick, index) => <span key={index}>{formatCompact(tick)}</span>)}</div>
+      <div className="statistics-volume-enhanced statistics-volume-scaled">
+        <div className="statistics-volume-scale" aria-label="Шкала тоннажа">{scale.ticks.map((tick, index) => <span key={index}>{formatCompact(tick)} кг</span>)}</div>
         <div className="statistics-volume-plot">
-          <span className="statistics-volume-average" style={{ top: `${Math.max(0, Math.min(100, averagePosition))}%` }}><b>ср. {formatCompact(average)} кг</b></span>
-          <div className="statistics-volume-gridline tick-0" /><div className="statistics-volume-gridline tick-1" /><div className="statistics-volume-gridline tick-2" /><div className="statistics-volume-gridline tick-3" /><div className="statistics-volume-gridline tick-4" />
+          {scale.ticks.map((tick, index) => <div className="statistics-volume-gridline scaled" key={index} style={{ top: `${(index / (scale.ticks.length - 1)) * 100}%` }} />)}
           <div className="statistics-volume-chart enhanced">
-            {chartData.map((item) => (
-              <div className="statistics-volume-column" key={item.id} title={`${formatShortDate(item.date)} · ${Math.round(item.volume).toLocaleString('ru-RU')} кг`}>
-                <div className="statistics-volume-bar-shell"><span style={{ height: `${Math.max(5, (item.volume / max) * 100)}%` }} /></div>
-                <small>{formatShortDate(item.date)}</small>
-              </div>
-            ))}
+            {chartData.map((item) => {
+              const normalized = (Number(item.volume || 0) - scale.min) / range;
+              return <button className={`statistics-volume-column${selectedId === item.id ? ' selected' : ''}`} key={item.id} type="button" onClick={() => setSelectedId((current) => current === item.id ? null : item.id)} aria-label={`${formatFullDate(item.date)}: ${Math.round(item.volume).toLocaleString('ru-RU')} кг`}><span className="statistics-volume-bar-shell"><i style={{ height: `${Math.max(3, Math.min(100, normalized * 100))}%` }} /></span></button>;
+            })}
           </div>
         </div>
       </div>
+      <div className="statistics-chart-x-axis" aria-label="Шкала дат">{ticks.map((tick, index) => <span key={`${tick}-${index}`}>{formatShortDate(tick)}</span>)}</div>
       <div className="statistics-chart-x-title">Дата тренировки</div>
     </div>
   );
