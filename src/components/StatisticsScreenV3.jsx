@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { loadStatistics } from '../lib/statistics.js';
 import { ActivityCalendar, WorkoutVolumeChart } from './StatisticsInsights.jsx';
+import { ScaledTrendChart } from './StatisticsTrendChart.jsx';
 import '../section-placeholder.css';
 import '../statistics.css';
 import '../statistics-hub.css';
@@ -22,6 +23,7 @@ const PERIOD_TYPES = [
 const MEASUREMENTS_KEY = 'gym-statistics-measurements-v1';
 const PHOTOS_KEY = 'gym-statistics-photos-v1';
 const FAVORITES_KEY = 'gym-statistics-favorites-v1';
+const ALL_TIME_BOUNDS = { start: new Date(1970, 0, 1, 12), end: new Date(2999, 11, 31, 12) };
 
 const MEASUREMENT_FIELDS = [
   { key: 'weight', label: 'Вес', unit: 'кг' },
@@ -183,11 +185,7 @@ function saveLocalArray(key, value) {
 }
 
 function readMeasurements() {
-  return readLocalArray(MEASUREMENTS_KEY).map((item) => ({
-    ...item,
-    thighs: item.thighs ?? item.hips ?? null,
-    arm: item.arm ?? item.biceps ?? null,
-  }));
+  return readLocalArray(MEASUREMENTS_KEY).map((item) => ({ ...item, thighs: item.thighs ?? item.hips ?? null, arm: item.arm ?? item.biceps ?? null }));
 }
 
 function readPhotos() {
@@ -212,42 +210,6 @@ function ExerciseProgress({ record }) {
     return `${x},${y}`;
   }).join(' ');
   return <svg className="statistics-mini-line" viewBox={`0 0 ${width} ${height}`} aria-hidden="true"><polyline points={coords} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-
-function TrendChart({ records, field, label, unit }) {
-  const points = records
-    .filter((item) => Number.isFinite(Number(item[field])) && Number(item[field]) > 0)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((item) => ({ date: item.date, value: Number(item[field]) }));
-
-  if (!points.length) return <p className="statistics-muted">Добавьте данные, чтобы появилась динамика.</p>;
-
-  const width = 320;
-  const height = 136;
-  const pad = 18;
-  const values = points.map((item) => item.value);
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const span = Math.max(max - min, 1);
-  const coords = points.map((item, index) => ({
-    ...item,
-    x: points.length === 1 ? width / 2 : pad + (index / (points.length - 1)) * (width - pad * 2),
-    y: height - pad - ((item.value - min) / span) * (height - pad * 2),
-  }));
-  const polyline = coords.map((item) => `${item.x},${item.y}`).join(' ');
-  const latest = points[points.length - 1];
-
-  return (
-    <div className="statistics-trend-wrap">
-      <div className="statistics-trend-value"><span>{label}</span><strong>{formatWeight(latest.value)} {unit}</strong><small>{formatDate(latest.date, true)}</small></div>
-      <svg className="statistics-trend-chart" viewBox={`0 0 ${width} ${height}`} aria-label={`Динамика: ${label}`}>
-        <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} className="statistics-trend-axis" />
-        <polyline points={polyline} fill="none" className="statistics-trend-line" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        {coords.map((item) => <circle key={`${field}-${item.date}-${item.x}`} cx={item.x} cy={item.y} r="4" className="statistics-trend-dot" />)}
-      </svg>
-      <div className="statistics-trend-labels"><span>{formatDate(points[0]?.date)}</span><span>{formatDate(points[points.length - 1]?.date)}</span></div>
-    </div>
-  );
 }
 
 function LoadingCard() {
@@ -284,16 +246,7 @@ async function resizePhoto(file) {
 function PeriodControls({ type, anchor, onTypeChange, onAnchorChange }) {
   const bounds = useMemo(() => periodBounds(type, anchor), [type, anchor]);
   const today = dateKey(new Date());
-  return (
-    <section className="statistics-period-shell" aria-label="Фильтр периода">
-      <div className="statistics-period-type" role="group">{PERIOD_TYPES.map((item) => <button key={item.key} className={type === item.key ? 'active' : ''} type="button" onClick={() => onTypeChange(item.key)}>{item.label}</button>)}</div>
-      <div className="statistics-period-nav">
-        <button type="button" aria-label="Предыдущий период" onClick={() => onAnchorChange(shiftPeriod(anchor, type, -1))}>‹</button>
-        <button className="statistics-period-label" type="button" onClick={() => onAnchorChange(today)}><strong>{bounds.label}</strong><span>нажмите, чтобы вернуться к текущему периоду</span></button>
-        <button type="button" aria-label="Следующий период" onClick={() => onAnchorChange(shiftPeriod(anchor, type, 1))}>›</button>
-      </div>
-    </section>
-  );
+  return <section className="statistics-period-shell" aria-label="Фильтр периода"><div className="statistics-period-type" role="group">{PERIOD_TYPES.map((item) => <button key={item.key} className={type === item.key ? 'active' : ''} type="button" onClick={() => onTypeChange(item.key)}>{item.label}</button>)}</div><div className="statistics-period-nav"><button type="button" aria-label="Предыдущий период" onClick={() => onAnchorChange(shiftPeriod(anchor, type, -1))}>‹</button><button className="statistics-period-label" type="button" onClick={() => onAnchorChange(today)}><strong>{bounds.label}</strong><span>нажмите, чтобы вернуться к текущему периоду</span></button><button type="button" aria-label="Следующий период" onClick={() => onAnchorChange(shiftPeriod(anchor, type, 1))}>›</button></div></section>;
 }
 
 function MetricCard({ id, label, value, caption, favorites, onToggle }) {
@@ -301,18 +254,12 @@ function MetricCard({ id, label, value, caption, favorites, onToggle }) {
 }
 
 function MetricsGrid({ metrics, favorites, onToggle }) {
-  return <section className="statistics-metric-grid">
-    <MetricCard id="workouts.count" label="Тренировок" value={metrics.workouts} caption="завершено" favorites={favorites} onToggle={onToggle} />
-    <MetricCard id="workouts.duration" label="Время" value={formatCompactDuration(metrics.duration)} caption={formatDuration(metrics.duration)} favorites={favorites} onToggle={onToggle} />
-    <MetricCard id="workouts.volume" label="Тоннаж" value={formatVolume(metrics.volume)} caption="только рабочие" favorites={favorites} onToggle={onToggle} />
-    <MetricCard id="workouts.sets" label="Подходов" value={metrics.workingSets} caption="рабочих" favorites={favorites} onToggle={onToggle} />
-  </section>;
+  return <section className="statistics-metric-grid"><MetricCard id="workouts.count" label="Тренировок" value={metrics.workouts} caption="завершено" favorites={favorites} onToggle={onToggle} /><MetricCard id="workouts.duration" label="Время" value={formatCompactDuration(metrics.duration)} caption={formatDuration(metrics.duration)} favorites={favorites} onToggle={onToggle} /><MetricCard id="workouts.volume" label="Тоннаж" value={formatVolume(metrics.volume)} caption="только рабочие" favorites={favorites} onToggle={onToggle} /><MetricCard id="workouts.sets" label="Подходов" value={metrics.workingSets} caption="рабочих" favorites={favorites} onToggle={onToggle} /></section>;
 }
 
 function FavoritesView({ favorites, onToggle, metrics, recentWorkouts, exerciseRecords, measurements, bounds }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const measurementPeriod = useMemo(() => measurements.filter((item) => inBounds(item.date, bounds)), [measurements, bounds]);
-
   function renderFavorite(id) {
     if (id === 'workouts.count') return <MetricCard key={id} id={id} label="Тренировок" value={metrics.workouts} caption="завершено" favorites={favorites} onToggle={onToggle} />;
     if (id === 'workouts.duration') return <MetricCard key={id} id={id} label="Время" value={formatCompactDuration(metrics.duration)} caption={formatDuration(metrics.duration)} favorites={favorites} onToggle={onToggle} />;
@@ -320,49 +267,21 @@ function FavoritesView({ favorites, onToggle, metrics, recentWorkouts, exerciseR
     if (id === 'workouts.sets') return <MetricCard key={id} id={id} label="Подходов" value={metrics.workingSets} caption="рабочих" favorites={favorites} onToggle={onToggle} />;
     if (id === 'workouts.avgDuration' || id === 'workouts.avgVolume' || id === 'workouts.avgSets') {
       const count = Math.max(metrics.workouts, 1);
-      const config = id === 'workouts.avgDuration'
-        ? { label: 'Среднее время', value: formatDuration(metrics.duration / count), caption: 'на тренировку' }
-        : id === 'workouts.avgVolume'
-          ? { label: 'Средний тоннаж', value: formatVolume(metrics.volume / count), caption: 'на тренировку' }
-          : { label: 'Средние подходы', value: Math.round((metrics.workingSets / count) * 10) / 10, caption: 'на тренировку' };
+      const config = id === 'workouts.avgDuration' ? { label: 'Среднее время', value: formatDuration(metrics.duration / count), caption: 'на тренировку' } : id === 'workouts.avgVolume' ? { label: 'Средний тоннаж', value: formatVolume(metrics.volume / count), caption: 'на тренировку' } : { label: 'Средние подходы', value: Math.round((metrics.workingSets / count) * 10) / 10, caption: 'на тренировку' };
       return <MetricCard key={id} id={id} label={config.label} value={config.value} caption={config.caption} favorites={favorites} onToggle={onToggle} />;
     }
-    if (id === 'workouts.volumeChart') {
-      return <section className="statistics-section" key={id}><div className="statistics-section-head"><div><span>Динамика</span><h2>Тоннаж по тренировкам</h2></div><div className="statistics-section-head-actions"><small>кг</small><FavoriteButton id={id} favorites={favorites} onToggle={onToggle} label="график тоннажа" /></div></div><WorkoutVolumeChart workouts={recentWorkouts} /></section>;
-    }
-    if (id === 'workouts.strength') {
-      return <section className="statistics-section" key={id}><div className="statistics-section-head"><div><span>Сила</span><h2>Силовые показатели</h2></div><div className="statistics-section-head-actions"><small>e1RM</small><FavoriteButton id={id} favorites={favorites} onToggle={onToggle} label="силовые показатели" /></div></div>{exerciseRecords.length === 0 ? <p className="statistics-muted">Пока недостаточно данных.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <div className="statistics-exercise-row statistics-exercise-row-static" key={record.key}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>{formatWeight(record.bestSet.weight)} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span /></div>)}</div>}</section>;
-    }
+    if (id === 'workouts.volumeChart') return <section className="statistics-section" key={id}><div className="statistics-section-head"><div><span>Динамика</span><h2>Тоннаж по тренировкам</h2></div><div className="statistics-section-head-actions"><small>кг</small><FavoriteButton id={id} favorites={favorites} onToggle={onToggle} label="график тоннажа" /></div></div><WorkoutVolumeChart workouts={recentWorkouts} /></section>;
+    if (id === 'workouts.strength') return <section className="statistics-section" key={id}><div className="statistics-section-head"><div><span>Сила</span><h2>Силовые показатели</h2></div><div className="statistics-section-head-actions"><small>e1RM</small><FavoriteButton id={id} favorites={favorites} onToggle={onToggle} label="силовые показатели" /></div></div>{exerciseRecords.length === 0 ? <p className="statistics-muted">Пока недостаточно данных.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <div className="statistics-exercise-row statistics-exercise-row-static" key={record.key}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>{formatWeight(record.bestSet.weight)} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span /></div>)}</div>}</section>;
     if (id.startsWith('measurements.')) {
       const fieldKey = id.split('.')[1];
       const field = MEASUREMENT_FIELDS.find((item) => item.key === fieldKey);
       if (!field) return null;
-      return <section className="statistics-section" key={id}><div className="statistics-section-head"><div><span>Замеры</span><h2>{field.label}</h2></div><div className="statistics-section-head-actions"><small>{field.unit}</small><FavoriteButton id={id} favorites={favorites} onToggle={onToggle} label={field.label} /></div></div><TrendChart records={measurementPeriod} field={field.key} label="Текущее значение" unit={field.unit} /></section>;
+      return <section className="statistics-section" key={id}><div className="statistics-section-head"><div><span>Замеры</span><h2>{field.label}</h2></div><div className="statistics-section-head-actions"><small>{field.unit}</small><FavoriteButton id={id} favorites={favorites} onToggle={onToggle} label={field.label} /></div></div><ScaledTrendChart records={measurementPeriod} field={field.key} label={field.label} unit={field.unit} /></section>;
     }
     return null;
   }
-
   const metricIds = ['workouts.count', 'workouts.duration', 'workouts.volume', 'workouts.sets', 'workouts.avgDuration', 'workouts.avgVolume', 'workouts.avgSets'];
-
-  return <>
-    <div className="statistics-favorites-toolbar">
-      <div><span>Ваш дашборд</span><strong>{favorites.length ? `${favorites.length} в избранном` : 'Пока пусто'}</strong></div>
-      <button type="button" onClick={() => setPickerOpen((value) => !value)}>{pickerOpen ? 'Готово' : '+ Добавить'}</button>
-    </div>
-
-    {pickerOpen && <section className="statistics-favorite-picker">
-      <div className="statistics-section-head"><div><span>Настройка</span><h2>Добавить показатель</h2></div></div>
-      <div className="statistics-favorite-picker-list">{FAVORITE_OPTIONS.map((option) => {
-        const active = favorites.includes(option.id);
-        return <button type="button" className={active ? 'active' : ''} key={option.id} onClick={() => onToggle(option.id)}><div><span>{option.group}</span><strong>{option.label}</strong></div><b>{active ? '♥' : '♡'}</b></button>;
-      })}</div>
-    </section>}
-
-    {favorites.length === 0 ? <section className="statistics-favorites-empty"><div>♡</div><h2>Здесь пока нет показателей</h2><p>Добавьте нужные метрики кнопкой выше или нажимайте ♡ рядом с показателями в других разделах.</p><button type="button" onClick={() => setPickerOpen(true)}>Добавить показатель</button></section> : <>
-      <section className="statistics-favorite-metric-grid">{favorites.filter((id) => metricIds.includes(id)).map(renderFavorite)}</section>
-      {favorites.filter((id) => !metricIds.includes(id)).map(renderFavorite)}
-    </>}
-  </>;
+  return <><div className="statistics-favorites-toolbar"><div><span>Ваш дашборд</span><strong>{favorites.length ? `${favorites.length} в избранном` : 'Пока пусто'}</strong></div><button type="button" onClick={() => setPickerOpen((value) => !value)}>{pickerOpen ? 'Готово' : '+ Добавить'}</button></div>{pickerOpen && <section className="statistics-favorite-picker"><div className="statistics-section-head"><div><span>Настройка</span><h2>Добавить показатель</h2></div></div><div className="statistics-favorite-picker-list">{FAVORITE_OPTIONS.map((option) => { const active = favorites.includes(option.id); return <button type="button" className={active ? 'active' : ''} key={option.id} onClick={() => onToggle(option.id)}><div><span>{option.group}</span><strong>{option.label}</strong></div><b>{active ? '♥' : '♡'}</b></button>; })}</div></section>}{favorites.length === 0 ? <section className="statistics-favorites-empty"><div>♡</div><h2>Здесь пока нет показателей</h2><p>Добавьте нужные метрики кнопкой выше или нажимайте ♡ рядом с показателями в других разделах.</p><button type="button" onClick={() => setPickerOpen(true)}>Добавить показатель</button></section> : <><section className="statistics-favorite-metric-grid">{favorites.filter((id) => metricIds.includes(id)).map(renderFavorite)}</section>{favorites.filter((id) => !metricIds.includes(id)).map(renderFavorite)}</>}</>;
 }
 
 function WorkoutsView({ filtered, metrics, recentWorkouts, exerciseRecords, favorites, onToggle }) {
@@ -370,33 +289,8 @@ function WorkoutsView({ filtered, metrics, recentWorkouts, exerciseRecords, favo
   const avgDuration = metrics.workouts ? metrics.duration / metrics.workouts : 0;
   const avgVolume = metrics.workouts ? metrics.volume / metrics.workouts : 0;
   const avgSets = metrics.workouts ? metrics.workingSets / metrics.workouts : 0;
-
-  const averages = [
-    { id: 'workouts.avgDuration', label: 'Время', value: formatDuration(avgDuration) },
-    { id: 'workouts.avgVolume', label: 'Тоннаж', value: formatVolume(avgVolume) },
-    { id: 'workouts.avgSets', label: 'Подходов', value: Math.round(avgSets * 10) / 10 },
-  ];
-
-  return <>
-    <MetricsGrid metrics={metrics} favorites={favorites} onToggle={onToggle} />
-    <section className="statistics-section">
-      <div className="statistics-section-head"><div><span>Средние показатели</span><h2>Одна тренировка</h2></div><small>{metrics.workouts} шт.</small></div>
-      <div className="statistics-average-grid">{averages.map((item) => <article key={item.id}><div className="statistics-card-label"><span>{item.label}</span><FavoriteButton id={item.id} favorites={favorites} onToggle={onToggle} label={item.label} /></div><strong>{item.value}</strong></article>)}</div>
-    </section>
-    <section className="statistics-section">
-      <div className="statistics-section-head"><div><span>Динамика</span><h2>Тоннаж по тренировкам</h2></div><div className="statistics-section-head-actions"><small>последние {recentWorkouts.length}</small><FavoriteButton id="workouts.volumeChart" favorites={favorites} onToggle={onToggle} label="график тоннажа" /></div></div>
-      <WorkoutVolumeChart workouts={recentWorkouts} />
-    </section>
-    <ActivityCalendar sessions={filtered.sessions} />
-    <section className="statistics-section">
-      <div className="statistics-section-head"><div><span>Упражнения</span><h2>Силовые показатели</h2></div><div className="statistics-section-head-actions"><small>e1RM</small><FavoriteButton id="workouts.strength" favorites={favorites} onToggle={onToggle} label="силовые показатели" /></div></div>
-      {exerciseRecords.length === 0 ? <p className="statistics-muted">Пока недостаточно данных.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <div className="statistics-exercise-row statistics-exercise-row-static" key={record.key}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>{formatWeight(record.bestSet.weight)} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span /></div>)}</div>}
-    </section>
-    <section className="statistics-section recent-list-section">
-      <div className="statistics-section-head"><div><span>История</span><h2>Тренировки периода</h2></div><small>{filtered.sessions.length}</small></div>
-      <div className="statistics-recent-list">{recentWorkouts.map((item) => <article key={item.id}><div><strong>{item.workoutName}</strong><span>{formatDate(item.date, true)} · {formatDuration(item.durationSeconds)}</span></div><b>{formatVolume(item.volume)}</b></article>)}</div>
-    </section>
-  </>;
+  const averages = [{ id: 'workouts.avgDuration', label: 'Время', value: formatDuration(avgDuration) }, { id: 'workouts.avgVolume', label: 'Тоннаж', value: formatVolume(avgVolume) }, { id: 'workouts.avgSets', label: 'Подходов', value: Math.round(avgSets * 10) / 10 }];
+  return <><MetricsGrid metrics={metrics} favorites={favorites} onToggle={onToggle} /><section className="statistics-section"><div className="statistics-section-head"><div><span>Средние показатели</span><h2>Одна тренировка</h2></div><small>{metrics.workouts} шт.</small></div><div className="statistics-average-grid">{averages.map((item) => <article key={item.id}><div className="statistics-card-label"><span>{item.label}</span><FavoriteButton id={item.id} favorites={favorites} onToggle={onToggle} label={item.label} /></div><strong>{item.value}</strong></article>)}</div></section><section className="statistics-section"><div className="statistics-section-head"><div><span>Динамика</span><h2>Тоннаж по тренировкам</h2></div><div className="statistics-section-head-actions"><small>последние {recentWorkouts.length}</small><FavoriteButton id="workouts.volumeChart" favorites={favorites} onToggle={onToggle} label="график тоннажа" /></div></div><WorkoutVolumeChart workouts={recentWorkouts} /></section><ActivityCalendar sessions={filtered.sessions} /><section className="statistics-section"><div className="statistics-section-head"><div><span>Упражнения</span><h2>Силовые показатели</h2></div><div className="statistics-section-head-actions"><small>e1RM</small><FavoriteButton id="workouts.strength" favorites={favorites} onToggle={onToggle} label="силовые показатели" /></div></div>{exerciseRecords.length === 0 ? <p className="statistics-muted">Пока недостаточно данных.</p> : <div className="statistics-exercise-list">{exerciseRecords.map((record) => <div className="statistics-exercise-row statistics-exercise-row-static" key={record.key}><div className="statistics-exercise-copy"><strong>{record.name}</strong><span>{formatWeight(record.bestSet.weight)} кг × {record.bestSet.reps} · e1RM {Math.round(record.best)} кг</span></div><ExerciseProgress record={record} /><span /></div>)}</div>}</section><section className="statistics-section recent-list-section"><div className="statistics-section-head"><div><span>История</span><h2>Тренировки периода</h2></div><small>{filtered.sessions.length}</small></div><div className="statistics-recent-list">{recentWorkouts.map((item) => <article key={item.id}><div><strong>{item.workoutName}</strong><span>{formatDate(item.date, true)} · {formatDuration(item.durationSeconds)}</span></div><b>{formatVolume(item.volume)}</b></article>)}</div></section></>;
 }
 
 function MeasurementsView({ measurements, bounds, onSave, favorites, onToggle }) {
@@ -405,7 +299,6 @@ function MeasurementsView({ measurements, bounds, onSave, favorites, onToggle })
   const [activeField, setActiveField] = useState('weight');
   const filtered = useMemo(() => measurements.filter((item) => inBounds(item.date, bounds)).sort((a, b) => a.date.localeCompare(b.date)), [measurements, bounds]);
   const activeConfig = MEASUREMENT_FIELDS.find((field) => field.key === activeField) || MEASUREMENT_FIELDS[0];
-
   function submit(event) {
     event.preventDefault();
     const hasValue = MEASUREMENT_FIELDS.some((field) => Number(draft[field.key]) > 0);
@@ -415,28 +308,7 @@ function MeasurementsView({ measurements, bounds, onSave, favorites, onToggle })
     onSave([...measurements, record].sort((a, b) => a.date.localeCompare(b.date)));
     setDraft((current) => ({ ...emptyDraft(), date: current.date }));
   }
-
-  return <>
-    <section className="statistics-section statistics-measurement-entry">
-      <div className="statistics-section-head"><div><span>Новая запись</span><h2>Добавить замеры</h2></div></div>
-      <form className="statistics-measurement-form" onSubmit={submit}>
-        <label className="statistics-field wide"><span>Дата</span><input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} /></label>
-        {MEASUREMENT_FIELDS.map((field) => <label className="statistics-field" key={field.key}><span>{field.label}, {field.unit}</span><input inputMode="decimal" value={draft[field.key]} onChange={(e) => setDraft({ ...draft, [field.key]: e.target.value.replace(',', '.') })} placeholder={field.unit === 'кг' ? '72.4' : '80'} /></label>)}
-        <button className="statistics-primary-action wide" type="submit">Сохранить замеры</button>
-      </form>
-    </section>
-
-    <section className="statistics-section">
-      <div className="statistics-section-head"><div><span>Динамика</span><h2>{activeConfig.label}</h2></div><div className="statistics-section-head-actions"><small>{activeConfig.unit}</small><FavoriteButton id={`measurements.${activeConfig.key}`} favorites={favorites} onToggle={onToggle} label={activeConfig.label} /></div></div>
-      <div className="statistics-measurement-selector">{MEASUREMENT_FIELDS.map((field) => <button type="button" className={activeField === field.key ? 'active' : ''} key={field.key} onClick={() => setActiveField(field.key)}>{field.label}</button>)}</div>
-      <TrendChart records={filtered} field={activeConfig.key} label="Текущее значение" unit={activeConfig.unit} />
-    </section>
-
-    <section className="statistics-section">
-      <div className="statistics-section-head"><div><span>История</span><h2>Замеры периода</h2></div><small>{filtered.length}</small></div>
-      {filtered.length === 0 ? <p className="statistics-muted">В выбранном периоде замеров нет.</p> : <div className="statistics-measurement-history">{[...filtered].reverse().map((item) => <article key={item.id}><div><strong>{formatDate(item.date, true)}</strong><span>{item.weight ? `${formatWeight(item.weight)} кг` : 'Вес —'}</span></div><div className="statistics-measurement-values">{MEASUREMENT_FIELDS.filter((field) => field.key !== 'weight').map((field) => <span key={field.key}>{field.label} <b>{item[field.key] || '—'}</b></span>)}</div><button type="button" onClick={() => onSave(measurements.filter((record) => record.id !== item.id))}>Удалить</button></article>)}</div>}
-    </section>
-  </>;
+  return <><section className="statistics-section statistics-measurement-entry"><div className="statistics-section-head"><div><span>Новая запись</span><h2>Добавить замеры</h2></div></div><form className="statistics-measurement-form" onSubmit={submit}><label className="statistics-field wide"><span>Дата</span><input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} /></label>{MEASUREMENT_FIELDS.map((field) => <label className="statistics-field" key={field.key}><span>{field.label}, {field.unit}</span><input inputMode="decimal" value={draft[field.key]} onChange={(e) => setDraft({ ...draft, [field.key]: e.target.value.replace(',', '.') })} placeholder={field.unit === 'кг' ? '72.4' : '80'} /></label>)}<button className="statistics-primary-action wide" type="submit">Сохранить замеры</button></form></section><section className="statistics-section"><div className="statistics-section-head"><div><span>Динамика</span><h2>{activeConfig.label}</h2></div><div className="statistics-section-head-actions"><small>{activeConfig.unit}</small><FavoriteButton id={`measurements.${activeConfig.key}`} favorites={favorites} onToggle={onToggle} label={activeConfig.label} /></div></div><div className="statistics-measurement-selector">{MEASUREMENT_FIELDS.map((field) => <button type="button" className={activeField === field.key ? 'active' : ''} key={field.key} onClick={() => setActiveField(field.key)}>{field.label}</button>)}</div><ScaledTrendChart records={filtered} field={activeConfig.key} label={activeConfig.label} unit={activeConfig.unit} /></section><section className="statistics-section"><div className="statistics-section-head"><div><span>История</span><h2>Замеры</h2></div><small>{filtered.length}</small></div>{filtered.length === 0 ? <p className="statistics-muted">Замеров пока нет.</p> : <div className="statistics-measurement-history">{[...filtered].reverse().map((item) => <article key={item.id}><div><strong>{formatDate(item.date, true)}</strong><span>{item.weight ? `${formatWeight(item.weight)} кг` : 'Вес —'}</span></div><div className="statistics-measurement-values">{MEASUREMENT_FIELDS.filter((field) => field.key !== 'weight').map((field) => <span key={field.key}>{field.label} <b>{item[field.key] || '—'}</b></span>)}</div><button type="button" onClick={() => onSave(measurements.filter((record) => record.id !== item.id))}>Удалить</button></article>)}</div>}</section></>;
 }
 
 function PhotosView({ photos, bounds, onSave }) {
@@ -444,61 +316,14 @@ function PhotosView({ photos, bounds, onSave }) {
   const [busyAngle, setBusyAngle] = useState('');
   const [error, setError] = useState('');
   const filtered = useMemo(() => photos.filter((item) => inBounds(item.date, bounds)).sort((a, b) => b.date.localeCompare(a.date)), [photos, bounds]);
-  const grouped = useMemo(() => {
-    const groups = new Map();
-    filtered.forEach((photo) => {
-      const group = groups.get(photo.date) || { date: photo.date, byAngle: {} };
-      group.byAngle[photo.angle || 'front'] = photo;
-      groups.set(photo.date, group);
-    });
-    return [...groups.values()].sort((a, b) => b.date.localeCompare(a.date));
-  }, [filtered]);
-
+  const grouped = useMemo(() => { const groups = new Map(); filtered.forEach((photo) => { const group = groups.get(photo.date) || { date: photo.date, byAngle: {} }; group.byAngle[photo.angle || 'front'] = photo; groups.set(photo.date, group); }); return [...groups.values()].sort((a, b) => b.date.localeCompare(a.date)); }, [filtered]);
   async function addPhoto(angle, file) {
     if (!file || !file.type.startsWith('image/')) return;
-    setBusyAngle(angle);
-    setError('');
-    try {
-      const dataUrl = await resizePhoto(file);
-      const nextPhoto = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, date: photoDate, angle, dataUrl };
-      const withoutPrevious = photos.filter((item) => !(item.date === photoDate && (item.angle || 'front') === angle));
-      const next = [nextPhoto, ...withoutPrevious].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30);
-      onSave(next);
-    } catch {
-      setError('Не удалось сохранить фото. Попробуйте выбрать файл меньшего размера.');
-    } finally {
-      setBusyAngle('');
-    }
+    setBusyAngle(angle); setError('');
+    try { const dataUrl = await resizePhoto(file); const nextPhoto = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, date: photoDate, angle, dataUrl }; const withoutPrevious = photos.filter((item) => !(item.date === photoDate && (item.angle || 'front') === angle)); const next = [nextPhoto, ...withoutPrevious].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30); onSave(next); } catch { setError('Не удалось сохранить фото. Попробуйте выбрать файл меньшего размера.'); } finally { setBusyAngle(''); }
   }
-
   const currentByAngle = Object.fromEntries(PHOTO_ANGLES.map((angle) => [angle.key, photos.find((photo) => photo.date === photoDate && (photo.angle || 'front') === angle.key)]));
-
-  return <>
-    <section className="statistics-photo-uploader">
-      <div><span>Фото прогресса</span><h2>Три одинаковых ракурса</h2><p>Для каждого дня сохраняйте три фотографии: анфас, сзади и сбоку. Так сравнение прогресса будет нагляднее.</p></div>
-      <label className="statistics-field"><span>Дата фото</span><input type="date" value={photoDate} onChange={(e) => setPhotoDate(e.target.value)} /></label>
-      <div className="statistics-photo-angle-entry">{PHOTO_ANGLES.map((angle) => {
-        const photo = currentByAngle[angle.key];
-        const busy = busyAngle === angle.key;
-        return <article key={angle.key} className={photo ? 'filled' : ''}>
-          <div className="statistics-photo-angle-preview">{photo ? <img src={photo.dataUrl} alt={`${angle.label} ${formatDate(photoDate, true)}`} /> : <span>{angle.label.slice(0, 1)}</span>}</div>
-          <strong>{angle.label}</strong>
-          <label className={busy ? 'disabled' : ''}><input type="file" accept="image/*" disabled={Boolean(busyAngle)} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; addPhoto(angle.key, file); }} /><span>{busy ? 'Обработка…' : photo ? 'Заменить' : 'Добавить'}</span></label>
-          {photo && <button type="button" onClick={() => onSave(photos.filter((item) => item.id !== photo.id))}>Удалить</button>}
-        </article>;
-      })}</div>
-      {error && <p className="statistics-photo-error">{error}</p>}
-      <small>В текущей версии фото хранятся локально на этом устройстве.</small>
-    </section>
-
-    <section className="statistics-section">
-      <div className="statistics-section-head"><div><span>Сравнение</span><h2>Фото периода</h2></div><small>{grouped.length} дат</small></div>
-      {grouped.length === 0 ? <div className="statistics-photo-empty"><span>＋</span><strong>Пока нет фотографий</strong><p>Добавьте три фото прогресса.</p></div> : <div className="statistics-photo-date-list">{grouped.map((group) => <article key={group.date}><div className="statistics-photo-date-head"><strong>{formatDate(group.date, true)}</strong><span>{Object.keys(group.byAngle).length}/3 фото</span></div><div className="statistics-photo-triptych">{PHOTO_ANGLES.map((angle) => {
-        const photo = group.byAngle[angle.key];
-        return <div key={angle.key}>{photo ? <img src={photo.dataUrl} alt={`${angle.label} ${formatDate(group.date, true)}`} /> : <span className="statistics-photo-missing">Нет фото</span>}<small>{angle.label}</small></div>;
-      })}</div></article>)}</div>}
-    </section>
-  </>;
+  return <><section className="statistics-photo-uploader"><div><span>Фото прогресса</span><h2>Три одинаковых ракурса</h2><p>Для каждого дня сохраняйте три фотографии: анфас, сзади и сбоку. Так сравнение прогресса будет нагляднее.</p></div><label className="statistics-field"><span>Дата фото</span><input type="date" value={photoDate} onChange={(e) => setPhotoDate(e.target.value)} /></label><div className="statistics-photo-angle-entry">{PHOTO_ANGLES.map((angle) => { const photo = currentByAngle[angle.key]; const busy = busyAngle === angle.key; return <article key={angle.key} className={photo ? 'filled' : ''}><div className="statistics-photo-angle-preview">{photo ? <img src={photo.dataUrl} alt={`${angle.label} ${formatDate(photoDate, true)}`} /> : <span>{angle.label.slice(0, 1)}</span>}</div><strong>{angle.label}</strong><label className={busy ? 'disabled' : ''}><input type="file" accept="image/*" disabled={Boolean(busyAngle)} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; addPhoto(angle.key, file); }} /><span>{busy ? 'Обработка…' : photo ? 'Заменить' : 'Добавить'}</span></label>{photo && <button type="button" onClick={() => onSave(photos.filter((item) => item.id !== photo.id))}>Удалить</button>}</article>; })}</div>{error && <p className="statistics-photo-error">{error}</p>}</section><section className="statistics-section"><div className="statistics-section-head"><div><span>Сравнение</span><h2>Фото</h2></div><small>{grouped.length} дат</small></div>{grouped.length === 0 ? <div className="statistics-photo-empty"><span>＋</span><strong>Пока нет фотографий</strong><p>Добавьте три фото прогресса.</p></div> : <div className="statistics-photo-date-list">{grouped.map((group) => <article key={group.date}><div className="statistics-photo-date-head"><strong>{formatDate(group.date, true)}</strong><span>{Object.keys(group.byAngle).length}/3 фото</span></div><div className="statistics-photo-triptych">{PHOTO_ANGLES.map((angle) => { const photo = group.byAngle[angle.key]; return <div key={angle.key}>{photo ? <img src={photo.dataUrl} alt={`${angle.label} ${formatDate(group.date, true)}`} /> : <span className="statistics-photo-missing">Нет фото</span>}<small>{angle.label}</small></div>; })}</div></article>)}</div>}</section></>;
 }
 
 export function StatisticsScreen() {
@@ -511,84 +336,14 @@ export function StatisticsScreen() {
   const [measurements, setMeasurements] = useState(readMeasurements);
   const [photos, setPhotos] = useState(readPhotos);
   const [favorites, setFavorites] = useState(() => readLocalArray(FAVORITES_KEY));
-
-  useEffect(() => {
-    let active = true;
-    setStatus('loading');
-    loadStatistics().then((result) => { if (!active) return; setData(result); setStatus('ready'); }).catch(() => { if (!active) return; setStatus('error'); });
-    return () => { active = false; };
-  }, [reloadKey]);
-
+  useEffect(() => { let active = true; setStatus('loading'); loadStatistics().then((result) => { if (!active) return; setData(result); setStatus('ready'); }).catch(() => { if (!active) return; setStatus('error'); }); return () => { active = false; }; }, [reloadKey]);
   const bounds = useMemo(() => periodBounds(periodType, periodAnchor), [periodType, periodAnchor]);
   const filtered = useMemo(() => filterDataset(data, bounds), [data, bounds]);
-
-  const metrics = useMemo(() => {
-    const workingSets = filtered.sets.filter((set) => set.setType === 'working');
-    return {
-      workouts: filtered.sessions.length,
-      duration: filtered.sessions.reduce((sum, session) => sum + Number(session.durationSeconds || 0), 0),
-      volume: workingSets.reduce((sum, set) => sum + Number(set.volume || 0), 0),
-      workingSets: workingSets.length,
-    };
-  }, [filtered]);
-
-  const recentWorkouts = useMemo(() => {
-    const setsBySession = new Map();
-    filtered.sets.filter((set) => set.setType === 'working').forEach((set) => setsBySession.set(set.sessionId, [...(setsBySession.get(set.sessionId) || []), set]));
-    return [...filtered.sessions]
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, 8)
-      .map((session) => ({ ...session, volume: (setsBySession.get(session.id) || []).reduce((sum, set) => sum + Number(set.volume || 0), 0) }));
-  }, [filtered]);
-
-  const exerciseRecords = useMemo(() => {
-    const groups = new Map();
-    filtered.sets.filter((set) => set.setType === 'working' && set.estimatedOneRepMax > 0).forEach((set) => {
-      const current = groups.get(set.exerciseKey) || { key: set.exerciseKey, name: set.exerciseName, best: 0, bestSet: null, pointsByDate: new Map() };
-      if (set.estimatedOneRepMax > current.best) { current.best = set.estimatedOneRepMax; current.bestSet = set; }
-      const dateBest = current.pointsByDate.get(set.date) || 0;
-      if (set.estimatedOneRepMax > dateBest) current.pointsByDate.set(set.date, set.estimatedOneRepMax);
-      groups.set(set.exerciseKey, current);
-    });
-    return [...groups.values()]
-      .map((item) => ({ ...item, points: [...item.pointsByDate.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, value]) => ({ date, value })) }))
-      .sort((a, b) => b.points.length - a.points.length || b.best - a.best)
-      .slice(0, 6);
-  }, [filtered]);
-
-  function saveMeasurements(next) {
-    setMeasurements(next);
-    saveLocalArray(MEASUREMENTS_KEY, next);
-  }
-
-  function savePhotos(next) {
-    saveLocalArray(PHOTOS_KEY, next);
-    setPhotos(next);
-  }
-
-  function toggleFavorite(id) {
-    setFavorites((current) => {
-      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
-      saveLocalArray(FAVORITES_KEY, next);
-      return next;
-    });
-  }
-
-  return (
-    <div className="phone statistics-phone statistics-hub-phone">
-      <header className="statistics-appbar"><div><span>Прогресс и аналитика</span><h1>Статистика</h1></div><button className="profile-btn" type="button" aria-label="Профиль"><ProfileIcon /></button></header>
-      <main className="statistics-content statistics-hub-content">
-        <div className="statistics-tabs" role="tablist" aria-label="Раздел статистики">{SECTION_TABS.map((item) => <button key={item.key} role="tab" aria-selected={tab === item.key} className={tab === item.key ? 'active' : ''} type="button" onClick={() => setTab(item.key)}>{item.label}</button>)}</div>
-        <PeriodControls type={periodType} anchor={periodAnchor} onTypeChange={setPeriodType} onAnchorChange={setPeriodAnchor} />
-
-        {tab === 'favorites' && <FavoritesView favorites={favorites} onToggle={toggleFavorite} metrics={metrics} recentWorkouts={recentWorkouts} exerciseRecords={exerciseRecords} measurements={measurements} bounds={bounds} />}
-        {tab === 'workouts' && status === 'loading' && <LoadingCard />}
-        {tab === 'workouts' && status === 'error' && <section className="statistics-state-card error"><strong>Не удалось загрузить статистику</strong><span>Проверьте соединение и попробуйте ещё раз.</span><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></section>}
-        {tab === 'workouts' && status === 'ready' && <WorkoutsView filtered={filtered} metrics={metrics} recentWorkouts={recentWorkouts} exerciseRecords={exerciseRecords} favorites={favorites} onToggle={toggleFavorite} />}
-        {tab === 'measurements' && <MeasurementsView measurements={measurements} bounds={bounds} onSave={saveMeasurements} favorites={favorites} onToggle={toggleFavorite} />}
-        {tab === 'photos' && <PhotosView photos={photos} bounds={bounds} onSave={savePhotos} />}
-      </main>
-      <StatisticsBottomNav />
-    </div>
-  );
+  const metrics = useMemo(() => { const workingSets = filtered.sets.filter((set) => set.setType === 'working'); return { workouts: filtered.sessions.length, duration: filtered.sessions.reduce((sum, session) => sum + Number(session.durationSeconds || 0), 0), volume: workingSets.reduce((sum, set) => sum + Number(set.volume || 0), 0), workingSets: workingSets.length }; }, [filtered]);
+  const recentWorkouts = useMemo(() => { const setsBySession = new Map(); filtered.sets.filter((set) => set.setType === 'working').forEach((set) => setsBySession.set(set.sessionId, [...(setsBySession.get(set.sessionId) || []), set])); return [...filtered.sessions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map((session) => ({ ...session, volume: (setsBySession.get(session.id) || []).reduce((sum, set) => sum + Number(set.volume || 0), 0) })); }, [filtered]);
+  const exerciseRecords = useMemo(() => { const groups = new Map(); filtered.sets.filter((set) => set.setType === 'working' && set.estimatedOneRepMax > 0).forEach((set) => { const current = groups.get(set.exerciseKey) || { key: set.exerciseKey, name: set.exerciseName, best: 0, bestSet: null, pointsByDate: new Map() }; if (set.estimatedOneRepMax > current.best) { current.best = set.estimatedOneRepMax; current.bestSet = set; } const dateBest = current.pointsByDate.get(set.date) || 0; if (set.estimatedOneRepMax > dateBest) current.pointsByDate.set(set.date, set.estimatedOneRepMax); groups.set(set.exerciseKey, current); }); return [...groups.values()].map((item) => ({ ...item, points: [...item.pointsByDate.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, value]) => ({ date, value })) })).sort((a, b) => b.points.length - a.points.length || b.best - a.best).slice(0, 6); }, [filtered]);
+  function saveMeasurements(next) { setMeasurements(next); saveLocalArray(MEASUREMENTS_KEY, next); }
+  function savePhotos(next) { saveLocalArray(PHOTOS_KEY, next); setPhotos(next); }
+  function toggleFavorite(id) { setFavorites((current) => { const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]; saveLocalArray(FAVORITES_KEY, next); return next; }); }
+  return <div className="phone statistics-phone statistics-hub-phone"><header className="statistics-appbar"><div><span>Прогресс и аналитика</span><h1>Статистика</h1></div><button className="profile-btn" type="button" aria-label="Профиль"><ProfileIcon /></button></header><main className="statistics-content statistics-hub-content"><div className="statistics-tabs" role="tablist" aria-label="Раздел статистики">{SECTION_TABS.map((item) => <button key={item.key} role="tab" aria-selected={tab === item.key} className={tab === item.key ? 'active' : ''} type="button" onClick={() => setTab(item.key)}>{item.label}</button>)}</div>{(tab === 'favorites' || tab === 'workouts') && <PeriodControls type={periodType} anchor={periodAnchor} onTypeChange={setPeriodType} onAnchorChange={setPeriodAnchor} />}{tab === 'favorites' && <FavoritesView favorites={favorites} onToggle={toggleFavorite} metrics={metrics} recentWorkouts={recentWorkouts} exerciseRecords={exerciseRecords} measurements={measurements} bounds={bounds} />}{tab === 'workouts' && status === 'loading' && <LoadingCard />}{tab === 'workouts' && status === 'error' && <section className="statistics-state-card error"><strong>Не удалось загрузить статистику</strong><span>Проверьте соединение и попробуйте ещё раз.</span><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></section>}{tab === 'workouts' && status === 'ready' && <WorkoutsView filtered={filtered} metrics={metrics} recentWorkouts={recentWorkouts} exerciseRecords={exerciseRecords} favorites={favorites} onToggle={toggleFavorite} />}{tab === 'measurements' && <MeasurementsView measurements={measurements} bounds={ALL_TIME_BOUNDS} onSave={saveMeasurements} favorites={favorites} onToggle={toggleFavorite} />}{tab === 'photos' && <PhotosView photos={photos} bounds={ALL_TIME_BOUNDS} onSave={savePhotos} />}</main><StatisticsBottomNav /></div>;
 }
