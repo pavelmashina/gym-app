@@ -4,8 +4,8 @@ const MEASUREMENTS_KEY = 'gym-statistics-measurements-v1';
 const PHOTOS_KEY = 'gym-statistics-photos-v1';
 const FAVORITES_KEY = 'gym-statistics-favorites-v1';
 
-const LOCAL_POLL_MS = 1200;
-const REMOTE_POLL_MS = 6000;
+const LOCAL_POLL_MS = 400;
+const REMOTE_POLL_MS = 5000;
 
 function readArray(key) {
   try {
@@ -43,6 +43,10 @@ function normalizePhotos(items) {
 
 function normalizeFavorites(items) {
   return [...new Set((items || []).filter(Boolean).map(String))].sort();
+}
+
+function photoSignature(items) {
+  return stable(normalizePhotos(items).map((item) => ({ date: item.date, angle: item.angle, dataUrl: item.dataUrl })));
 }
 
 function measurementFromRow(row) {
@@ -195,6 +199,23 @@ function writeLocalState(state) {
   writeArray(FAVORITES_KEY, state.favorites);
 }
 
+function mergeInitialMeasurements(cloudItems, localItems) {
+  const merged = new Map(normalizeMeasurements(cloudItems).map((item) => [item.id, item]));
+  normalizeMeasurements(localItems).forEach((item) => {
+    if (!merged.has(item.id)) merged.set(item.id, item);
+  });
+  return normalizeMeasurements([...merged.values()]);
+}
+
+function mergeInitialPhotos(cloudItems, localItems) {
+  const merged = new Map(normalizePhotos(cloudItems).map((item) => [`${item.date}|${item.angle}`, item]));
+  normalizePhotos(localItems).forEach((item) => {
+    const key = `${item.date}|${item.angle}`;
+    if (!merged.has(key)) merged.set(key, item);
+  });
+  return normalizePhotos([...merged.values()]);
+}
+
 export async function initializeStatisticsCloudSync({ onRemoteUpdate } = {}) {
   if (!supabase) return () => {};
 
@@ -212,20 +233,20 @@ export async function initializeStatisticsCloudSync({ onRemoteUpdate } = {}) {
   const cloud = await loadCloud(userId);
 
   const merged = {
-    measurements: cloud.measurements.length ? cloud.measurements : local.measurements,
-    photos: cloud.photos.length ? cloud.photos : local.photos,
+    measurements: mergeInitialMeasurements(cloud.measurements, local.measurements),
+    photos: mergeInitialPhotos(cloud.photos, local.photos),
     favorites: cloud.hasPreferences ? cloud.favorites : local.favorites,
   };
 
-  if (!cloud.measurements.length && local.measurements.length) await pushMeasurements(userId, local.measurements);
-  if (!cloud.photos.length && local.photos.length) await pushPhotos(userId, local.photos);
+  if (stable(merged.measurements) !== stable(cloud.measurements)) await pushMeasurements(userId, merged.measurements);
+  if (photoSignature(merged.photos) !== photoSignature(cloud.photos)) await pushPhotos(userId, merged.photos);
   if (!cloud.hasPreferences) await pushFavorites(userId, local.favorites);
 
   writeLocalState(merged);
 
   let snapshots = {
     measurements: stable(merged.measurements),
-    photos: stable(merged.photos),
+    photos: photoSignature(merged.photos),
     favorites: stable(merged.favorites),
   };
 
@@ -234,7 +255,7 @@ export async function initializeStatisticsCloudSync({ onRemoteUpdate } = {}) {
     const current = localState();
     const nextSnapshots = {
       measurements: stable(current.measurements),
-      photos: stable(current.photos),
+      photos: photoSignature(current.photos),
       favorites: stable(current.favorites),
     };
 
@@ -262,7 +283,7 @@ export async function initializeStatisticsCloudSync({ onRemoteUpdate } = {}) {
       const remote = await loadCloud(userId);
       const remoteSnapshots = {
         measurements: stable(remote.measurements),
-        photos: stable(remote.photos),
+        photos: photoSignature(remote.photos),
         favorites: stable(remote.favorites),
       };
       const changed = remoteSnapshots.measurements !== snapshots.measurements ||
@@ -284,8 +305,8 @@ export async function initializeStatisticsCloudSync({ onRemoteUpdate } = {}) {
   remoteTimer = window.setInterval(pullRemoteChanges, REMOTE_POLL_MS);
 
   return () => {
-    stopped = true;
     window.clearInterval(localTimer);
     window.clearInterval(remoteTimer);
+    void syncLocalChanges().finally(() => { stopped = true; });
   };
 }
