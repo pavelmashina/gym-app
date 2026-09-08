@@ -148,6 +148,7 @@ export function ActivityCalendar({ sessions }) {
         <div><span>Регулярность</span><h2>Активность за 12 недель</h2></div>
         <small>{activeDays} активн. дн.</small>
       </div>
+      <div className="statistics-activity-axis-title">Дни недели</div>
       <div className="statistics-activity-body">
         <div className="statistics-activity-weekdays" aria-hidden="true"><span>Пн</span><span>Ср</span><span>Пт</span></div>
         <div className="statistics-activity-grid" aria-label="Календарь завершённых тренировок за 12 недель">
@@ -175,24 +176,29 @@ export function WorkoutVolumeChart({ workouts }) {
   const max = Math.max(...chartData.map((item) => Number(item.volume || 0)), 1);
   const average = chartData.length ? chartData.reduce((sum, item) => sum + Number(item.volume || 0), 0) / chartData.length : 0;
   const averagePosition = 100 - (average / max) * 100;
+  const ticks = [max, max * .75, max * .5, max * .25, 0];
 
   if (!chartData.length) return <p className="statistics-muted">В выбранном периоде тренировок нет.</p>;
 
   return (
-    <div className="statistics-volume-enhanced">
-      <div className="statistics-volume-scale"><span>{formatCompact(max)} кг</span><span>{formatCompact(Math.round(max / 2))}</span><span>0</span></div>
-      <div className="statistics-volume-plot">
-        <span className="statistics-volume-average" style={{ top: `${Math.max(0, Math.min(100, averagePosition))}%` }}><b>ср. {formatCompact(average)} кг</b></span>
-        <div className="statistics-volume-gridline top" /><div className="statistics-volume-gridline middle" /><div className="statistics-volume-gridline bottom" />
-        <div className="statistics-volume-chart enhanced">
-          {chartData.map((item) => (
-            <div className="statistics-volume-column" key={item.id} title={`${formatShortDate(item.date)} · ${Math.round(item.volume).toLocaleString('ru-RU')} кг`}>
-              <div className="statistics-volume-bar-shell"><span style={{ height: `${Math.max(5, (item.volume / max) * 100)}%` }} /></div>
-              <small>{formatShortDate(item.date)}</small>
-            </div>
-          ))}
+    <div className="statistics-volume-axis-shell">
+      <div className="statistics-chart-y-title">Тоннаж, кг</div>
+      <div className="statistics-volume-enhanced">
+        <div className="statistics-volume-scale">{ticks.map((tick, index) => <span key={index}>{formatCompact(tick)}</span>)}</div>
+        <div className="statistics-volume-plot">
+          <span className="statistics-volume-average" style={{ top: `${Math.max(0, Math.min(100, averagePosition))}%` }}><b>ср. {formatCompact(average)} кг</b></span>
+          <div className="statistics-volume-gridline tick-0" /><div className="statistics-volume-gridline tick-1" /><div className="statistics-volume-gridline tick-2" /><div className="statistics-volume-gridline tick-3" /><div className="statistics-volume-gridline tick-4" />
+          <div className="statistics-volume-chart enhanced">
+            {chartData.map((item) => (
+              <div className="statistics-volume-column" key={item.id} title={`${formatShortDate(item.date)} · ${Math.round(item.volume).toLocaleString('ru-RU')} кг`}>
+                <div className="statistics-volume-bar-shell"><span style={{ height: `${Math.max(5, (item.volume / max) * 100)}%` }} /></div>
+                <small>{formatShortDate(item.date)}</small>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+      <div className="statistics-chart-x-title">Дата тренировки</div>
     </div>
   );
 }
