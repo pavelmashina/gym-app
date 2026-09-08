@@ -1,2 +1,2 @@
 import '../workout-session-completed-reference.css';
-export { WorkoutSessionScreen } from './WorkoutSessionScreenV3.jsx';
+export { WorkoutSessionScreen } from './WorkoutSessionScreenV4.jsx';
