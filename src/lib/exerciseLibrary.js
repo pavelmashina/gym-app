@@ -130,14 +130,17 @@ export async function createCustomExercise({ name, muscleGroup, equipment, descr
       muscle_group: muscleGroup,
       equipment,
       exercise_type: 'Пользовательское',
-      movement_type: null,
+      movement_type: 'Пользовательское',
       difficulty: 1,
       description: cleanDescription || null,
       video_url: cleanVideoUrl,
     })
     .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, equipment, owner_id, created_at')
     .single();
-  if (error || !data) throw new Error('Не удалось сохранить упражнение.');
+  if (error || !data) {
+    console.error('Unable to save custom exercise:', error);
+    throw new Error('Не удалось сохранить упражнение.');
+  }
 
   let videoPath = null;
   if (videoFile) {
