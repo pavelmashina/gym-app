@@ -1,0 +1,14 @@
+.statistics-hub-content:has(.statistics-tabs button:nth-child(3)[aria-selected="true"]) .statistics-period-shell,
+.statistics-hub-content:has(.statistics-tabs button:nth-child(4)[aria-selected="true"]) .statistics-period-shell {
+  display: none;
+}
+
+.statistics-sync-loading {
+  min-height: 100dvh;
+  padding-top: calc(86px + env(safe-area-inset-top));
+  background: var(--bg);
+}
+
+.statistics-sync-loading .statistics-content {
+  padding-top: 0;
+}
