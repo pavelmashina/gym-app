@@ -173,7 +173,7 @@ export default function App() {
 
   function renderActiveScreen() {
     if (activeScreen === 'account') {
-      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} />;
+      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} />;
     }
     if (activeScreen === 'workout-session' && workoutScheduledId) {
       return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} />;
