@@ -74,6 +74,7 @@ function dateTicks(firstKey, lastKey, count = 8) {
   if (!first || !last) return [];
   const start = first.getTime();
   const end = last.getTime();
+  if (start === end) return [dateKey(first)];
   return Array.from({ length: count }, (_, index) => {
     const ratio = count === 1 ? 0 : index / (count - 1);
     return dateKey(new Date(start + (end - start) * ratio));
@@ -82,16 +83,15 @@ function dateTicks(firstKey, lastKey, count = 8) {
 
 function numericScale(values, count = 5) {
   const clean = values.map(Number).filter(Number.isFinite);
-  if (!clean.length) return { min: 0, max: 1, ticks: [1, .75, .5, .25, 0] };
+  if (!clean.length) return { min: 0, max: 1, ticks: [1, .5, 0] };
   const rawMin = Math.min(...clean);
   const rawMax = Math.max(...clean);
-  let min = rawMin - Math.abs(rawMin) * .1;
-  let max = rawMax + Math.abs(rawMax) * .1;
-  if (min === max) {
+  if (rawMin === rawMax) {
     const padding = Math.max(Math.abs(rawMax) * .1, 1);
-    min -= padding;
-    max += padding;
+    return { min: rawMin - padding, max: rawMax + padding, ticks: [rawMax + padding, rawMax, rawMin - padding] };
   }
+  const min = rawMin - Math.abs(rawMin) * .1;
+  const max = rawMax + Math.abs(rawMax) * .1;
   return {
     min,
     max,
@@ -218,7 +218,7 @@ export function WorkoutVolumeChart({ workouts }) {
       <div className="statistics-volume-enhanced statistics-volume-scaled">
         <div className="statistics-volume-scale" aria-label="Шкала тоннажа">{scale.ticks.map((tick, index) => <span key={index}>{formatCompact(tick)} кг</span>)}</div>
         <div className="statistics-volume-plot">
-          {scale.ticks.map((tick, index) => <div className="statistics-volume-gridline scaled" key={index} style={{ top: `${(index / (scale.ticks.length - 1)) * 100}%` }} />)}
+          {scale.ticks.map((tick, index) => <div className="statistics-volume-gridline scaled" key={index} style={{ top: `${(index / Math.max(1, scale.ticks.length - 1)) * 100}%` }} />)}
           <div className="statistics-volume-chart enhanced">
             {chartData.map((item) => {
               const normalized = (Number(item.volume || 0) - scale.min) / range;
@@ -227,7 +227,7 @@ export function WorkoutVolumeChart({ workouts }) {
           </div>
         </div>
       </div>
-      <div className="statistics-chart-x-axis" aria-label="Шкала дат">{ticks.map((tick, index) => <span key={`${tick}-${index}`}>{formatShortDate(tick)}</span>)}</div>
+      <div className={`statistics-chart-x-axis${ticks.length === 1 ? ' single' : ''}`} aria-label="Шкала дат">{ticks.map((tick, index) => <span key={`${tick}-${index}`}>{formatShortDate(tick)}</span>)}</div>
       <div className="statistics-chart-x-title">Дата тренировки</div>
     </div>
   );
