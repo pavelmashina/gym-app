@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
 import '../home-dynamic.css';
+import '../home-schedule-edit.css';
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -18,8 +20,14 @@ function toDateKey(date) {
 }
 
 function dateFromKey(value) {
-  const [year, month, day] = value.split('-').map(Number);
+  const [year, month, day] = String(value).split('-').map(Number);
   return new Date(year, month - 1, day, 12, 0, 0);
+}
+
+function addDaysKey(value, days) {
+  const date = dateFromKey(value);
+  date.setDate(date.getDate() + days);
+  return toDateKey(date);
 }
 
 function startOfMonth(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
@@ -34,19 +42,10 @@ function buildCalendarDays(monthDate, today, selectedDateKey, workoutDateSet) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const totalCells = Math.ceil((mondayOffset + daysInMonth) / 7) * 7;
   const todayKey = toDateKey(today);
-
   return Array.from({ length: totalCells }, (_, index) => {
     const date = new Date(year, month, index - mondayOffset + 1, 12, 0, 0);
     const key = toDateKey(date);
-    return {
-      key,
-      date,
-      label: String(date.getDate()),
-      out: date.getMonth() !== month,
-      workout: workoutDateSet.has(key),
-      today: key === todayKey,
-      selected: key === selectedDateKey,
-    };
+    return { key, date, label: String(date.getDate()), out: date.getMonth() !== month, workout: workoutDateSet.has(key), today: key === todayKey, selected: key === selectedDateKey };
   });
 }
 
@@ -57,65 +56,36 @@ function useDeviceDate() {
     const timer = window.setInterval(sync, 60_000);
     window.addEventListener('focus', sync);
     document.addEventListener('visibilitychange', sync);
-    return () => {
-      window.clearInterval(timer);
-      window.removeEventListener('focus', sync);
-      document.removeEventListener('visibilitychange', sync);
-    };
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', sync); document.removeEventListener('visibilitychange', sync); };
   }, []);
   return today;
 }
 
 function Header({ menuOpen, onOpenMenu }) {
-  return <header className="appbar">
-    <button className="icon-btn" type="button" aria-label="Открыть меню" aria-expanded={menuOpen} onClick={onOpenMenu}><span className="burger" aria-hidden="true"><span /><span /><span /></span></button>
-    <button className="profile-btn" type="button" aria-label="Профиль"><svg className="profile-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="11" r="5" /><path d="M7 27c1.2-5.7 4.2-8.4 9-8.4s7.8 2.7 9 8.4" /></svg></button>
-  </header>;
+  return <header className="appbar"><button className="icon-btn" type="button" aria-label="Открыть меню" aria-expanded={menuOpen} onClick={onOpenMenu}><span className="burger" aria-hidden="true"><span /><span /><span /></span></button><button className="profile-btn" type="button" aria-label="Профиль"><svg className="profile-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="11" r="5" /><path d="M7 27c1.2-5.7 4.2-8.4 9-8.4s7.8 2.7 9 8.4" /></svg></button></header>;
 }
 
 function PromoBanner() {
   const [activeSlide, setActiveSlide] = useState(0);
-  useEffect(() => {
-    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % HOME_SLIDES.length), 6000);
-    return () => window.clearInterval(timer);
-  }, []);
+  useEffect(() => { const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % HOME_SLIDES.length), 6000); return () => window.clearInterval(timer); }, []);
   const changeSlide = (delta) => setActiveSlide((current) => (current + delta + HOME_SLIDES.length) % HOME_SLIDES.length);
-
-  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры">
-    <div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div>
-    <button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}>‹</button>
-    <button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}>›</button>
-    <div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div>
-  </section>;
+  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры"><div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div><button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}>‹</button><button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}>›</button><div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div></section>;
 }
 
 function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {
   const selectedDate = useMemo(() => dateFromKey(selectedDateKey), [selectedDateKey]);
   const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(selectedDate));
-
-  useEffect(() => {
-    if (selectedDate.getFullYear() !== displayMonth.getFullYear() || selectedDate.getMonth() !== displayMonth.getMonth()) setDisplayMonth(startOfMonth(selectedDate));
-  }, [selectedDateKey]);
-
+  useEffect(() => { if (selectedDate.getFullYear() !== displayMonth.getFullYear() || selectedDate.getMonth() !== displayMonth.getMonth()) setDisplayMonth(startOfMonth(selectedDate)); }, [selectedDateKey]);
   const workoutDateSet = useMemo(() => new Set(workoutDates), [workoutDates]);
   const days = useMemo(() => buildCalendarDays(displayMonth, today, selectedDateKey, workoutDateSet), [displayMonth, today, selectedDateKey, workoutDateSet]);
   const changeMonth = (delta) => setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
-
-  return <section className="calendar-card">
-    <div className="month-row"><button type="button" aria-label="Предыдущий месяц" onClick={() => changeMonth(-1)}>←</button><div className="month">{formatMonth(displayMonth)}</div><button type="button" aria-label="Следующий месяц" onClick={() => changeMonth(1)}>→</button></div>
-    <div className="weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
-    <div className="days">{days.map((day) => {
-      const className = ['day', day.out ? 'out' : '', day.workout ? 'workout' : '', day.today ? 'today' : '', day.selected ? 'selected' : ''].filter(Boolean).join(' ');
-      return <button className={className} type="button" key={day.key} aria-label={`${formatFullDate(day.date)}${day.workout ? ', запланирована тренировка' : ''}`} aria-pressed={day.selected} aria-current={day.today ? 'date' : undefined} onClick={() => { if (day.out) setDisplayMonth(startOfMonth(day.date)); onSelectDate?.(day.key); }}><span>{day.label}</span></button>;
-    })}</div>
-  </section>;
+  return <section className="calendar-card"><div className="month-row"><button type="button" aria-label="Предыдущий месяц" onClick={() => changeMonth(-1)}>←</button><div className="month">{formatMonth(displayMonth)}</div><button type="button" aria-label="Следующий месяц" onClick={() => changeMonth(1)}>→</button></div><div className="weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div><div className="days">{days.map((day) => { const className = ['day', day.out ? 'out' : '', day.workout ? 'workout' : '', day.today ? 'today' : '', day.selected ? 'selected' : ''].filter(Boolean).join(' '); return <button className={className} type="button" key={day.key} aria-label={`${formatFullDate(day.date)}${day.workout ? ', запланирована тренировка' : ''}`} aria-pressed={day.selected} aria-current={day.today ? 'date' : undefined} onClick={() => { if (day.out) setDisplayMonth(startOfMonth(day.date)); onSelectDate?.(day.key); }}><span>{day.label}</span></button>; })}</div></section>;
 }
 
 function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry }) {
   if (status === 'loading') return <section className="summary-col workout home-empty-card" aria-live="polite"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на выбранную дату</p></div></section>;
   if (status === 'error' && !workout) return <section className="summary-col workout home-error-card" role="alert"><div className="summary-label">Тренировка</div><div className="home-error-copy"><h3>Не удалось загрузить тренировку</h3><p>Это не означает, что на выбранную дату ничего не запланировано.</p><button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button></div></section>;
   if (!workout) return <section className="summary-col workout home-empty-card"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Нет тренировки</h3><p>{isToday ? 'На сегодня ничего не запланировано' : 'На эту дату ничего не запланировано'}</p></div></section>;
-
   const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : 'К тренировке');
   return <section className="summary-col workout"><div className="summary-label">{workout.active ? 'Активная тренировка' : 'Тренировка'}</div><h3>{workout.title}</h3><p>{workout.exerciseCount} упражнений</p><button className="workout-btn" type="button" onClick={() => onOpenWorkout?.(workout.id)}>{buttonLabel}</button></section>;
 }
@@ -125,18 +95,20 @@ function NutritionSummary({ nutritionPlan }) {
   return <section className="summary-col food"><div className="summary-label">Питание</div><h3>{nutritionPlan.calories}</h3><p className="food-caption">ккал на день</p><div className="food-grid"><div className="food-stat"><strong>{nutritionPlan.protein} г</strong><span>Белки</span></div><div className="food-stat"><strong>{nutritionPlan.fat} г</strong><span>Жиры</span></div><div className="food-stat"><strong>{nutritionPlan.carbs} г</strong><span>Углеводы</span></div><div className="food-stat"><strong>{nutritionPlan.completion ?? 0}%</strong><span>Выполнено</span></div></div></section>;
 }
 
-function DailySummary({ date, isToday, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry }) {
-  return <section className="date-card"><div className="date-row"><div className="date-title">{formatFullDate(date)}</div><svg className="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16v4Z" /><path d="m13.7 6.3 4 4" /></svg></div><div className="summary"><WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} /><NutritionSummary nutritionPlan={nutritionPlan} /></div></section>;
+function EditIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16v4Z" /><path d="m13.7 6.3 4 4" /></svg>; }
+
+function DailySummary({ date, isToday, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry, onEditWorkout }) {
+  const editable = workoutStatus === 'success' && Boolean(workout?.editable);
+  return <section className="date-card"><div className="date-row"><div className="date-title">{formatFullDate(date)}</div><button className="home-edit-day" type="button" aria-label={editable ? 'Перенести тренировку' : 'Редактирование тренировки недоступно'} title={editable ? 'Перенести тренировку' : 'Редактирование недоступно'} disabled={!editable} onClick={onEditWorkout}><EditIcon /></button></div><div className="summary"><WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} /><NutritionSummary nutritionPlan={nutritionPlan} /></div></section>;
+}
+
+function ScheduleEditModal({ workout, currentDateKey, todayKey, newDate, step, saving, error, onDateChange, onNext, onChooseScope, onBack, onClose }) {
+  const missed = currentDateKey < todayKey;
+  return <div className="home-schedule-modal" role="dialog" aria-modal="true" aria-label="Перенести тренировку"><button className="home-schedule-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving} /><section className="home-schedule-card"><div className="home-schedule-handle" /><div className="home-schedule-head"><div><span>{step === 'date' ? 'Раскладка дня' : 'Изменение расписания'}</span><h2>{step === 'date' ? 'Перенести тренировку' : 'Что именно подвинуть?'}</h2></div><button className="home-schedule-close" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving}>×</button></div><div className="home-schedule-workout"><span>{formatFullDate(dateFromKey(currentDateKey))}</span><strong>{workout.title}</strong></div>{step === 'date' ? <>{missed && <div className="home-schedule-missed">Вы пропустили запланированный день. Выберите новую дату — тренировку не нужно помечать пропущенной.</div>}<label className="home-schedule-date-field"><span>Новая дата</span><input type="date" min={todayKey} value={newDate} onChange={(event) => onDateChange(event.target.value)} /></label><div className="home-schedule-quick"><button type="button" onClick={() => onDateChange(todayKey)}>Сегодня</button><button type="button" onClick={() => onDateChange(addDaysKey(todayKey, 1))}>Завтра</button></div>{error && <div className="home-schedule-error" role="alert">{error}</div>}<button className="home-schedule-primary" type="button" disabled={!newDate || newDate < todayKey || newDate === currentDateKey} onClick={onNext}>Продолжить</button></> : <><p className="home-schedule-scope-intro">Новая дата: <strong>{formatFullDate(dateFromKey(newDate))}</strong>. Выберите, как изменить программу.</p>{error && <div className="home-schedule-error" role="alert">{error}</div>}<div className="home-schedule-options"><button className="home-schedule-option" type="button" disabled={saving} onClick={() => onChooseScope('single')}><strong>Только эту тренировку</strong><span>Остальные тренировки останутся на своих датах. Удобно, если пропущен только один день.</span><b>›</b></button><button className="home-schedule-option primary" type="button" disabled={saving} onClick={() => onChooseScope('tail')}><strong>Эту и все оставшиеся</strong><span>Расписание дальше перестроится автоматически с сохранением ритма программы.</span><b>›</b></button></div><button className="home-schedule-back" type="button" disabled={saving} onClick={onBack}>{saving ? 'Сохраняем…' : '← Изменить дату'}</button></>}</section></div>;
 }
 
 function BottomNav() {
-  return <nav className="bottom-nav" aria-label="Основная навигация">
-    <button className="nav-item" data-screen="training" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8"><path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" /><path d="m4 21 7 7M21 4l7 7" /></svg><span>Тренировки</span></button>
-    <button className="nav-item" data-screen="statistics" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7"><rect x="5" y="16" width="4" height="10" rx="1" /><rect x="14" y="7" width="4" height="19" rx="1" /><rect x="23" y="12" width="4" height="14" rx="1" /></svg><span>Статистика</span></button>
-    <button className="nav-item home" data-screen="home" type="button"><span className="home-circle"><svg viewBox="0 0 32 32" fill="none"><path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" /></svg></span><span>Главная</span></button>
-    <button className="nav-item" data-screen="nutrition" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6"><path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" /></svg><span>Питание</span></button>
-    <button className="nav-item" data-screen="sportpit" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5"><path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" /><path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" /></svg><span>СпортПит</span></button>
-  </nav>;
+  return <nav className="bottom-nav" aria-label="Основная навигация"><button className="nav-item" data-screen="training" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.8"><path d="m8 20 12-12M7 16l9 9M5 19l8 8M19 5l8 8M16 7l9 9" /><path d="m4 21 7 7M21 4l7 7" /></svg><span>Тренировки</span></button><button className="nav-item" data-screen="statistics" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.7"><rect x="5" y="16" width="4" height="10" rx="1" /><rect x="14" y="7" width="4" height="19" rx="1" /><rect x="23" y="12" width="4" height="14" rx="1" /></svg><span>Статистика</span></button><button className="nav-item home" data-screen="home" type="button"><span className="home-circle"><svg viewBox="0 0 32 32" fill="none"><path d="m5 15 11-10 11 10v12H19v-8h-6v8H5V15Z" /></svg></span><span>Главная</span></button><button className="nav-item" data-screen="nutrition" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.6"><path d="M9 5v9M6 5v6c0 2 1.2 3 3 3s3-1 3-3V5M9 14v13M21 5v22M21 5c4 3 4 9 0 12" /></svg><span>Питание</span></button><button className="nav-item" data-screen="sportpit" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5"><path d="M10 7h12l2 5-2 13H10L8 12l2-5Z" /><path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6" /></svg><span>СпортПит</span></button></nav>;
 }
 
 function Drawer({ onCloseMenu }) {
@@ -146,38 +118,22 @@ function Drawer({ onCloseMenu }) {
 async function loadWorkoutCard(dateKey) {
   const { data: activeRows, error: activeError } = await supabase.from('workout_sessions').select('id, scheduled_workout_id').eq('status', 'active').limit(1);
   if (activeError) throw activeError;
-
   let workoutRow = null;
   let active = false;
-
   if (activeRows?.[0]?.scheduled_workout_id) {
-    const response = await supabase
-      .from('scheduled_workouts')
-      .select('id, workout_name, scheduled_date, status, user_programs!inner(status)')
-      .eq('id', activeRows[0].scheduled_workout_id)
-      .eq('user_programs.status', 'active')
-      .single();
+    const response = await supabase.from('scheduled_workouts').select('id, workout_name, scheduled_date, status, user_programs!inner(status)').eq('id', activeRows[0].scheduled_workout_id).eq('user_programs.status', 'active').single();
     if (response.error && response.error.code !== 'PGRST116') throw response.error;
     if (response.data?.scheduled_date === dateKey) { workoutRow = response.data; active = true; }
   }
-
   if (!workoutRow) {
-    const response = await supabase
-      .from('scheduled_workouts')
-      .select('id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)')
-      .eq('scheduled_date', dateKey)
-      .eq('user_programs.status', 'active')
-      .neq('status', 'cancelled')
-      .order('sequence_number', { ascending: true })
-      .limit(1);
+    const response = await supabase.from('scheduled_workouts').select('id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)').eq('scheduled_date', dateKey).eq('user_programs.status', 'active').neq('status', 'cancelled').order('sequence_number', { ascending: true }).limit(1);
     if (response.error) throw response.error;
     workoutRow = response.data?.[0] ?? null;
   }
-
   if (!workoutRow) return null;
   const { count, error } = await supabase.from('scheduled_workout_exercises').select('id', { count: 'exact', head: true }).eq('scheduled_workout_id', workoutRow.id);
   if (error) throw error;
-  return { id: workoutRow.id, title: workoutRow.workout_name, exerciseCount: count ?? 0, active, completed: workoutRow.status === 'completed' };
+  return { id: workoutRow.id, title: workoutRow.workout_name, exerciseCount: count ?? 0, scheduledDate: workoutRow.scheduled_date, status: workoutRow.status, active, completed: workoutRow.status === 'completed', editable: workoutRow.status === 'scheduled' && !active };
 }
 
 export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, workoutDates = [], todaysWorkout = null, nutritionPlan = null }) {
@@ -192,31 +148,29 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
   const [workoutStatus, setWorkoutStatus] = useState('loading');
   const [workoutStatusDateKey, setWorkoutStatusDateKey] = useState(todayKey);
   const [reloadKey, setReloadKey] = useState(0);
+  const [scheduleEditor, setScheduleEditor] = useState(null);
+  const [scheduleStep, setScheduleStep] = useState('date');
+  const [scheduleDate, setScheduleDate] = useState(todayKey);
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
   const workoutCacheRef = useRef(new Map());
 
   useEffect(() => { if (!selectionPinned) setSelectedDateKey(todayKey); }, [todayKey, selectionPinned]);
+  useEffect(() => { document.body.style.overflow = scheduleEditor ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [scheduleEditor]);
   useEffect(() => {
     const refresh = () => { workoutCacheRef.current.clear(); setReloadKey((value) => value + 1); };
     const visible = () => { if (document.visibilityState === 'visible') refresh(); };
-    window.addEventListener('focus', refresh);
-    document.addEventListener('visibilitychange', visible);
+    window.addEventListener('focus', refresh); document.addEventListener('visibilitychange', visible);
     return () => { window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', visible); };
   }, []);
 
   useEffect(() => {
     let alive = true;
-    supabase
-      .from('scheduled_workouts')
-      .select('scheduled_date, status, user_programs!inner(status)')
-      .eq('user_programs.status', 'active')
-      .neq('status', 'cancelled')
-      .order('scheduled_date', { ascending: true })
-      .then(({ data, error }) => {
-        if (!alive) return;
-        if (error) { console.error('Unable to load home calendar:', error); setCalendarStatus('error'); return; }
-        setScheduledWorkoutDates([...new Set((data ?? []).map((row) => row.scheduled_date).filter(Boolean))]);
-        setCalendarStatus('success');
-      });
+    supabase.from('scheduled_workouts').select('scheduled_date, status, user_programs!inner(status)').eq('user_programs.status', 'active').neq('status', 'cancelled').order('scheduled_date', { ascending: true }).then(({ data, error }) => {
+      if (!alive) return;
+      if (error) { console.error('Unable to load home calendar:', error); setCalendarStatus('error'); return; }
+      setScheduledWorkoutDates([...new Set((data ?? []).map((row) => row.scheduled_date).filter(Boolean))]); setCalendarStatus('success');
+    });
     return () => { alive = false; };
   }, [reloadKey]);
 
@@ -224,21 +178,15 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
     let alive = true;
     const cached = workoutCacheRef.current.get(selectedDateKey);
     setWorkoutStatusDateKey(selectedDateKey);
-    if (workoutCacheRef.current.has(selectedDateKey)) {
-      setLoadedWorkout(cached ?? null); setLoadedWorkoutDateKey(selectedDateKey); setWorkoutStatus('success');
-    } else {
-      setLoadedWorkout(null); setLoadedWorkoutDateKey(null); setWorkoutStatus('loading');
-    }
-
+    if (workoutCacheRef.current.has(selectedDateKey)) { setLoadedWorkout(cached ?? null); setLoadedWorkoutDateKey(selectedDateKey); setWorkoutStatus('success'); }
+    else { setLoadedWorkout(null); setLoadedWorkoutDateKey(null); setWorkoutStatus('loading'); }
     loadWorkoutCard(selectedDateKey).then((card) => {
       if (!alive) return;
-      workoutCacheRef.current.set(selectedDateKey, card);
-      setLoadedWorkout(card); setLoadedWorkoutDateKey(selectedDateKey); setWorkoutStatus('success');
+      workoutCacheRef.current.set(selectedDateKey, card); setLoadedWorkout(card); setLoadedWorkoutDateKey(selectedDateKey); setWorkoutStatus('success');
     }).catch((error) => {
       console.error(`Unable to load home workout for ${selectedDateKey}:`, error);
       if (!alive) return;
-      if (workoutCacheRef.current.has(selectedDateKey)) { setLoadedWorkout(workoutCacheRef.current.get(selectedDateKey) ?? null); setLoadedWorkoutDateKey(selectedDateKey); }
-      else { setLoadedWorkout(null); setLoadedWorkoutDateKey(null); }
+      if (workoutCacheRef.current.has(selectedDateKey)) { setLoadedWorkout(workoutCacheRef.current.get(selectedDateKey) ?? null); setLoadedWorkoutDateKey(selectedDateKey); } else { setLoadedWorkout(null); setLoadedWorkoutDateKey(null); }
       setWorkoutStatus('error');
     });
     return () => { alive = false; };
@@ -255,16 +203,25 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
 
   function selectDate(value) { setSelectedDateKey(value); setSelectionPinned(value !== todayKey); }
   function retryHomeData() { workoutCacheRef.current.delete(selectedDateKey); setReloadKey((value) => value + 1); }
+  function openScheduleEditor() {
+    if (!effectiveWorkout?.editable) return;
+    setScheduleEditor({ workout: effectiveWorkout, originalDate: selectedDateKey });
+    setScheduleStep('date');
+    setScheduleDate(selectedDateKey < todayKey ? todayKey : selectedDateKey);
+    setScheduleError('');
+  }
+  function closeScheduleEditor() { if (scheduleSaving) return; setScheduleEditor(null); setScheduleError(''); setScheduleStep('date'); }
+  async function applyScheduleScope(scope) {
+    if (!scheduleEditor || scheduleSaving) return;
+    setScheduleSaving(true); setScheduleError('');
+    try {
+      await rescheduleScheduledWorkoutScoped(scheduleEditor.workout.id, scheduleDate, scope);
+      workoutCacheRef.current.clear();
+      setScheduleEditor(null); setScheduleStep('date'); setSelectionPinned(scheduleDate !== todayKey); setSelectedDateKey(scheduleDate); setReloadKey((value) => value + 1);
+    } catch (error) {
+      setScheduleError(error?.message || 'Не удалось изменить расписание.');
+    } finally { setScheduleSaving(false); }
+  }
 
-  return <div className={`phone${menuOpen ? ' menu-open' : ''}`}>
-    <Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} />
-    <main className="content">
-      <PromoBanner />
-      {hasRefreshError && <section className="home-data-alert" role="alert"><div><strong>Не удалось обновить данные</strong><span>Проверьте соединение. Ниже показана последняя успешная версия данных для выбранной даты.</span></div><button type="button" onClick={retryHomeData}>Повторить</button></section>}
-      <CalendarCard today={today} selectedDateKey={selectedDateKey} workoutDates={effectiveWorkoutDates} onSelectDate={selectDate} />
-      <DailySummary date={selectedDate} isToday={isTodaySelected} workout={effectiveWorkout} workoutStatus={effectiveWorkoutStatus} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} onRetry={retryHomeData} />
-    </main>
-    <BottomNav />
-    <Drawer onCloseMenu={onCloseMenu} />
-  </div>;
+  return <div className={`phone${menuOpen ? ' menu-open' : ''}`}><Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} /><main className="content"><PromoBanner />{hasRefreshError && <section className="home-data-alert" role="alert"><div><strong>Не удалось обновить данные</strong><span>Проверьте соединение. Ниже показана последняя успешная версия данных для выбранной даты.</span></div><button type="button" onClick={retryHomeData}>Повторить</button></section>}<CalendarCard today={today} selectedDateKey={selectedDateKey} workoutDates={effectiveWorkoutDates} onSelectDate={selectDate} /><DailySummary date={selectedDate} isToday={isTodaySelected} workout={effectiveWorkout} workoutStatus={effectiveWorkoutStatus} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} onRetry={retryHomeData} onEditWorkout={openScheduleEditor} /></main><BottomNav /><Drawer onCloseMenu={onCloseMenu} />{scheduleEditor && <ScheduleEditModal workout={scheduleEditor.workout} currentDateKey={scheduleEditor.originalDate} todayKey={todayKey} newDate={scheduleDate} step={scheduleStep} saving={scheduleSaving} error={scheduleError} onDateChange={(value) => { setScheduleDate(value); setScheduleError(''); }} onNext={() => { setScheduleError(''); setScheduleStep('scope'); }} onChooseScope={applyScheduleScope} onBack={() => { setScheduleError(''); setScheduleStep('date'); }} onClose={closeScheduleEditor} />}</div>;
 }
