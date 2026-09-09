@@ -1,4 +1,5 @@
--- Personal account profile fields and self-service account deletion.
+-- Personal account profile fields.
+-- Account deletion is handled by the authenticated `delete-account` Edge Function.
 
 alter table public.profiles
   add column if not exists phone text,
@@ -21,20 +22,3 @@ alter table public.profiles
   add constraint profiles_activity_level_check check (activity_level is null or activity_level in ('low','light','moderate','high','very_high'));
 
 grant select, insert, update on public.profiles to authenticated;
-
-create or replace function public.delete_my_account()
-returns void
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if auth.uid() is null then
-    raise exception 'Authentication required' using errcode = '42501';
-  end if;
-  delete from auth.users where id = auth.uid();
-end;
-$$;
-
-revoke all on function public.delete_my_account() from public, anon;
-grant execute on function public.delete_my_account() to authenticated;
