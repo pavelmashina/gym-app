@@ -9,6 +9,7 @@ export function WorkoutSessionScreen(props) {
   const [replacementTarget, setReplacementTarget] = useState(null);
   const [replacementLoading, setReplacementLoading] = useState(false);
   const [replacementError, setReplacementError] = useState('');
+  const [interruptConfirmOpen, setInterruptConfirmOpen] = useState(false);
   const [version, setVersion] = useState(0);
 
   function openReplacement(exercise) {
@@ -37,8 +38,37 @@ export function WorkoutSessionScreen(props) {
     setReplacementError('');
   }
 
-  return <>
+  function captureWorkoutAction(event) {
+    const element = event.target instanceof Element ? event.target : null;
+    const interruptButton = element?.closest('.workout-abandon-button');
+    if (!interruptButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setInterruptConfirmOpen(true);
+  }
+
+  function interruptWorkout() {
+    setInterruptConfirmOpen(false);
+    // Intentionally keep the WorkoutSession active. The session, entered sets,
+    // notes and elapsed time remain available and Home shows “Продолжить тренировку”.
+    props.onBack?.();
+  }
+
+  return <div onClickCapture={captureWorkoutAction}>
     <WorkoutSessionScreenV3 key={version} {...props} onRequestReplacement={openReplacement} />
+
+    {interruptConfirmOpen && <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label="Прервать тренировку">
+      <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={() => setInterruptConfirmOpen(false)} />
+      <section className="workout-modal-card workout-interrupt-confirm">
+        <div className="workout-modal-head"><div><span>Текущая тренировка</span><h3>Прервать тренировку?</h3></div><button type="button" onClick={() => setInterruptConfirmOpen(false)}>×</button></div>
+        <p>Все введённые подходы, заметки и время сохранятся. Вы сможете продолжить эту тренировку позже.</p>
+        <div className="workout-interrupt-confirm-actions">
+          <button type="button" onClick={() => setInterruptConfirmOpen(false)}>Продолжить сейчас</button>
+          <button className="primary" type="button" onClick={interruptWorkout}>Прервать и выйти</button>
+        </div>
+      </section>
+    </div>}
+
     {replacementTarget && <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label="Заменить упражнение">
       <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={closeReplacement} />
       <section className="workout-modal-card replace-modal">
@@ -48,5 +78,5 @@ export function WorkoutSessionScreen(props) {
         {replacementLoading && <div className="program-exercise-state"><span>Заменяем упражнение…</span></div>}
       </section>
     </div>}
-  </>;
+  </div>;
 }
