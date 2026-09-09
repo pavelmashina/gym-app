@@ -86,8 +86,9 @@ function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry }) {
   if (status === 'loading') return <section className="summary-col workout home-empty-card" aria-live="polite"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на выбранную дату</p></div></section>;
   if (status === 'error' && !workout) return <section className="summary-col workout home-error-card" role="alert"><div className="summary-label">Тренировка</div><div className="home-error-copy"><h3>Не удалось загрузить тренировку</h3><p>Это не означает, что на выбранную дату ничего не запланировано.</p><button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button></div></section>;
   if (!workout) return <section className="summary-col workout home-empty-card"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Нет тренировки</h3><p>{isToday ? 'На сегодня ничего не запланировано' : 'На эту дату ничего не запланировано'}</p></div></section>;
-  const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : 'К тренировке');
-  return <section className="summary-col workout"><div className="summary-label">{workout.active ? 'Активная тренировка' : 'Тренировка'}</div><h3>{workout.title}</h3><p>{workout.exerciseCount} упражнений</p><button className="workout-btn" type="button" onClick={() => onOpenWorkout?.(workout.id)}>{buttonLabel}</button></section>;
+  const skipped = workout.status === 'skipped';
+  const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : (skipped ? 'Пропущена' : 'К тренировке'));
+  return <section className="summary-col workout"><div className="summary-label">{workout.active ? 'Активная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка')}</div><h3>{workout.title}</h3><p>{workout.exerciseCount} упражнений</p><button className="workout-btn" type="button" disabled={skipped} onClick={() => !skipped && onOpenWorkout?.(workout.id)}>{buttonLabel}</button></section>;
 }
 
 function NutritionSummary({ nutritionPlan }) {
@@ -104,7 +105,9 @@ function DailySummary({ date, isToday, workout, workoutStatus, nutritionPlan, on
 
 function ScheduleEditModal({ workout, currentDateKey, todayKey, newDate, step, saving, error, onDateChange, onNext, onChooseScope, onBack, onClose }) {
   const missed = currentDateKey < todayKey;
-  return <div className="home-schedule-modal" role="dialog" aria-modal="true" aria-label="Перенести тренировку"><button className="home-schedule-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving} /><section className="home-schedule-card"><div className="home-schedule-handle" /><div className="home-schedule-head"><div><span>{step === 'date' ? 'Раскладка дня' : 'Изменение расписания'}</span><h2>{step === 'date' ? 'Перенести тренировку' : 'Что именно подвинуть?'}</h2></div><button className="home-schedule-close" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving}>×</button></div><div className="home-schedule-workout"><span>{formatFullDate(dateFromKey(currentDateKey))}</span><strong>{workout.title}</strong></div>{step === 'date' ? <>{missed && <div className="home-schedule-missed">Вы пропустили запланированный день. Выберите новую дату — тренировку не нужно помечать пропущенной.</div>}<label className="home-schedule-date-field"><span>Новая дата</span><input type="date" min={todayKey} value={newDate} onChange={(event) => onDateChange(event.target.value)} /></label><div className="home-schedule-quick"><button type="button" onClick={() => onDateChange(todayKey)}>Сегодня</button><button type="button" onClick={() => onDateChange(addDaysKey(todayKey, 1))}>Завтра</button></div>{error && <div className="home-schedule-error" role="alert">{error}</div>}<button className="home-schedule-primary" type="button" disabled={!newDate || newDate < todayKey || newDate === currentDateKey} onClick={onNext}>Продолжить</button></> : <><p className="home-schedule-scope-intro">Новая дата: <strong>{formatFullDate(dateFromKey(newDate))}</strong>. Выберите, как изменить программу.</p>{error && <div className="home-schedule-error" role="alert">{error}</div>}<div className="home-schedule-options"><button className="home-schedule-option" type="button" disabled={saving} onClick={() => onChooseScope('single')}><strong>Только эту тренировку</strong><span>Остальные тренировки останутся на своих датах. Удобно, если пропущен только один день.</span><b>›</b></button><button className="home-schedule-option primary" type="button" disabled={saving} onClick={() => onChooseScope('tail')}><strong>Эту и все оставшиеся</strong><span>Расписание дальше перестроится автоматически с сохранением ритма программы.</span><b>›</b></button></div><button className="home-schedule-back" type="button" disabled={saving} onClick={onBack}>{saving ? 'Сохраняем…' : '← Изменить дату'}</button></>}</section></div>;
+  const skipped = workout.status === 'skipped';
+  const tailAvailable = workout.canShiftTail !== false;
+  return <div className="home-schedule-modal" role="dialog" aria-modal="true" aria-label="Перенести тренировку"><button className="home-schedule-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving} /><section className="home-schedule-card"><div className="home-schedule-handle" /><div className="home-schedule-head"><div><span>{step === 'date' ? 'Раскладка дня' : 'Изменение расписания'}</span><h2>{step === 'date' ? 'Перенести тренировку' : 'Что именно подвинуть?'}</h2></div><button className="home-schedule-close" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving}>×</button></div><div className="home-schedule-workout"><span>{formatFullDate(dateFromKey(currentDateKey))}</span><strong>{workout.title}</strong></div>{step === 'date' ? <>{(missed || skipped) && <div className="home-schedule-missed">{skipped ? 'Тренировка была отмечена как пропущенная. После переноса она снова станет запланированной.' : 'Вы пропустили запланированный день. Выберите новую дату — тренировку не нужно помечать пропущенной.'}</div>}<label className="home-schedule-date-field"><span>Новая дата</span><input type="date" min={todayKey} value={newDate} onChange={(event) => onDateChange(event.target.value)} /></label><div className="home-schedule-quick"><button type="button" onClick={() => onDateChange(todayKey)}>Сегодня</button><button type="button" onClick={() => onDateChange(addDaysKey(todayKey, 1))}>Завтра</button></div>{error && <div className="home-schedule-error" role="alert">{error}</div>}<button className="home-schedule-primary" type="button" disabled={!newDate || newDate < todayKey || newDate === currentDateKey} onClick={onNext}>Продолжить</button></> : <><p className="home-schedule-scope-intro">Новая дата: <strong>{formatFullDate(dateFromKey(newDate))}</strong>. Выберите, как изменить программу.</p>{!tailAvailable && <div className="home-schedule-missed">После этой тренировки уже есть выполненная тренировка. Поэтому можно перенести только пропущенную тренировку — завершённая история останется без изменений.</div>}{error && <div className="home-schedule-error" role="alert">{error}</div>}<div className="home-schedule-options"><button className="home-schedule-option" type="button" disabled={saving} onClick={() => onChooseScope('single')}><strong>Только эту тренировку</strong><span>{skipped && !tailAvailable ? 'Вернуть пропущенную тренировку в расписание на выбранную дату.' : 'Остальные тренировки останутся на своих датах. Удобно, если пропущен только один день.'}</span><b>›</b></button>{tailAvailable && <button className="home-schedule-option primary" type="button" disabled={saving} onClick={() => onChooseScope('tail')}><strong>Эту и все оставшиеся</strong><span>Расписание дальше перестроится автоматически с сохранением ритма программы.</span><b>›</b></button>}</div><button className="home-schedule-back" type="button" disabled={saving} onClick={onBack}>{saving ? 'Сохраняем…' : '← Изменить дату'}</button></>}</section></div>;
 }
 
 function BottomNav() {
@@ -121,19 +124,46 @@ async function loadWorkoutCard(dateKey) {
   let workoutRow = null;
   let active = false;
   if (activeRows?.[0]?.scheduled_workout_id) {
-    const response = await supabase.from('scheduled_workouts').select('id, workout_name, scheduled_date, status, user_programs!inner(status)').eq('id', activeRows[0].scheduled_workout_id).eq('user_programs.status', 'active').single();
+    const response = await supabase.from('scheduled_workouts').select('id, user_program_id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)').eq('id', activeRows[0].scheduled_workout_id).eq('user_programs.status', 'active').single();
     if (response.error && response.error.code !== 'PGRST116') throw response.error;
     if (response.data?.scheduled_date === dateKey) { workoutRow = response.data; active = true; }
   }
   if (!workoutRow) {
-    const response = await supabase.from('scheduled_workouts').select('id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)').eq('scheduled_date', dateKey).eq('user_programs.status', 'active').neq('status', 'cancelled').order('sequence_number', { ascending: true }).limit(1);
+    const response = await supabase.from('scheduled_workouts').select('id, user_program_id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)').eq('scheduled_date', dateKey).eq('user_programs.status', 'active').neq('status', 'cancelled').order('sequence_number', { ascending: true }).limit(1);
     if (response.error) throw response.error;
     workoutRow = response.data?.[0] ?? null;
   }
   if (!workoutRow) return null;
+
+  let hasLaterCompleted = false;
+  if (!active && workoutRow.user_program_id && Number.isFinite(Number(workoutRow.sequence_number))) {
+    const { count: laterCompletedCount, error: laterCompletedError } = await supabase
+      .from('scheduled_workouts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_program_id', workoutRow.user_program_id)
+      .gt('sequence_number', workoutRow.sequence_number)
+      .eq('status', 'completed');
+    if (laterCompletedError) throw laterCompletedError;
+    hasLaterCompleted = Number(laterCompletedCount || 0) > 0;
+  }
+
   const { count, error } = await supabase.from('scheduled_workout_exercises').select('id', { count: 'exact', head: true }).eq('scheduled_workout_id', workoutRow.id);
   if (error) throw error;
-  return { id: workoutRow.id, title: workoutRow.workout_name, exerciseCount: count ?? 0, scheduledDate: workoutRow.scheduled_date, status: workoutRow.status, active, completed: workoutRow.status === 'completed', editable: workoutRow.status === 'scheduled' && !active };
+  const skipped = workoutRow.status === 'skipped';
+  const scheduled = workoutRow.status === 'scheduled';
+  const editable = !active && (skipped || (scheduled && !hasLaterCompleted));
+  return {
+    id: workoutRow.id,
+    title: workoutRow.workout_name,
+    exerciseCount: count ?? 0,
+    scheduledDate: workoutRow.scheduled_date,
+    status: workoutRow.status,
+    active,
+    completed: workoutRow.status === 'completed',
+    hasLaterCompleted,
+    canShiftTail: !hasLaterCompleted,
+    editable,
+  };
 }
 
 export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, workoutDates = [], todaysWorkout = null, nutritionPlan = null }) {
