@@ -4,6 +4,7 @@ import { AuthScreen } from './components/AuthScreen.jsx';
 import { CreateProgramScreen } from './components/CreateProgramScreen.jsx';
 import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
+import { FaqScreen, PlanScreen, PrivacyPolicyScreen, SupportScreen } from './components/MenuScreens.jsx';
 import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
 import { SettingsScreen } from './components/SettingsScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
@@ -11,6 +12,7 @@ import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
+const UTILITY_SCREENS = ['settings', 'plan', 'privacy', 'support', 'faq'];
 
 function resolveBottomNavScreen(navItem) {
   const explicitScreen = navItem?.dataset?.screen;
@@ -46,6 +48,8 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeScreen, setActiveScreen] = useState('home');
   const [accountReturnScreen, setAccountReturnScreen] = useState('home');
+  const [utilityReturnScreen, setUtilityReturnScreen] = useState('home');
+  const [reopenMenuOnUtilityBack, setReopenMenuOnUtilityBack] = useState(false);
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
@@ -86,6 +90,8 @@ export default function App() {
         setTrainingInitialTab('recommendations');
         setActiveScreen('home');
         setAccountReturnScreen('home');
+        setUtilityReturnScreen('home');
+        setReopenMenuOnUtilityBack(false);
       }
     });
     return () => { active = false; subscription.unsubscribe(); };
@@ -104,12 +110,56 @@ export default function App() {
     return () => { active = false; };
   }, [userId]);
 
+  function closeUtilityScreen() {
+    const target = utilityReturnScreen || 'home';
+    setActiveScreen(target);
+    if (reopenMenuOnUtilityBack && target === 'home') window.setTimeout(() => setMenuOpen(true), 0);
+    setReopenMenuOnUtilityBack(false);
+  }
+
+  function openUtilityFromMenu(screen) {
+    setMenuOpen(false);
+    setUtilityReturnScreen('home');
+    setReopenMenuOnUtilityBack(true);
+    setActiveScreen(screen);
+  }
+
+  function openSettingsFromAccount() {
+    setUtilityReturnScreen('account');
+    setReopenMenuOnUtilityBack(false);
+    setActiveScreen('settings');
+  }
+
+  function openPlanFromSettings() {
+    setUtilityReturnScreen('settings');
+    setReopenMenuOnUtilityBack(false);
+    setActiveScreen('plan');
+  }
+
+  async function shareApp() {
+    setMenuOpen(false);
+    const shareData = {
+      title: 'GYM',
+      text: 'Попробуй приложение GYM для тренировок и отслеживания прогресса.',
+      url: window.location.origin + (import.meta.env.BASE_URL || '/'),
+    };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else {
+        await navigator.clipboard.writeText(shareData.url);
+        window.alert('Ссылка на приложение скопирована.');
+      }
+    } catch (error) {
+      if (error?.name !== 'AbortError') console.error('Unable to share app:', error);
+    }
+  }
+
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key !== 'Escape') return;
       setMenuOpen(false);
+      if (UTILITY_SCREENS.includes(activeScreen)) { closeUtilityScreen(); return; }
       setActiveScreen((current) => {
-        if (current === 'settings') return 'account';
         if (current === 'account') return accountReturnScreen || 'home';
         if (current === 'create-program') {
           setEditingProgramId(null);
@@ -125,9 +175,23 @@ export default function App() {
     }
 
     function handleDocumentClick(event) {
+      const drawerLink = event.target.closest('.drawer-link');
+      if (drawerLink) {
+        const label = drawerLink.textContent.trim();
+        const actions = {
+          'Подписка': 'plan',
+          'Настройки': 'settings',
+          'Политика конфиденциальности': 'privacy',
+          'Поддержка': 'support',
+          'Частые вопросы': 'faq',
+        };
+        if (label === 'Рассказать о приложении') { shareApp(); return; }
+        if (actions[label]) { openUtilityFromMenu(actions[label]); return; }
+      }
+
       if (userId && event.target.closest('.profile-btn')) {
         setMenuOpen(false);
-        setAccountReturnScreen(['account','settings'].includes(activeScreen) ? accountReturnScreen : activeScreen);
+        setAccountReturnScreen(['account', ...UTILITY_SCREENS].includes(activeScreen) ? accountReturnScreen : activeScreen);
         setActiveScreen('account');
         return;
       }
@@ -145,7 +209,7 @@ export default function App() {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('click', handleDocumentClick);
     return () => { document.removeEventListener('keydown', handleKeyDown); document.removeEventListener('click', handleDocumentClick); };
-  }, [userId, activeScreen, accountReturnScreen]);
+  }, [userId, activeScreen, accountReturnScreen, utilityReturnScreen, reopenMenuOnUtilityBack]);
 
   const authConfigError = useMemo(() => {
     if (isSupabaseConfigured) return null;
@@ -185,10 +249,14 @@ export default function App() {
 
   function renderActiveScreen() {
     if (activeScreen === 'settings') {
-      return <SettingsScreen user={user} planCode={profile?.plan_code || 'free'} onBack={() => setActiveScreen('account')} onOpenPlan={() => setActiveScreen('account')} />;
+      return <SettingsScreen user={user} planCode={profile?.plan_code || 'free'} onBack={closeUtilityScreen} onOpenPlan={openPlanFromSettings} />;
     }
+    if (activeScreen === 'plan') return <PlanScreen planCode={profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'privacy') return <PrivacyPolicyScreen onBack={closeUtilityScreen} />;
+    if (activeScreen === 'support') return <SupportScreen user={user} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'faq') return <FaqScreen onBack={closeUtilityScreen} />;
     if (activeScreen === 'account') {
-      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={() => setActiveScreen('settings')} />;
+      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={openSettingsFromAccount} />;
     }
     if (activeScreen === 'workout-session' && workoutScheduledId) {
       return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} />;
