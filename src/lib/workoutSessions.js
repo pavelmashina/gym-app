@@ -29,6 +29,31 @@ function snapshotExerciseKey(exerciseId, snapshotName) {
   return exerciseId ?? `snapshot:${snapshotName || 'Упражнение'}`;
 }
 
+function inferMuscleGroupFromName(value) {
+  const name = String(value || '').toLocaleLowerCase('ru').replace(/ё/g, 'е');
+  if (!name) return '';
+  if (/скручив|планк|скалолаз|скололаз/.test(name)) return 'Кор';
+  if (/подтягив.*гравитрон/.test(name)) return 'Спина';
+  if (/разгибан.*рук.*блок/.test(name)) return 'Трицепс';
+  if (/ягодич.*мост/.test(name)) return 'Ягодицы';
+  if (/жим ног|сгибан.*ног|присед|отведен.*бедр/.test(name)) return 'Ноги';
+  if (/тяга.*верхн.*блок|тяга.*гантел.*пояс/.test(name)) return 'Спина';
+  if (/махи.*сторон.*гантел|махи.*гантел.*сторон/.test(name)) return 'Плечи';
+  if (/жим.*наклонн.*скам/.test(name)) return 'Грудь';
+  if (/гиперэкстенз.*скручив/.test(name)) return 'Кор';
+  return '';
+}
+
+function localDateKeyFromTimestamp(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export async function getWorkoutEntry(scheduledWorkoutId) {
   const { data: workout, error: workoutError } = await supabase
     .from('scheduled_workouts')
@@ -83,7 +108,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
           exerciseId: snapshotExerciseKey(row.exercise_id, row.exercise_name_snapshot),
           linkedExerciseId: row.exercise_id ?? null,
           name,
-          muscleGroup: exercise?.muscle_group ?? '',
+          muscleGroup: exercise?.muscle_group ?? inferMuscleGroupFromName(name),
           prescription: row.prescription_snapshot ?? '',
           sets: setRows
             .filter((set) => set.scheduled_workout_exercise_id === row.id)
@@ -146,7 +171,8 @@ export async function loadWorkoutSession(sessionId) {
     workout: {
       id: workout.id,
       name: workout.workout_name,
-      scheduledDate: workout.scheduled_date,
+      scheduledDate: mode === 'completed' ? (localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : workout.scheduled_date,
+      originalScheduledDate: workout.scheduled_date,
       status: workout.status,
       exercises: (exerciseRows ?? []).map((row) => {
         const exercise = row.exercise_id ? exerciseNames.get(row.exercise_id) : null;
@@ -156,7 +182,7 @@ export async function loadWorkoutSession(sessionId) {
           exerciseId: snapshotExerciseKey(row.exercise_id, row.exercise_name_snapshot),
           linkedExerciseId: row.exercise_id ?? null,
           name,
-          muscleGroup: exercise?.muscle_group ?? '',
+          muscleGroup: exercise?.muscle_group ?? inferMuscleGroupFromName(name),
           prescription: row.prescription_snapshot ?? '',
           note: row.note ?? '',
           sets: setRows.filter((set) => set.workout_session_exercise_id === row.id).map(mapSet),
