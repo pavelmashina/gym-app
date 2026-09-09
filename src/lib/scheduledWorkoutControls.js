@@ -11,12 +11,13 @@ async function requireUser() {
 
 function mapWorkoutControlError(error, fallback) {
   const message = error?.message ?? '';
-  if (message.includes('active workout')) return new Error('Сначала завершите или отмените текущую тренировку.');
+  if (message.includes('active workout')) return new Error('Сначала завершите или выйдите из текущей тренировки.');
   if (message.includes('cannot be in the past')) return new Error('Новая дата не может быть в прошлом.');
   if (message.includes('after the previous workout')) return new Error('Выберите дату позже предыдущей тренировки программы.');
-  if (message.includes('Monday, Wednesday or Friday')) return new Error('Выберите понедельник, среду или пятницу.');
-  if (message.includes('Tuesday, Thursday or Saturday')) return new Error('Выберите вторник, четверг или субботу.');
-  if (message.includes('later workout history')) return new Error('Нельзя перенести тренировку перед уже сохранённой историей.');
+  if (message.includes('before the next workout')) return new Error('Для переноса только этой тренировки выберите дату раньше следующей. Либо перенесите эту и все оставшиеся тренировки.');
+  if (message.includes('Monday, Wednesday or Friday')) return new Error('Для ритма программы выберите понедельник, среду или пятницу.');
+  if (message.includes('Tuesday, Thursday or Saturday')) return new Error('Для ритма программы выберите вторник, четверг или субботу.');
+  if (message.includes('later workout history')) return new Error('Нельзя перестроить расписание после уже сохранённой более поздней тренировки.');
   if (message.includes('not found')) return new Error('Тренировка уже изменилась. Обновите экран.');
   return new Error(fallback);
 }
@@ -29,6 +30,19 @@ export async function rescheduleScheduledWorkout(scheduledWorkoutId, newDate) {
     p_new_date: newDate,
   });
   if (error || !data) throw mapWorkoutControlError(error, 'Не удалось перенести тренировку.');
+  return data;
+}
+
+export async function rescheduleScheduledWorkoutScoped(scheduledWorkoutId, newDate, scope = 'single') {
+  assertDate(newDate);
+  if (!['single', 'tail'].includes(scope)) throw new Error('Не удалось определить способ переноса.');
+  await requireUser();
+  const { data, error } = await supabase.rpc('reschedule_scheduled_workout_scoped', {
+    p_scheduled_workout_id: scheduledWorkoutId,
+    p_new_date: newDate,
+    p_scope: scope,
+  });
+  if (error || !data) throw mapWorkoutControlError(error, 'Не удалось изменить расписание.');
   return data;
 }
 
