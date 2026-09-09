@@ -4,7 +4,7 @@
 do $verify$
 declare
   v_required_tables text[] := array[
-    'profiles','exercises','user_exercises','programs','program_weeks','program_workouts',
+    'profiles','exercises','user_recent_exercises','programs','program_weeks','program_workouts',
     'program_workout_exercises','program_exercise_sets','user_programs','scheduled_workouts',
     'scheduled_workout_exercises','scheduled_sets','workout_sessions',
     'workout_session_exercises','performed_sets','catalog_programs'
@@ -13,7 +13,8 @@ declare
   v_rls_count integer;
   v_policy_count integer;
   v_anon_grants integer;
-  v_bucket_count integer;
+  v_program_bucket_count integer;
+  v_exercise_video_bucket_count integer;
   v_storage_policy_count integer;
   v_rpc_count integer;
   v_rpc_restricted_count integer;
@@ -24,6 +25,8 @@ declare
   v_cycle_guard_function_count integer;
   v_cycle_guard_trigger_count integer;
   v_bad_catalog_cycle_count integer;
+  v_exercise_user_column_count integer;
+  v_recent_index_count integer;
 begin
   select count(*) into v_table_count
   from information_schema.tables
@@ -63,6 +66,26 @@ begin
 
   if v_anon_grants <> 0 then
     raise exception 'Schema verification failed: anon has % application-table grants', v_anon_grants;
+  end if;
+
+  select count(*) into v_exercise_user_column_count
+  from information_schema.columns
+  where table_schema = 'public'
+    and table_name = 'exercises'
+    and column_name in ('owner_id','equipment','description','video_url','video_path');
+
+  if v_exercise_user_column_count <> 5 then
+    raise exception 'Schema verification failed: user exercise metadata columns are incomplete (%/5)', v_exercise_user_column_count;
+  end if;
+
+  select count(*) into v_recent_index_count
+  from pg_indexes
+  where schemaname = 'public'
+    and tablename = 'user_recent_exercises'
+    and indexname = 'user_recent_exercises_user_last_used_idx';
+
+  if v_recent_index_count <> 1 then
+    raise exception 'Schema verification failed: recent exercise ordering index is missing';
   end if;
 
   with current_rpcs as (
@@ -194,7 +217,7 @@ begin
     raise exception 'Schema verification failed: programs_source_catalog_idx is missing';
   end if;
 
-  select count(*) into v_bucket_count
+  select count(*) into v_program_bucket_count
   from storage.buckets
   where id = 'program-covers'
     and name = 'program-covers'
@@ -202,8 +225,20 @@ begin
     and file_size_limit = 5242880
     and allowed_mime_types = array['image/jpeg','image/png','image/webp']::text[];
 
-  if v_bucket_count <> 1 then
+  if v_program_bucket_count <> 1 then
     raise exception 'Schema verification failed: program-covers bucket configuration does not match source of truth';
+  end if;
+
+  select count(*) into v_exercise_video_bucket_count
+  from storage.buckets
+  where id = 'exercise-videos'
+    and name = 'exercise-videos'
+    and public = false
+    and file_size_limit = 104857600
+    and allowed_mime_types = array['video/mp4','video/webm','video/quicktime']::text[];
+
+  if v_exercise_video_bucket_count <> 1 then
+    raise exception 'Schema verification failed: exercise-videos bucket configuration does not match source of truth';
   end if;
 
   select count(*) into v_storage_policy_count
@@ -214,13 +249,17 @@ begin
       'program_covers_select_own',
       'program_covers_insert_own',
       'program_covers_update_own',
-      'program_covers_delete_own'
+      'program_covers_delete_own',
+      'exercise_videos_select_own',
+      'exercise_videos_insert_own',
+      'exercise_videos_update_own',
+      'exercise_videos_delete_own'
     );
 
-  if v_storage_policy_count <> 4 then
-    raise exception 'Schema verification failed: expected 4 program cover Storage policies, found %', v_storage_policy_count;
+  if v_storage_policy_count <> 8 then
+    raise exception 'Schema verification failed: expected 8 application Storage policies, found %', v_storage_policy_count;
   end if;
 
-  raise notice 'Schema verification passed: 16 tables, RLS/policies, 16 restricted SECURITY INVOKER RPCs, cycle model/guard, participation and scheduled-workout controls, normalized catalog, snapshots/index and Storage match the repository inventory.';
+  raise notice 'Schema verification passed: 16 tables, exercise metadata/recent data, RLS/policies, 16 restricted SECURITY INVOKER RPCs, cycle model/guard, normalized catalog, snapshots/index and Storage match the repository inventory.';
 end
 $verify$;
