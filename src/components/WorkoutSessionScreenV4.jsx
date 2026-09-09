@@ -3,6 +3,7 @@ import { replaceSessionExercise } from '../lib/workoutSessions.js';
 import { ExerciseLibraryPicker } from './ExerciseLibraryPicker.jsx';
 import { WorkoutSessionScreen as WorkoutSessionScreenV3 } from './WorkoutSessionScreenV3.jsx';
 import '../exercise-library-picker.css';
+import '../workout-exercise-info-media.css';
 
 export function WorkoutSessionScreen(props) {
   const [replacementTarget, setReplacementTarget] = useState(null);
