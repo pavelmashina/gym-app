@@ -50,6 +50,8 @@ export default function App() {
   const [accountReturnScreen, setAccountReturnScreen] = useState('home');
   const [utilityReturnScreen, setUtilityReturnScreen] = useState('home');
   const [reopenMenuOnUtilityBack, setReopenMenuOnUtilityBack] = useState(false);
+  const [settingsReturnScreen, setSettingsReturnScreen] = useState('account');
+  const [reopenMenuOnSettingsBack, setReopenMenuOnSettingsBack] = useState(false);
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
@@ -92,6 +94,8 @@ export default function App() {
         setAccountReturnScreen('home');
         setUtilityReturnScreen('home');
         setReopenMenuOnUtilityBack(false);
+        setSettingsReturnScreen('account');
+        setReopenMenuOnSettingsBack(false);
       }
     });
     return () => { active = false; subscription.unsubscribe(); };
@@ -117,16 +121,28 @@ export default function App() {
     setReopenMenuOnUtilityBack(false);
   }
 
+  function closeSettingsScreen() {
+    const target = settingsReturnScreen || 'account';
+    setActiveScreen(target);
+    if (reopenMenuOnSettingsBack && target === 'home') window.setTimeout(() => setMenuOpen(true), 0);
+    setReopenMenuOnSettingsBack(false);
+  }
+
   function openUtilityFromMenu(screen) {
     setMenuOpen(false);
-    setUtilityReturnScreen('home');
-    setReopenMenuOnUtilityBack(true);
+    if (screen === 'settings') {
+      setSettingsReturnScreen('home');
+      setReopenMenuOnSettingsBack(true);
+    } else {
+      setUtilityReturnScreen('home');
+      setReopenMenuOnUtilityBack(true);
+    }
     setActiveScreen(screen);
   }
 
   function openSettingsFromAccount() {
-    setUtilityReturnScreen('account');
-    setReopenMenuOnUtilityBack(false);
+    setSettingsReturnScreen('account');
+    setReopenMenuOnSettingsBack(false);
     setActiveScreen('settings');
   }
 
@@ -158,6 +174,7 @@ export default function App() {
     function handleKeyDown(event) {
       if (event.key !== 'Escape') return;
       setMenuOpen(false);
+      if (activeScreen === 'settings') { closeSettingsScreen(); return; }
       if (UTILITY_SCREENS.includes(activeScreen)) { closeUtilityScreen(); return; }
       setActiveScreen((current) => {
         if (current === 'account') return accountReturnScreen || 'home';
@@ -209,7 +226,7 @@ export default function App() {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('click', handleDocumentClick);
     return () => { document.removeEventListener('keydown', handleKeyDown); document.removeEventListener('click', handleDocumentClick); };
-  }, [userId, activeScreen, accountReturnScreen, utilityReturnScreen, reopenMenuOnUtilityBack]);
+  }, [userId, activeScreen, accountReturnScreen, utilityReturnScreen, reopenMenuOnUtilityBack, settingsReturnScreen, reopenMenuOnSettingsBack]);
 
   const authConfigError = useMemo(() => {
     if (isSupabaseConfigured) return null;
@@ -249,7 +266,7 @@ export default function App() {
 
   function renderActiveScreen() {
     if (activeScreen === 'settings') {
-      return <SettingsScreen user={user} planCode={profile?.plan_code || 'free'} onBack={closeUtilityScreen} onOpenPlan={openPlanFromSettings} />;
+      return <SettingsScreen user={user} planCode={profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
     }
     if (activeScreen === 'plan') return <PlanScreen planCode={profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
     if (activeScreen === 'privacy') return <PrivacyPolicyScreen onBack={closeUtilityScreen} />;
