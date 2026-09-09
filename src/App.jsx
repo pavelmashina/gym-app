@@ -5,6 +5,7 @@ import { CreateProgramScreen } from './components/CreateProgramScreen.jsx';
 import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
+import { SettingsScreen } from './components/SettingsScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
@@ -29,6 +30,14 @@ function isPasswordRecoveryUrl() {
   return hashParams.get('type') === 'recovery' || searchParams.get('type') === 'recovery';
 }
 
+function applyCachedAppearance() {
+  try {
+    const cached = JSON.parse(localStorage.getItem('gym:user-settings') || '{}');
+    if (cached.theme) document.documentElement.dataset.theme = cached.theme;
+    if (cached.language) document.documentElement.lang = cached.language;
+  } catch {}
+}
+
 function LoadingScreen() {
   return <main className="auth-loading" aria-live="polite"><div className="auth-spinner" aria-hidden="true" /><span>Проверяем сессию…</span></main>;
 }
@@ -50,6 +59,8 @@ export default function App() {
 
   const user = session?.user ?? null;
   const userId = user?.id ?? null;
+
+  useEffect(() => { applyCachedAppearance(); }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return undefined;
@@ -98,6 +109,7 @@ export default function App() {
       if (event.key !== 'Escape') return;
       setMenuOpen(false);
       setActiveScreen((current) => {
+        if (current === 'settings') return 'account';
         if (current === 'account') return accountReturnScreen || 'home';
         if (current === 'create-program') {
           setEditingProgramId(null);
@@ -115,7 +127,7 @@ export default function App() {
     function handleDocumentClick(event) {
       if (userId && event.target.closest('.profile-btn')) {
         setMenuOpen(false);
-        setAccountReturnScreen(activeScreen === 'account' ? accountReturnScreen : activeScreen);
+        setAccountReturnScreen(['account','settings'].includes(activeScreen) ? accountReturnScreen : activeScreen);
         setActiveScreen('account');
         return;
       }
@@ -172,8 +184,11 @@ export default function App() {
   }
 
   function renderActiveScreen() {
+    if (activeScreen === 'settings') {
+      return <SettingsScreen user={user} planCode={profile?.plan_code || 'free'} onBack={() => setActiveScreen('account')} onOpenPlan={() => setActiveScreen('account')} />;
+    }
     if (activeScreen === 'account') {
-      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} />;
+      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={() => setActiveScreen('settings')} />;
     }
     if (activeScreen === 'workout-session' && workoutScheduledId) {
       return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} />;
