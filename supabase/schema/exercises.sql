@@ -1,5 +1,6 @@
--- Canonical schema for the shared exercise catalog.
--- Mirrors the live Supabase project as of 2026-08-25.
+-- Canonical schema for the shared + user-owned exercise catalog.
+-- Shared exercises have owner_id = null. User-created exercises have owner_id = auth.uid().
+-- This file is intended to be sufficient for a clean database bootstrap.
 
 create table if not exists public.exercises (
   id uuid primary key default gen_random_uuid(),
@@ -14,7 +15,12 @@ create table if not exists public.exercises (
   notes text,
   source_sheet text not null default 'Зал',
   source_row integer,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  owner_id uuid references auth.users(id) on delete cascade,
+  equipment text,
+  description text,
+  video_url text,
+  video_path text
 );
 
 create index if not exists exercises_muscle_group_idx
@@ -23,6 +29,9 @@ create index if not exists exercises_exercise_type_idx
   on public.exercises (exercise_type);
 create index if not exists exercises_movement_type_idx
   on public.exercises (movement_type);
+create index if not exists exercises_owner_id_idx
+  on public.exercises (owner_id)
+  where owner_id is not null;
 
 alter table public.exercises enable row level security;
 
@@ -35,4 +44,26 @@ create policy "exercises_authenticated_read"
 on public.exercises
 for select
 to authenticated
-using (true);
+using (owner_id is null or owner_id = auth.uid());
+
+drop policy if exists "exercises_insert_own" on public.exercises;
+create policy "exercises_insert_own"
+on public.exercises
+for insert
+to authenticated
+with check (owner_id = auth.uid());
+
+drop policy if exists "exercises_update_own" on public.exercises;
+create policy "exercises_update_own"
+on public.exercises
+for update
+to authenticated
+using (owner_id = auth.uid())
+with check (owner_id = auth.uid());
+
+drop policy if exists "exercises_delete_own" on public.exercises;
+create policy "exercises_delete_own"
+on public.exercises
+for delete
+to authenticated
+using (owner_id = auth.uid());
