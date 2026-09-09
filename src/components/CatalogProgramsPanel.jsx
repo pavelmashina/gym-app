@@ -7,6 +7,7 @@ const NO_DATA = 'Нет данных';
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>; }
+function formatCount(count, forms) { const value = Math.abs(Number(count) || 0); const a = value % 100; const b = value % 10; if (a >= 11 && a <= 14) return `${count} ${forms[2]}`; if (b === 1) return `${count} ${forms[0]}`; if (b >= 2 && b <= 4) return `${count} ${forms[1]}`; return `${count} ${forms[2]}`; }
 
 function CatalogCard({ program, onOpen }) {
   const category = program.categories[0] || 'Готовая программа';
@@ -39,7 +40,7 @@ function WorkoutBlock({ workout, index }) {
     <article className={`catalog-workout-card${open ? ' open' : ''}`}>
       <button className="catalog-workout-head" type="button" onClick={() => setOpen((value) => !value)}>
         <span className="catalog-workout-index">{index + 1}</span>
-        <span className="catalog-workout-title"><small>Тренировка цикла</small><strong>{workout.name || `Тренировка ${index + 1}`}</strong><span>{exercises.length} упражнений</span></span>
+        <span className="catalog-workout-title"><small>Тренировка цикла</small><strong>{workout.name || `Тренировка ${index + 1}`}</strong><span>{formatCount(exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span></span>
         <span className="catalog-workout-chevron"><ChevronIcon /></span>
       </button>
       {open && <div className="catalog-workout-exercises">{exercises.length === 0 ? <div className="catalog-no-data-row">{NO_DATA}</div> : exercises.map((exercise, exerciseIndex) => <div className="catalog-workout-exercise" key={`${exercise.name}-${exerciseIndex}`}><span className="catalog-exercise-number">{exerciseIndex + 1}</span><span className="catalog-exercise-copy"><strong>{exercise.name || NO_DATA}</strong><span>{exercise.prescription || NO_DATA}</span></span></div>)}</div>}
@@ -103,7 +104,7 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
               </div></section>
               <section className="catalog-detail-section"><div className="catalog-detail-section-head"><span>Описание</span></div><div className={`catalog-description-card${program.description ? '' : ' empty'}`}>{program.description || NO_DATA}</div></section>
             </>}
-            {activeTab === 'workouts' && <section className="catalog-detail-section catalog-workouts-tab-section"><div className="catalog-detail-section-head"><span>Один цикл программы</span><strong>{workouts.length ? `${workouts.length} тренировок` : NO_DATA}</strong></div>{workouts.length > 0 ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div> : <div className="catalog-detail-empty-card">{NO_DATA}</div>}<div className="catalog-source-note">Один цикл можно повторить любое количество раз при присоединении. Исходные схемы подходов и повторений сохранены из загруженного каталога.</div></section>}
+            {activeTab === 'workouts' && <section className="catalog-detail-section catalog-workouts-tab-section"><div className="catalog-detail-section-head"><span>Один цикл программы</span><strong>{workouts.length ? formatCount(workouts.length, ['тренировка', 'тренировки', 'тренировок']) : NO_DATA}</strong></div>{workouts.length > 0 ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div> : <div className="catalog-detail-empty-card">{NO_DATA}</div>}<div className="catalog-source-note">Один цикл можно повторить любое количество раз при присоединении. Исходные схемы подходов и повторений сохранены из загруженного каталога.</div></section>}
             {joinError && <div className="catalog-join-error">{joinError}</div>}
           </main>
           <footer className="catalog-detail-footer"><button type="button" onClick={handleJoin} disabled={joining}>{joining ? 'Добавляем программу…' : 'Присоединиться к программе'}</button></footer>
@@ -151,7 +152,7 @@ export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filter
 
   return <>
     {filtersOpen && <section className="catalog-filters"><FilterGroup title="Место" values={places} selected={place} onSelect={setPlace} /><FilterGroup title="Направление" values={categories} selected={category} onSelect={setCategory} /><FilterGroup title="Уровень" values={levels} selected={level} onSelect={setLevel} />{hasFilters && <button className="catalog-filters-reset" type="button" onClick={() => { setPlace(ALL); setCategory(ALL); setLevel(ALL); }}>Сбросить фильтры</button>}</section>}
-    <div className="catalog-results-head"><span>{loading ? 'Загрузка…' : `${filteredPrograms.length} программ`}</span>{hasFilters && <strong>Фильтр включён</strong>}</div>
+    <div className="catalog-results-head"><span>{loading ? 'Загрузка…' : formatCount(filteredPrograms.length, ['программа', 'программы', 'программ'])}</span>{hasFilters && <strong>Фильтр включён</strong>}</div>
     {loading && <div className="my-programs-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем каталог программ…</span></div>}
     {!loading && error && <div className="my-programs-state error"><span>{error}</span><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></div>}
     {!loading && !error && filteredPrograms.length === 0 && <div className="catalog-empty"><strong>Программы не найдены</strong><span>Попробуйте изменить поиск или фильтры.</span></div>}
