@@ -32,6 +32,7 @@ function makeDateTicks(firstKey, lastKey, count = 8) {
   if (!first || !last) return [];
   const start = first.getTime();
   const end = last.getTime();
+  if (start === end) return [dateKey(first)];
   return Array.from({ length: count }, (_, index) => {
     const ratio = count === 1 ? 0 : index / (count - 1);
     return dateKey(new Date(start + (end - start) * ratio));
@@ -42,13 +43,12 @@ function makeScale(values, count = 5) {
   const clean = values.map(Number).filter(Number.isFinite);
   const rawMin = Math.min(...clean);
   const rawMax = Math.max(...clean);
-  let min = rawMin - Math.abs(rawMin) * .1;
-  let max = rawMax + Math.abs(rawMax) * .1;
-  if (min === max) {
-    const extra = Math.max(Math.abs(rawMax) * .1, 1);
-    min -= extra;
-    max += extra;
+  if (rawMin === rawMax) {
+    const padding = Math.max(Math.abs(rawMax) * .1, 1);
+    return { min: rawMin - padding, max: rawMax + padding, ticks: [rawMax + padding, rawMax, rawMin - padding] };
   }
+  const min = rawMin - Math.abs(rawMin) * .1;
+  const max = rawMax + Math.abs(rawMax) * .1;
   return {
     min,
     max,
@@ -96,14 +96,14 @@ export function ScaledTrendChart({ records, field, label, unit }) {
         {selected && <div className="statistics-point-popover" style={{ left: `${(selected.x / width) * 100}%`, top: `${(selected.y / height) * 100}%` }}><span>{formatDate(selected.date, true)}</span><strong>{formatNumber(selected.value)} {unit}</strong></div>}
         <svg className="statistics-scaled-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Динамика: ${label}`}>
           {scale.ticks.map((tick, index) => {
-            const y = plot.top + (index / (scale.ticks.length - 1)) * plotHeight;
+            const y = plot.top + (index / Math.max(1, scale.ticks.length - 1)) * plotHeight;
             return <g key={`y-${index}`}><line x1={plot.left} y1={y} x2={width - plot.right} y2={y} className="statistics-scaled-grid" /><text x={plot.left - 8} y={y + 3} textAnchor="end" className="statistics-scaled-y-label">{formatNumber(tick)} {unit}</text></g>;
           })}
           {dateTicks.map((tick, index) => {
-            const x = plot.left + (index / (dateTicks.length - 1)) * plotWidth;
+            const x = dateTicks.length === 1 ? plot.left + plotWidth / 2 : plot.left + (index / (dateTicks.length - 1)) * plotWidth;
             return <g key={`x-${index}`}><line x1={x} y1={plot.top} x2={x} y2={plot.top + plotHeight} className="statistics-scaled-grid vertical" /><text x={x} y={height - 14} textAnchor="middle" className="statistics-scaled-x-label">{formatDate(tick)}</text></g>;
           })}
-          <polyline points={polyline} fill="none" className="statistics-scaled-line" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          {coords.length > 1 && <polyline points={polyline} fill="none" className="statistics-scaled-line" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />}
           {coords.map((item) => <circle key={item.id} cx={item.x} cy={item.y} r={selectedKey === item.id ? 6 : 4.5} className={`statistics-scaled-dot${selectedKey === item.id ? ' selected' : ''}`} role="button" tabIndex="0" aria-label={`${formatDate(item.date, true)}: ${formatNumber(item.value)} ${unit}`} onClick={() => setSelectedKey((current) => current === item.id ? null : item.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedKey((current) => current === item.id ? null : item.id); } }} />)}
         </svg>
       </div>
