@@ -1,0 +1,42 @@
+.exercise-info-video > video,
+.exercise-info-video > iframe {
+  display: block;
+  width: 100%;
+  min-height: 210px;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  background: #171717;
+  object-fit: contain;
+}
+
+.exercise-video-link {
+  min-height: 210px;
+  padding: 24px;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-align: center;
+  background: radial-gradient(circle at 30% 20%, #484845 0, #242423 45%, #141414 100%);
+}
+
+.exercise-video-link > span {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.14);
+  display: grid;
+  place-items: center;
+  padding-left: 3px;
+}
+
+.exercise-video-link strong {
+  font-size: 15px;
+}
+
+.exercise-video-link small {
+  color: rgba(255,255,255,.58);
+}
