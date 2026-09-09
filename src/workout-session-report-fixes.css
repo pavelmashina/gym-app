@@ -1,0 +1,26 @@
+.workout-plan-prescription {
+  margin: 10px 0 8px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: var(--surface-2, #eaeae6);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workout-plan-prescription span {
+  color: var(--muted, #777772);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.workout-plan-prescription strong {
+  color: var(--ink, #171717);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: right;
+}
