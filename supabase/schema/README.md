@@ -1,7 +1,7 @@
 # Supabase database schema
 
 This directory is the repository source of truth for the application database structure.
-It mirrors the linked Supabase project as of 2026-09-04.
+It mirrors the application-facing schema of the linked Supabase project as of 2026-09-09.
 
 ## Public tables (16)
 
@@ -9,7 +9,7 @@ It mirrors the linked Supabase project as of 2026-09-04.
 | --- | --- |
 | `profiles` | `profiles.sql` |
 | `exercises` | `exercises.sql` |
-| `user_exercises` | `user-exercises.sql` |
+| `user_recent_exercises` | `exercise-library-user-data.sql` |
 | `programs` | `program-core.sql` + cycle/catalog milestone files |
 | `program_weeks` | `program-core.sql` |
 | `program_workouts` | `program-core.sql` |
@@ -24,7 +24,20 @@ It mirrors the linked Supabase project as of 2026-09-04.
 | `performed_sets` | `workout-session.sql` |
 | `catalog_programs` | `catalog-programs.sql` + `catalog-program-cycle-normalization.sql` |
 
-All 16 public application tables have RLS enabled. Authenticated users only see data allowed by ownership policies; `anon` has no application-table grants.
+All 16 application tables have RLS enabled. Authenticated users only see data allowed by ownership policies; `anon` has no application-table grants in the canonical bootstrap schema.
+
+## Exercise library
+
+`exercises` is the single exercise catalog used by the application:
+
+- shared catalog rows have `owner_id is null`;
+- user-created exercises have `owner_id = auth.uid()`;
+- user exercises may contain `equipment`, `description`, `video_url` and private `video_path` metadata;
+- authenticated users can read the shared catalog plus their own rows, while insert/update/delete are restricted to their own rows.
+
+`user_recent_exercises` stores the last-used timestamp per `(user_id, exercise_id)` so the “Недавние упражнения” list is synchronized across devices for the same account.
+
+`exercise-library-user-data.sql` also defines the private `exercise-videos` Storage bucket (100 MB, MP4/WEBM/MOV) and owner-folder Storage policies. Video object paths start with the current user's UUID.
 
 ## Core architecture
 
@@ -94,6 +107,8 @@ Completing a workout marks the session and scheduled workout `completed`. Abando
 
 ## Other important source files
 
+- `exercise-library-user-data.sql` — cross-device recent exercises plus private exercise-video Storage;
+- `statistics-cross-device-sync.sql` — account-scoped measurements, photos and statistics favorites sync;
 - `program-persistence.sql` — atomic program create/update plus private `program-covers` Storage bucket;
 - `program-schedule.sql`, `program-schedule-modes.sql`, `program-reschedule-on-edit.sql` — schedule calculation milestones;
 - `program-start-date-edit.sql` — joined-program start-date edit;
@@ -111,7 +126,7 @@ Apply the readable schema milestones in this order:
 
 1. `profiles.sql`
 2. `exercises.sql`
-3. `user-exercises.sql`
+3. `exercise-library-user-data.sql`
 4. `program-core.sql`
 5. `program-persistence.sql`
 6. `program-schedule.sql`
@@ -134,23 +149,14 @@ Apply the readable schema milestones in this order:
 23. `program-cycle-edit-guard.sql`
 24. `program-participation-controls.sql`
 25. `scheduled-workout-controls.sql`
-26. `verify-schema.sql` (verification only)
+26. `statistics-cross-device-sync.sql`
+27. `verify-schema.sql` (verification only)
 
 Later milestone files intentionally replace function definitions from earlier files so a fresh database reaches the same final behavior as production.
 
 ## Verification
 
-`verify-schema.sql` checks:
-
-- all 16 public application tables exist and have RLS enabled;
-- exactly 57 application RLS policies exist;
-- `anon` has no application-table grants;
-- all 16 current app-facing program/workout/catalog RPCs are `SECURITY INVOKER`, executable by `authenticated` and not by `anon`; the current drag-reorder RPC is checked instead of the retired one-position move RPC;
-- catalog snapshot/source columns, cycle columns and cycle constraints exist;
-- the active-cycle guard function/trigger exist;
-- published catalog rows are normalized to non-empty cycles;
-- the catalog source FK covering index exists;
-- the private `program-covers` bucket and all four owner-only Storage policies match the expected configuration.
+`verify-schema.sql` checks the current application-facing inventory, including RLS, restricted RPCs, cycle/catalog structures and both private Storage features (`program-covers` and `exercise-videos`).
 
 Production changes should additionally be smoke-tested inside transactions with `ROLLBACK`, and Supabase Security/Performance Advisors should be checked after DDL.
 
@@ -161,4 +167,4 @@ A database change is complete only when both are true:
 1. it is applied and tested in Supabase; and
 2. its SQL source-of-truth is committed in this directory in the same development cycle.
 
-Do not leave application tables, RPCs, triggers or RLS policies only in the Supabase Dashboard.
+Do not leave application tables, RPCs, triggers, Storage configuration or RLS policies only in the Supabase Dashboard.
