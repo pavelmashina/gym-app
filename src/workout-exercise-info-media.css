@@ -40,3 +40,36 @@
 .exercise-video-link small {
   color: rgba(255,255,255,.58);
 }
+
+.workout-interrupt-confirm {
+  padding-bottom: 18px;
+}
+
+.workout-interrupt-confirm > p {
+  margin: 2px 2px 16px;
+  color: #777772;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.workout-interrupt-confirm-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.workout-interrupt-confirm-actions > button {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: #efefeb;
+  color: #171717;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.workout-interrupt-confirm-actions > button.primary {
+  background: #171717;
+  color: #fff;
+}
