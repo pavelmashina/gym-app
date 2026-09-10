@@ -41,6 +41,11 @@ function applyCachedAppearance() {
   } catch {}
 }
 
+function toNutritionPlan(row) {
+  if (!row?.is_active) return null;
+  return { calories: row.calories, protein: row.protein_g, fat: row.fat_g, carbs: row.carbs_g, completion: 0 };
+}
+
 function LoadingScreen() {
   return <main className="auth-loading" aria-live="polite"><div className="auth-spinner" aria-hidden="true" /><span>Проверяем сессию…</span></main>;
 }
@@ -55,6 +60,7 @@ export default function App() {
   const [reopenMenuOnSettingsBack, setReopenMenuOnSettingsBack] = useState(false);
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [nutritionPlan, setNutritionPlan] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [signOutLoading, setSignOutLoading] = useState(false);
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(isPasswordRecoveryUrl);
@@ -86,6 +92,7 @@ export default function App() {
       setAuthReady(true);
       if (!nextSession) {
         setProfile(null);
+        setNutritionPlan(null);
         setMenuOpen(false);
         setEditingProgramId(null);
         setLaunchingProgramId(null);
@@ -113,6 +120,21 @@ export default function App() {
     }
     loadProfile();
     return () => { active = false; };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) { setNutritionPlan(null); return undefined; }
+    let active = true;
+    async function loadNutrition() {
+      const { data, error } = await supabase.from('nutrition_targets').select('calories, protein_g, fat_g, carbs_g, is_active').eq('user_id', userId).maybeSingle();
+      if (!active) return;
+      if (error) { console.error('Unable to load nutrition target:', error); return; }
+      setNutritionPlan(toNutritionPlan(data));
+    }
+    function handleNutrition(event) { if (active) setNutritionPlan(toNutritionPlan({ ...event.detail, is_active: true })); }
+    loadNutrition();
+    window.addEventListener('gym-nutrition-updated', handleNutrition);
+    return () => { active = false; window.removeEventListener('gym-nutrition-updated', handleNutrition); };
   }, [userId]);
 
   function closeUtilityScreen() {
@@ -288,7 +310,7 @@ export default function App() {
     if (activeScreen === 'statistics') return <StatisticsScreen />;
     if (activeScreen === 'nutrition') return <NutritionScreen user={user} profile={profile} />;
     if (activeScreen === 'sportpit') return <SectionPlaceholder section={activeScreen} />;
-    return <HomeScreen menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} />;
+    return <HomeScreen menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} nutritionPlan={nutritionPlan} />;
   }
 
   if (authConfigError) return <main className="auth-shell"><section className="auth-card"><div className="auth-brand">GYM</div><h1>Ошибка конфигурации</h1><p className="auth-subtitle">{authConfigError}</p></section></main>;
