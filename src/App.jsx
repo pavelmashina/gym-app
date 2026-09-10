@@ -5,6 +5,7 @@ import { CreateProgramScreen } from './components/CreateProgramScreen.jsx';
 import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { FaqScreen, PlanScreen, PrivacyPolicyScreen, SupportScreen } from './components/MenuScreens.jsx';
+import { NutritionScreen } from './components/NutritionScreen.jsx';
 import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
 import { SettingsScreen } from './components/SettingsScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
@@ -285,7 +286,8 @@ export default function App() {
       return <ExercisesScreen initialTab={trainingInitialTab} refreshKey={trainingRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
     }
     if (activeScreen === 'statistics') return <StatisticsScreen />;
-    if (['nutrition', 'sportpit'].includes(activeScreen)) return <SectionPlaceholder section={activeScreen} />;
+    if (activeScreen === 'nutrition') return <NutritionScreen user={user} profile={profile} />;
+    if (activeScreen === 'sportpit') return <SectionPlaceholder section={activeScreen} />;
     return <HomeScreen menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} />;
   }
 
