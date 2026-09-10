@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { SPORTPIT_IMAGES } from '../data/sportpitImages.js';
 import '../sportpit-screen.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>}
@@ -13,13 +14,14 @@ function SportPitBottomNav(){return <nav className="bottom-nav sportpit-bottom-n
   <button className="nav-item sportpit-nav-active" type="button"><svg viewBox="0 0 32 32" fill="none" strokeWidth="1.5"><path d="M10 7h12l2 5-2 13H10L8 12l2-5Z"/><path d="M12 7V4h8v3M11 15h10M15 12v6M12 15h6"/></svg><span>СпортПит</span></button>
 </nav>}
 
-function ProductVisual({ title, compact=false }){
-  return <div className={`sportpit-product-visual${compact?' compact':''}`} aria-hidden="true"><div className="sportpit-jar"><span>{title}</span><b>SPORT</b></div></div>;
+function ProductVisual({ item, compact=false }){
+  const image = item.image_url || SPORTPIT_IMAGES[item.slug];
+  return <div className={`sportpit-product-visual${compact?' compact':''}`}>{image ? <img src={image} alt={item.title} loading={compact ? 'lazy' : 'eager'} /> : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}</div>;
 }
 
 function SupplementCard({ item, onOpen }){
   return <button className="sportpit-card" type="button" onClick={()=>onOpen(item)}>
-    <ProductVisual title={item.title} compact/>
+    <ProductVisual item={item} compact/>
     <span className="sportpit-card-copy"><span>{item.category}</span><strong>{item.title}</strong><small>{item.short_description}</small></span>
     <b className="sportpit-card-arrow">›</b>
   </button>;
@@ -30,7 +32,7 @@ function SupplementDetails({ item, onBack }){
   return <div className="sportpit-screen sportpit-detail-screen">
     <header className="sportpit-detail-topbar"><button type="button" onClick={onBack} aria-label="Назад"><BackIcon/></button><strong>СпортПит</strong><span/></header>
     <main className="sportpit-detail-content">
-      <ProductVisual title={item.title}/>
+      <ProductVisual item={item}/>
       <div className="sportpit-detail-title"><span>{item.category}</span><h1>{item.title}</h1><p>{item.description}</p></div>
       <section className="sportpit-warning"><strong>Важно</strong><p>{item.caution}</p></section>
       <section className="sportpit-detail-card"><h2>Рекомендации по приёму</h2><p>{item.recommendations}</p></section>
