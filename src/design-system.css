@@ -18,7 +18,6 @@ html,body,#root,button,input,select,textarea{font-family:var(--font-sans)!import
 body{font-size:var(--text-body);line-height:var(--lh-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 button,input,select,textarea{font-size:var(--text-body)}
 button{touch-action:manipulation}
-button:not(.day):not(.dot):not(.statistics-volume-column){min-height:44px}
 input,select,textarea{border-radius:var(--radius-md)!important}
 
 /* Shared mobile page geometry */
@@ -79,6 +78,7 @@ input,select,textarea{border-radius:var(--radius-md)!important}
 /* Segmented controls */
 .statistics-tabs,.statistics-range,.statistics-period-type,.auth-tabs,.nutrition-segment{padding:4px!important;gap:4px!important;border-radius:14px!important;background:var(--surface-2)!important}
 .statistics-tabs button,.statistics-range button,.statistics-period-type button,.auth-tab,.nutrition-segment button{min-height:42px!important;border-radius:11px!important;font-size:var(--text-caption)!important;font-weight:var(--weight-semibold)!important}
+.statistics-tabs button{font-size:11px!important}
 
 /* Forms */
 .auth-field input,.account-form-field input,.account-form-field select,.settings-password input,.settings-select select,.support-form input,.support-form select,.nutrition-grid input,.nutrition-field input,.nutrition-field select,.cycle-workout-name-input{min-height:var(--control-h)!important;padding:0 14px!important;border-radius:var(--radius-md)!important;font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
