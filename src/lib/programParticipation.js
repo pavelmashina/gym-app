@@ -11,7 +11,7 @@ async function requireUser() {
 
 function mapParticipationError(error, fallback) {
   const message = error?.message ?? '';
-  if (message.includes('active workout')) return new Error('Сначала завершите или отмените текущую тренировку.');
+  if (message.includes('active workout')) return new Error('Сначала завершите текущую тренировку или продолжите её и завершите.');
   if (message.includes('Monday, Wednesday or Friday')) return new Error('Выберите понедельник, среду или пятницу.');
   if (message.includes('Tuesday, Thursday or Saturday')) return new Error('Выберите вторник, четверг или субботу.');
   if (message.includes('no remaining scheduled workouts')) return new Error('В программе не осталось запланированных тренировок.');

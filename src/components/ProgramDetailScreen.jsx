@@ -16,7 +16,7 @@ function formatDate(value) { return value ? new Intl.DateTimeFormat('ru-RU', { d
 function localToday() { const date = new Date(); return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10); }
 function isAllowedStartDate(value, mode) { if (!value) return false; const allowed = WEEKLY_DAYS[mode]; return !allowed || allowed.includes(new Date(`${value}T12:00:00`).getDay()); }
 function startDateHint(mode) { if (mode === 'weekly_mwf') return 'Выберите понедельник, среду или пятницу.'; if (mode === 'weekly_tts') return 'Выберите вторник, четверг или субботу.'; return ''; }
-function participationLabel(participation) { if (!participation) return 'Не начата'; if (participation.status === 'paused') return 'На паузе'; if (participation.status === 'completed') return 'Завершена'; if (participation.status === 'abandoned') return 'Остановлена'; if (participation.startDate > localToday()) return `Старт ${formatDate(participation.startDate)}`; return 'Активна'; }
+function participationLabel(participation) { if (!participation) return 'Не начата'; if (participation.status === 'paused') return 'На паузе'; if (participation.status === 'completed') return 'Завершена'; if (participation.status === 'cancelled') return 'Отменена'; if (participation.startDate > localToday()) return `Старт ${formatDate(participation.startDate)}`; return 'Активна'; }
 function workoutStatusLabel(item) {
   if (item.status === 'completed') return 'Выполнена';
   if (item.status === 'skipped') return 'Пропущена';
@@ -91,7 +91,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const isActive = participation?.status === 'active';
   const isPaused = participation?.status === 'paused';
   const liveParticipation = Boolean(isActive || isPaused);
-  const canStart = !participation || ['completed', 'abandoned'].includes(participation.status);
+  const canStart = !participation || ['completed', 'cancelled'].includes(participation.status);
   const canEditProgram = !(liveParticipation && !isCycle);
   const canEditStartDate = Boolean(isActive && program.scheduledWorkouts.length && program.scheduledWorkouts.every((item) => item.status === 'scheduled'));
   const totalTemplateWorkouts = templateWorkouts.length;

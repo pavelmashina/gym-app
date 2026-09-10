@@ -82,25 +82,26 @@ function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {
   return <section className="calendar-card"><div className="month-row"><button type="button" aria-label="Предыдущий месяц" onClick={() => changeMonth(-1)}>←</button><div className="month">{formatMonth(displayMonth)}</div><button type="button" aria-label="Следующий месяц" onClick={() => changeMonth(1)}>→</button></div><div className="weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div><div className="days">{days.map((day) => { const className = ['day', day.out ? 'out' : '', day.workout ? 'workout' : '', day.today ? 'today' : '', day.selected ? 'selected' : ''].filter(Boolean).join(' '); return <button className={className} type="button" key={day.key} aria-label={`${formatFullDate(day.date)}${day.workout ? ', запланирована тренировка' : ''}`} aria-pressed={day.selected} aria-current={day.today ? 'date' : undefined} onClick={() => { if (day.out) setDisplayMonth(startOfMonth(day.date)); onSelectDate?.(day.key); }}><span>{day.label}</span></button>; })}</div></section>;
 }
 
-function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry }) {
+function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry, onEditWorkout }) {
   if (status === 'loading') return <section className="summary-col workout home-empty-card" aria-live="polite"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на выбранную дату</p></div></section>;
   if (status === 'error' && !workout) return <section className="summary-col workout home-error-card" role="alert"><div className="summary-label">Тренировка</div><div className="home-error-copy"><h3>Не удалось загрузить тренировку</h3><p>Это не означает, что на выбранную дату ничего не запланировано.</p><button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button></div></section>;
   if (!workout) return <section className="summary-col workout home-empty-card"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Нет тренировки</h3><p>{isToday ? 'На сегодня ничего не запланировано' : 'На эту дату ничего не запланировано'}</p></div></section>;
   const skipped = workout.status === 'skipped';
-  const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : (skipped ? 'Пропущена' : 'К тренировке'));
-  return <section className="summary-col workout"><div className="summary-label">{workout.active ? 'Активная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка')}</div><h3>{workout.title}</h3><p>{workout.exerciseCount} упражнений</p><button className="workout-btn" type="button" disabled={skipped} onClick={() => !skipped && onOpenWorkout?.(workout.id)}>{buttonLabel}</button></section>;
+  const recovery = Boolean(workout.recovery);
+  const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : (recovery ? 'Перенести на сегодня' : (skipped ? 'Пропущена' : 'К тренировке')));
+  return <section className={`summary-col workout${recovery ? ' recovery' : ''}`}><div className="summary-label">{workout.active ? 'Активная тренировка' : (recovery ? 'Пропущенная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка'))}</div><h3>{workout.title}</h3><p>{recovery ? `Плановая дата: ${formatFullDate(dateFromKey(workout.scheduledDate))}` : `${workout.exerciseCount} упражнений`}</p><button className="workout-btn" type="button" disabled={skipped && !recovery} onClick={() => recovery ? onEditWorkout?.() : (!skipped && onOpenWorkout?.(workout.id))}>{buttonLabel}</button></section>;
 }
 
 function NutritionSummary({ nutritionPlan }) {
   if (!nutritionPlan) return <section className="summary-col food home-empty-card"><div className="summary-label">Питание</div><div className="home-empty-copy"><h3>План не выбран</h3><p>Питание пока не настроено</p></div></section>;
-  return <section className="summary-col food"><div className="summary-label">Питание</div><h3>{nutritionPlan.calories}</h3><p className="food-caption">ккал на день</p><div className="food-grid"><div className="food-stat"><strong>{nutritionPlan.protein} г</strong><span>Белки</span></div><div className="food-stat"><strong>{nutritionPlan.fat} г</strong><span>Жиры</span></div><div className="food-stat"><strong>{nutritionPlan.carbs} г</strong><span>Углеводы</span></div><div className="food-stat"><strong>{nutritionPlan.completion ?? 0}%</strong><span>Выполнено</span></div></div></section>;
+  return <section className="summary-col food"><div className="summary-label">Питание</div><h3>{nutritionPlan.calories}</h3><p className="food-caption">ккал на день</p><div className="food-grid"><div className="food-stat"><strong>{nutritionPlan.protein} г</strong><span>Белки</span></div><div className="food-stat"><strong>{nutritionPlan.fat} г</strong><span>Жиры</span></div><div className="food-stat"><strong>{nutritionPlan.carbs} г</strong><span>Углеводы</span></div></div></section>;
 }
 
 function EditIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16v4Z" /><path d="m13.7 6.3 4 4" /></svg>; }
 
 function DailySummary({ date, isToday, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry, onEditWorkout }) {
   const editable = workoutStatus === 'success' && Boolean(workout?.editable);
-  return <section className="date-card"><div className="date-row"><div className="date-title">{formatFullDate(date)}</div><button className="home-edit-day" type="button" aria-label={editable ? 'Перенести тренировку' : 'Редактирование тренировки недоступно'} title={editable ? 'Перенести тренировку' : 'Редактирование недоступно'} disabled={!editable} onClick={onEditWorkout}><EditIcon /></button></div><div className="summary"><WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} /><NutritionSummary nutritionPlan={nutritionPlan} /></div></section>;
+  return <section className="date-card"><div className="date-row"><div className="date-title">{formatFullDate(date)}</div><button className="home-edit-day" type="button" aria-label={editable ? 'Перенести тренировку' : 'Редактирование тренировки недоступно'} title={editable ? 'Перенести тренировку' : 'Редактирование недоступно'} disabled={!editable} onClick={onEditWorkout}><EditIcon /></button></div><div className="summary"><WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} onEditWorkout={onEditWorkout} /><NutritionSummary nutritionPlan={nutritionPlan} /></div></section>;
 }
 
 function ScheduleEditModal({ workout, currentDateKey, todayKey, newDate, step, saving, error, onDateChange, onNext, onChooseScope, onBack, onClose }) {
@@ -126,12 +127,28 @@ async function loadWorkoutCard(dateKey) {
   if (activeRows?.[0]?.scheduled_workout_id) {
     const response = await supabase.from('scheduled_workouts').select('id, user_program_id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)').eq('id', activeRows[0].scheduled_workout_id).eq('user_programs.status', 'active').single();
     if (response.error && response.error.code !== 'PGRST116') throw response.error;
-    if (response.data?.scheduled_date === dateKey) { workoutRow = response.data; active = true; }
+    const todayKey = toDateKey(new Date());
+    if (response.data && (response.data.scheduled_date === dateKey || dateKey === todayKey)) { workoutRow = response.data; active = true; }
   }
   if (!workoutRow) {
     const response = await supabase.from('scheduled_workouts').select('id, user_program_id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)').eq('scheduled_date', dateKey).eq('user_programs.status', 'active').neq('status', 'cancelled').order('sequence_number', { ascending: true }).limit(1);
     if (response.error) throw response.error;
     workoutRow = response.data?.[0] ?? null;
+  }
+  let recovery = false;
+  if (!workoutRow && dateKey === toDateKey(new Date())) {
+    const recoveryResponse = await supabase
+      .from('scheduled_workouts')
+      .select('id, user_program_id, workout_name, scheduled_date, status, sequence_number, user_programs!inner(status)')
+      .lt('scheduled_date', dateKey)
+      .in('status', ['scheduled', 'skipped'])
+      .eq('user_programs.status', 'active')
+      .order('scheduled_date', { ascending: true })
+      .order('sequence_number', { ascending: true })
+      .limit(1);
+    if (recoveryResponse.error) throw recoveryResponse.error;
+    workoutRow = recoveryResponse.data?.[0] ?? null;
+    recovery = Boolean(workoutRow);
   }
   if (!workoutRow) return null;
 
@@ -163,6 +180,7 @@ async function loadWorkoutCard(dateKey) {
     hasLaterCompleted,
     canShiftTail: !hasLaterCompleted,
     editable,
+    recovery,
   };
 }
 
@@ -235,9 +253,10 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
   function retryHomeData() { workoutCacheRef.current.delete(selectedDateKey); setReloadKey((value) => value + 1); }
   function openScheduleEditor() {
     if (!effectiveWorkout?.editable) return;
-    setScheduleEditor({ workout: effectiveWorkout, originalDate: selectedDateKey });
+    const originalDate = effectiveWorkout.scheduledDate || selectedDateKey;
+    setScheduleEditor({ workout: effectiveWorkout, originalDate });
     setScheduleStep('date');
-    setScheduleDate(selectedDateKey < todayKey ? todayKey : selectedDateKey);
+    setScheduleDate(originalDate < todayKey ? todayKey : originalDate);
     setScheduleError('');
   }
   function closeScheduleEditor() { if (scheduleSaving) return; setScheduleEditor(null); setScheduleError(''); setScheduleStep('date'); }
