@@ -1,0 +1,83 @@
+/* Final audit layer: closes remaining one-off values after the app-wide design-system pass. */
+
+/* Authentication */
+.auth-card h1{font-size:var(--text-h1)!important;line-height:var(--lh-h1)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.65px!important}
+.auth-card{border-radius:var(--radius-xl)!important;box-shadow:var(--shadow-card)!important}
+.auth-kicker{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important;font-weight:var(--weight-bold)!important}
+.auth-subtitle{font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
+
+/* Shared catalog search */
+.exercise-search,.exercise-library-search,.sportpit-search{min-height:var(--control-h)!important;border-radius:var(--radius-md)!important;box-shadow:var(--shadow-card)!important}
+.exercise-search input,.exercise-library-search input,.sportpit-search input{font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
+
+/* Exercise library / picker */
+.exercise-library-shell{gap:var(--space-4)!important}
+.exercise-library-top{gap:var(--space-3)!important}
+.exercise-library-heading span,.exercise-library-create-form-head span,.exercise-library-info-card header span,.exercise-library-info-description>span{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important;font-weight:var(--weight-bold)!important;letter-spacing:.05em!important}
+.exercise-library-heading h2{font-size:var(--text-h2)!important;line-height:var(--lh-h2)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.25px!important}
+.exercise-library-create-form-head h3,.exercise-library-info-card header h3{font-size:var(--text-h3)!important;line-height:var(--lh-h3)!important;font-weight:var(--weight-semibold)!important;letter-spacing:-.2px!important}
+.exercise-library-filter>span,.exercise-library-create-form label{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;font-weight:var(--weight-semibold)!important}
+.exercise-library-filter select,.exercise-library-create-form input,.exercise-library-create-form select{min-height:var(--control-h)!important;height:var(--control-h)!important;border-radius:var(--radius-md)!important;font-size:var(--text-body)!important;padding:0 14px!important}
+.exercise-library-create-form textarea{border-radius:var(--radius-md)!important;font-size:var(--text-body)!important;line-height:var(--lh-body)!important;padding:14px!important}
+.exercise-library-create,.exercise-library-create-form,.exercise-library-section{border-radius:var(--radius-lg)!important;box-shadow:var(--shadow-card)!important}
+.exercise-library-create-form{padding:var(--card-pad)!important;gap:var(--space-3)!important}
+.exercise-library-create-copy strong,.exercise-library-section-title strong,.exercise-library-row-copy strong,.exercise-library-info-video a strong{font-size:var(--text-body)!important;line-height:var(--lh-body)!important;font-weight:var(--weight-semibold)!important}
+.exercise-library-create-copy small,.exercise-library-row-copy small,.exercise-library-empty,.exercise-library-state,.exercise-library-info-description div{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;font-weight:var(--weight-medium)!important}
+.exercise-library-create-actions button,.exercise-library-state.error button{min-height:44px!important;border-radius:var(--radius-md)!important;font-size:var(--text-caption)!important;font-weight:var(--weight-semibold)!important}
+.exercise-library-info-card{border-radius:var(--radius-xl) var(--radius-xl) 0 0!important;padding:var(--card-pad) var(--page-x) calc(22px + env(safe-area-inset-bottom))!important}
+.exercise-library-info-description{border-radius:var(--radius-md)!important;padding:var(--space-4)!important}
+.exercise-library-info-description p{font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
+
+/* Program catalog detail */
+.catalog-detail-tabs{padding:10px var(--page-x)!important;gap:var(--space-2)!important}
+.catalog-detail-tabs button{min-height:42px!important;border-radius:var(--radius-sm)!important;font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;font-weight:var(--weight-semibold)!important}
+.catalog-detail-cover-placeholder{border-radius:var(--radius-lg)!important;margin-bottom:var(--space-4)!important}
+.catalog-detail-hero.catalog-detail-hero-light h1{font-size:var(--text-h1)!important;line-height:var(--lh-h1)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.65px!important}
+.catalog-about-section{margin-top:var(--section-gap)!important}
+.catalog-info-card{border-radius:var(--radius-lg)!important;box-shadow:var(--shadow-card)!important}
+.catalog-info-row{min-height:56px!important;padding:12px var(--space-4)!important}
+.catalog-info-row>span{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important;font-weight:var(--weight-bold)!important}
+.catalog-info-row>strong{font-size:var(--text-body)!important;line-height:var(--lh-body)!important;font-weight:var(--weight-semibold)!important}
+.catalog-description-card,.catalog-detail-empty-card{padding:var(--card-pad)!important;border-radius:var(--radius-lg)!important;font-size:var(--text-body)!important;line-height:var(--lh-body)!important;box-shadow:var(--shadow-card)!important}
+.catalog-no-data-row{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important}
+.catalog-detail-footer{padding:10px var(--page-x) calc(10px + env(safe-area-inset-bottom))!important}
+.catalog-detail-footer button{min-height:50px!important;border-radius:var(--radius-md)!important;font-size:var(--text-body)!important;line-height:var(--lh-body)!important;font-weight:var(--weight-semibold)!important}
+
+/* Program schedule / rhythm */
+.program-schedule-summary{margin-bottom:var(--space-5)!important;padding:var(--card-pad)!important;border-radius:var(--radius-lg)!important;box-shadow:var(--shadow-card)!important}
+.program-schedule-summary span,.program-schedule-section-head span,.cycle-week-hint strong,.cycle-repeat-lock-note strong{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important;font-weight:var(--weight-bold)!important;letter-spacing:.05em!important}
+.program-schedule-summary>div:first-child strong{font-size:var(--text-h3)!important;line-height:var(--lh-h3)!important;font-weight:var(--weight-semibold)!important}
+.program-schedule-summary-grid strong{font-size:var(--text-body)!important;line-height:var(--lh-body)!important;font-weight:var(--weight-semibold)!important}
+.program-schedule-section{margin-top:var(--section-gap)!important}
+.program-schedule-section-head{margin:0 2px var(--space-3)!important}
+.program-schedule-section-head h2{font-size:var(--text-h2)!important;line-height:var(--lh-h2)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.25px!important}
+.program-schedule-presets{gap:var(--space-2)!important}
+.program-schedule-presets button{border-radius:var(--radius-md)!important;padding:12px!important}
+.program-schedule-presets button strong,.program-selected-rhythm strong,.program-schedule-workout strong{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;font-weight:var(--weight-semibold)!important}
+.program-schedule-presets button span,.program-selected-rhythm span,.program-schedule-hint,.program-schedule-workout small{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important;font-weight:var(--weight-medium)!important}
+.program-selected-rhythm{border-radius:var(--radius-md)!important;padding:var(--space-3) var(--space-4)!important}
+.program-schedule-list{gap:var(--card-gap)!important}
+.program-schedule-item{border-radius:20px!important;box-shadow:var(--shadow-card)!important}
+.cycle-repeat-card{border-radius:var(--radius-md)!important;padding:var(--space-3) var(--space-4)!important}
+.cycle-repeat-card>div:first-child span,.cycle-week-hint span,.cycle-repeat-lock-note span,.cycle-duration-summary{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important}
+.cycle-week-hint,.cycle-repeat-lock-note{border-radius:var(--radius-sm)!important;padding:var(--space-3)!important}
+
+/* Completed workout */
+.completed-reference-screen{padding:calc(16px + env(safe-area-inset-top)) var(--page-x) calc(32px + env(safe-area-inset-bottom))!important}
+.completed-reference-header{gap:var(--space-4)!important;margin-bottom:var(--space-5)!important}
+.completed-reference-header h1{font-size:var(--text-h1)!important;line-height:var(--lh-h1)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.65px!important}
+.completed-reference-done{min-height:44px!important;border-radius:var(--radius-md)!important;font-size:var(--text-caption)!important;font-weight:var(--weight-semibold)!important}
+.completed-result-card{padding:var(--card-pad)!important;border-radius:var(--radius-xl)!important;box-shadow:var(--shadow-float)!important}
+.completed-result-card-top span,.completed-result-table-head{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important;font-weight:var(--weight-bold)!important}
+.completed-result-card h2,.completed-share-section h3{font-size:var(--text-h2)!important;line-height:var(--lh-h2)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.25px!important}
+.completed-result-date,.completed-result-meta span,.completed-result-empty{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;font-weight:var(--weight-medium)!important}
+.completed-result-exercise,.completed-result-best{font-size:var(--text-body)!important;line-height:var(--lh-body)!important;font-weight:var(--weight-semibold)!important}
+.completed-share-section{margin-top:var(--space-4)!important;padding:var(--card-pad)!important;border-radius:var(--radius-xl)!important;box-shadow:var(--shadow-card)!important}
+
+/* Account/menu sheets and secondary cards */
+.account-confirm-sheet{border-radius:var(--radius-xl) var(--radius-xl) 0 0!important;padding:12px var(--page-x) calc(18px + env(safe-area-inset-bottom))!important}
+.account-confirm-sheet h2,.account-delete-loss-hero h2{font-size:var(--text-h2)!important;line-height:var(--lh-h2)!important;font-weight:var(--weight-bold)!important}
+.account-confirm-sheet p,.account-delete-loss-hero p,.account-loss-card li{font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
+.account-delete-loss-hero{border-radius:var(--radius-lg)!important;padding:var(--space-5)!important}
+
+/* Deliberate compact-data exceptions: charts, heatmaps, set-table column labels and calendar weekdays remain below 10px when density requires it. */
