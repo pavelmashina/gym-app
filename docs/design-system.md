@@ -1,5 +1,7 @@
 # Gym App design system
 
+Status: active app-wide UI contract. `src/design-system.css` is loaded last and normalizes all major product surfaces.
+
 This file is the source-of-truth companion to `src/design-system.css`. New screens should reuse these tokens rather than introduce one-off dimensions.
 
 ## Layout
