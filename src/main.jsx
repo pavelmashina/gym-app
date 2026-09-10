@@ -9,6 +9,7 @@ import './create-program-schedule-scroll-fix.css';
 import './workout-session-figma.css';
 import './catalog-programs-polish.css';
 import './nutrition-catalog-controls.css';
+import './design-system.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
