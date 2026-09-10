@@ -101,7 +101,9 @@ export function WorkoutSessionScreen(props) {
   function captureWorkoutAction(event) {
     const element = event.target instanceof Element ? event.target : null;
     const pauseButton = element?.closest('.workout-abandon-button');
-    if (!pauseButton) return;
+    const backButton = element?.closest('.workout-session-header button');
+    const activeWorkoutVisible = Boolean(rootRef.current?.querySelector('.workout-session-content.active'));
+    if (!pauseButton && !(backButton && activeWorkoutVisible)) return;
     event.preventDefault();
     event.stopPropagation();
     setPauseError('');
