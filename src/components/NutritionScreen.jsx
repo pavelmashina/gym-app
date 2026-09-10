@@ -24,8 +24,19 @@ const GOALS = [
   { id: 'gain', label: 'Набор', calorieMultiplier: 1.1, protein: 1.8, fat: 1 },
 ];
 
+const EMPTY_RECIPE_FILTERS = { mealType: '', goal: '', minCalories: '', maxCalories: '' };
+const EMPTY_PLAN_FILTERS = { goal: '', minCalories: '', maxCalories: '' };
+
 function BackIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>;
+}
+
+function FilterIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>;
+}
+
+function HeartIcon({ filled = false }) {
+  return <svg viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6Z" /></svg>;
 }
 
 function TabIcon({ type }) {
@@ -69,12 +80,24 @@ function calculateMacros({ sex, height, weight, activity, goal, age }) {
   return { calories, protein, fat, carbs };
 }
 
-function RecipeCard({ recipe, onOpen }) {
-  return <button type="button" className="recipe-card" onClick={() => onOpen(recipe)}>
-    <span className="recipe-card-image">{recipe.image_url ? <img src={recipe.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
-    <span className="recipe-card-copy"><strong>{recipe.title}</strong><span className="recipe-tags"><b>{recipe.meal_type}</b><b>{recipe.goal}</b><b>{recipe.calories} ккал</b></span><small>Б {Number(recipe.protein_g)} · Ж {Number(recipe.fat_g)} · У {Number(recipe.carbs_g)}</small></span>
-    <span className="recipe-card-arrow" aria-hidden="true">›</span>
-  </button>;
+function caloriesMatch(value, min, max) {
+  const calories = Number(value);
+  return (!min || calories >= Number(min)) && (!max || calories <= Number(max));
+}
+
+function FavoriteButton({ active, onClick, label }) {
+  return <button type="button" className={`catalog-card-favorite${active ? ' active' : ''}`} aria-label={active ? `Убрать из избранного: ${label}` : `Добавить в избранное: ${label}`} aria-pressed={active} onClick={onClick}><HeartIcon filled={active} /></button>;
+}
+
+function RecipeCard({ recipe, onOpen, favorite, onToggleFavorite }) {
+  return <div className="recipe-card-shell">
+    <button type="button" className="recipe-card" onClick={() => onOpen(recipe)}>
+      <span className="recipe-card-image">{recipe.image_url ? <img src={recipe.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
+      <span className="recipe-card-copy"><strong>{recipe.title}</strong><span className="recipe-tags"><b>{recipe.meal_type}</b><b>{recipe.goal}</b><b>{recipe.calories} ккал</b></span><small>Б {Number(recipe.protein_g)} · Ж {Number(recipe.fat_g)} · У {Number(recipe.carbs_g)}</small></span>
+      <span className="recipe-card-arrow" aria-hidden="true">›</span>
+    </button>
+    <FavoriteButton active={favorite} label={recipe.title} onClick={() => onToggleFavorite('recipe', recipe.id)} />
+  </div>;
 }
 
 function RecipeDetails({ recipe, onBack }) {
@@ -92,12 +115,15 @@ function RecipeDetails({ recipe, onBack }) {
   </div>;
 }
 
-function MealPlanCard({ plan, onOpen }) {
-  return <button type="button" className="meal-plan-card" onClick={() => onOpen(plan)}>
-    <span className="meal-plan-card-image">{plan.image_url ? <img src={plan.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
-    <span className="meal-plan-card-copy"><strong>{plan.title}</strong><span className="meal-plan-tags"><b>{plan.goal}</b><b>{plan.calories_per_day} ккал / день</b></span><small>{plan.short_description}</small></span>
-    <span className="meal-plan-card-arrow" aria-hidden="true">›</span>
-  </button>;
+function MealPlanCard({ plan, onOpen, favorite, onToggleFavorite }) {
+  return <div className="meal-plan-card-shell">
+    <button type="button" className="meal-plan-card" onClick={() => onOpen(plan)}>
+      <span className="meal-plan-card-image">{plan.image_url ? <img src={plan.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
+      <span className="meal-plan-card-copy"><strong>{plan.title}</strong><span className="meal-plan-tags"><b>{plan.goal}</b><b>{plan.calories_per_day} ккал / день</b></span><small>{plan.short_description}</small></span>
+      <span className="meal-plan-card-arrow" aria-hidden="true">›</span>
+    </button>
+    <FavoriteButton active={favorite} label={plan.title} onClick={() => onToggleFavorite('meal_plan', plan.id)} />
+  </div>;
 }
 
 function MealPlanDetails({ plan, meals, onBack }) {
@@ -122,6 +148,30 @@ function MealPlanDetails({ plan, meals, onBack }) {
   </div>;
 }
 
+function CatalogToolbar({ filterOpen, setFilterOpen, favoritesOnly, setFavoritesOnly, activeFilterCount }) {
+  return <div className="catalog-toolbar">
+    <button type="button" className={`catalog-tool-button${filterOpen || activeFilterCount ? ' active' : ''}`} onClick={() => setFilterOpen((value) => !value)} aria-expanded={filterOpen}><FilterIcon /><span>Фильтр{activeFilterCount ? ` · ${activeFilterCount}` : ''}</span></button>
+    <button type="button" className={`catalog-tool-button${favoritesOnly ? ' active' : ''}`} onClick={() => setFavoritesOnly((value) => !value)} aria-pressed={favoritesOnly}><HeartIcon filled={favoritesOnly} /><span>Избранное</span></button>
+  </div>;
+}
+
+function RecipeFilters({ value, onChange, mealTypes, goals, onReset }) {
+  return <section className="catalog-filter-panel">
+    <label><span>Приём пищи</span><select value={value.mealType} onChange={(event) => onChange({ ...value, mealType: event.target.value })}><option value="">Все</option>{mealTypes.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+    <label><span>Цель</span><select value={value.goal} onChange={(event) => onChange({ ...value, goal: event.target.value })}><option value="">Все</option>{goals.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+    <div className="catalog-calorie-row"><label><span>Ккал от</span><input inputMode="numeric" type="number" min="0" placeholder="0" value={value.minCalories} onChange={(event) => onChange({ ...value, minCalories: event.target.value })} /></label><label><span>Ккал до</span><input inputMode="numeric" type="number" min="0" placeholder="Без лимита" value={value.maxCalories} onChange={(event) => onChange({ ...value, maxCalories: event.target.value })} /></label></div>
+    <button type="button" className="catalog-filter-reset" onClick={onReset}>Сбросить фильтры</button>
+  </section>;
+}
+
+function MealPlanFilters({ value, onChange, goals, onReset }) {
+  return <section className="catalog-filter-panel">
+    <label><span>Цель</span><select value={value.goal} onChange={(event) => onChange({ ...value, goal: event.target.value })}><option value="">Все</option>{goals.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+    <div className="catalog-calorie-row"><label><span>Ккал от</span><input inputMode="numeric" type="number" min="0" placeholder="0" value={value.minCalories} onChange={(event) => onChange({ ...value, minCalories: event.target.value })} /></label><label><span>Ккал до</span><input inputMode="numeric" type="number" min="0" placeholder="Без лимита" value={value.maxCalories} onChange={(event) => onChange({ ...value, maxCalories: event.target.value })} /></label></div>
+    <button type="button" className="catalog-filter-reset" onClick={onReset}>Сбросить фильтры</button>
+  </section>;
+}
+
 export function NutritionScreen({ user, profile }) {
   const [tab, setTab] = useState('calculator');
   const [form, setForm] = useState({ sex: '', height: '', weight: '', activity: '', goal: '', age: '' });
@@ -137,11 +187,30 @@ export function NutritionScreen({ user, profile }) {
   const [mealPlansError, setMealPlansError] = useState('');
   const [selectedMealPlan, setSelectedMealPlan] = useState(null);
   const [selectedMealPlanMeals, setSelectedMealPlanMeals] = useState([]);
+  const [favorites, setFavorites] = useState(() => new Set());
+  const [favoriteBusy, setFavoriteBusy] = useState(() => new Set());
+  const [recipeFilterOpen, setRecipeFilterOpen] = useState(false);
+  const [planFilterOpen, setPlanFilterOpen] = useState(false);
+  const [recipeFavoritesOnly, setRecipeFavoritesOnly] = useState(false);
+  const [planFavoritesOnly, setPlanFavoritesOnly] = useState(false);
+  const [recipeFilters, setRecipeFilters] = useState(EMPTY_RECIPE_FILTERS);
+  const [planFilters, setPlanFilters] = useState(EMPTY_PLAN_FILTERS);
 
   useEffect(() => {
     const profileAge = ageFromBirthDate(profile?.birth_date);
     setForm((current) => ({ ...current, sex: profile?.sex || current.sex, height: profile?.height_cm ? String(profile.height_cm) : current.height, weight: profile?.weight_kg ? String(profile.weight_kg) : current.weight, activity: profile?.activity_level || current.activity, age: profileAge ? String(profileAge) : current.age }));
   }, [profile?.sex, profile?.height_cm, profile?.weight_kg, profile?.activity_level, profile?.birth_date]);
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    let active = true;
+    supabase.from('nutrition_favorites').select('entity_type,entity_id').eq('user_id', user.id).then(({ data, error }) => {
+      if (!active) return;
+      if (error) console.error('Unable to load nutrition favorites:', error);
+      else setFavorites(new Set((data || []).map((row) => `${row.entity_type}:${row.entity_id}`)));
+    });
+    return () => { active = false; };
+  }, [user?.id]);
 
   useEffect(() => {
     if (tab !== 'recipes' || recipes.length > 0) return undefined;
@@ -166,6 +235,22 @@ export function NutritionScreen({ user, profile }) {
   }, [tab, mealPlans.length]);
 
   const canCalculate = useMemo(() => Boolean(['male', 'female'].includes(form.sex) && Number(form.height) > 0 && Number(form.weight) > 0 && Number(form.age) > 0 && form.activity && form.goal), [form]);
+  const recipeMealTypes = useMemo(() => [...new Set(recipes.map((item) => item.meal_type).filter(Boolean))], [recipes]);
+  const recipeGoals = useMemo(() => [...new Set(recipes.map((item) => item.goal).filter(Boolean))], [recipes]);
+  const planGoals = useMemo(() => [...new Set(mealPlans.map((item) => item.goal).filter(Boolean))], [mealPlans]);
+  const recipeFilterCount = [recipeFilters.mealType, recipeFilters.goal, recipeFilters.minCalories || recipeFilters.maxCalories].filter(Boolean).length;
+  const planFilterCount = [planFilters.goal, planFilters.minCalories || planFilters.maxCalories].filter(Boolean).length;
+  const filteredRecipes = useMemo(() => recipes.filter((recipe) => {
+    if (recipeFavoritesOnly && !favorites.has(`recipe:${recipe.id}`)) return false;
+    if (recipeFilters.mealType && recipe.meal_type !== recipeFilters.mealType) return false;
+    if (recipeFilters.goal && recipe.goal !== recipeFilters.goal) return false;
+    return caloriesMatch(recipe.calories, recipeFilters.minCalories, recipeFilters.maxCalories);
+  }), [recipes, recipeFavoritesOnly, favorites, recipeFilters]);
+  const filteredMealPlans = useMemo(() => mealPlans.filter((plan) => {
+    if (planFavoritesOnly && !favorites.has(`meal_plan:${plan.id}`)) return false;
+    if (planFilters.goal && plan.goal !== planFilters.goal) return false;
+    return caloriesMatch(plan.calories_per_day, planFilters.minCalories, planFilters.maxCalories);
+  }), [mealPlans, planFavoritesOnly, favorites, planFilters]);
 
   function update(key, value) { setForm((current) => ({ ...current, [key]: value })); setResult(null); setMessage(''); }
   function runCalculation() { const next = calculateMacros(form); setResult(next); setMessage(next ? '' : 'Заполните все поля для расчёта.'); }
@@ -179,6 +264,20 @@ export function NutritionScreen({ user, profile }) {
     if (error) { console.error('Unable to save nutrition target:', error); setMessage('Не удалось сохранить расчёт.'); return; }
     window.dispatchEvent(new CustomEvent('gym-nutrition-updated', { detail: payload }));
     setMessage('КБЖУ сохранены. Они уже доступны на Главной.');
+  }
+
+  async function toggleFavorite(entityType, entityId) {
+    if (!user?.id) return;
+    const key = `${entityType}:${entityId}`;
+    if (favoriteBusy.has(key)) return;
+    setFavoriteBusy((current) => new Set(current).add(key));
+    const isFavorite = favorites.has(key);
+    const response = isFavorite
+      ? await supabase.from('nutrition_favorites').delete().eq('user_id', user.id).eq('entity_type', entityType).eq('entity_id', entityId)
+      : await supabase.from('nutrition_favorites').insert({ user_id: user.id, entity_type: entityType, entity_id: entityId });
+    if (response.error) console.error('Unable to update nutrition favorite:', response.error);
+    else setFavorites((current) => { const next = new Set(current); if (isFavorite) next.delete(key); else next.add(key); return next; });
+    setFavoriteBusy((current) => { const next = new Set(current); next.delete(key); return next; });
   }
 
   async function openMealPlan(plan) {
@@ -207,9 +306,9 @@ export function NutritionScreen({ user, profile }) {
         {message && <div className="nutrition-message" role="status">{message}</div>}
       </section>}
 
-      {tab === 'recipes' && <section className="recipe-catalog"><div className="recipe-catalog-head"><div><span>Каталог</span><h1>Рецепты</h1></div><strong>{recipes.length}</strong></div>{recipesLoading && <div className="recipe-state">Загружаем рецепты…</div>}{recipesError && <div className="recipe-state error">{recipesError}</div>}{!recipesLoading && !recipesError && recipes.length === 0 && <div className="recipe-state">Рецептов пока нет.</div>}<div className="recipe-list">{recipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} onOpen={setSelectedRecipe} />)}</div></section>}
+      {tab === 'recipes' && <section className="recipe-catalog"><div className="recipe-catalog-head"><div><span>{recipeFavoritesOnly ? 'Избранное' : 'Каталог'}</span><h1>Рецепты</h1></div><strong>{filteredRecipes.length}</strong></div><CatalogToolbar filterOpen={recipeFilterOpen} setFilterOpen={setRecipeFilterOpen} favoritesOnly={recipeFavoritesOnly} setFavoritesOnly={setRecipeFavoritesOnly} activeFilterCount={recipeFilterCount} />{recipeFilterOpen && <RecipeFilters value={recipeFilters} onChange={setRecipeFilters} mealTypes={recipeMealTypes} goals={recipeGoals} onReset={() => setRecipeFilters(EMPTY_RECIPE_FILTERS)} />}{recipesLoading && <div className="recipe-state">Загружаем рецепты…</div>}{recipesError && <div className="recipe-state error">{recipesError}</div>}{!recipesLoading && !recipesError && filteredRecipes.length === 0 && <div className="recipe-state">{recipeFavoritesOnly ? 'В избранном пока нет рецептов.' : 'По выбранным фильтрам рецептов нет.'}</div>}<div className="recipe-list">{filteredRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} onOpen={setSelectedRecipe} favorite={favorites.has(`recipe:${recipe.id}`)} onToggleFavorite={toggleFavorite} />)}</div></section>}
 
-      {tab === 'plans' && <section className="meal-plan-catalog"><div className="meal-plan-catalog-head"><div><span>Каталог</span><h1>Готовые рационы</h1></div><strong>{mealPlans.length}</strong></div>{mealPlansLoading && <div className="recipe-state">Загружаем рационы…</div>}{mealPlansError && <div className="recipe-state error">{mealPlansError}</div>}{!mealPlansLoading && !mealPlansError && mealPlans.length === 0 && <div className="recipe-state">Рационов пока нет.</div>}<div className="meal-plan-list">{mealPlans.map((plan) => <MealPlanCard key={plan.id} plan={plan} onOpen={openMealPlan} />)}</div></section>}
+      {tab === 'plans' && <section className="meal-plan-catalog"><div className="meal-plan-catalog-head"><div><span>{planFavoritesOnly ? 'Избранное' : 'Каталог'}</span><h1>Готовые рационы</h1></div><strong>{filteredMealPlans.length}</strong></div><CatalogToolbar filterOpen={planFilterOpen} setFilterOpen={setPlanFilterOpen} favoritesOnly={planFavoritesOnly} setFavoritesOnly={setPlanFavoritesOnly} activeFilterCount={planFilterCount} />{planFilterOpen && <MealPlanFilters value={planFilters} onChange={setPlanFilters} goals={planGoals} onReset={() => setPlanFilters(EMPTY_PLAN_FILTERS)} />}{mealPlansLoading && <div className="recipe-state">Загружаем рационы…</div>}{mealPlansError && <div className="recipe-state error">{mealPlansError}</div>}{!mealPlansLoading && !mealPlansError && filteredMealPlans.length === 0 && <div className="recipe-state">{planFavoritesOnly ? 'В избранном пока нет рационов.' : 'По выбранным фильтрам рационов нет.'}</div>}<div className="meal-plan-list">{filteredMealPlans.map((plan) => <MealPlanCard key={plan.id} plan={plan} onOpen={openMealPlan} favorite={favorites.has(`meal_plan:${plan.id}`)} onToggleFavorite={toggleFavorite} />)}</div></section>}
     </main>
     <NutritionBottomNav />
   </div>;
