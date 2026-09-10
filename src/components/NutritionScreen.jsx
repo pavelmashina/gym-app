@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import '../nutrition-screen.css';
+import '../meal-plans.css';
 
 const TABS = [
   { id: 'calculator', label: 'Калькулятор КБЖУ', icon: 'calculator' },
@@ -57,9 +58,7 @@ function ageFromBirthDate(value) {
 function calculateMacros({ sex, height, weight, activity, goal, age }) {
   const activityData = ACTIVITY.find((item) => item.id === activity);
   const goalData = GOALS.find((item) => item.id === goal);
-  const w = Number(weight);
-  const h = Number(height);
-  const a = Number(age);
+  const w = Number(weight); const h = Number(height); const a = Number(age);
   if (!activityData || !goalData || !w || !h || !a) return null;
   const bmr = 10 * w + 6.25 * h - 5 * a + (sex === 'male' ? 5 : -161);
   const maintenance = bmr * activityData.factor;
@@ -67,7 +66,7 @@ function calculateMacros({ sex, height, weight, activity, goal, age }) {
   const protein = Math.round(w * goalData.protein);
   const fat = Math.round(w * goalData.fat);
   const carbs = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4));
-  return { calories, protein, fat, carbs, bmr: Math.round(bmr), maintenance: Math.round(maintenance) };
+  return { calories, protein, fat, carbs };
 }
 
 function RecipeCard({ recipe, onOpen }) {
@@ -93,6 +92,36 @@ function RecipeDetails({ recipe, onBack }) {
   </div>;
 }
 
+function MealPlanCard({ plan, onOpen }) {
+  return <button type="button" className="meal-plan-card" onClick={() => onOpen(plan)}>
+    <span className="meal-plan-card-image">{plan.image_url ? <img src={plan.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
+    <span className="meal-plan-card-copy"><strong>{plan.title}</strong><span className="meal-plan-tags"><b>{plan.goal}</b><b>{plan.calories_per_day} ккал / день</b></span><small>{plan.short_description}</small></span>
+    <span className="meal-plan-card-arrow" aria-hidden="true">›</span>
+  </button>;
+}
+
+function MealPlanDetails({ plan, meals, onBack }) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => setIndex(0), [plan.id]);
+  const meal = meals[index];
+  if (!meal) return <div className="nutrition-screen meal-plan-detail-screen"><header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack}><BackIcon /></button><strong>{plan.title}</strong><span /></header><main className="meal-plan-detail-content"><div className="recipe-state">В этом рационе пока нет блюд.</div></main></div>;
+  const ingredients = Array.isArray(meal.ingredients) ? meal.ingredients : [];
+  const steps = Array.isArray(meal.steps) ? meal.steps : [];
+  return <div className="nutrition-screen meal-plan-detail-screen">
+    <header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack} aria-label="Назад к рационам"><BackIcon /></button><strong>{plan.title}</strong><span /></header>
+    <main className="meal-plan-detail-content">
+      <div className="meal-plan-progress"><span>Приём пищи {index + 1} из {meals.length}</span><div><i style={{ width: `${((index + 1) / meals.length) * 100}%` }} /></div></div>
+      <div className="recipe-hero-image">{meal.image_url ? <img src={meal.image_url} alt={meal.title} /> : <span className="recipe-image-placeholder" />}</div>
+      <div className="recipe-detail-title"><span>{meal.meal_type}</span><h1>{meal.title}</h1></div>
+      <section className="recipe-macros"><div><strong>{meal.calories}</strong><span>ккал</span></div><div><strong>{Number(meal.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(meal.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(meal.carbs_g)} г</strong><span>Углеводы</span></div></section>
+      <section className="nutrition-card recipe-section"><h2>Ингредиенты</h2><ul>{ingredients.map((item, ingredientIndex) => <li key={`${ingredientIndex}-${item}`}>{item}</li>)}</ul></section>
+      <section className="nutrition-card recipe-section"><h2>Приготовление</h2><ol>{steps.map((item, stepIndex) => <li key={`${stepIndex}-${item}`}><span>{stepIndex + 1}</span><p>{item}</p></li>)}</ol></section>
+      <div className="meal-plan-step-nav"><button type="button" className="secondary" disabled={index === 0} onClick={() => setIndex((current) => Math.max(0, current - 1))}>← Предыдущий</button><button type="button" className="primary" disabled={index === meals.length - 1} onClick={() => setIndex((current) => Math.min(meals.length - 1, current + 1))}>Следующий →</button></div>
+      <div className="meal-plan-meal-dots" aria-label="Приёмы пищи">{meals.map((item, mealIndex) => <button key={item.id} type="button" className={mealIndex === index ? 'active' : ''} onClick={() => setIndex(mealIndex)} aria-label={`Открыть ${item.meal_type}`}>{mealIndex + 1}</button>)}</div>
+    </main>
+  </div>;
+}
+
 export function NutritionScreen({ user, profile }) {
   const [tab, setTab] = useState('calculator');
   const [form, setForm] = useState({ sex: '', height: '', weight: '', activity: '', goal: '', age: '' });
@@ -103,71 +132,67 @@ export function NutritionScreen({ user, profile }) {
   const [recipesLoading, setRecipesLoading] = useState(false);
   const [recipesError, setRecipesError] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [mealPlans, setMealPlans] = useState([]);
+  const [mealPlansLoading, setMealPlansLoading] = useState(false);
+  const [mealPlansError, setMealPlansError] = useState('');
+  const [selectedMealPlan, setSelectedMealPlan] = useState(null);
+  const [selectedMealPlanMeals, setSelectedMealPlanMeals] = useState([]);
 
   useEffect(() => {
     const profileAge = ageFromBirthDate(profile?.birth_date);
-    setForm((current) => ({
-      ...current,
-      sex: profile?.sex || current.sex,
-      height: profile?.height_cm ? String(profile.height_cm) : current.height,
-      weight: profile?.weight_kg ? String(profile.weight_kg) : current.weight,
-      activity: profile?.activity_level || current.activity,
-      age: profileAge ? String(profileAge) : current.age,
-    }));
+    setForm((current) => ({ ...current, sex: profile?.sex || current.sex, height: profile?.height_cm ? String(profile.height_cm) : current.height, weight: profile?.weight_kg ? String(profile.weight_kg) : current.weight, activity: profile?.activity_level || current.activity, age: profileAge ? String(profileAge) : current.age }));
   }, [profile?.sex, profile?.height_cm, profile?.weight_kg, profile?.activity_level, profile?.birth_date]);
 
   useEffect(() => {
     if (tab !== 'recipes' || recipes.length > 0) return undefined;
-    let active = true;
-    setRecipesLoading(true);
-    setRecipesError('');
+    let active = true; setRecipesLoading(true); setRecipesError('');
     supabase.from('recipes').select('id,slug,title,image_url,meal_type,goal,calories,protein_g,fat_g,carbs_g,prep_minutes,ingredients,steps,sort_order').eq('is_active', true).order('sort_order', { ascending: true }).then(({ data, error }) => {
       if (!active) return;
-      if (error) {
-        console.error('Unable to load recipes:', error);
-        setRecipesError('Не удалось загрузить рецепты.');
-      } else setRecipes(data || []);
+      if (error) { console.error('Unable to load recipes:', error); setRecipesError('Не удалось загрузить рецепты.'); } else setRecipes(data || []);
       setRecipesLoading(false);
     });
     return () => { active = false; };
   }, [tab, recipes.length]);
 
+  useEffect(() => {
+    if (tab !== 'plans' || mealPlans.length > 0) return undefined;
+    let active = true; setMealPlansLoading(true); setMealPlansError('');
+    supabase.from('meal_plans').select('id,slug,title,image_url,goal,calories_per_day,short_description,sort_order').eq('is_active', true).order('sort_order', { ascending: true }).then(({ data, error }) => {
+      if (!active) return;
+      if (error) { console.error('Unable to load meal plans:', error); setMealPlansError('Не удалось загрузить готовые рационы.'); } else setMealPlans(data || []);
+      setMealPlansLoading(false);
+    });
+    return () => { active = false; };
+  }, [tab, mealPlans.length]);
+
   const canCalculate = useMemo(() => Boolean(['male', 'female'].includes(form.sex) && Number(form.height) > 0 && Number(form.weight) > 0 && Number(form.age) > 0 && form.activity && form.goal), [form]);
 
-  function update(key, value) {
-    setForm((current) => ({ ...current, [key]: value }));
-    setResult(null);
-    setMessage('');
-  }
-
-  function runCalculation() {
-    const next = calculateMacros(form);
-    setResult(next);
-    setMessage(next ? '' : 'Заполните все поля для расчёта.');
-  }
+  function update(key, value) { setForm((current) => ({ ...current, [key]: value })); setResult(null); setMessage(''); }
+  function runCalculation() { const next = calculateMacros(form); setResult(next); setMessage(next ? '' : 'Заполните все поля для расчёта.'); }
 
   async function saveResult() {
     if (!result || saving) return;
-    setSaving(true);
-    setMessage('');
+    setSaving(true); setMessage('');
     const payload = { user_id: user.id, sex: form.sex, height_cm: Number(form.height), weight_kg: Number(form.weight), age: Number(form.age), activity_level: form.activity, goal: form.goal, calories: result.calories, protein_g: result.protein, fat_g: result.fat, carbs_g: result.carbs, is_active: true, updated_at: new Date().toISOString() };
     const { error } = await supabase.from('nutrition_targets').upsert(payload, { onConflict: 'user_id' });
     setSaving(false);
-    if (error) {
-      console.error('Unable to save nutrition target:', error);
-      setMessage('Не удалось сохранить расчёт.');
-      return;
-    }
+    if (error) { console.error('Unable to save nutrition target:', error); setMessage('Не удалось сохранить расчёт.'); return; }
     window.dispatchEvent(new CustomEvent('gym-nutrition-updated', { detail: payload }));
     setMessage('КБЖУ сохранены. Они уже доступны на Главной.');
   }
 
-  function changeTab(next) {
-    setTab(next);
-    setSelectedRecipe(null);
+  async function openMealPlan(plan) {
+    setMealPlansError('');
+    const { data, error } = await supabase.from('meal_plan_meals').select('id,meal_order,meal_type,title,image_url,calories,protein_g,fat_g,carbs_g,ingredients,steps').eq('meal_plan_id', plan.id).order('meal_order', { ascending: true });
+    if (error) { console.error('Unable to load meal plan meals:', error); setMealPlansError('Не удалось открыть рацион.'); return; }
+    setSelectedMealPlanMeals(data || []);
+    setSelectedMealPlan(plan);
   }
 
+  function changeTab(next) { setTab(next); setSelectedRecipe(null); setSelectedMealPlan(null); }
+
   if (selectedRecipe) return <RecipeDetails recipe={selectedRecipe} onBack={() => setSelectedRecipe(null)} />;
+  if (selectedMealPlan) return <MealPlanDetails plan={selectedMealPlan} meals={selectedMealPlanMeals} onBack={() => { setSelectedMealPlan(null); setSelectedMealPlanMeals([]); }} />;
 
   return <div className="nutrition-screen">
     <header className="nutrition-topbar"><div className="nutrition-brand">Питание</div><span className="nutrition-topbar-spacer" /></header>
@@ -175,7 +200,7 @@ export function NutritionScreen({ user, profile }) {
       <div className="nutrition-tabs" role="tablist" aria-label="Разделы питания">{TABS.map((item) => <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'active' : ''} onClick={() => changeTab(item.id)}><span className="nutrition-tab-icon"><TabIcon type={item.icon} /></span><span className="nutrition-tab-label">{item.label}</span></button>)}</div>
 
       {tab === 'calculator' && <section className="nutrition-calculator"><div className="nutrition-intro"><span>Персональный расчёт</span><h1>Калькулятор КБЖУ</h1><p>Помогает оценить суточную потребность в калориях, белках, жирах и углеводах с учётом параметров тела, активности и вашей цели.</p></div>
-        <section className="nutrition-card"><h2>Ваши данные</h2><div className="nutrition-segment"><button type="button" className={form.sex === 'male' ? 'active' : ''} onClick={() => update('sex', 'male')}>Мужской</button><button type="button" className={form.sex === 'female' ? 'active' : ''} onClick={() => update('sex', 'female')}>Женский</button></div><div className="nutrition-grid"><label>Рост, см<input type="number" min="120" max="230" inputMode="decimal" value={form.height} onChange={(event) => update('height', event.target.value)} /></label><label>Вес, кг<input type="number" min="30" max="350" step="0.1" inputMode="decimal" value={form.weight} onChange={(event) => update('weight', event.target.value)} /></label></div><label className="nutrition-field">Возраст<input type="number" min="16" max="100" inputMode="numeric" value={form.age} onChange={(event) => update('age', event.target.value)} /><small>{profile?.birth_date ? 'Подставлен автоматически из даты рождения. Можно изменить для этого расчёта.' : 'Возраст нужен для корректного расчёта основного обмена.'}</small></label><label className="nutrition-field">Дневная активность<select value={form.activity} onChange={(event) => update('activity', event.target.value)}><option value="">Выберите активность</option>{ACTIVITY.map((item) => <option key={item.id} value={item.id}>{item.label} — {item.text}</option>)}</select></label></section>
+        <section className="nutrition-card"><h2>Ваши данные</h2><div className="nutrition-segment"><button type="button" className={form.sex === 'male' ? 'active' : ''} onClick={() => update('sex', 'male')}>Мужской</button><button type="button" className={form.sex === 'female' ? 'active' : ''} onClick={() => update('sex', 'female')}>Женский</button></div><div className="nutrition-grid"><label>Рост, см<input type="number" min="120" max="230" value={form.height} onChange={(e) => update('height', e.target.value)} /></label><label>Вес, кг<input type="number" min="30" max="350" step="0.1" value={form.weight} onChange={(e) => update('weight', e.target.value)} /></label></div><label className="nutrition-field">Возраст<input type="number" min="16" max="100" value={form.age} onChange={(e) => update('age', e.target.value)} /><small>{profile?.birth_date ? 'Подставлен автоматически из даты рождения. Можно изменить для этого расчёта.' : 'Возраст нужен для корректного расчёта основного обмена.'}</small></label><label className="nutrition-field">Дневная активность<select value={form.activity} onChange={(e) => update('activity', e.target.value)}><option value="">Выберите активность</option>{ACTIVITY.map((item) => <option key={item.id} value={item.id}>{item.label} — {item.text}</option>)}</select></label></section>
         <section className="nutrition-card"><h2>Цель</h2><div className="nutrition-goals">{GOALS.map((item) => <button type="button" key={item.id} className={form.goal === item.id ? 'active' : ''} onClick={() => update('goal', item.id)}>{item.label}</button>)}</div></section>
         {!result && <button className="nutrition-calc-button" type="button" disabled={!canCalculate} onClick={runCalculation}>Рассчитать</button>}
         {result && <section className="nutrition-result"><span className="nutrition-result-kicker">Ваша дневная цель</span><strong className="nutrition-calories">{result.calories}<small> ккал</small></strong><div className="nutrition-macros"><div><strong>{result.protein} г</strong><span>Белки</span></div><div><strong>{result.fat} г</strong><span>Жиры</span></div><div><strong>{result.carbs} г</strong><span>Углеводы</span></div></div><p>Расчёт — ориентир, а не медицинская рекомендация. Фактическая потребность может отличаться.</p><button type="button" className="nutrition-save" disabled={saving} onClick={saveResult}>{saving ? 'Сохраняем…' : 'Сохранить КБЖУ'}</button><button type="button" className="nutrition-reset" onClick={() => { setResult(null); setMessage(''); }}>Не сохранять и пересчитать</button></section>}
@@ -184,7 +209,7 @@ export function NutritionScreen({ user, profile }) {
 
       {tab === 'recipes' && <section className="recipe-catalog"><div className="recipe-catalog-head"><div><span>Каталог</span><h1>Рецепты</h1></div><strong>{recipes.length}</strong></div>{recipesLoading && <div className="recipe-state">Загружаем рецепты…</div>}{recipesError && <div className="recipe-state error">{recipesError}</div>}{!recipesLoading && !recipesError && recipes.length === 0 && <div className="recipe-state">Рецептов пока нет.</div>}<div className="recipe-list">{recipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} onOpen={setSelectedRecipe} />)}</div></section>}
 
-      {tab === 'plans' && <section className="nutrition-placeholder"><span>Готовые рационы</span><h1>Рационы под разные цели</h1><p>Здесь появятся готовые дневные и недельные планы питания с рассчитанными КБЖУ.</p></section>}
+      {tab === 'plans' && <section className="meal-plan-catalog"><div className="meal-plan-catalog-head"><div><span>Каталог</span><h1>Готовые рационы</h1></div><strong>{mealPlans.length}</strong></div>{mealPlansLoading && <div className="recipe-state">Загружаем рационы…</div>}{mealPlansError && <div className="recipe-state error">{mealPlansError}</div>}{!mealPlansLoading && !mealPlansError && mealPlans.length === 0 && <div className="recipe-state">Рационов пока нет.</div>}<div className="meal-plan-list">{mealPlans.map((plan) => <MealPlanCard key={plan.id} plan={plan} onOpen={openMealPlan} />)}</div></section>}
     </main>
     <NutritionBottomNav />
   </div>;
