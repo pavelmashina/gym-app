@@ -1,0 +1,179 @@
+name: Refactor workout pause and plurals
+
+on:
+  push:
+    paths:
+      - '.github/workflows/refactor-workout-and-plurals.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply direct refactor
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('src/components')
+
+          def add_import(text, spec, source):
+              line = f"import {{ {spec} }} from '{source}';\n"
+              if line in text:
+                  return text
+              matches = list(re.finditer(r"^import .*?;\n", text, re.M))
+              if not matches:
+                  return line + text
+              pos = matches[-1].end()
+              return text[:pos] + line + text[pos:]
+
+          def remove_named_function(text, name):
+              token = f'function {name}('
+              start = text.find(token)
+              if start < 0:
+                  return text
+              brace = text.find('{', start)
+              if brace < 0:
+                  return text
+              depth = 0
+              i = brace
+              quote = None
+              escape = False
+              template = False
+              while i < len(text):
+                  ch = text[i]
+                  if quote:
+                      if escape:
+                          escape = False
+                      elif ch == '\\':
+                          escape = True
+                      elif ch == quote:
+                          quote = None
+                  elif template:
+                      if escape:
+                          escape = False
+                      elif ch == '\\':
+                          escape = True
+                      elif ch == '`':
+                          template = False
+                  else:
+                      if ch in "'\"": quote = ch
+                      elif ch == '`': template = True
+                      elif ch == '{': depth += 1
+                      elif ch == '}':
+                          depth -= 1
+                          if depth == 0:
+                              end = i + 1
+                              while end < len(text) and text[end] in ' \t': end += 1
+                              if end < len(text) and text[end] == '\n': end += 1
+                              return text[:start] + text[end:]
+                  i += 1
+              return text
+
+          # 1) Shared Russian pluralization in every component that duplicated formatCount.
+          for path in root.glob('*.jsx'):
+              text = path.read_text(encoding='utf-8')
+              if 'function formatCount(' not in text:
+                  continue
+              text = remove_named_function(text, 'formatCount')
+              text = text.replace("formatCount(", "formatRussianCount(")
+              text = add_import(text, 'formatRussianCount', '../lib/formatRussianCount.js')
+              path.write_text(text, encoding='utf-8')
+
+          # Home: fix the most visible exercise count.
+          home = root / 'HomeScreen.jsx'
+          text = home.read_text(encoding='utf-8')
+          text = add_import(text, 'formatExerciseCount', '../lib/formatRussianCount.js')
+          text = text.replace("`${workout.exerciseCount} упражнений`", "formatExerciseCount(workout.exerciseCount)")
+          home.write_text(text, encoding='utf-8')
+
+          # Planned workout in V3 also used a hard-coded plural.
+          v3 = root / 'WorkoutSessionScreenV3.jsx'
+          text = v3.read_text(encoding='utf-8')
+          text = add_import(text, 'formatExerciseCount', '../lib/formatRussianCount.js')
+          text = text.replace("{workout.exercises.length} упражнений · тренировка ещё не начата", "{formatExerciseCount(workout.exercises.length)} · тренировка ещё не начата")
+
+          # 2) Remove destructive abandon action from the active UI. Pause is now a first-class action.
+          text = text.replace('  abandonWorkout,\n', '')
+          text = text.replace('function ActiveWorkout({ entry, onEntryChange, onFinish, onAbandon, onRequestReplacement, finishing, abandoning, error })',
+                              'function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onRequestReplacement, finishing, pausing, error })')
+          old_footer = '<footer className="workout-session-footer workout-session-footer-dual"><button className="workout-abandon-button" type="button" onClick={onAbandon} disabled={finishing || abandoning}>{abandoning ? \'Прерываем…\' : \'Прервать тренировку\'}</button><button type="button" onClick={onFinish} disabled={finishing || abandoning}>{finishing ? \'Завершаем…\' : \'Завершить тренировку\'}</button></footer>'
+          new_footer = '<footer className="workout-session-footer workout-session-footer-dual"><button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? \'Сохраняем…\' : \'Поставить на паузу\'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? \'Завершаем…\' : \'Завершить тренировку\'}</button></footer>'
+          if old_footer not in text:
+              raise SystemExit('Expected V3 destructive footer not found')
+          text = text.replace(old_footer, new_footer)
+          text = text.replace("  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [abandoning, setAbandoning] = useState(false); const [error, setError] = useState('');",
+                              "  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [error, setError] = useState('');")
+          text = re.sub(r"\n  async function handleAbandon\(\) \{.*?\}\n", "\n", text, count=1)
+          text = text.replace('export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement })',
+                              'export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement, onPauseRequest, pausing = false })')
+          text = text.replace('onAbandon={handleAbandon} onRequestReplacement={onRequestReplacement} finishing={finishing} abandoning={abandoning}',
+                              'onPauseRequest={onPauseRequest} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing}')
+          v3.write_text(text, encoding='utf-8')
+
+          # V4: delete the MutationObserver/capture interception layer and wire pause directly into V3.
+          v4 = root / 'WorkoutSessionScreenV4.jsx'
+          text = v4.read_text(encoding='utf-8')
+          text = text.replace("import { useEffect, useRef, useState } from 'react';", "import { useEffect, useState } from 'react';")
+          text = text.replace('  const rootRef = useRef(null);\n', '')
+          text = re.sub(r"\n  useEffect\(\(\) => \{\n    if \(lifecycle\.loading \|\| lifecycle\.paused\) return undefined;\n    const renamePauseButton = \(\) => \{.*?\n  \}, \[lifecycle\.loading, lifecycle\.paused, version\]\);\n", "\n", text, count=1, flags=re.S)
+          text = re.sub(r"\n  function captureWorkoutAction\(event\) \{.*?\n  \}\n", "\n", text, count=1, flags=re.S)
+          old = '  return <div ref={rootRef} onClickCapture={captureWorkoutAction}>\n    <WorkoutSessionScreenV3 key={version} {...props} onRequestReplacement={openReplacement} />'
+          new = "  const requestPause = () => { setPauseError(''); setPauseConfirmOpen(true); };\n\n  return <div>\n    <WorkoutSessionScreenV3 key={version} {...props} onBack={requestPause} onPauseRequest={requestPause} pausing={pauseLoading} onRequestReplacement={openReplacement} />"
+          if old not in text:
+              raise SystemExit('Expected V4 interception wrapper not found')
+          text = text.replace(old, new)
+          v4.write_text(text, encoding='utf-8')
+
+          # Rename CSS hook so the old destructive semantic disappears from the active UI layer.
+          for path in Path('src').rglob('*.css'):
+              css = path.read_text(encoding='utf-8')
+              if '.workout-abandon-button' in css:
+                  path.write_text(css.replace('.workout-abandon-button', '.workout-pause-button'), encoding='utf-8')
+
+          # Audit and fail if fragile/destructive active wiring survives.
+          v3text = v3.read_text(encoding='utf-8')
+          v4text = v4.read_text(encoding='utf-8')
+          forbidden = ['onClickCapture={captureWorkoutAction}', 'MutationObserver(renamePauseButton)', 'Прервать тренировку', 'onAbandon={handleAbandon}', 'workout-abandon-button']
+          leftovers = [item for item in forbidden if item in v3text or item in v4text]
+          if leftovers:
+              raise SystemExit('Fragile pause leftovers: ' + ', '.join(leftovers))
+
+          # Print remaining local count helpers / suspicious hard-coded exercise plurals for audit.
+          print('Remaining local formatCount definitions:')
+          for path in root.glob('*.jsx'):
+              t = path.read_text(encoding='utf-8')
+              if 'function formatCount(' in t:
+                  print(path)
+          print('Remaining hard-coded "упражнений" expressions:')
+          for path in root.glob('*.jsx'):
+              for no, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
+                  if 'упражнений' in line and ('length' in line or 'Count' in line or 'count' in line):
+                      print(f'{path}:{no}:{line.strip()}')
+          PY
+      - name: Tests and build
+        run: |
+          pnpm test --if-present
+          pnpm build
+      - name: Commit refactor
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src
+          git commit -m 'Make workout pause direct and unify Russian plurals'
+          git push origin main
