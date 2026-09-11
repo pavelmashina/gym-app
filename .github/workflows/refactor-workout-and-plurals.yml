@@ -17,8 +17,6 @@ jobs:
           ref: main
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -85,48 +83,38 @@ jobs:
                   i += 1
               return text
 
-          # 1) Shared Russian pluralization in every component that duplicated formatCount.
           for path in root.glob('*.jsx'):
               text = path.read_text(encoding='utf-8')
               if 'function formatCount(' not in text:
                   continue
               text = remove_named_function(text, 'formatCount')
-              text = text.replace("formatCount(", "formatRussianCount(")
+              text = text.replace('formatCount(', 'formatRussianCount(')
               text = add_import(text, 'formatRussianCount', '../lib/formatRussianCount.js')
               path.write_text(text, encoding='utf-8')
 
-          # Home: fix the most visible exercise count.
           home = root / 'HomeScreen.jsx'
           text = home.read_text(encoding='utf-8')
           text = add_import(text, 'formatExerciseCount', '../lib/formatRussianCount.js')
-          text = text.replace("`${workout.exerciseCount} упражнений`", "formatExerciseCount(workout.exerciseCount)")
+          text = text.replace('`${workout.exerciseCount} упражнений`', 'formatExerciseCount(workout.exerciseCount)')
           home.write_text(text, encoding='utf-8')
 
-          # Planned workout in V3 also used a hard-coded plural.
           v3 = root / 'WorkoutSessionScreenV3.jsx'
           text = v3.read_text(encoding='utf-8')
           text = add_import(text, 'formatExerciseCount', '../lib/formatRussianCount.js')
-          text = text.replace("{workout.exercises.length} упражнений · тренировка ещё не начата", "{formatExerciseCount(workout.exercises.length)} · тренировка ещё не начата")
-
-          # 2) Remove destructive abandon action from the active UI. Pause is now a first-class action.
+          text = text.replace('{workout.exercises.length} упражнений · тренировка ещё не начата', '{formatExerciseCount(workout.exercises.length)} · тренировка ещё не начата')
           text = text.replace('  abandonWorkout,\n', '')
-          text = text.replace('function ActiveWorkout({ entry, onEntryChange, onFinish, onAbandon, onRequestReplacement, finishing, abandoning, error })',
-                              'function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onRequestReplacement, finishing, pausing, error })')
+          text = text.replace('function ActiveWorkout({ entry, onEntryChange, onFinish, onAbandon, onRequestReplacement, finishing, abandoning, error })', 'function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onRequestReplacement, finishing, pausing, error })')
           old_footer = '<footer className="workout-session-footer workout-session-footer-dual"><button className="workout-abandon-button" type="button" onClick={onAbandon} disabled={finishing || abandoning}>{abandoning ? \'Прерываем…\' : \'Прервать тренировку\'}</button><button type="button" onClick={onFinish} disabled={finishing || abandoning}>{finishing ? \'Завершаем…\' : \'Завершить тренировку\'}</button></footer>'
           new_footer = '<footer className="workout-session-footer workout-session-footer-dual"><button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? \'Сохраняем…\' : \'Поставить на паузу\'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? \'Завершаем…\' : \'Завершить тренировку\'}</button></footer>'
           if old_footer not in text:
               raise SystemExit('Expected V3 destructive footer not found')
           text = text.replace(old_footer, new_footer)
-          text = text.replace("  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [abandoning, setAbandoning] = useState(false); const [error, setError] = useState('');",
-                              "  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [error, setError] = useState('');")
+          text = text.replace("  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [abandoning, setAbandoning] = useState(false); const [error, setError] = useState('');", "  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [error, setError] = useState('');")
           text = re.sub(r"\n  async function handleAbandon\(\) \{.*?\}\n", "\n", text, count=1)
-          text = text.replace('export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement })',
-                              'export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement, onPauseRequest, pausing = false })')
-          text = text.replace('onAbandon={handleAbandon} onRequestReplacement={onRequestReplacement} finishing={finishing} abandoning={abandoning}',
-                              'onPauseRequest={onPauseRequest} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing}')
+          text = text.replace('export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement })', 'export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement, onPauseRequest, pausing = false })')
+          text = text.replace('onAbandon={handleAbandon} onRequestReplacement={onRequestReplacement} finishing={finishing} abandoning={abandoning}', 'onPauseRequest={onPauseRequest} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing}')
           v3.write_text(text, encoding='utf-8')
 
-          # V4: delete the MutationObserver/capture interception layer and wire pause directly into V3.
           v4 = root / 'WorkoutSessionScreenV4.jsx'
           text = v4.read_text(encoding='utf-8')
           text = text.replace("import { useEffect, useRef, useState } from 'react';", "import { useEffect, useState } from 'react';")
@@ -140,13 +128,11 @@ jobs:
           text = text.replace(old, new)
           v4.write_text(text, encoding='utf-8')
 
-          # Rename CSS hook so the old destructive semantic disappears from the active UI layer.
           for path in Path('src').rglob('*.css'):
               css = path.read_text(encoding='utf-8')
               if '.workout-abandon-button' in css:
                   path.write_text(css.replace('.workout-abandon-button', '.workout-pause-button'), encoding='utf-8')
 
-          # Audit and fail if fragile/destructive active wiring survives.
           v3text = v3.read_text(encoding='utf-8')
           v4text = v4.read_text(encoding='utf-8')
           forbidden = ['onClickCapture={captureWorkoutAction}', 'MutationObserver(renamePauseButton)', 'Прервать тренировку', 'onAbandon={handleAbandon}', 'workout-abandon-button']
@@ -154,13 +140,12 @@ jobs:
           if leftovers:
               raise SystemExit('Fragile pause leftovers: ' + ', '.join(leftovers))
 
-          # Print remaining local count helpers / suspicious hard-coded exercise plurals for audit.
           print('Remaining local formatCount definitions:')
           for path in root.glob('*.jsx'):
               t = path.read_text(encoding='utf-8')
               if 'function formatCount(' in t:
                   print(path)
-          print('Remaining hard-coded "упражнений" expressions:')
+          print('Remaining hard-coded exercise-count expressions:')
           for path in root.glob('*.jsx'):
               for no, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
                   if 'упражнений' in line and ('length' in line or 'Count' in line or 'count' in line):
