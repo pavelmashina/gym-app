@@ -294,7 +294,7 @@
   gap: 8px;
 }
 
-.workout-session-footer-dual .workout-abandon-button {
+.workout-session-footer-dual .workout-pause-button {
   border: 1px solid #dfc4c4;
   background: var(--surface);
   color: #8f3b3b;

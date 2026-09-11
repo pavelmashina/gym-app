@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { replaceSessionExercise } from '../lib/workoutSessions.js';
 import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -13,7 +13,6 @@ function todayKey() { const date = new Date(); const y = date.getFullYear(); con
 function formatDate(value) { return value ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) : ''; }
 
 export function WorkoutSessionScreen(props) {
-  const rootRef = useRef(null);
   const [replacementTarget, setReplacementTarget] = useState(null);
   const [replacementLoading, setReplacementLoading] = useState(false);
   const [replacementError, setReplacementError] = useState('');
@@ -57,20 +56,6 @@ export function WorkoutSessionScreen(props) {
     return () => { active = false; };
   }, [props.scheduledWorkoutId, version]);
 
-  useEffect(() => {
-    if (lifecycle.loading || lifecycle.paused) return undefined;
-    const renamePauseButton = () => {
-      const button = rootRef.current?.querySelector('.workout-abandon-button');
-      if (button) {
-        button.textContent = 'Поставить на паузу';
-        button.setAttribute('aria-label', 'Поставить тренировку на паузу');
-      }
-    };
-    renamePauseButton();
-    const observer = new MutationObserver(renamePauseButton);
-    if (rootRef.current) observer.observe(rootRef.current, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [lifecycle.loading, lifecycle.paused, version]);
 
   function openReplacement(exercise) {
     setReplacementError('');
@@ -98,17 +83,6 @@ export function WorkoutSessionScreen(props) {
     setReplacementError('');
   }
 
-  function captureWorkoutAction(event) {
-    const element = event.target instanceof Element ? event.target : null;
-    const pauseButton = element?.closest('.workout-abandon-button');
-    const backButton = element?.closest('.workout-session-header button');
-    const activeWorkoutVisible = Boolean(rootRef.current?.querySelector('.workout-session-content.active'));
-    if (!pauseButton && !(backButton && activeWorkoutVisible)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    setPauseError('');
-    setPauseConfirmOpen(true);
-  }
 
   async function pauseWorkout() {
     if (pauseLoading) return;
@@ -172,8 +146,10 @@ export function WorkoutSessionScreen(props) {
     </div>;
   }
 
-  return <div ref={rootRef} onClickCapture={captureWorkoutAction}>
-    <WorkoutSessionScreenV3 key={version} {...props} onRequestReplacement={openReplacement} />
+  const requestPause = () => { setPauseError(''); setPauseConfirmOpen(true); };
+
+  return <div>
+    <WorkoutSessionScreenV3 key={version} {...props} onBack={requestPause} onPauseRequest={requestPause} pausing={pauseLoading} onRequestReplacement={openReplacement} />
 
     {pauseConfirmOpen && <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label="Поставить тренировку на паузу">
       <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={() => !pauseLoading && setPauseConfirmOpen(false)} />

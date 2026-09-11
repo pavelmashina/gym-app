@@ -2,20 +2,12 @@ import { useEffect, useState } from 'react';
 import { getWorkoutEntry, startWorkout } from '../lib/workoutSessions.js';
 import { WorkoutSessionScreen as WorkoutSessionScreenV4 } from './WorkoutSessionScreenV4.jsx';
 import '../workout-session-report-fixes.css';
+import { formatRussianCount } from '../lib/formatRussianCount.js';
 
 function BackIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>;
 }
 
-function formatCount(count, forms) {
-  const value = Math.abs(Number(count) || 0);
-  const mod100 = value % 100;
-  const mod10 = value % 10;
-  if (mod100 >= 11 && mod100 <= 14) return `${count} ${forms[2]}`;
-  if (mod10 === 1) return `${count} ${forms[0]}`;
-  if (mod10 >= 2 && mod10 <= 4) return `${count} ${forms[1]}`;
-  return `${count} ${forms[2]}`;
-}
 
 function formatDate(value) {
   if (!value) return '';
@@ -30,7 +22,7 @@ function PlannedWorkout({ workout, onBack, onStart, starting, error }) {
   return <div className="phone workout-session-phone">
     <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>
     <main className="workout-session-content">
-      <section className="workout-session-hero"><span>{formatDate(workout.scheduledDate)}</span><h1>{workout.name}</h1><p>{formatCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений'])} · тренировка ещё не начата</p></section>
+      <section className="workout-session-hero"><span>{formatDate(workout.scheduledDate)}</span><h1>{workout.name}</h1><p>{formatRussianCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений'])} · тренировка ещё не начата</p></section>
       <section className="workout-plan-list">{workout.exercises.map((exercise, index) => <article className="workout-plan-card" key={exercise.id}><div className="workout-plan-number">{index + 1}</div><div className="workout-plan-main"><span>{exercise.muscleGroup || 'Упражнение'}</span><h2>{exercise.name}</h2>{exercise.prescription && <div className="workout-plan-prescription"><span>План</span><strong>{exercise.prescription}</strong></div>}<div className="workout-plan-sets">{exercise.sets.map((set) => <span key={set.id}>Подход {set.setNumber} · {plannedSetLabel(set)}</span>)}</div></div></article>)}</section>
       {error && <div className="workout-session-error">{error}</div>}
     </main>

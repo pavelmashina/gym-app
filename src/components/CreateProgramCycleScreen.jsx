@@ -5,20 +5,13 @@ import '../create-program-step2-fixes.css';
 import '../create-program-workout-draft.css';
 import '../create-program-cycle.css';
 import '../exercise-library-picker.css';
+import { formatRussianCount } from '../lib/formatRussianCount.js';
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
 function TrashIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3M8 10v7M12 10v7M16 10v7M7 7l1 13h8l1-13" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>; }
 
-function formatCount(count, forms) {
-  const mod100 = count % 100;
-  const mod10 = count % 10;
-  if (mod100 >= 11 && mod100 <= 14) return `${count} ${forms[2]}`;
-  if (mod10 === 1) return `${count} ${forms[0]}`;
-  if (mod10 >= 2 && mod10 <= 4) return `${count} ${forms[1]}`;
-  return `${count} ${forms[2]}`;
-}
 
 function createSet() { return { id: crypto.randomUUID(), reps: '' }; }
 function exerciseKey(exercise) { return exercise.sourceWorkoutExerciseId ?? exercise.linkedExerciseId ?? exercise.id; }
@@ -81,7 +74,7 @@ function WorkoutEditor({ workout, onBack, onSave }) {
     <main className="program-workout-editor-content">
       <section className="program-workout-editor-intro"><span>Один цикл</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /><p>Добавьте упражнения и задайте подходы.</p></section>
       <section className="program-workout-editor-section">
-        <div className="program-workout-editor-section-head"><div><span>Упражнения</span><h2>{formatCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
+        <div className="program-workout-editor-section-head"><div><span>Упражнения</span><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
         <div className="program-workout-selected-list">{draft.exercises.map((exercise, index) => {
           const key = exerciseKey(exercise);
           return <article className="program-workout-exercise-card" key={key}>
@@ -126,9 +119,9 @@ export function CreateProgramCycleScreen({ programName, categories, programWeeks
     <header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Создать программу</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content create-program-step2-content">
       <section className="create-program-intro create-program-step2-intro"><span>Шаг 2</span><h1>Один цикл тренировок</h1><p>Соберите последовательность тренировок, которая затем будет повторяться.</p></section>
-      <section className="program-step2-summary"><div><span>Программа</span><strong>{programName}</strong></div><div className="program-step2-summary-meta"><span>1 цикл</span><span>{formatCount(cycle.workouts.length, ['тренировка', 'тренировки', 'тренировок'])}</span><span>{formatCount(totalExercises, ['упражнение', 'упражнения', 'упражнений'])}</span></div>{categories.length > 0 && <div className="program-step2-categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}</section>
+      <section className="program-step2-summary"><div><span>Программа</span><strong>{programName}</strong></div><div className="program-step2-summary-meta"><span>1 цикл</span><span>{formatRussianCount(cycle.workouts.length, ['тренировка', 'тренировки', 'тренировок'])}</span><span>{formatRussianCount(totalExercises, ['упражнение', 'упражнения', 'упражнений'])}</span></div>{categories.length > 0 && <div className="program-step2-categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}</section>
       <section className="cycle-recommendation-card"><strong>Рекомендация</strong><span>Обычно удобнее, если один цикл примерно равен одной неделе. Но это не ограничение.</span></section>
-      <section className="program-step2-section"><div className="program-step2-section-head"><div><span>Цикл</span><h2>Последовательность тренировок</h2></div></div><div className="cycle-workout-list">{cycle.workouts.map((workout, index) => <article className="program-workout-card cycle-workout-card" key={workout.id}><div className="program-workout-number">{index + 1}</div><div className="program-workout-copy"><strong>{workout.name}</strong><span>{workout.exercises.length ? formatCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений']) : 'Упражнения не выбраны'}</span></div><button className="program-workout-open" type="button" onClick={() => setEditingWorkoutId(workout.id)}><ChevronIcon /></button><button className="program-workout-remove" type="button" onClick={() => updateCycle((current) => ({ ...current, workouts: current.workouts.filter((item) => item.id !== workout.id) }))}><TrashIcon /></button></article>)}</div><button className="program-add-workout cycle-add-workout" type="button" onClick={addWorkout}><span><PlusIcon /></span><strong>Добавить тренировку в цикл</strong></button></section>
+      <section className="program-step2-section"><div className="program-step2-section-head"><div><span>Цикл</span><h2>Последовательность тренировок</h2></div></div><div className="cycle-workout-list">{cycle.workouts.map((workout, index) => <article className="program-workout-card cycle-workout-card" key={workout.id}><div className="program-workout-number">{index + 1}</div><div className="program-workout-copy"><strong>{workout.name}</strong><span>{workout.exercises.length ? formatRussianCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений']) : 'Упражнения не выбраны'}</span></div><button className="program-workout-open" type="button" onClick={() => setEditingWorkoutId(workout.id)}><ChevronIcon /></button><button className="program-workout-remove" type="button" onClick={() => updateCycle((current) => ({ ...current, workouts: current.workouts.filter((item) => item.id !== workout.id) }))}><TrashIcon /></button></article>)}</div><button className="program-add-workout cycle-add-workout" type="button" onClick={addWorkout}><span><PlusIcon /></span><strong>Добавить тренировку в цикл</strong></button></section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" disabled={!ready} onClick={onNext}>Далее</button></footer>
   </div>;

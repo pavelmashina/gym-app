@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase.js';
 import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
 import '../home-dynamic.css';
 import '../home-schedule-edit.css';
+import { formatExerciseCount } from '../lib/formatRussianCount.js';
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -89,7 +90,7 @@ function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry, onEd
   const skipped = workout.status === 'skipped';
   const recovery = Boolean(workout.recovery);
   const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : (recovery ? 'Перенести на сегодня' : (skipped ? 'Пропущена' : 'К тренировке')));
-  return <section className={`summary-col workout${recovery ? ' recovery' : ''}`}><div className="summary-label">{workout.active ? 'Активная тренировка' : (recovery ? 'Пропущенная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка'))}</div><h3>{workout.title}</h3><p>{recovery ? `Плановая дата: ${formatFullDate(dateFromKey(workout.scheduledDate))}` : `${workout.exerciseCount} упражнений`}</p><button className="workout-btn" type="button" disabled={skipped && !recovery} onClick={() => recovery ? onEditWorkout?.() : (!skipped && onOpenWorkout?.(workout.id))}>{buttonLabel}</button></section>;
+  return <section className={`summary-col workout${recovery ? ' recovery' : ''}`}><div className="summary-label">{workout.active ? 'Активная тренировка' : (recovery ? 'Пропущенная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка'))}</div><h3>{workout.title}</h3><p>{recovery ? `Плановая дата: ${formatFullDate(dateFromKey(workout.scheduledDate))}` : formatExerciseCount(workout.exerciseCount)}</p><button className="workout-btn" type="button" disabled={skipped && !recovery} onClick={() => recovery ? onEditWorkout?.() : (!skipped && onOpenWorkout?.(workout.id))}>{buttonLabel}</button></section>;
 }
 
 function NutritionSummary({ nutritionPlan }) {
