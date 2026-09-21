@@ -41,3 +41,10 @@ console.log('Commercial foundation contracts passed.');
 
 const checkoutEdge=read('supabase/functions/create-checkout-session/index.ts');
 const webhookEdge=read('supabase/functions/yookassa-webhook/index.ts');
+
+const reminderEdge=read('supabase/functions/send-workout-reminders/index.ts');
+const settingsSchema=read('supabase/schema/user-app-settings.sql');
+assert.match(reminderEdge,/notification_delivery_log/);
+assert.match(reminderEdge,/timezone/);
+assert.match(reminderEdge,/workout_push/);
+assert.match(settingsSchema,/timezone text/);
