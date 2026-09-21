@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test:lifecycle": "node tests/workout-lifecycle-contracts.mjs",
     "test:core": "node tests/mvp-core-contracts.mjs",
-    "test": "pnpm run test:lifecycle && pnpm run test:core"
+    "test:qa": "node tests/mvp-product-qa-contracts.mjs",
+    "test": "pnpm run test:lifecycle && pnpm run test:core && pnpm run test:qa"
   },
   "engines": {
     "node": ">=20.19.0"
