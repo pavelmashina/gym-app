@@ -43,7 +43,7 @@ function applyCachedAppearance() {
 
 function toNutritionPlan(row) {
   if (!row?.is_active) return null;
-  return { calories: row.calories, protein: row.protein_g, fat: row.fat_g, carbs: row.carbs_g, completion: 0 };
+  return { calories: row.calories, protein: row.protein_g, fat: row.fat_g, carbs: row.carbs_g };
 }
 
 function LoadingScreen() {
@@ -206,10 +206,7 @@ export default function App() {
           setLaunchingProgramId(null);
           return 'training';
         }
-        if (current === 'workout-session') {
-          setWorkoutScheduledId(null);
-          return 'home';
-        }
+        if (current === 'workout-session') return current;
         return current;
       });
     }
