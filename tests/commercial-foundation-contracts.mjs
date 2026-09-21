@@ -26,9 +26,9 @@ assert.match(subscription,/hasEntitlement/);
 
 assert.match(plans,/loadPlanCatalog/);
 assert.match(plans,/startCheckout/);
-assert.match(plans,/openBillingPortal/);
+assert.match(plans,/requestSubscriptionCancellation/);
 assert.match(billing,/create-checkout-session/);
-assert.match(billing,/create-billing-portal/);
+assert.match(billing,/request_subscription_cancellation/);
 
 assert.match(settings,/handlePushToggle/);
 assert.match(push,/Notification\.requestPermission/);
@@ -38,3 +38,14 @@ assert.match(sw,/showNotification/);
 assert.match(sw,/notificationclick/);
 
 console.log('Commercial foundation contracts passed.');
+
+const checkoutEdge=read('supabase/functions/create-checkout-session/index.ts');
+const webhookEdge=read('supabase/functions/yookassa-webhook/index.ts');
+const renewalEdge=read('supabase/functions/renew-subscriptions/index.ts');
+assert.match(checkoutEdge,/api\.yookassa\.ru\/v3\/payments/);
+assert.match(checkoutEdge,/Idempotence-Key/);
+assert.match(checkoutEdge,/save_payment_method/);
+assert.match(webhookEdge,/re-fetch payment from YooKassa|v3\/payments/);
+assert.match(webhookEdge,/user_subscriptions/);
+assert.match(renewalEdge,/payment_method_id/);
+assert.match(renewalEdge,/past_due/);
