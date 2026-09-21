@@ -6,8 +6,8 @@ import { ExercisesScreen } from './components/ExercisesScreen.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { FaqScreen, PlanScreen, PrivacyPolicyScreen, SupportScreen } from './components/MenuScreens.jsx';
 import { NutritionScreen } from './components/NutritionScreen.jsx';
-import { SectionPlaceholder } from './components/SectionPlaceholder.jsx';
 import { SettingsScreen } from './components/SettingsScreen.jsx';
+import { SportPitScreen } from './components/SportPitScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
@@ -306,7 +306,7 @@ export default function App() {
     }
     if (activeScreen === 'statistics') return <StatisticsScreen />;
     if (activeScreen === 'nutrition') return <NutritionScreen user={user} profile={profile} />;
-    if (activeScreen === 'sportpit') return <SectionPlaceholder section={activeScreen} />;
+    if (activeScreen === 'sportpit') return <SportPitScreen />;
     return <HomeScreen menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} nutritionPlan={nutritionPlan} />;
   }
 
