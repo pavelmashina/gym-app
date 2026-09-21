@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { loadPlanCatalog } from '../lib/subscription.js';
+import { openBillingPortal, startCheckout } from '../lib/billing.js';
 import '../menu-screens.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>}
@@ -8,10 +10,30 @@ function ScreenShell({title,onBack,children}){
   return <div className="menu-screen"><header className="menu-screen-topbar"><button className="menu-screen-back" type="button" onClick={onBack} aria-label="Назад"><BackIcon/></button><h1>{title}</h1><span/></header><main className="menu-screen-content">{children}</main></div>;
 }
 
-export function PlanScreen({planCode='free',onBack}){
-  const active=planCode && planCode!=='free';
-  const label=active?(planCode==='premium'?'Premium':planCode==='pro'?'Pro':planCode):'Тариф не подключен';
-  return <ScreenShell title="Подписка / Тариф" onBack={onBack}><section className="menu-plan-hero"><span>Текущий тариф</span><strong>{label}</strong><p>{active?'Управление действующей подпиской и преимуществами тарифа.':'Сейчас у вас нет подключённого тарифа.'}</p></section><section className="menu-card"><h2>{active?'Ваши возможности':'Доступ без подписки'}</h2><div className="menu-feature">Тренировочные программы</div><div className="menu-feature">История и статистика тренировок</div><div className="menu-feature">Синхронизация данных между устройствами</div><div className="menu-feature">Собственные упражнения и программы</div></section>{!active&&<button className="menu-primary" type="button">Посмотреть тарифы</button>}</ScreenShell>;
+export function PlanScreen({planCode='free',subscription=null,onBack}){
+  const [plans,setPlans]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [busy,setBusy]=useState('');
+  const [message,setMessage]=useState('');
+  useEffect(()=>{let active=true;loadPlanCatalog().then((items)=>{if(active)setPlans(items)}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[]);
+  const active=planCode&&planCode!=='free'&&['active','trialing'].includes(subscription?.status||'active');
+  const currentLabel=plans.find((item)=>item.code===planCode)?.name || (planCode==='free'?'Бесплатный':planCode);
+  async function choosePlan(code){
+    if(code==='free'||code===planCode)return;
+    setBusy(code);setMessage('');
+    try{await startCheckout(code)}catch(error){setMessage(error?.message||'Не удалось начать оплату.')}finally{setBusy('')}
+  }
+  async function manageBilling(){
+    setBusy('portal');setMessage('');
+    try{await openBillingPortal()}catch(error){setMessage(error?.message||'Не удалось открыть управление подпиской.')}finally{setBusy('')}
+  }
+  const featureLabels={workouts:'Тренировки',programs:'Программы',nutrition:'Питание',basic_statistics:'Базовая статистика',advanced_statistics:'Расширенная аналитика',cross_device_sync:'Синхронизация между устройствами',priority_support:'Приоритетная поддержка'};
+  return <ScreenShell title="Подписка / Тариф" onBack={onBack}>
+    <section className="menu-plan-hero"><span>Текущий тариф</span><strong>{currentLabel}</strong><p>{active?'Подписка активна. Управлять оплатой можно через платёжный кабинет.':'Основные функции доступны без подписки. Платные уровни готовы к подключению через платёжного провайдера.'}</p>{subscription?.currentPeriodEnd&&<small>Текущий период до {new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(new Date(subscription.currentPeriodEnd))}</small>}</section>
+    {loading?<section className="menu-card"><p>Загружаем тарифы…</p></section>:<section className="menu-plan-grid">{plans.map((plan)=>{const selected=plan.code===planCode;const features=Object.entries(plan.features||{}).filter(([,enabled])=>enabled);return <article className={`menu-card menu-plan-option${selected?' active':''}`} key={plan.code}><div className="menu-plan-option-head"><div><span>{selected?'Текущий':'Тариф'}</span><h2>{plan.name}</h2></div>{selected&&<b>✓</b>}</div><p>{plan.description}</p><div className="menu-plan-features">{features.map(([key])=><div className="menu-feature" key={key}>{featureLabels[key]||key}</div>)}</div>{plan.code!=='free'&&!selected&&<button className="menu-primary" type="button" disabled={Boolean(busy)} onClick={()=>choosePlan(plan.code)}>{busy===plan.code?'Открываем оплату…':'Выбрать тариф'}</button>}</article>})}</section>}
+    {message&&<div className="support-status error">{message}</div>}
+    {active&&<button className="menu-primary" type="button" disabled={Boolean(busy)} onClick={manageBilling}>{busy==='portal'?'Открываем…':'Управлять подпиской'}</button>}
+  </ScreenShell>;
 }
 
 export function PrivacyPolicyScreen({onBack}){
