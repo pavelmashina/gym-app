@@ -1,0 +1,19 @@
+{
+  "name": "GYM",
+  "short_name": "GYM",
+  "description": "Приложение для тренировок, программ, статистики и питания",
+  "start_url": "/gym-app/",
+  "scope": "/gym-app/",
+  "display": "standalone",
+  "background_color": "#f3f3f0",
+  "theme_color": "#f3f3f0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/gym-app/assets/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
