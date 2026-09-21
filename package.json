@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:lifecycle": "node tests/workout-lifecycle-contracts.mjs"
+    "test:lifecycle": "node tests/workout-lifecycle-contracts.mjs",
+    "test:core": "node tests/mvp-core-contracts.mjs",
+    "test": "pnpm run test:lifecycle && pnpm run test:core"
   },
   "engines": {
     "node": ">=20.19.0"
