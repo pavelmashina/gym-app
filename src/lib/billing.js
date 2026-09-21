@@ -11,10 +11,8 @@ export async function startCheckout(planCode) {
   window.location.assign(data.checkoutUrl);
 }
 
-export async function openBillingPortal() {
-  const returnUrl = window.location.origin + (import.meta.env.BASE_URL || '/');
-  const { data, error } = await supabase.functions.invoke('create-billing-portal', { body: { returnUrl } });
-  if (error) throw new Error('Управление оплатой пока недоступно.');
-  if (!data?.portalUrl) throw new Error('Ссылка на управление подпиской не получена.');
-  window.location.assign(data.portalUrl);
+export async function requestSubscriptionCancellation() {
+  const { data, error } = await supabase.rpc('request_subscription_cancellation');
+  if (error) throw new Error(error.message || 'Не удалось отменить продление подписки.');
+  return data;
 }
