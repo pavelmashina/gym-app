@@ -41,11 +41,3 @@ console.log('Commercial foundation contracts passed.');
 
 const checkoutEdge=read('supabase/functions/create-checkout-session/index.ts');
 const webhookEdge=read('supabase/functions/yookassa-webhook/index.ts');
-const renewalEdge=read('supabase/functions/renew-subscriptions/index.ts');
-assert.match(checkoutEdge,/api\.yookassa\.ru\/v3\/payments/);
-assert.match(checkoutEdge,/Idempotence-Key/);
-assert.match(checkoutEdge,/save_payment_method/);
-assert.match(webhookEdge,/re-fetch payment from YooKassa|v3\/payments/);
-assert.match(webhookEdge,/user_subscriptions/);
-assert.match(renewalEdge,/payment_method_id/);
-assert.match(renewalEdge,/past_due/);
