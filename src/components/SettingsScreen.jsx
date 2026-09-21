@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { disablePushForUser, enablePushForUser } from '../lib/pushNotifications.js';
 import '../settings-screen.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 5-7 7 7 7"/></svg>}
@@ -44,6 +45,26 @@ export function SettingsScreen({user,planCode,onBack,onOpenPlan}){
     setSaving(false); if(error){console.error(error);setMessage('Не удалось сохранить настройки.')} else setMessage('Сохранено');
   }
 
+  async function handlePushToggle(field,value){
+    if(saving)return;
+    setSaving(true);setMessage('');
+    try{
+      if(value) await enablePushForUser(user.id);
+      else {
+        const otherEnabled=field==='workout_push'?settings.promos_push:settings.workout_push;
+        if(!otherEnabled) await disablePushForUser(user.id);
+      }
+      const next={...settings,[field]:value};
+      setSettings(next);applyLocalSettings(next);
+      const {error}=await supabase.from('user_app_settings').upsert({user_id:user.id,...next,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      if(error) throw error;
+      setMessage(value?'Push-уведомления включены.':'Настройка push-уведомлений обновлена.');
+    }catch(error){
+      console.error('Unable to update push notifications:',error);
+      setMessage(error?.message||'Не удалось изменить push-уведомления.');
+    }finally{setSaving(false)}
+  }
+
   async function changePassword(){
     if(newPassword.length<8){setMessage('Новый пароль должен содержать минимум 8 символов.');return}
     if(newPassword!==repeatPassword){setMessage('Новые пароли не совпадают.');return}
@@ -75,7 +96,7 @@ export function SettingsScreen({user,planCode,onBack,onOpenPlan}){
 
     <section className="settings-card"><h2>Способы оплаты</h2>{methods.length===0?<p className="settings-empty">Способы оплаты не добавлены.</p>:methods.map(m=><div className="payment-row" key={m.id}><div><strong>{m.brand||'Карта'} •••• {m.last4||'••••'}</strong><small>{m.exp_month&&m.exp_year?`до ${String(m.exp_month).padStart(2,'0')}/${String(m.exp_year).slice(-2)}`:''}{m.is_default?' · Основная':''}</small></div><button type="button" onClick={()=>removeMethod(m.id)}>Отвязать</button></div>)}<button type="button" className="settings-secondary" onClick={()=>setMessage('Добавление новой карты будет подключено через платёжного провайдера. Данные карты приложение хранить не будет.')}>+ Добавить новую карту</button></section>
 
-    <section className="settings-card"><h2>Уведомления</h2><div className="settings-group-title">Напоминания о тренировках</div><div className="toggle-row"><span>Пуш-уведомления</span><Switch checked={settings.workout_push} onChange={v=>persist({workout_push:v})}/></div><div className="toggle-row"><span>Уведомления по почте</span><Switch checked={settings.workout_email} onChange={v=>persist({workout_email:v})}/></div><div className="settings-group-title second">Акции и предложения</div><div className="toggle-row"><span>Пуш-уведомления</span><Switch checked={settings.promos_push} onChange={v=>persist({promos_push:v})}/></div><div className="toggle-row"><span>Уведомления по почте</span><Switch checked={settings.promos_email} onChange={v=>persist({promos_email:v})}/></div></section>
+    <section className="settings-card"><h2>Уведомления</h2><div className="settings-group-title">Напоминания о тренировках</div><div className="toggle-row"><span>Пуш-уведомления</span><Switch checked={settings.workout_push} onChange={v=>handlePushToggle('workout_push',v)}/></div><div className="toggle-row"><span>Уведомления по почте</span><Switch checked={settings.workout_email} onChange={v=>persist({workout_email:v})}/></div><div className="settings-group-title second">Акции и предложения</div><div className="toggle-row"><span>Пуш-уведомления</span><Switch checked={settings.promos_push} onChange={v=>handlePushToggle('promos_push',v)}/></div><div className="toggle-row"><span>Уведомления по почте</span><Switch checked={settings.promos_email} onChange={v=>persist({promos_email:v})}/></div></section>
 
     <section className="settings-card"><h2>Приложение</h2><button className="settings-link" type="button" onClick={onOpenPlan}><span><strong>Подписка / Тариф</strong><small>{!planCode||planCode==='free'?'Тариф не подключен':planCode}</small></span><ArrowIcon/></button><label className="settings-select"><span>Единицы веса</span><select value={settings.weight_unit} onChange={e=>persist({weight_unit:e.target.value})}><option value="kg">Килограммы (кг)</option><option value="lb">Фунты (lb)</option></select></label><label className="settings-select"><span>Тема</span><select value={settings.theme} onChange={e=>persist({theme:e.target.value})}><option value="light">Светлая</option><option value="dark">Тёмная</option><option value="system">Как в системе</option></select></label><label className="settings-select"><span>Язык</span><select value={settings.language} onChange={e=>persist({language:e.target.value})}><option value="ru">Русский</option><option value="en">English</option></select></label><label className="settings-select"><span>Регион</span><select value={settings.region} onChange={e=>persist({region:e.target.value})}><option value="RU">Россия</option><option value="RS">Сербия</option><option value="KZ">Казахстан</option><option value="AE">ОАЭ</option><option value="US">США</option></select></label></section>
     {loading&&<div className="settings-loading">Загружаем настройки…</div>}{saving&&<div className="settings-saving">Сохраняем…</div>}
