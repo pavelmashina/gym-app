@@ -9,6 +9,7 @@ create table if not exists public.user_app_settings (
   theme text not null default 'light' check (theme in ('light','dark','system')),
   language text not null default 'ru' check (language in ('ru','en')),
   region text not null default 'RU',
+  timezone text not null default 'Europe/Moscow',
   updated_at timestamptz not null default now()
 );
 alter table public.user_app_settings enable row level security;
@@ -35,3 +36,6 @@ alter table public.payment_methods enable row level security;
 create policy payment_methods_select_own on public.payment_methods for select to authenticated using (user_id = auth.uid());
 create policy payment_methods_delete_own on public.payment_methods for delete to authenticated using (user_id = auth.uid());
 grant select, delete on public.payment_methods to authenticated;
+
+
+alter table public.user_app_settings add column if not exists timezone text not null default 'Europe/Moscow';
