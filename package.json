@@ -12,7 +12,8 @@
     "test:core": "node tests/mvp-core-contracts.mjs",
     "test:qa": "node tests/mvp-product-qa-contracts.mjs",
     "test:mobile": "node tests/mobile-pwa-contracts.mjs",
-    "test": "pnpm run test:lifecycle && pnpm run test:core && pnpm run test:qa && pnpm run test:mobile"
+    "test:commercial": "node tests/commercial-foundation-contracts.mjs",
+    "test": "pnpm run test:lifecycle && pnpm run test:core && pnpm run test:qa && pnpm run test:mobile && pnpm run test:commercial"
   },
   "engines": {
     "node": ">=20.19.0"
