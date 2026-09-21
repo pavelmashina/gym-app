@@ -164,3 +164,16 @@ begin
 end;
 $$;
 grant execute on function public.request_subscription_cancellation() to authenticated;
+
+
+create table if not exists public.notification_delivery_log (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  scheduled_workout_id uuid references public.scheduled_workouts(id) on delete cascade,
+  notification_type text not null,
+  local_date date not null,
+  created_at timestamptz not null default now(),
+  unique(user_id, scheduled_workout_id, notification_type, local_date)
+);
+alter table public.notification_delivery_log enable row level security;
+revoke all on public.notification_delivery_log from anon, authenticated;
