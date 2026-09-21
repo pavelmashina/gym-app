@@ -3,6 +3,7 @@ import { supabase } from './supabase.js';
 const MEASUREMENTS_KEY = 'gym-statistics-measurements-v1';
 const PHOTOS_KEY = 'gym-statistics-photos-v1';
 const FAVORITES_KEY = 'gym-statistics-favorites-v1';
+const CACHE_OWNER_KEY = 'gym-statistics-cache-owner-v1';
 
 const LOCAL_POLL_MS = 400;
 const REMOTE_POLL_MS = 5000;
@@ -18,6 +19,16 @@ function readArray(key) {
 
 function writeArray(key, value) {
   window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+function prepareAccountScopedCache(userId) {
+  const owner = window.localStorage.getItem(CACHE_OWNER_KEY);
+  if (owner && owner !== userId) {
+    window.localStorage.removeItem(MEASUREMENTS_KEY);
+    window.localStorage.removeItem(PHOTOS_KEY);
+    window.localStorage.removeItem(FAVORITES_KEY);
+  }
+  window.localStorage.setItem(CACHE_OWNER_KEY, userId);
 }
 
 function stable(value) {
@@ -223,6 +234,8 @@ export async function initializeStatisticsCloudSync({ onRemoteUpdate } = {}) {
   if (sessionError) throw sessionError;
   const userId = session?.user?.id;
   if (!userId) return () => {};
+
+  prepareAccountScopedCache(userId);
 
   let stopped = false;
   let syncing = false;
