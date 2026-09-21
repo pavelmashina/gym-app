@@ -133,3 +133,34 @@ create policy push_subscriptions_insert_own on public.push_subscriptions for ins
 create policy push_subscriptions_update_own on public.push_subscriptions for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy push_subscriptions_delete_own on public.push_subscriptions for delete to authenticated using (user_id = auth.uid());
 grant select, insert, update, delete on public.push_subscriptions to authenticated;
+
+
+-- YooKassa saved payment methods must be idempotent per user/provider.
+create unique index if not exists payment_methods_provider_unique
+  on public.payment_methods(user_id, provider, provider_payment_method_id)
+  where provider_payment_method_id is not null;
+
+create or replace function public.request_subscription_cancellation()
+returns public.user_subscriptions
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  result public.user_subscriptions;
+begin
+  update public.user_subscriptions
+     set cancel_at_period_end = true,
+         cancelled_at = now(),
+         updated_at = now()
+   where user_id = auth.uid()
+     and status in ('active','trialing','past_due')
+  returning * into result;
+
+  if result.user_id is null then
+    raise exception 'Active subscription not found';
+  end if;
+  return result;
+end;
+$$;
+grant execute on function public.request_subscription_cancellation() to authenticated;
