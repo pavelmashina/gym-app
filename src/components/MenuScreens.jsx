@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { loadPlanCatalog } from '../lib/subscription.js';
-import { openBillingPortal, startCheckout } from '../lib/billing.js';
+import { requestSubscriptionCancellation, startCheckout } from '../lib/billing.js';
 import '../menu-screens.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>}
@@ -23,16 +23,21 @@ export function PlanScreen({planCode='free',subscription=null,onBack}){
     setBusy(code);setMessage('');
     try{await startCheckout(code)}catch(error){setMessage(error?.message||'Не удалось начать оплату.')}finally{setBusy('')}
   }
-  async function manageBilling(){
-    setBusy('portal');setMessage('');
-    try{await openBillingPortal()}catch(error){setMessage(error?.message||'Не удалось открыть управление подпиской.')}finally{setBusy('')}
+  async function cancelRenewal(){
+    setBusy('cancel');setMessage('');
+    try{
+      await requestSubscriptionCancellation();
+      setMessage('Автопродление отключено. Тариф останется активным до конца оплаченного периода.');
+    }catch(error){
+      setMessage(error?.message||'Не удалось отменить продление подписки.');
+    }finally{setBusy('')}
   }
   const featureLabels={workouts:'Тренировки',programs:'Программы',nutrition:'Питание',basic_statistics:'Базовая статистика',advanced_statistics:'Расширенная аналитика',cross_device_sync:'Синхронизация между устройствами',priority_support:'Приоритетная поддержка'};
   return <ScreenShell title="Подписка / Тариф" onBack={onBack}>
     <section className="menu-plan-hero"><span>Текущий тариф</span><strong>{currentLabel}</strong><p>{active?'Подписка активна. Управлять оплатой можно через платёжный кабинет.':'Основные функции доступны без подписки. Платные уровни готовы к подключению через платёжного провайдера.'}</p>{subscription?.currentPeriodEnd&&<small>Текущий период до {new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(new Date(subscription.currentPeriodEnd))}</small>}</section>
     {loading?<section className="menu-card"><p>Загружаем тарифы…</p></section>:<section className="menu-plan-grid">{plans.map((plan)=>{const selected=plan.code===planCode;const features=Object.entries(plan.features||{}).filter(([,enabled])=>enabled);return <article className={`menu-card menu-plan-option${selected?' active':''}`} key={plan.code}><div className="menu-plan-option-head"><div><span>{selected?'Текущий':'Тариф'}</span><h2>{plan.name}</h2></div>{selected&&<b>✓</b>}</div><p>{plan.description}</p><div className="menu-plan-features">{features.map(([key])=><div className="menu-feature" key={key}>{featureLabels[key]||key}</div>)}</div>{plan.code!=='free'&&!selected&&<button className="menu-primary" type="button" disabled={Boolean(busy)} onClick={()=>choosePlan(plan.code)}>{busy===plan.code?'Открываем оплату…':'Выбрать тариф'}</button>}</article>})}</section>}
     {message&&<div className="support-status error">{message}</div>}
-    {active&&<button className="menu-primary" type="button" disabled={Boolean(busy)} onClick={manageBilling}>{busy==='portal'?'Открываем…':'Управлять подпиской'}</button>}
+    {active&&!subscription?.cancelAtPeriodEnd&&<button className="menu-primary" type="button" disabled={Boolean(busy)} onClick={cancelRenewal}>{busy==='cancel'?'Сохраняем…':'Отключить автопродление'}</button>}{active&&subscription?.cancelAtPeriodEnd&&<div className="support-status">Автопродление уже отключено.</div>}
   </ScreenShell>;
 }
 
