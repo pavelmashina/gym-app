@@ -11,6 +11,7 @@ import { SportPitScreen } from './components/SportPitScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
+import { loadSubscriptionState } from './lib/subscription.js';
 
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
 const UTILITY_SCREENS = ['settings', 'plan', 'privacy', 'support', 'faq'];
@@ -61,6 +62,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [nutritionPlan, setNutritionPlan] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [signOutLoading, setSignOutLoading] = useState(false);
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(isPasswordRecoveryUrl);
@@ -93,6 +95,7 @@ export default function App() {
       if (!nextSession) {
         setProfile(null);
         setNutritionPlan(null);
+        setSubscription(null);
         setMenuOpen(false);
         setEditingProgramId(null);
         setLaunchingProgramId(null);
@@ -121,6 +124,15 @@ export default function App() {
     loadProfile();
     return () => { active = false; };
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) { setSubscription(null); return undefined; }
+    let active = true;
+    loadSubscriptionState(profile?.plan_code || 'free').then((value) => {
+      if (active) setSubscription(value);
+    });
+    return () => { active = false; };
+  }, [userId, profile?.plan_code]);
 
   useEffect(() => {
     if (!userId) { setNutritionPlan(null); return undefined; }
@@ -286,9 +298,9 @@ export default function App() {
 
   function renderActiveScreen() {
     if (activeScreen === 'settings') {
-      return <SettingsScreen user={user} planCode={profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
+      return <SettingsScreen user={user} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
     }
-    if (activeScreen === 'plan') return <PlanScreen planCode={profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'plan') return <PlanScreen subscription={subscription} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
     if (activeScreen === 'privacy') return <PrivacyPolicyScreen onBack={closeUtilityScreen} />;
     if (activeScreen === 'support') return <SupportScreen user={user} onBack={closeUtilityScreen} />;
     if (activeScreen === 'faq') return <FaqScreen onBack={closeUtilityScreen} />;
