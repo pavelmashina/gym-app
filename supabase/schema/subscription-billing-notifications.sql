@@ -177,3 +177,30 @@ create table if not exists public.notification_delivery_log (
 );
 alter table public.notification_delivery_log enable row level security;
 revoke all on public.notification_delivery_log from anon, authenticated;
+
+
+-- Explicit deny policies keep service-only tables closed while making the intent visible to schema linting.
+drop policy if exists billing_events_deny_authenticated on public.billing_events;
+create policy billing_events_deny_authenticated on public.billing_events
+for all to authenticated using (false) with check (false);
+
+drop policy if exists notification_delivery_log_deny_authenticated on public.notification_delivery_log;
+create policy notification_delivery_log_deny_authenticated on public.notification_delivery_log
+for all to authenticated using (false) with check (false);
+
+create index if not exists billing_events_user_id_idx on public.billing_events(user_id);
+create index if not exists user_subscriptions_plan_code_idx on public.user_subscriptions(plan_code);
+create index if not exists notification_delivery_log_workout_idx on public.notification_delivery_log(scheduled_workout_id);
+
+drop policy if exists user_subscriptions_select_own on public.user_subscriptions;
+create policy user_subscriptions_select_own on public.user_subscriptions
+for select to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists push_subscriptions_select_own on public.push_subscriptions;
+drop policy if exists push_subscriptions_insert_own on public.push_subscriptions;
+drop policy if exists push_subscriptions_update_own on public.push_subscriptions;
+drop policy if exists push_subscriptions_delete_own on public.push_subscriptions;
+create policy push_subscriptions_select_own on public.push_subscriptions for select to authenticated using (user_id = (select auth.uid()));
+create policy push_subscriptions_insert_own on public.push_subscriptions for insert to authenticated with check (user_id = (select auth.uid()));
+create policy push_subscriptions_update_own on public.push_subscriptions for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy push_subscriptions_delete_own on public.push_subscriptions for delete to authenticated using (user_id = (select auth.uid()));
