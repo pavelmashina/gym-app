@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
 import { createProgram, getProgram, startProgram, updateProgram } from '../lib/programs.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
@@ -26,21 +27,34 @@ function normalizeIntoOneCycle(programWeeks) {
   return [{ id: programWeeks?.[0]?.id ?? crypto.randomUUID(), number: 1, workouts }];
 }
 
-export function CreateProgramScreen({ onBack, onCreated, programId = null, launchOnly = false }) {
+export function CreateProgramScreen({ onBack, onCreated, programId = null, launchOnly = false, userId = null }) {
   const isEditing = Boolean(programId) && !launchOnly;
-  const [step, setStep] = useState(launchOnly ? 3 : 1);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const draftKey = !programId && !launchOnly ? programDraftKey(userId) : null;
+  const [restoration] = useState(() => {
+    try { return { draft: readProgramDraft(localStorage, draftKey), error: '' }; }
+    catch { return { draft: null, error: 'Не удалось восстановить черновик. Автосохранение недоступно; не закрывайте страницу до сохранения программы.' }; }
+  });
+  const restored = restoration.draft;
+  const draftFinished = useRef(false);
+  const [draftError, setDraftError] = useState(restoration.error);
+  const [draftBlocked, setDraftBlocked] = useState(Boolean(restoration.error));
+  const [draftRestored, setDraftRestored] = useState(Boolean(restored));
+  const [step, setStep] = useState(restored?.step ?? (launchOnly ? 3 : 1));
+  const [name, setName] = useState(restored?.name ?? '');
+  const [description, setDescription] = useState(restored?.description ?? '');
   const [coverUrl, setCoverUrl] = useState('');
   const [coverFile, setCoverFile] = useState(null);
   const [existingCoverPath, setExistingCoverPath] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [place, setPlace] = useState('');
-  const [equipment, setEquipment] = useState('');
-  const [level, setLevel] = useState('');
-  const [scheduleMode, setScheduleMode] = useState('custom');
-  const [cycleRepeatCount, setCycleRepeatCount] = useState(1);
-  const [programWeeks, setProgramWeeks] = useState([createCycle()]);
+  const [categories, setCategories] = useState(restored?.categories ?? []);
+  const [place, setPlace] = useState(restored?.place ?? '');
+  const [equipment, setEquipment] = useState(restored?.equipment ?? '');
+  const [level, setLevel] = useState(restored?.level ?? '');
+  const [scheduleMode, setScheduleMode] = useState(restored?.scheduleMode ?? 'custom');
+  const [cycleRepeatCount, setCycleRepeatCount] = useState(restored?.cycleRepeatCount ?? 1);
+  const [programWeeks, setProgramWeeks] = useState(() => restored?.programWeeks ?? [createCycle()]);
+  const [editingWorkoutId, setEditingWorkoutId] = useState(restored?.editingWorkoutId ?? null);
+  const [startDate, setStartDate] = useState(restored?.startDate ?? '');
+  const [coverNeedsSelection, setCoverNeedsSelection] = useState(Boolean(restored?.hasCover));
   const [participationStatus, setParticipationStatus] = useState(null);
   const [originalStructureMode, setOriginalStructureMode] = useState('cycle');
   const [saving, setSaving] = useState(false);
@@ -48,6 +62,32 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [saveError, setSaveError] = useState('');
   const [initialLoading, setInitialLoading] = useState(Boolean(programId));
   const [initialError, setInitialError] = useState('');
+
+  useEffect(() => {
+    if (!draftKey || draftFinished.current || draftBlocked) return;
+    try {
+      writeProgramDraft(localStorage, draftKey, { step, name, description, categories, place, equipment, level,
+        scheduleMode, cycleRepeatCount, programWeeks, editingWorkoutId, startDate, hasCover: Boolean(coverFile) || coverNeedsSelection });
+      setDraftError('');
+    } catch { setDraftError('Не удалось сохранить черновик на устройстве. Не закрывайте страницу до сохранения программы.'); }
+  }, [draftKey, step, name, description, categories, place, equipment, level, scheduleMode, cycleRepeatCount,
+    programWeeks, editingWorkoutId, startDate, coverFile, coverNeedsSelection, draftBlocked]);
+
+  function discardDraft() {
+    if (!window.confirm('Удалить черновик на этом устройстве и начать новую программу?')) return;
+    try { clearProgramDraft(localStorage, draftKey); }
+    catch { setDraftError('Не удалось удалить черновик. Попробуйте ещё раз.'); return; }
+    setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel('');
+    setScheduleMode('custom'); setCycleRepeatCount(1); setProgramWeeks([createCycle()]);
+    setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverNeedsSelection(false);
+    setDraftBlocked(false); setDraftRestored(false); setDraftError('');
+  }
+
+  const draftNotice = draftKey ? <aside className="program-draft-notice" role={draftError ? 'alert' : 'status'}>
+    {draftError || (draftRestored ? 'Черновик восстановлен. Изменения сохраняются на этом устройстве.' : 'Черновик автоматически сохраняется на этом устройстве.')}
+    {(coverFile || coverNeedsSelection) && <p>Обложка не входит в черновик: после перезагрузки выберите фото заново.</p>}
+    <button type="button" onClick={discardDraft} disabled={saving}>Начать новую программу</button>
+  </aside> : null;
 
   useEffect(() => () => { if (coverUrl?.startsWith('blob:')) URL.revokeObjectURL(coverUrl); }, [coverUrl]);
 
@@ -119,6 +159,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       } else {
         savedProgram = await createProgram({ ...buildSavePayload(), startDate: action === 'start' ? startDate : null });
       }
+      draftFinished.current = true;
+      try { clearProgramDraft(localStorage, draftKey); } catch { /* The program itself has already been saved. */ }
       onCreated?.(savedProgram);
     } catch (error) {
       setSaveError(error?.message || 'Не удалось выполнить действие. Попробуйте ещё раз.');
@@ -129,7 +171,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     const file = event.target.files?.[0];
     if (!file) return;
     if (coverUrl?.startsWith('blob:')) URL.revokeObjectURL(coverUrl);
-    setCoverFile(file); setCoverUrl(URL.createObjectURL(file));
+    setCoverFile(file); setCoverNeedsSelection(false); setCoverUrl(URL.createObjectURL(file));
   }
 
   function toggleCategory(category) {
@@ -143,6 +185,9 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   if (legacyActiveLocked) return <div className="phone create-program-phone"><header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Редактировать программу</strong><span /></header><main className="create-program-content"><div className="program-persistence-message" role="alert"><strong>Эта программа использует старую структуру и уже запущена.</strong><br />Чтобы преобразовать её в цикл, сначала завершите или остановите текущий запуск. Расписание и история останутся сохранены.</div></main></div>;
 
   if (step === 3) return <CreateProgramCycleScheduleScreen
+    draftNotice={draftNotice}
+    startDate={startDate}
+    onStartDateChange={setStartDate}
     programName={name.trim()}
     programWeeks={programWeeks}
     onProgramWeeksChange={setProgramWeeks}
@@ -160,11 +205,12 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     launchOnly={launchOnly}
   />;
 
-  if (step === 2) return <CreateProgramCycleScreen programName={name.trim()} categories={categories} programWeeks={programWeeks} onProgramWeeksChange={setProgramWeeks} onBack={() => goToStep(1)} onNext={() => structureReady && goToStep(3)} />;
+  if (step === 2) return <CreateProgramCycleScreen draftNotice={draftNotice} editingWorkoutId={editingWorkoutId} onEditingWorkoutChange={setEditingWorkoutId} programName={name.trim()} categories={categories} programWeeks={programWeeks} onProgramWeeksChange={setProgramWeeks} onBack={() => goToStep(1)} onNext={() => structureReady && goToStep(3)} />;
 
   return <div className="phone create-program-phone">
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к тренировкам" onClick={onBack}><BackIcon /></button><strong>{isEditing ? 'Редактировать программу' : 'Создать программу'}</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content">
+      {draftNotice}
       <section className="create-program-intro"><span>Шаг 1</span><h1>{isEditing ? 'Основная информация' : 'Новая программа'}</h1><p>Заполните информацию о программе. На следующем шаге вы соберёте один цикл тренировок, а затем зададите ритм и количество повторений.</p></section>
       <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea className="program-auto-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
       <section className="create-program-section"><div className="create-program-section-head"><div><span>Обложка</span><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label></section>

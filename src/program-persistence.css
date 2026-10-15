@@ -44,3 +44,23 @@
   color: var(--muted);
   font-size: 11px;
 }
+.program-draft-notice {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.program-draft-notice[role="alert"] { color: #8a3029; background: #fff7f5; }
+.program-draft-notice button {
+  display: block;
+  margin-top: 8px;
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

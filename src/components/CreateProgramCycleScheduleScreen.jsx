@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import '../create-program-schedule.css';
 import '../create-program-cycle-schedule.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
@@ -67,8 +67,11 @@ export function CreateProgramCycleScheduleScreen({
   saveError,
   isEditing = false,
   launchOnly = false,
+  draftNotice = null,
+  startDate = '',
+  onStartDateChange,
 }) {
-  const [startDate, setStartDate] = useState('');
+  const setStartDate = onStartDateChange;
   const workouts = programWeeks[0]?.workouts ?? [];
   const repeatCount = Math.max(1, Math.min(52, Number(cycleRepeatCount) || 1));
   const expanded = useMemo(() => buildSchedule(workouts, repeatCount, scheduleMode, startDate), [workouts, repeatCount, scheduleMode, startDate]);
@@ -91,6 +94,7 @@ export function CreateProgramCycleScheduleScreen({
   return <div className="phone create-program-phone program-schedule-phone cycle-schedule-phone">
     <header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack} disabled={saving}><BackIcon /></button><strong>{launchOnly ? 'Начать программу' : (isEditing ? 'Редактировать программу' : 'Создать программу')}</strong><span /></header>
     <main className="create-program-content program-schedule-content">
+      {draftNotice}
       <section className="create-program-intro program-schedule-intro"><span>Шаг 3</span><h1>Ритм и повторение цикла</h1><p>Сначала задайте интервалы между тренировками, затем выберите, сколько раз повторить весь цикл.</p></section>
       <section className="program-schedule-summary"><div><span>Программа</span><strong>{programName}</strong></div><div className="program-schedule-summary-grid"><div><span>В одном цикле</span><strong>{workouts.length} трен.</strong></div><div><span>Всего</span><strong>{totalWorkouts} трен.</strong></div></div></section>
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { listPrograms } from '../lib/programs.js';
 import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
+import { EMPTY_PROGRAM_FILTERS, matchesProgramFilters, programFilterOptions } from '../lib/programFilters.js';
 import '../exercise-catalog.css';
 import '../program-list.css';
 
@@ -81,6 +82,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
   const [programsReloadKey, setProgramsReloadKey] = useState(0);
   const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [programFilters, setProgramFilters] = useState(EMPTY_PROGRAM_FILTERS);
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedProgramId, setSelectedProgramId] = useState(null);
 
@@ -98,12 +100,13 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     return () => { active = false; };
   }, [activeTab, refreshKey, programsReloadKey]);
 
-  useEffect(() => { setQuery(''); setFiltersOpen(false); }, [activeTab]);
+  useEffect(() => { setQuery(''); setFiltersOpen(false); setProgramFilters(EMPTY_PROGRAM_FILTERS); }, [activeTab]);
 
   const filteredPrograms = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ru');
     let result = programs.filter((program) => {
       if (activeTab === 'completed' && program.participation?.status !== 'completed') return false;
+      if (!matchesProgramFilters(program, programFilters)) return false;
       if (!normalizedQuery) return true;
       return [program.name, program.description, program.level, ...program.categories]
         .filter(Boolean)
@@ -118,12 +121,14 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       result = result.sort((a, b) => (sortDirection === 'asc' ? 1 : -1) * a.name.localeCompare(b.name, 'ru'));
     }
     return result;
-  }, [programs, query, sortDirection, activeTab]);
+  }, [programs, query, sortDirection, activeTab, programFilters]);
 
   const activeTabConfig = TRAINING_TABS.find((tab) => tab.id === activeTab);
   const isCatalogTab = activeTab === 'catalog';
   const isCompletedTab = activeTab === 'completed';
   const isProgramsTab = activeTab === 'your-programs' || isCompletedTab;
+  const hasProgramFilters = Object.values(programFilters).some(Boolean);
+  const filterOptions = programFilterOptions(isCompletedTab ? programs.filter((program) => program.participation?.status === 'completed') : programs);
 
   function openCreateProgram() {
     if (onCreateProgram) return onCreateProgram();
@@ -142,7 +147,12 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     <main className="exercise-catalog-content">
       <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
-      <section className="training-section-head"><div className="training-section-title"><span>Программы</span><h2>{EMPTY_COPY[activeTab]?.title ?? activeTabConfig?.label}</h2></div><div className="training-tools"><button className={filtersOpen ? 'active' : ''} type="button" onClick={() => setFiltersOpen((current) => !current)} aria-pressed={filtersOpen}><FilterIcon /><span>Фильтры</span></button>{!isCompletedTab && <button type="button" onClick={() => setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')}><SortIcon /><span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span></button>}</div></section>
+      <section className="training-section-head"><div className="training-section-title"><span>Программы</span><h2>{EMPTY_COPY[activeTab]?.title ?? activeTabConfig?.label}</h2></div><div className="training-tools">{(isCatalogTab || isProgramsTab) && <button className={filtersOpen || (isProgramsTab && hasProgramFilters) ? 'active' : ''} type="button" onClick={() => setFiltersOpen((current) => !current)} aria-expanded={filtersOpen}><FilterIcon /><span>Фильтры{isProgramsTab && hasProgramFilters ? ' •' : ''}</span></button>}{(isCatalogTab || activeTab === 'your-programs') && <button type="button" onClick={() => setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')}><SortIcon /><span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span></button>}</div></section>
+
+      {isProgramsTab && filtersOpen && <section className="program-list-filters" aria-label="Фильтры программ">
+        {Object.entries({ place: 'Место тренировок', category: 'Направление', level: 'Уровень' }).map(([key, label]) => <label key={key}><span>{label}</span><select value={programFilters[key]} onChange={(event) => setProgramFilters((current) => ({ ...current, [key]: event.target.value }))}><option value="">Все</option>{filterOptions[key].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>)}
+        <button type="button" disabled={!hasProgramFilters} onClick={() => setProgramFilters(EMPTY_PROGRAM_FILTERS)}>Сбросить фильтры</button>
+      </section>}
 
       {!isCatalogTab && !isCompletedTab && <button className="create-program-wide" type="button" onClick={openCreateProgram}><span className="create-program-plus"><PlusIcon /></span><span className="create-program-copy"><strong>Создать свою программу</strong><small>Соберите тренировочный цикл из упражнений</small></span><span className="create-program-arrow">›</span></button>}
 
@@ -150,7 +160,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       {isProgramsTab && programsLoading && <div className="my-programs-state"><div className="exercise-list-spinner" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>}
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
       {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length > 0 && <section className="my-programs-list">{filteredPrograms.map((program) => <ProgramCard key={`${activeTab}-${program.id}`} program={program} onOpen={setSelectedProgramId} />)}</section>}
-      {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (query ? <div className="my-programs-state">По вашему запросу программы не найдены.</div> : <EmptyPrograms tabId={activeTab} />)}
+      {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (query || hasProgramFilters ? <div className="my-programs-state">По выбранным условиям программы не найдены.<button type="button" onClick={() => { setQuery(''); setProgramFilters(EMPTY_PROGRAM_FILTERS); }}>Сбросить поиск и фильтры</button></div> : <EmptyPrograms tabId={activeTab} />)}
       {!isProgramsTab && !isCatalogTab && <EmptyPrograms tabId={activeTab} />}
     </main>
     <TrainingBottomNav />

@@ -17,44 +17,46 @@ function createSet() { return { id: crypto.randomUUID(), reps: '' }; }
 function exerciseKey(exercise) { return exercise.sourceWorkoutExerciseId ?? exercise.linkedExerciseId ?? exercise.id; }
 function normalizeExercise(exercise) { return { ...exercise, sets: Array.isArray(exercise.sets) && exercise.sets.length ? exercise.sets : [createSet()] }; }
 
-function ExercisePicker({ workout, onBack, onSave }) {
+function ExercisePicker({ workout, onBack, onSave, onChange, draftNotice }) {
   const existingCanonicalIds = useMemo(() => workout.exercises
     .map((exercise) => exercise.linkedExerciseId ?? (!exercise.sourceWorkoutExerciseId ? exercise.id : null))
     .filter(Boolean), [workout.exercises]);
   const [selectedIds, setSelectedIds] = useState(existingCanonicalIds);
   const [catalog, setCatalog] = useState([]);
 
-  function save() {
-    const byId = new Map(catalog.map((exercise) => [exercise.id, exercise]));
+  function selectedExercises(ids, all) {
+    const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
     const existingByCanonical = new Map(workout.exercises
       .map((exercise) => [exercise.linkedExerciseId ?? (!exercise.sourceWorkoutExerciseId ? exercise.id : null), exercise])
       .filter(([id]) => Boolean(id)));
     const snapshotOnly = workout.exercises.filter((exercise) => exercise.sourceWorkoutExerciseId && !exercise.linkedExerciseId);
-    const canonical = selectedIds.map((id) => {
+    const canonical = ids.map((id) => {
       const existing = existingByCanonical.get(id);
       if (existing) return existing;
       const source = byId.get(id);
       return source ? normalizeExercise({ ...source, linkedExerciseId: source.id }) : null;
     }).filter(Boolean);
-    onSave([...snapshotOnly, ...canonical]);
+    return [...snapshotOnly, ...canonical];
   }
 
   return <div className="phone create-program-phone program-exercise-picker-phone">
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Упражнения</strong><span className="create-program-header-spacer" /></header>
     <main className="program-exercise-picker-content">
+      {draftNotice}
       <section className="program-exercise-picker-intro"><span>Цикл тренировок</span><h1>{workout.name}</h1><p>Выберите упражнения из базы или создайте своё.</p></section>
       <ExerciseLibraryPicker
         multi
         selectedIds={selectedIds}
-        onChange={(ids, all) => { setSelectedIds(ids); setCatalog(all); }}
+        onChange={(ids, all) => { setSelectedIds(ids); setCatalog(all); onChange(selectedExercises(ids, all)); }}
       />
     </main>
-    <footer className="create-program-footer"><button className="create-program-next" type="button" onClick={save}>Готово · {selectedIds.length}</button></footer>
+    <footer className="create-program-footer"><button className="create-program-next" type="button" onClick={() => onSave(selectedExercises(selectedIds, catalog))}>Готово · {selectedIds.length}</button></footer>
   </div>;
 }
 
-function WorkoutEditor({ workout, onBack, onSave }) {
-  const [draft, setDraft] = useState(() => ({ ...workout, exercises: workout.exercises.map(normalizeExercise) }));
+function WorkoutEditor({ workout, onBack, onSave, onChange, draftNotice }) {
+  const draft = workout;
+  const setDraft = onChange;
   const [pickerOpen, setPickerOpen] = useState(false);
 
   function updateExercise(key, updater) {
@@ -66,12 +68,13 @@ function WorkoutEditor({ workout, onBack, onSave }) {
   }
 
   if (pickerOpen) {
-    return <ExercisePicker workout={draft} onBack={() => setPickerOpen(false)} onSave={(exercises) => { setDraft((current) => ({ ...current, exercises })); setPickerOpen(false); }} />;
+    return <ExercisePicker workout={draft} draftNotice={draftNotice} onBack={() => setPickerOpen(false)} onChange={(exercises) => setDraft((current) => ({ ...current, exercises }))} onSave={(exercises) => { setDraft((current) => ({ ...current, exercises })); setPickerOpen(false); }} />;
   }
 
   return <div className="phone create-program-phone program-workout-editor-phone program-workout-draft-phone">
-    <header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Тренировка цикла</strong><span className="create-program-header-spacer" /></header>
+    <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к циклу" onClick={onBack}><BackIcon /></button><strong>Тренировка цикла</strong><span className="create-program-header-spacer" /></header>
     <main className="program-workout-editor-content">
+      {draftNotice}
       <section className="program-workout-editor-intro"><span>Один цикл</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /><p>Добавьте упражнения и задайте подходы.</p></section>
       <section className="program-workout-editor-section">
         <div className="program-workout-editor-section-head"><div><span>Упражнения</span><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
@@ -90,9 +93,9 @@ function WorkoutEditor({ workout, onBack, onSave }) {
   </div>;
 }
 
-export function CreateProgramCycleScreen({ programName, categories, programWeeks, onProgramWeeksChange, onBack, onNext }) {
+export function CreateProgramCycleScreen({ programName, categories, programWeeks, onProgramWeeksChange, onBack, onNext, editingWorkoutId, onEditingWorkoutChange, draftNotice }) {
   const cycle = programWeeks[0] ?? { id: crypto.randomUUID(), number: 1, workouts: [] };
-  const [editingWorkoutId, setEditingWorkoutId] = useState(null);
+  const setEditingWorkoutId = onEditingWorkoutChange;
   const totalExercises = cycle.workouts.reduce((sum, workout) => sum + workout.exercises.length, 0);
   const ready = cycle.workouts.length > 0 && cycle.workouts.every((workout) => workout.name.trim() && workout.exercises.length > 0);
   const editingWorkout = cycle.workouts.find((workout) => workout.id === editingWorkoutId) ?? null;
@@ -112,12 +115,13 @@ export function CreateProgramCycleScreen({ programName, categories, programWeeks
   }
 
   if (editingWorkout) {
-    return <WorkoutEditor workout={editingWorkout} onBack={() => setEditingWorkoutId(null)} onSave={(draft) => { updateCycle((current) => ({ ...current, workouts: current.workouts.map((workout) => workout.id === editingWorkout.id ? { ...draft, id: workout.id } : workout) })); setEditingWorkoutId(null); }} />;
+    return <WorkoutEditor workout={editingWorkout} draftNotice={draftNotice} onChange={(updater) => updateCycle((current) => ({ ...current, workouts: current.workouts.map((workout) => workout.id === editingWorkout.id ? updater(workout) : workout) }))} onBack={() => setEditingWorkoutId(null)} onSave={(draft) => { updateCycle((current) => ({ ...current, workouts: current.workouts.map((workout) => workout.id === editingWorkout.id ? { ...draft, id: workout.id } : workout) })); setEditingWorkoutId(null); }} />;
   }
 
   return <div className="phone create-program-phone create-program-step2-phone cycle-builder-phone">
-    <header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Создать программу</strong><span className="create-program-header-spacer" /></header>
+    <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к описанию программы" onClick={onBack}><BackIcon /></button><strong>Создать программу</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content create-program-step2-content">
+      {draftNotice}
       <section className="create-program-intro create-program-step2-intro"><span>Шаг 2</span><h1>Один цикл тренировок</h1><p>Соберите последовательность тренировок, которая затем будет повторяться.</p></section>
       <section className="program-step2-summary"><div><span>Программа</span><strong>{programName}</strong></div><div className="program-step2-summary-meta"><span>1 цикл</span><span>{formatRussianCount(cycle.workouts.length, ['тренировка', 'тренировки', 'тренировок'])}</span><span>{formatRussianCount(totalExercises, ['упражнение', 'упражнения', 'упражнений'])}</span></div>{categories.length > 0 && <div className="program-step2-categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}</section>
       <section className="cycle-recommendation-card"><strong>Рекомендация</strong><span>Обычно удобнее, если один цикл примерно равен одной неделе. Но это не ограничение.</span></section>
