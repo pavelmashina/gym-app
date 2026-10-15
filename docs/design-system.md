@@ -1,6 +1,6 @@
 # Gym App design system
 
-Status: active app-wide UI contract. `src/design-system.css` is loaded last and normalizes all major product surfaces.
+Status: active app-wide UI contract. `src/design-system.css` defines shared tokens; `src/design-system-audit.css` and `src/ui-layout-audit.css` are loaded after it to normalize legacy surfaces and mobile layout edge cases.
 
 This file is the source-of-truth companion to `src/design-system.css`. New screens should reuse these tokens rather than introduce one-off dimensions.
 
@@ -36,3 +36,18 @@ Single UI family: Inter, weights 400/500/600/700/800.
 4. Forms use consistent 50px controls and labels.
 5. Active workout may hide bottom navigation; ordinary detail screens keep app navigation according to their current product flow.
 6. All interactive elements need visible focus and reduced-motion support.
+
+
+## Date and period labels
+- Date/day badges must size from content and stay within the parent container.
+- Do not use fixed widths for variable-length dates.
+- Prefer `min-width: 0`, `max-width: 100%` and wrapping over clipping or ellipsis when the full date is important.
+- Program schedule/detail day badges share the same compact geometry: minimum height 34px, small radius and content-sized width.
+- Period labels in statistics may wrap on narrow screens; they must not overflow the period selector.
+- Date rows must reserve a fixed area only for controls/icons, while the date text remains flexible.
+
+## Layout resilience
+- Any flex/grid child containing user or database text should use `min-width: 0`.
+- Long exercise/program names use `overflow-wrap: anywhere` instead of forcing horizontal page overflow.
+- Variable-content cards use `min-height` rather than fixed `height`.
+- Do not repair overlaps by adding arbitrary `z-index` or hiding overflow; fix the grid/flex sizing and spacing.
