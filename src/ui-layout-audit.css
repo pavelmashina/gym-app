@@ -290,3 +290,46 @@ svg {
     grid-column: 1;
   }
 }
+
+
+/* Period/date labels: wrap inside their own geometry instead of ellipsis or overflow. */
+.statistics-period-label {
+  min-width: 0;
+  max-width: 100%;
+  padding-inline: 4px;
+}
+
+.statistics-period-label strong {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+}
+
+.statistics-period-label span,
+.completed-result-date,
+.history-date,
+.policy-date {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.completed-result-card-top,
+.completed-result-meta,
+.history-table,
+.workout-date-move-options,
+.workout-date-move-options > button {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.completed-result-card h2,
+.completed-result-date,
+.workout-date-move-options :where(strong,span) {
+  overflow-wrap: anywhere;
+}
