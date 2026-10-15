@@ -131,13 +131,9 @@
   .rest-countdown-copy strong { max-width:36%; font-size:22px; }
 }
 
-/* Exercise-level execution settings. Saved results keep their own immutable snapshot. */
+/* Exercise-level execution settings: secondary, compact and lazy. */
 .exercise-execution-settings {
-  margin: 12px 0 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-2);
+  margin: 7px 0 8px;
 }
 
 .exercise-execution-settings > details {
@@ -145,37 +141,96 @@
 }
 
 .exercise-execution-settings summary {
-  min-height: 36px;
-  display: flex;
+  width: max-content;
+  max-width: 100%;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
   cursor: pointer;
-  font-size: 12px;
-  line-height: 16px;
+  list-style: none;
+  font-size: 11px;
+  line-height: 15px;
   font-weight: 700;
 }
 
+.exercise-execution-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.execution-settings-triangle {
+  display: inline-block;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform .15s ease;
+}
+
+.exercise-configuration-details[open] .execution-settings-triangle {
+  transform: rotate(90deg);
+}
+
+.exercise-configuration-body {
+  margin-top: 5px;
+  padding: 8px 0 2px;
+}
+
 .exercise-execution-settings fieldset {
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0;
   border: 0;
   display: grid;
-  gap: 8px;
+  gap: 7px;
+}
+
+.exercise-execution-settings label {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 13px;
+  font-weight: 600;
 }
 
 .exercise-execution-settings .result-set-v2-fields {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .exercise-execution-settings input,
 .exercise-execution-settings select {
-  min-height: 40px;
+  min-height: 38px;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
-  padding: 8px 10px;
+  padding: 6px 8px;
+  font-size: 16px;
+}
+
+.exercise-execution-settings button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.exercise-configuration-save {
+  display: grid;
+  gap: 6px;
 }
 
 /* Restore compact set-entry geometry instead of one settings card per set. */
