@@ -250,7 +250,9 @@ export async function addStandaloneExercise(sessionId, exerciseId) {
   return data;
 }
 
-export async function updatePerformedSet(setId, values) {
+const performedSetWriteQueues = new Map();
+
+async function updatePerformedSetNow(setId, values) {
   if (values.resultV2) {
     const result = {...values.resultV2, set_type:values.setType, completed:Boolean(values.completed)};
     if (validateResultV2(result).length) throw new Error('Проверьте поля результата и сторону выполнения.');
@@ -272,6 +274,16 @@ export async function updatePerformedSet(setId, values) {
   const { error } = await supabase.from('performed_sets').update(payload).eq('id', setId);
   if (error) throw new Error('Не удалось сохранить подход.');
   if (payload.completed) await markRecentExerciseForSet(setId);
+}
+
+export function updatePerformedSet(setId, values) {
+  const previous = performedSetWriteQueues.get(setId) || Promise.resolve();
+  const task = previous.catch(() => {}).then(() => updatePerformedSetNow(setId, values));
+  performedSetWriteQueues.set(setId, task);
+  task.finally(() => {
+    if (performedSetWriteQueues.get(setId) === task) performedSetWriteQueues.delete(setId);
+  });
+  return task;
 }
 
 export async function addPerformedSet(sessionExerciseId, setNumber, setType = 'working') {
