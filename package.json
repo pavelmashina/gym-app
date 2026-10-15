@@ -16,6 +16,7 @@
     "test:mobile": "node tests/mobile-pwa-contracts.mjs",
     "test:interface": "node tests/interface-refinement-contracts.mjs",
     "test:workout-ui": "node tests/workout-ui-navigation-contracts.mjs",
+    "test:workout-performance": "node tests/workout-performance-ui-contracts.mjs",
     "test:ui-audit": "node tests/ui-audit-contracts.mjs",
     "test:commercial": "node tests/commercial-foundation-contracts.mjs",
     "test:drafts": "node tests/program-draft-filters.mjs",
