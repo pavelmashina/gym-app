@@ -280,9 +280,10 @@ export function updatePerformedSet(setId, values) {
   const previous = performedSetWriteQueues.get(setId) || Promise.resolve();
   const task = previous.catch(() => {}).then(() => updatePerformedSetNow(setId, values));
   performedSetWriteQueues.set(setId, task);
-  task.finally(() => {
-    if (performedSetWriteQueues.get(setId) === task) performedSetWriteQueues.delete(setId);
-  });
+  void task.then(
+    () => { if (performedSetWriteQueues.get(setId) === task) performedSetWriteQueues.delete(setId); },
+    () => { if (performedSetWriteQueues.get(setId) === task) performedSetWriteQueues.delete(setId); },
+  );
   return task;
 }
 
