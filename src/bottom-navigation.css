@@ -1,0 +1,125 @@
+/* One fixed navigation component for every root section. */
+body .bottom-nav:not(.app-bottom-nav) {
+  display: none !important;
+}
+
+.app-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 55;
+  width: min(calc(100vw - 36px), 394px);
+  height: 72px;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(16px);
+  overflow: visible;
+}
+
+.app-nav-item {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 72px;
+  padding: 8px 2px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: grid;
+  grid-template-rows: 34px 14px;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-nav-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: inherit;
+  background: transparent;
+  transition: background-color .14s ease, color .14s ease;
+}
+
+.app-nav-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-nav-label {
+  min-width: 0;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.app-nav-item.active {
+  color: var(--ink);
+}
+
+.app-nav-item.active:not(.home) .app-nav-icon {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.app-nav-item.home {
+  grid-template-rows: 42px 14px;
+  padding-top: 1px;
+}
+
+.app-nav-item.home .app-nav-icon {
+  width: 50px;
+  height: 50px;
+  margin-top: -13px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+
+.app-nav-item.home .app-nav-icon svg {
+  width: 27px;
+  height: 27px;
+}
+
+.app-nav-item.home.active .app-nav-icon {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.app-nav-item.home .app-nav-label {
+  margin-top: -3px;
+}
+
+.app-nav-item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+  border-radius: 14px;
+}
+
+@media (max-width: 370px) {
+  .app-bottom-nav {
+    width: calc(100vw - 24px);
+    padding-inline: 5px;
+  }
+  .app-nav-label { font-size: 8px; }
+}
