@@ -38,7 +38,6 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const draftFinished = useRef(false);
   const [draftError, setDraftError] = useState(restoration.error);
   const [draftBlocked, setDraftBlocked] = useState(Boolean(restoration.error));
-  const [draftRestored, setDraftRestored] = useState(Boolean(restored));
   const [step, setStep] = useState(restored?.step ?? (launchOnly ? 3 : 1));
   const [name, setName] = useState(restored?.name ?? '');
   const [description, setDescription] = useState(restored?.description ?? '');
@@ -80,12 +79,11 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel('');
     setScheduleMode('custom'); setCycleRepeatCount(1); setProgramWeeks([createCycle()]);
     setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverNeedsSelection(false);
-    setDraftBlocked(false); setDraftRestored(false); setDraftError('');
+    setDraftBlocked(false); setDraftError('');
   }
 
-  const draftNotice = draftKey ? <aside className="program-draft-notice" role={draftError ? 'alert' : 'status'}>
-    {draftError || (draftRestored ? 'Черновик восстановлен. Изменения сохраняются на этом устройстве.' : 'Черновик автоматически сохраняется на этом устройстве.')}
-    {(coverFile || coverNeedsSelection) && <p>Обложка не входит в черновик: после перезагрузки выберите фото заново.</p>}
+  const draftNotice = draftKey && draftError ? <aside className="program-draft-notice" role="alert">
+    {draftError}
     <button type="button" onClick={discardDraft} disabled={saving}>Начать новую программу</button>
   </aside> : null;
 
