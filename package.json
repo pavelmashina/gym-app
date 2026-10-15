@@ -16,6 +16,7 @@
     "test:mobile": "node tests/mobile-pwa-contracts.mjs",
     "test:interface": "node tests/interface-refinement-contracts.mjs",
     "test:workout-ui": "node tests/workout-ui-navigation-contracts.mjs",
+    "test:ui-audit": "node tests/ui-audit-contracts.mjs",
     "test:commercial": "node tests/commercial-foundation-contracts.mjs",
     "test:drafts": "node tests/program-draft-filters.mjs",
     "test:catalog-db": "node tests/exercise-catalog-duplicates.mjs && node tests/exercise-catalog-v2-db.mjs && node tests/exercise-catalog-v2-content.mjs && node tests/exercise-results-v2.mjs && node tests/exercise-catalog-v2-seed.mjs && node tests/exercise-library-v2.mjs && node tests/exercise-results-v2-db.mjs && node tests/exercise-results-v2-client.mjs",
