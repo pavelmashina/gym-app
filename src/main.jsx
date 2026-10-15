@@ -11,6 +11,7 @@ import './catalog-programs-polish.css';
 import './nutrition-catalog-controls.css';
 import './design-system.css';
 import './design-system-audit.css';
+import './bottom-navigation.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
