@@ -30,13 +30,12 @@ export function StandaloneWorkoutLauncher({ onOpenWorkout }) {
     finally { pending.current = false; setBusy(false); }
   }
   const standaloneActive = Boolean(active?.scheduled_workouts?.standalone_owner_id);
-  return <section className="standalone-workout-card">
-    <h2>Разовая тренировка</h2>
-    <p>С нуля, вне программы. Результаты попадут в статистику, расписание программы не изменится.</p>
-    <button type="button" disabled={busy} onClick={open}>
-      {busy ? 'Открываем…' : standaloneActive ? 'Продолжить разовую тренировку' : '+ Начать разовую тренировку'}
+  return <div className="standalone-workout-launcher">
+    <button className="standalone-workout-trigger" type="button" disabled={busy} onClick={open}>
+      <span aria-hidden="true">+</span>
+      <strong>Разовая тренировка</strong>
     </button>
-    {active && !standaloneActive && <button type="button" className="secondary" onClick={() => onOpenWorkout(active.scheduled_workout_id)}>Вернуться к текущей тренировке</button>}
+    {active && !standaloneActive && <button type="button" className="standalone-current-workout" onClick={() => onOpenWorkout(active.scheduled_workout_id)}>Текущая тренировка</button>}
     {error && <p role="alert">{error}</p>}
-  </section>;
+  </div>;
 }
