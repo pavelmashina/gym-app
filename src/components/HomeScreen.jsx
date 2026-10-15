@@ -67,11 +67,15 @@ function Header({ menuOpen, onOpenMenu }) {
   return <header className="appbar"><button className="icon-btn" type="button" aria-label="Открыть меню" aria-expanded={menuOpen} onClick={onOpenMenu}><span className="burger" aria-hidden="true"><span /><span /><span /></span></button><button className="profile-btn" type="button" aria-label="Профиль"><svg className="profile-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="11" r="5" /><path d="M7 27c1.2-5.7 4.2-8.4 9-8.4s7.8 2.7 9 8.4" /></svg></button></header>;
 }
 
+function CarouselArrowIcon({ direction }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d={direction === 'left' ? 'm15 5-7 7 7 7' : 'm9 5 7 7-7 7'} /></svg>;
+}
+
 function PromoBanner() {
   const [activeSlide, setActiveSlide] = useState(0);
   useEffect(() => { const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % HOME_SLIDES.length), 6000); return () => window.clearInterval(timer); }, []);
   const changeSlide = (delta) => setActiveSlide((current) => (current + delta + HOME_SLIDES.length) % HOME_SLIDES.length);
-  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры"><div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div><button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}>‹</button><button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}>›</button><div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div></section>;
+  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры"><div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div><button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}><CarouselArrowIcon direction="left" /></button><button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}><CarouselArrowIcon direction="right" /></button><div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div></section>;
 }
 
 function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {
@@ -96,7 +100,7 @@ function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry, onEd
 
 function NutritionSummary({ nutritionPlan }) {
   if (!nutritionPlan) return <section className="summary-col food home-empty-card"><div className="summary-label">Питание</div><div className="home-empty-copy"><h3>План не выбран</h3><p>Питание пока не настроено</p></div></section>;
-  return <section className="summary-col food"><div className="summary-label">Питание</div><h3>{nutritionPlan.calories}</h3><p className="food-caption">ккал на день</p><div className="food-grid"><div className="food-stat"><strong>{nutritionPlan.protein} г</strong><span>Белки</span></div><div className="food-stat"><strong>{nutritionPlan.fat} г</strong><span>Жиры</span></div><div className="food-stat"><strong>{nutritionPlan.carbs} г</strong><span>Углеводы</span></div></div></section>;
+  return <section className="summary-col food"><div className="summary-label">Питание</div><h3>{nutritionPlan.calories}</h3><p className="food-caption">ккал на день</p><div className="food-grid"><div className="food-stat protein"><span>Белки</span><strong>{nutritionPlan.protein} г</strong></div><div className="food-stat fat"><span>Жиры</span><strong>{nutritionPlan.fat} г</strong></div><div className="food-stat carbs"><span>Углеводы</span><strong>{nutritionPlan.carbs} г</strong></div></div></section>;
 }
 
 function EditIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 20h4l11-11-4-4L4 16v4Z" /><path d="m13.7 6.3 4 4" /></svg>; }
@@ -212,10 +216,20 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
 
   useEffect(() => {
     let alive = true;
-    supabase.from('scheduled_workouts').select('scheduled_date, status, user_programs!inner(status)').eq('user_programs.status', 'active').neq('status', 'cancelled').order('scheduled_date', { ascending: true }).then(({ data, error }) => {
+    Promise.all([
+      supabase.from('scheduled_workouts').select('scheduled_date, status, user_programs!inner(status)').eq('user_programs.status', 'active').neq('status', 'cancelled').order('scheduled_date', { ascending: true }),
+      supabase.from('workout_sessions').select('ended_at, scheduled_workouts!inner(standalone_owner_id)').eq('status', 'completed').not('scheduled_workouts.standalone_owner_id', 'is', null).not('ended_at', 'is', null),
+    ]).then(([programResponse, standaloneResponse]) => {
       if (!alive) return;
-      if (error) { console.error('Unable to load home calendar:', error); setCalendarStatus('error'); return; }
-      setScheduledWorkoutDates([...new Set((data ?? []).map((row) => row.scheduled_date).filter(Boolean))]); setCalendarStatus('success');
+      if (programResponse.error || standaloneResponse.error) {
+        console.error('Unable to load home calendar:', programResponse.error || standaloneResponse.error);
+        setCalendarStatus('error');
+        return;
+      }
+      const programDates = (programResponse.data ?? []).map((row) => row.scheduled_date).filter(Boolean);
+      const standaloneDates = (standaloneResponse.data ?? []).map((row) => toDateKey(new Date(row.ended_at))).filter(Boolean);
+      setScheduledWorkoutDates([...new Set([...programDates, ...standaloneDates])]);
+      setCalendarStatus('success');
     });
     return () => { alive = false; };
   }, [reloadKey]);
