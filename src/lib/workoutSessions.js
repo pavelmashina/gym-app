@@ -289,6 +289,16 @@ export async function deletePerformedSet(setId) {
   if (error) throw new Error('Не удалось удалить подход.');
 }
 
+export async function deleteSessionExercise(sessionExerciseId) {
+  const { data, error } = await supabase
+    .from('workout_session_exercises')
+    .delete()
+    .eq('id', sessionExerciseId)
+    .select('id')
+    .single();
+  if (error || !data) throw new Error('Не удалось удалить упражнение.');
+}
+
 export async function updateExerciseNote(sessionExerciseId, note) {
   const { error } = await supabase.from('workout_session_exercises').update({ note }).eq('id', sessionExerciseId);
   if (error) throw new Error('Не удалось сохранить заметку.');
