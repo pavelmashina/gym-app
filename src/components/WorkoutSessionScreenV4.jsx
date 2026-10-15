@@ -42,7 +42,7 @@ export function WorkoutSessionScreen(props) {
       }
       const [{ data: sessions }, { data: laterCompleted }] = await Promise.all([
         supabase.from('workout_sessions').select('id, status, paused_at').eq('scheduled_workout_id', props.scheduledWorkoutId).eq('status', 'active').limit(1),
-        supabase.from('scheduled_workouts').select('id').eq('user_program_id', workout.user_program_id).gt('sequence_number', workout.sequence_number).eq('status', 'completed').limit(1),
+        workout.user_program_id ? supabase.from('scheduled_workouts').select('id').eq('user_program_id', workout.user_program_id).gt('sequence_number', workout.sequence_number).eq('status', 'completed').limit(1) : Promise.resolve({ data: [] }),
       ]);
       if (!active) return;
       setLifecycle({
@@ -50,6 +50,7 @@ export function WorkoutSessionScreen(props) {
         paused: Boolean(sessions?.[0]?.paused_at),
         scheduledDate: workout.scheduled_date,
         status: workout.status,
+        standalone: !workout.user_program_id,
         canShiftTail: !(laterCompleted?.length),
       });
     }
@@ -139,7 +140,7 @@ export function WorkoutSessionScreen(props) {
   </div>;
 
   const today = todayKey();
-  const needsDateMove = lifecycle.status === 'scheduled' && lifecycle.scheduledDate && lifecycle.scheduledDate !== today;
+  const needsDateMove = !lifecycle.standalone && lifecycle.status === 'scheduled' && lifecycle.scheduledDate && lifecycle.scheduledDate !== today;
   if (needsDateMove) {
     const future = lifecycle.scheduledDate > today;
     return <div className="phone workout-lifecycle-screen">

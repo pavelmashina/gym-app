@@ -40,6 +40,9 @@ jobs:
       - name: MVP contract tests
         run: pnpm run test
 
+      - name: Standalone workout integration
+        run: pnpm run test:standalone
+
       - name: Build
         env:
           VITE_EXERCISE_CATALOG_V2: 'true'

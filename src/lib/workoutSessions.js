@@ -132,7 +132,7 @@ export async function loadWorkoutSession(sessionId) {
 
   const { data: workout, error: workoutError } = await supabase
     .from('scheduled_workouts')
-    .select('id, workout_name, scheduled_date, status')
+    .select('id, workout_name, scheduled_date, status, standalone_owner_id')
     .eq('id', session.scheduled_workout_id)
     .single();
   if (workoutError || !workout) throw new Error('Не удалось загрузить тренировку.');
@@ -175,6 +175,7 @@ export async function loadWorkoutSession(sessionId) {
       id: workout.id,
       name: workout.workout_name,
       scheduledDate: mode === 'completed' ? (localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : workout.scheduled_date,
+      standalone: Boolean(workout.standalone_owner_id),
       originalScheduledDate: workout.scheduled_date,
       status: workout.status,
       exercises: (exerciseRows ?? []).map((row) => {
@@ -205,6 +206,25 @@ export async function startWorkout(scheduledWorkoutId) {
     throw new Error('Не удалось начать тренировку.');
   }
   return loadWorkoutSession(data);
+}
+
+export async function startStandaloneWorkout() {
+  const { data, error } = await supabase.rpc('start_standalone_workout', {
+    p_local_date: localDateKeyFromTimestamp(new Date().toISOString()),
+  });
+  if (error || !data) {
+    if (error?.code === '23505') throw new Error('У вас уже есть активная тренировка. Сначала завершите её или вернитесь к ней на главном экране.');
+    throw new Error('Не удалось начать разовую тренировку. Попробуйте ещё раз.');
+  }
+  return data;
+}
+
+export async function addStandaloneExercise(sessionId, exerciseId) {
+  const { data, error } = await supabase.rpc('add_standalone_exercise', {
+    p_session_id: sessionId, p_exercise_id: exerciseId,
+  });
+  if (error || !data) throw new Error('Не удалось добавить упражнение. Проверьте соединение и повторите.');
+  return data;
 }
 
 export async function updatePerformedSet(setId, values) {
