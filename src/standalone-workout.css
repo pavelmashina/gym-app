@@ -1,65 +1,77 @@
-.standalone-workout-card {
-  margin: var(--space-4) 0;
-  padding: var(--space-4);
+.standalone-workout-launcher {
+  margin: 10px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.standalone-workout-trigger,
+.standalone-current-workout {
+  min-height: 40px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
   background: var(--surface);
   color: var(--ink);
-  box-shadow: var(--shadow-card);
-}
-
-.standalone-workout-card h2 {
-  margin: 0 0 4px;
-  font-size: var(--text-h3);
-  line-height: var(--lh-h3);
-  font-weight: var(--weight-bold);
-}
-
-.standalone-workout-card p {
-  max-width: 340px;
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: var(--text-caption);
-  line-height: var(--lh-caption);
-}
-
-.standalone-workout-card button,
-.standalone-add-exercise {
-  width: auto;
-  min-height: 40px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  padding: 0 14px;
-  background: var(--ink);
-  color: #fff;
   font: inherit;
   font-size: var(--text-caption);
   line-height: var(--lh-caption);
   font-weight: var(--weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   cursor: pointer;
 }
 
-.standalone-workout-card button.secondary {
-  margin-top: 8px;
-  border: 1px solid var(--line);
-  background: var(--surface-2);
-  color: var(--ink);
+.standalone-workout-trigger > span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 14px;
+  line-height: 1;
 }
 
-.standalone-workout-card button:disabled,
-.standalone-add-exercise:disabled {
+.standalone-workout-trigger > strong {
+  font: inherit;
+}
+
+.standalone-current-workout {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.standalone-workout-trigger:disabled {
   opacity: .55;
   cursor: wait;
 }
 
-.standalone-workout-card [role="alert"] {
-  margin: 10px 0 0;
+.standalone-workout-launcher [role="alert"] {
+  flex-basis: 100%;
+  margin: 2px 0 0;
   color: #8a3029;
+  font-size: var(--text-caption);
 }
 
 .standalone-exercise-editor { margin: 14px 0; }
 .standalone-exercise-editor p { font-size: 14px; line-height: 1.5; }
 .standalone-exercise-editor details { margin-top: 12px; }
+
+.standalone-add-exercise {
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  background: var(--ink);
+  color: var(--surface);
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
 
 .standalone-remove-exercise {
   display: block;
@@ -72,10 +84,4 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   color: #8a3029;
-}
-
-@media (max-width: 370px) {
-  .standalone-workout-card { padding: var(--space-3); }
-  .standalone-workout-card button,
-  .standalone-add-exercise { min-height: 40px; }
 }
