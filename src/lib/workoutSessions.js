@@ -260,7 +260,7 @@ async function updatePerformedSetNow(setId, values) {
       set_type:values.setType,completed:result.completed,completed_at:result.completed?(values.completedAt||new Date().toISOString()):null,
       updated_at:new Date().toISOString()}).eq('id',setId).select('*').single();
     if(error||!data) throw new Error('Не удалось сохранить результат. Настройки уже записанного подхода менять нельзя.');
-    if (result.completed) await markRecentExerciseForSet(setId);
+    if (result.completed) void markRecentExerciseForSet(setId);
     return mapSet(data);
   }
   const payload = {
@@ -273,7 +273,7 @@ async function updatePerformedSetNow(setId, values) {
   };
   const { error } = await supabase.from('performed_sets').update(payload).eq('id', setId);
   if (error) throw new Error('Не удалось сохранить подход.');
-  if (payload.completed) await markRecentExerciseForSet(setId);
+  if (payload.completed) void markRecentExerciseForSet(setId);
 }
 
 export function updatePerformedSet(setId, values) {
