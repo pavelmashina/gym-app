@@ -156,18 +156,23 @@ body {
   z-index: 2;
   top: 50%;
   transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
-  color: #171717;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
   display: grid;
   place-items: center;
-  font-size: 24px;
-  line-height: 1;
   cursor: pointer;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.38));
+}
+
+.carousel-arrow svg {
+  width: 25px;
+  height: 25px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .carousel-arrow.left {
@@ -415,27 +420,35 @@ body {
 
 .food-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
+  grid-template-columns: 1fr;
+  gap: 6px;
   margin-top: 12px;
 }
 
 .food-stat {
+  min-width: 0;
+  min-height: 30px;
   background: rgba(255, 255, 255, 0.72);
   border-radius: 11px;
-  padding: 8px 9px;
+  padding: 6px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .food-stat strong {
-  display: block;
-  font-size: 13px;
+  flex: 0 0 auto;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .food-stat span {
-  display: block;
-  margin-top: 2px;
+  min-width: 0;
+  margin: 0;
   font-size: 10px;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 /* Закреплённое нижнее меню */
