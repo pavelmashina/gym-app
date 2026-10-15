@@ -10,6 +10,7 @@ import { SettingsScreen } from './components/SettingsScreen.jsx';
 import { SportPitScreen } from './components/SportPitScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
+import { BottomNavigation } from './components/BottomNavigation.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
 
@@ -276,6 +277,15 @@ export default function App() {
     setActiveScreen('home');
   }
 
+  function handleBottomNavigate(nextScreen) {
+    if (!BOTTOM_NAV_SCREENS.includes(nextScreen)) return;
+    setMenuOpen(false);
+    setEditingProgramId(null);
+    setLaunchingProgramId(null);
+    setWorkoutScheduledId(null);
+    setActiveScreen(nextScreen);
+  }
+
   function openCreateProgram() {
     setMenuOpen(false); setEditingProgramId(null); setLaunchingProgramId(null); setWorkoutScheduledId(null); setActiveScreen('create-program');
   }
@@ -327,5 +337,6 @@ export default function App() {
   if (passwordRecoveryActive && session) return <AuthScreen recoveryMode onRecoveryComplete={() => setPasswordRecoveryActive(false)} />;
   if (!session) return <AuthScreen />;
 
-  return renderActiveScreen();
+  const showBottomNavigation = BOTTOM_NAV_SCREENS.includes(activeScreen);
+  return <>{renderActiveScreen()}{showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}</>;
 }
