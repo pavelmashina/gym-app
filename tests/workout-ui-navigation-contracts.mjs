@@ -27,7 +27,7 @@ assert.match(nav,/id: 'sportpit'/);
 assert.match(nav,/aria-current=\{active \? 'page'/);
 assert.match(navCss,/grid-template-columns:\s*repeat\(5/);
 assert.match(navCss,/position:\s*fixed/);
-assert.match(navCss,/\.app-nav-item\.home \.app-nav-icon[\s\S]*margin-top:\s*-13px/);
+assert.match(navCss,/\.app-nav-item\.home \.app-nav-icon[\s\S]*width:\s*60px[\s\S]*height:\s*60px[\s\S]*margin-top:\s*-22px/);
 assert.match(navCss,/\.app-nav-item\.home\.active \.app-nav-icon[\s\S]*background:\s*var\(--ink\)/);
 assert.match(navCss,/\.app-nav-item\.home \.app-nav-icon[\s\S]*border:\s*2px solid var\(--ink\)/);
 assert.doesNotMatch(home,/function BottomNav\(/);
