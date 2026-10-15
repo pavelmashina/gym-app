@@ -304,7 +304,6 @@
 .completed-reference-screen {
   min-width: 0;
   max-width: 100%;
-  overflow-x: clip;
 }
 
 .completed-reference-screen > .completed-result-card + .completed-result-card,
