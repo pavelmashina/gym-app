@@ -14,10 +14,11 @@
     "test:core": "node tests/mvp-core-contracts.mjs",
     "test:qa": "node tests/mvp-product-qa-contracts.mjs",
     "test:mobile": "node tests/mobile-pwa-contracts.mjs",
+    "test:interface": "node tests/interface-refinement-contracts.mjs",
     "test:commercial": "node tests/commercial-foundation-contracts.mjs",
     "test:drafts": "node tests/program-draft-filters.mjs",
     "test:catalog-db": "node tests/exercise-catalog-duplicates.mjs && node tests/exercise-catalog-v2-db.mjs && node tests/exercise-catalog-v2-content.mjs && node tests/exercise-results-v2.mjs && node tests/exercise-catalog-v2-seed.mjs && node tests/exercise-library-v2.mjs && node tests/exercise-results-v2-db.mjs && node tests/exercise-results-v2-client.mjs",
-    "test": "pnpm run test:lifecycle && pnpm run test:core && pnpm run test:qa && pnpm run test:mobile && pnpm run test:commercial && pnpm run test:drafts && pnpm run test:catalog-db"
+    "test": "pnpm run test:lifecycle && pnpm run test:core && pnpm run test:qa && pnpm run test:mobile && pnpm run test:interface && pnpm run test:commercial && pnpm run test:drafts && pnpm run test:catalog-db"
   },
   "engines": {
     "node": ">=20.19.0"
