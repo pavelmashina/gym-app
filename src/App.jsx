@@ -17,17 +17,6 @@ import { loadSubscriptionState } from './lib/subscription.js';
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
 const UTILITY_SCREENS = ['settings', 'plan', 'privacy', 'support', 'faq'];
 
-function resolveBottomNavScreen(navItem) {
-  const explicitScreen = navItem?.dataset?.screen;
-  if (BOTTOM_NAV_SCREENS.includes(explicitScreen)) return explicitScreen;
-  const nav = navItem?.closest('.bottom-nav');
-  if (!nav) return null;
-  const items = Array.from(nav.querySelectorAll('.nav-item'));
-  const screen = BOTTOM_NAV_SCREENS[items.indexOf(navItem)] ?? null;
-  if (screen) navItem.dataset.screen = screen;
-  return screen;
-}
-
 function isPasswordRecoveryUrl() {
   if (typeof window === 'undefined') return false;
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -245,15 +234,6 @@ export default function App() {
         setActiveScreen('account');
         return;
       }
-      const navItem = event.target.closest('.bottom-nav .nav-item');
-      if (!navItem) return;
-      const nextScreen = resolveBottomNavScreen(navItem);
-      if (!nextScreen) return;
-      setMenuOpen(false);
-      setEditingProgramId(null);
-      setLaunchingProgramId(null);
-      setWorkoutScheduledId(null);
-      setActiveScreen(nextScreen);
     }
 
     document.addEventListener('keydown', handleKeyDown);
