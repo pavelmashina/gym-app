@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import {assertResultsSaved} from '../lib/resultDraftGuard.js';
 import { replaceSessionExercise } from '../lib/workoutSessions.js';
 import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -67,6 +68,7 @@ export function WorkoutSessionScreen(props) {
     setReplacementLoading(true);
     setReplacementError('');
     try {
+      assertResultsSaved();
       await replaceSessionExercise(replacementTarget.id, exercise.id);
       setReplacementTarget(null);
       setVersion((value) => value + 1);
@@ -86,6 +88,7 @@ export function WorkoutSessionScreen(props) {
 
   async function pauseWorkout() {
     if (pauseLoading) return;
+    try {assertResultsSaved();} catch(e) {setPauseError(e.message);return;}
     setPauseLoading(true);
     setPauseError('');
     const { error } = await supabase.rpc('pause_workout', { p_scheduled_workout_id: props.scheduledWorkoutId });

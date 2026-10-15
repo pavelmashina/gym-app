@@ -1,0 +1,3926 @@
+[
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1d342a1a-0e07-4efa-a8f9-7c6c9cea1bb3",
+    "legacy_name": "\"Лягушка\" / Обратная гиперэкстензия",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bce5b9f9-27f0-4cb9-ae3a-b73c67898b7e",
+    "legacy_name": "\"Свечка\" в Смите",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bbb4e319-c82b-41f4-9755-5e677b6d46af",
+    "legacy_name": "Around the world",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "45be3c84-b215-4496-8d12-21b2af5cc4dd",
+    "legacy_name": "Good morning",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "82b9fb79-e4f7-492b-bf80-fc9eebab3ed1",
+    "legacy_name": "Power Runner",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f50739f9-7756-460d-8785-a03a25c4f494",
+    "legacy_name": "V-подъём лёжа на животе",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "66f387c3-bb04-4607-803e-814aa3e626ee",
+    "legacy_name": "V-подъём лёжа на животе с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "31d34599-6259-4bf2-bc49-c1fdd4783a50",
+    "legacy_name": "Активная планка \"скалолаз\"",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ccc3b61e-2e57-441d-a16a-676a057bfa4d",
+    "legacy_name": "Армейский жим",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7ec87654-e2cb-4adb-b84a-e5b2a2264513",
+    "legacy_name": "Болгарские выпады",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f64d23ba-97d8-4ad3-8e1a-b53a39a55c8d",
+    "legacy_name": "Болгарские выпады в машине Смита",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e96395e9-b446-4f48-83be-c779cae898ff",
+    "legacy_name": "Болгарские выпады с гантелями",
+    "canonical_exercise_id": "e96395e9-b446-4f48-83be-c779cae898ff",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "В названии указаны гантели; техника описывает заднюю ногу на скамье и одностороннее приседание. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d7226df9-e3f6-4531-8d91-0e0d0ae15b17",
+    "legacy_name": "Велосипед",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f2554351-f6c3-43ec-b9cb-dde0c7e75271",
+    "legacy_name": "Вертикальная рычажная тяга с супинацией NAUTILUS",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1af0ba6a-e1bc-49e1-bdbc-daeda4282905",
+    "legacy_name": "Вертикальная тяга в тренажере HAMMER в 2 руки (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5480b9db-1cc1-4afd-bf42-32238dab0700",
+    "legacy_name": "Вертикальная тяга в тренажере HAMMER в 2 руки (широкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4a10a3db-91e9-4b1e-9cbd-beef227d2fd6",
+    "legacy_name": "Вертикальная тяга в тренажере HAMMER в 2 руки (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "81c7031f-36d9-4032-a5a1-7a5fb3d90bf6",
+    "legacy_name": "Весёлый Роджер LEGEND",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "699d5ed3-927b-463a-8ba1-0192ab5e1198",
+    "legacy_name": "Весёлый Роджер разгибанием в горизонтальной гиперэкстензии",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c93b7b7e-3445-4438-9e53-66926d865331",
+    "legacy_name": "Весёлый Роджер, согнувшись, самостоятельно",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8506111b-6465-4c2f-880a-40ba6eec06f7",
+    "legacy_name": "Весёлый Роджер, согнувшись, самостоятельно с разгибанием в верхней точке",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "522d9a98-82f1-4e7a-8865-9c3acbb85737",
+    "legacy_name": "Внешнее вращение плеча, лёжа на боку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2ac6f801-ff78-4d85-87b1-9546e872d8a9",
+    "legacy_name": "Внешнее вращение плеча, лёжа на животе",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d4c7186e-2f64-4132-b286-1b6458a15699",
+    "legacy_name": "Вращения плечами с согнутыми руками стоя (руки перед собой, проворачиваем в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b3c2830a-d7be-48e7-967d-e53787ef2777",
+    "legacy_name": "Вращения плечами с согнутыми руками стоя (сверху вниз через вперёд)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2cfc5a57-c7da-4a0c-99cb-d02c970ef307",
+    "legacy_name": "Вращения плечом сидя в скамье Скотта",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3160e6b9-42f5-431a-bf20-ff9ea8fa63b0",
+    "legacy_name": "Вращения плечом стоя в блочном тренажёре",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d9233f26-fd3c-4b59-a2d7-e96cd390d6e0",
+    "legacy_name": "Выпад в LEGEND без опоры на вторую ногу",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "70d97460-73d4-445e-89cb-ce330ac092fe",
+    "legacy_name": "Выпад в гакк-HAMMER (обратный, без опоры на вторую ногу)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fa34377d-37ae-4cb2-b55b-02fafb51d2c8",
+    "legacy_name": "Выпад в гакк-HAMMER (обратный)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5b2d44ed-aa80-4f71-bba3-d01c6ec48bff",
+    "legacy_name": "Выпад в гакк-HAMMER (прямой)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e92a8292-7cb4-406d-8616-f2422067021e",
+    "legacy_name": "Выпад с опорой на BOSU",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ca39c4ec-f2a5-4c36-be17-856865b373c4",
+    "legacy_name": "Выпады в сторону",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bf0df65b-bddb-445c-a315-a192324d1369",
+    "legacy_name": "Выпады в шаге (в диагональ)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7b59d5f3-a9a9-430d-95fd-310ed50545ff",
+    "legacy_name": "Выпады в шаге (короткий шаг)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a0ccef8b-eaa4-4305-958d-2d6a8f6e05fa",
+    "legacy_name": "Выпады в шаге (прямые)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "53f69ab8-b743-4188-a39a-a8b42a059594",
+    "legacy_name": "Выпады в шаге (цапля)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "afa4ba97-6c40-44da-a705-2b2ea463c7b8",
+    "legacy_name": "Выпады вперёд",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6d697014-3d45-4f95-a6eb-c9974424d432",
+    "legacy_name": "Выпады назад",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fde220a0-bb0f-4286-982b-32eb48215fd9",
+    "legacy_name": "Выпады накрест",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "309355a3-93a3-4dbd-b8bc-57581639cb9e",
+    "legacy_name": "Выпады накрест в Смите",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "218f3f66-a456-4e76-9c54-4b94bcee6542",
+    "legacy_name": "Выпады с отведением ноги в сторону (с длинной резиной)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e897d17a-d107-4c91-82d3-f7b5c9193525",
+    "legacy_name": "Выпады стоя на месте в машине Смита",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7687afc8-8085-4c65-9b8b-1094d799ec48",
+    "legacy_name": "Выпады стоя на месте со свободным весом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5ef23999-39cd-42e8-ad2a-2ff39340ebe2",
+    "legacy_name": "Выпрыгивания из приседа",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9c07e445-0b7e-4e52-8143-357534c8be51",
+    "legacy_name": "Выпрыгивания от опоры на одну ногу",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ec83d6dd-3f78-4005-943a-6e46e71f634b",
+    "legacy_name": "Гиперэкстензия волной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7143931d-341e-4fd3-acfd-86b399110220",
+    "legacy_name": "Гиперэкстензия на одной ноге (опорная стопа развернута наружу)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d31a2c7b-4d95-4874-b86e-5f793837b514",
+    "legacy_name": "Гиперэкстензия на согнутых ногах (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6ce1a38f-4b35-42f3-9845-14483131b6da",
+    "legacy_name": "Гиперэкстензия с акцентом на ягодицы (с разворотом стоп)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0e0b8a3b-d8bb-4979-b2d7-c23023da99f5",
+    "legacy_name": "Гиперэкстензия с акцентом на ягодицы (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4cf3a433-2e0d-4129-837b-89fdd885ca7f",
+    "legacy_name": "Гиперэкстензия с акцентом на ягодицы в горизонтальном тренажёре (без доп веса)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9d88820e-d16d-462f-924f-b17f714226e1",
+    "legacy_name": "Гиперэкстензия с акцентом на ягодицы в горизонтальном тренажёре (с доп весом)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6db76b5b-2101-4edc-98c1-6214dd7849a8",
+    "legacy_name": "Гиперэкстензия с вытянутыми руками",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "428b8083-c7f6-45b7-b775-daf26d9b570d",
+    "legacy_name": "Горизонтальная рычажная тяга с супинацией NAUTILUS",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f065f984-8eea-48df-821f-6a7f14aa0a50",
+    "legacy_name": "Горизонтальная тяга в тренажере HAMMER обратным диагональным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c6d56dde-cd09-4223-8cd5-7678196859ef",
+    "legacy_name": "Горизонтальная тяга длинной резинки с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f8ee17f1-87fd-47a4-8085-d3a14761349a",
+    "legacy_name": "Горизонтальная тяга с резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "96abdb21-25dc-426d-b4eb-c0f83e2e9922",
+    "legacy_name": "Горизонтальные подтягивания",
+    "canonical_exercise_id": "96abdb21-25dc-426d-b4eb-c0f83e2e9922",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старая техника описывает тягу снизу к закреплённому грифу с опорой пятками. TRX и вертикальные подтягивания остаются отдельными."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d7443f91-8a38-4f8c-aac3-b3b7297ecbb0",
+    "legacy_name": "Жим Арнольда (перед собой)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "745fbd3f-303b-4e70-a0cc-e2feaec2ec95",
+    "legacy_name": "Жим Арнольда (с длинной резинкой)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "baee6fad-23e4-4786-bddc-34768d2390f6",
+    "legacy_name": "Жим Арнольда (через стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "04c84261-ed7b-4783-bb11-1235a3ad9a20",
+    "legacy_name": "Жим в лежачем тренажере HAMMER, ноги скрещены вверху",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "da4bfbba-6df3-4ba8-b8be-f241b3f1b1bb",
+    "legacy_name": "Жим в машине Смита из-за головы в среднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3351ae18-4fee-4488-b545-461e3a8f3883",
+    "legacy_name": "Жим в машине Смита перед собой в среднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4d71f8f0-61fa-47b2-8da8-a66db96ea89a",
+    "legacy_name": "Жим в рычажном тренажере в переднюю дельту средним параллельным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ba33f146-237d-478c-8e07-e244c85d6939",
+    "legacy_name": "Жим в Смите на горизонтальной скамье",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "977b003a-413f-4b98-8dc6-0db379f0d07a",
+    "legacy_name": "Жим в Смите под углом 30 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "063b8a05-f86f-4b5c-a993-55dad0aedd93",
+    "legacy_name": "Жим в Смите под углом 45 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "11c9632e-015e-47f3-800c-889c3d468a9e",
+    "legacy_name": "Жим в Смите под углом 80 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "87917236-c87c-47ca-8362-00525cf2fe1a",
+    "legacy_name": "Жим в тренажёре HAMMER (верх груди)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "032976f9-8f04-4d62-904c-a3c299be47cb",
+    "legacy_name": "Жим в тренажере HAMMER, угол посадки 60 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "af813d84-e026-4388-8a42-19dd19c27d08",
+    "legacy_name": "Жим в тренажере HAMMER, угол посадки 90 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1f6f5d74-973b-410b-a518-147c9183ee41",
+    "legacy_name": "Жим в тренажере NAUTILUS лежа под углом 60°, диагональный вариант хвата",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b906b65e-1b6e-42a3-a200-7e82095658b3",
+    "legacy_name": "Жим в тренажере NAUTILUS средним прямым хватом под углом 45°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4714d78f-f25e-4729-8eab-a064d2ef281d",
+    "legacy_name": "Жим в тренажере NAUTILUS средним прямым хватом под углом 80° (в переднюю дельту)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e69b60db-d9da-4b21-a5c0-3005476f4c21",
+    "legacy_name": "Жим в тренажере NAUTILUS узким параллельным хватом под углом 45°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0296273c-1474-4d5e-a1d6-87f4a3e204ab",
+    "legacy_name": "Жим в тренажере NAUTILUS узким параллельным хватом под углом 80° (в переднюю дельту)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f8e177fb-c061-47e7-9f1a-d0096f4b66b6",
+    "legacy_name": "Жим гантелей лёжа на горизонтальной скамье",
+    "canonical_exercise_id": "f8e177fb-c061-47e7-9f1a-d0096f4b66b6",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Горизонтальная скамья и две гантели явно указаны в названии и описании жима. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8862f3d3-7a15-4b00-a118-4e94d3a83a82",
+    "legacy_name": "Жим гантелей лёжа на скамье под углом 30 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1472004e-dcb1-4bda-a89a-c10cf73989bd",
+    "legacy_name": "Жим гантелей лёжа на скамье под углом 60 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c281b1b6-1ed3-4580-8660-2195c114d3ee",
+    "legacy_name": "Жим гантелей сидя + Махи с гантелями в стороны и вперёд + Отведения в заднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1e6f74ad-a57e-4fb2-ae7e-750cfac96e3c",
+    "legacy_name": "Жим гантелей сидя + Махи с гантелями в стороны и вперёд + Отведения в заднюю дельту + Планка на локтях",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2145a8b3-c2ac-4f9e-befa-7143c9e7d32f",
+    "legacy_name": "Жим гантелей сидя без опоры под углом 90°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "539c0c1b-e596-48f8-883f-48be540d0161",
+    "legacy_name": "Жим гантелей сидя на скамье под углом 90°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fb21fd16-5ce4-435c-9c64-ef80c415a9e5",
+    "legacy_name": "Жим гантелей сидя под углом 80° в переднюю дельту обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1925b545-09de-44a1-bc00-cb153e7b3e4e",
+    "legacy_name": "Жим гантелей сидя под углом 80° с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "411a7f3f-15f6-4143-8d38-f338f5f30374",
+    "legacy_name": "Жим гантелей сидя под углом 90° с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7b554323-f07d-4df6-94c9-da5842b2dc76",
+    "legacy_name": "Жим гантелей стоя",
+    "canonical_exercise_id": "7b554323-f07d-4df6-94c9-da5842b2dc76",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Совпадают стойка, две гантели и жим над головой. UUID сохранён; модель машины и исторический вес не переосмысляются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a266bbb4-6689-484c-ba4b-344adece40ae",
+    "legacy_name": "Жим гантели из-за головы (двумя руками)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "365c1c49-169f-4a75-b6bd-38353979d94c",
+    "legacy_name": "Жим гантели из-за головы в 1 руку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1197da93-742d-4f82-ae98-3110b6ea04f0",
+    "legacy_name": "Жим гири 1 рукой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2f328ec2-3435-4ef9-bc71-95184da2a47c",
+    "legacy_name": "Жим на плечи в среднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fc342398-425b-4a82-bf66-9631cbd7e2f9",
+    "legacy_name": "Жим ногами (стопы параллельно в самом низу платформы, пятки свисают)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "100fdc2b-4b80-4a58-ba48-0118574bb32c",
+    "legacy_name": "Жим ногами (стопы параллельно на ширине таза, верх платформы)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "111b1367-ac45-4fc6-a5a7-215b0e441313",
+    "legacy_name": "Жим ногами (стопы параллельно на ширине таза, середина платформы)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "81213516-ad4e-4796-8ac9-c0cc6d2f7001",
+    "legacy_name": "Жим ногами (стопы узко, параллельно, низ платформы)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b29c4737-694e-4dd5-bbed-81fa62bb7eb5",
+    "legacy_name": "Жим ногами (стопы узко, параллельно, низ платформы), темп 3+3",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "23cb131f-2f20-4a5f-ae7a-2b67469a5fdd",
+    "legacy_name": "Жим ногами (широкая постановка стоп на середине платформы, носки очень сильно в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "865979b9-b29b-4ad5-b872-49666004bda4",
+    "legacy_name": "Жим ногами горизонтальный стопы параллельно на верхней части платформы ( в 1 ногу)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ff616a6c-a05f-481d-823e-8ed4ce8566ca",
+    "legacy_name": "Жим ногами с широкой постановкой ног (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "62aaa385-c854-458b-9492-08929f391db3",
+    "legacy_name": "Жим ногами с широкой постановкой ног (стопы развернуты под 45°)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f20f0154-2d78-4eab-af0a-6a8870e76c00",
+    "legacy_name": "Жим ногами с широкой постановкой ног + Отведения ноги в кроссовере с нижнего блока",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "780acbe2-0a92-4ac8-97ee-51c24b0d27b2",
+    "legacy_name": "Жим одной ногой (верх платформы, носок в сторону)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "80c634cb-615b-4a59-bba2-d2bc54215edc",
+    "legacy_name": "Жим одной ногой (верх платформы, носок ровно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "95169bdd-015c-4d44-abaa-5988d060f4af",
+    "legacy_name": "Жим одной ногой (низ платформы, носок в сторону)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "46143312-b44d-4b7d-8ab3-17d79bcac8d5",
+    "legacy_name": "Жим одной ногой (низ платформы, носок ровно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b3febafa-7acb-4293-ae3d-33dad2856b74",
+    "legacy_name": "Жим одной ногой (середина платформы, носок в сторону)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "daac0da9-1f22-43dd-9a8c-c218813a8ca0",
+    "legacy_name": "Жим одной ногой (середина платформы, носок ровно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d8349dca-69f8-42f8-8f19-8ad98aa81b1f",
+    "legacy_name": "Жим одной ногой лёжа на боку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0bd546b5-298b-440c-9290-f7353d29b5f9",
+    "legacy_name": "Жим штанги лёжа на горизонтальной скамье",
+    "canonical_exercise_id": "0bd546b5-298b-440c-9290-f7353d29b5f9",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старое имя явно указывает горизонтальную скамью, а техника — жим свободной штанги. Узкий хват и наклонные варианты не объединяются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bcc5cf79-444e-4459-a146-34c9129f846b",
+    "legacy_name": "Жим штанги лёжа на горизонтальной скамье (узким хватом)",
+    "canonical_exercise_id": "bcc5cf79-444e-4459-a146-34c9129f846b",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Название однозначно задаёт горизонтальную скамью, штангу и узкий хват; оборудование подтверждает штангу. Техника отсутствует, поэтому переносится только идентичность, не инструкция. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "dbab870f-7cbe-432e-949a-1a82ce82be88",
+    "legacy_name": "Жим штанги лёжа на горизонтальной скамье + Сведения рук по направлению \"вниз\" в кроссовере с верхних блоков",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "12d836eb-7308-43c3-8eec-761cd278e53a",
+    "legacy_name": "Жим штанги лёжа на наклонной скамье",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8e97cce8-b687-49c2-94cb-54dc774a02e4",
+    "legacy_name": "Жим штанги лежа на скамье с обратным наклоном",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "178229d4-d4fb-4623-936c-74638681863b",
+    "legacy_name": "Жим штанги перед собой (сидя)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4182e30d-6460-4aec-8db4-5189f0de012b",
+    "legacy_name": "Жим-сведение рук в кроссовере сидя под углом 90°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "066f4efb-7927-4e9c-8e79-ca0be16ec24c",
+    "legacy_name": "Задняя дельта в TRX (на прямых руках)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "703eb22c-7d3c-4bfb-a26c-2fdff3afca8f",
+    "legacy_name": "Закручивания на вытяжение поясницы с ручкой в кроссовере",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fc78c960-b491-4dd6-8684-31b5439ad3b9",
+    "legacy_name": "Зашагивания на возвышенность",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0a224fa8-87ed-46d7-bba6-579969733b62",
+    "legacy_name": "Классическая становая тяга",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "00c64f8f-c1dc-4c37-a0e8-2ed3dc526ee5",
+    "legacy_name": "Крабик с резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "eff7051f-30f8-43a3-978f-5133431e87a6",
+    "legacy_name": "Крабики",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "aca85557-8a66-48bd-9e13-59edb3b6a4fb",
+    "legacy_name": "Лестница",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "09734ee4-c29c-41ae-b883-b26ffbbcc802",
+    "legacy_name": "Лодочка",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "533fa9b2-bfd7-4489-83be-5c71008b665c",
+    "legacy_name": "Лодочка с заведением локтей с резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "79f1d5ee-642c-4dd6-971c-97b35f1fa6a4",
+    "legacy_name": "Махи в 1 руку в среднюю дельту лёжа на скамье под углом 60 градусов",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6118424d-9833-4b4a-985f-31ac86b4ee53",
+    "legacy_name": "Махи в 1 руку стоя в наклоне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "cd22f3e7-8b88-400d-9a76-8f40fe1c54d5",
+    "legacy_name": "Махи в заднюю дельту в 1 руку лежа на боку на горизонтальной скамье (молоток)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "45b726e2-ce30-4e55-a440-59c97325b902",
+    "legacy_name": "Махи в заднюю дельту в 1 руку лежа на боку на горизонтальной скамье (пронация)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b61845a8-ca67-4be8-8ec3-8b95ef848618",
+    "legacy_name": "Махи в заднюю дельту в 1 руку лежа на боку на горизонтальной скамье (прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8f80b8ed-0477-42d5-845d-14279eef7a49",
+    "legacy_name": "Махи в кроссовере в 1 руку (снизу) в переднюю дельту, перед собой, обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1da92537-2d1f-4d01-b108-dccd605c2602",
+    "legacy_name": "Махи в кроссовере в 1 руку (снизу) в сторону-спереди",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ae928420-b766-411a-96c9-e1d2ed837a1c",
+    "legacy_name": "Махи в кроссовере в 1 руку снизу в переднюю дельту перед собой прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3e92f660-8b2c-4bef-9e26-44a1ee4b4c0b",
+    "legacy_name": "Махи в кроссовере снизу в переднюю дельту в 1 руку обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a55c5639-8557-42eb-bba6-77370ab62bf3",
+    "legacy_name": "Махи в кроссовере снизу в переднюю дельту в 1 руку прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ed8887ad-1bba-4f17-934b-cbb70b8c2475",
+    "legacy_name": "Махи в кроссовере снизу в переднюю дельту в 2 руки с канатом (молоток)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7b04a94d-9f30-41f8-9fd5-7b55005f114b",
+    "legacy_name": "Махи в кроссовере снизу в переднюю дельту в 2 руки с канатом (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ed9a2fba-7cfc-4770-8531-8e5d2bd36d72",
+    "legacy_name": "Махи в кроссовере снизу в переднюю дельту в 2 руки с канатом (прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "29e55909-4622-49b4-94a9-77159485b575",
+    "legacy_name": "Махи в переднюю дельту в 1 руку молот",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e4a3962b-bc52-49c3-af50-45a18754032b",
+    "legacy_name": "Махи в переднюю дельту в 1 руку обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "94cc16f7-8ce9-46d8-94b1-918f1e5525f3",
+    "legacy_name": "Махи в переднюю дельту в 1 руку прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "47d25e40-8535-45f4-8eac-c4aed6eeaccd",
+    "legacy_name": "Махи вперёд с гантелями поочередно",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "655c9656-ee6f-4a15-ae42-52d6c858d847",
+    "legacy_name": "Махи гантелями в среднюю дельту с пронацией сидя под углом 80°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "41cf4cb9-db2f-4e47-9df2-58da57575e7a",
+    "legacy_name": "Махи гантелями в среднюю дельту сидя под углом 80°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f18e00ec-587c-49a6-9751-f7522c2aa8c8",
+    "legacy_name": "Махи гантелями сидя в наклоне в диагональ (хват молоток)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "614eea89-2abe-4378-b184-95621dc42c5b",
+    "legacy_name": "Махи из наклона с гирей",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "303f168e-5ee3-4689-872b-9f3e0aa01219",
+    "legacy_name": "Махи с гантелями в заднюю дельту сидя в наклоне (в диагональ)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "949fe2d3-0943-4b57-b77f-f0dc6b1c327f",
+    "legacy_name": "Махи с гантелями в заднюю дельту сидя в наклоне (параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6875fc4f-f322-44b8-8fe9-6a6215a174c0",
+    "legacy_name": "Махи с гантелями в заднюю дельту сидя в наклоне (прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9521537e-1ac8-4208-91e9-ffba24f1bab7",
+    "legacy_name": "Махи с гантелями в заднюю дельту сидя в наклоне (с пронацией)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "226be321-8e3f-4b52-8ce7-8dc024dfddc3",
+    "legacy_name": "Махи с гантелями в стороны",
+    "canonical_exercise_id": "226be321-8e3f-4b52-8ce7-8dc024dfddc3",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Описание явно задаёт положение стоя и подъём гантелей через стороны до уровня плеч. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3e112445-e41b-45f5-97b6-0ad98777df72",
+    "legacy_name": "Махи с гантелями в стороны и вперёд + Отведения в заднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "590dd72c-38a1-4802-a0ff-1ac4964f102d",
+    "legacy_name": "Махи с гантелями в стороны сидя под углом 80°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d3a79e28-e250-4e85-9273-95cf5e048490",
+    "legacy_name": "Махи с гантелями в стороны сидя со сведенными лопатками",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6baacd74-a3d6-4f29-88da-f1f6f4e9442d",
+    "legacy_name": "Махи с гантелями в стороны стоя (от ягодиц)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ed64deca-2732-4bc6-9d48-3f6d2be65333",
+    "legacy_name": "Махи с гантелями вперёд и в стороны",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c15a297b-abcc-4cdc-827e-f94caf92ebbb",
+    "legacy_name": "Мини-сет: Тяга с резинкой за голову + Горизонтальная тяга с резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e1268251-89b3-404c-8f5e-4b21bbbfb37e",
+    "legacy_name": "Молитва",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6fbdab5f-e638-4599-bf12-2e1f7cdb5980",
+    "legacy_name": "Наклоны с вытянутыми руками над головой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f34494a9-0837-4d5a-85e4-5ba7d8ba5413",
+    "legacy_name": "Обратные отжимания",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f2b017bd-f9df-4430-8f0c-3c149be66346",
+    "legacy_name": "Обратные скручивания на пресс",
+    "canonical_exercise_id": "f2b017bd-f9df-4430-8f0c-3c149be66346",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Собственный вес, положение на полу и отрыв таза при согнутых коленях явно описаны. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "cf7873d5-6668-41ac-85e3-94d6a90bafed",
+    "legacy_name": "Обратный Гакк присед в наклонном Гакке с широкой постановкой ног, носки в стороны",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4fc0c6ac-80ad-400f-bb6f-e7eba2e06244",
+    "legacy_name": "Обратный жим HAMMER в 1 руку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "891cbf58-dd40-4461-9d84-a8d1964ed1d7",
+    "legacy_name": "Обратный жим в тренажере HAMMER в 2 руки",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7d59e178-e5bb-410e-ad7a-5af36b17a634",
+    "legacy_name": "Обратный жим ногами в машине Смита (стопы параллельно, ноги на ширине плеч)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "22d5df33-d102-459d-a033-65ae7929c8ee",
+    "legacy_name": "Обратный жим ногами в машине Смита (стопы широко, носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fe18ec6c-ceb9-4c5f-b0ba-4beb2e233fab",
+    "legacy_name": "Обратный наклон в гакк-HAMMER",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "363f7463-4cd6-439b-9ab1-a703f87f92cf",
+    "legacy_name": "Обратный наклон в гакк-HAMMER на 1 ноге с отведением другой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b3d08bdc-2d28-4a42-9928-f22056771c8e",
+    "legacy_name": "Обратный присед в вертикальном Гакке (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ca2ec3b9-9402-4c3a-a447-77c4efd5df49",
+    "legacy_name": "Обратный присед в вертикальном Гакке (стопы широко, носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c0e7bf27-6608-4e91-9ff7-862912d858eb",
+    "legacy_name": "Одновременные махи назад двумя руками стоя в наклоне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "184c4353-76a1-4ff9-b148-b5cb3215d0b3",
+    "legacy_name": "Отведение ноги в диагональ через присед с короткой резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "69d63dff-2356-495f-a6a7-59ada5772262",
+    "legacy_name": "Отведение ноги в сторону через присед с короткой резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7e99d72b-bd08-40b8-87cd-c2732e01c819",
+    "legacy_name": "Отведение ноги на ягодицы в машине Смита в упоре на предплечьях (носок в сторону)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c8bc5dab-7541-4721-864e-9028e4a4ca1a",
+    "legacy_name": "Отведение ноги на ягодицы в машине Смита в упоре на предплечьях (носок внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b94f4268-7a1c-42af-a836-549600a56340",
+    "legacy_name": "Отведение ноги на ягодицы в машине Смита лежа на наклонной скамье 30° (носок в сторону)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e51f8954-8762-429a-995c-a1a067106bb9",
+    "legacy_name": "Отведение ноги на ягодицы в машине Смита лежа на наклонной скамье 30° (носок внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d31230e7-566f-41dd-a20e-e2b1358c8ecb",
+    "legacy_name": "Отведение ноги на ягодицы разгибанием, стоя в упоре с длинной резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2d2dad05-9fe5-47c2-bddc-91d79a4379ba",
+    "legacy_name": "Отведение ноги назад в кроссовере",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5b53a225-c687-43cd-8ba6-3fecc2c9ecd5",
+    "legacy_name": "Отведение ноги назад в кроссовере разгибанием",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1602a6c2-c67a-44f1-a331-cdcb83d87afd",
+    "legacy_name": "Отведение ноги назад через присед с короткой резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c3260b58-acf2-48e4-8e56-e96437ba7e9b",
+    "legacy_name": "Отведение ноги разгибанием лежа на боку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8e7302b7-db77-4faf-b15e-cf3537e7b585",
+    "legacy_name": "Отведение ноги через присед в сторону + назад",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3f522dbd-dbbf-4fd9-828a-229e91988619",
+    "legacy_name": "Отведение плеча сидя в тренажере в среднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3fd47cff-85c6-4c0e-a2af-b9a5df35c405",
+    "legacy_name": "Отведение прямой ноги лежа на боку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "32d7ee6c-0927-47c8-81e7-46e86ea1f34e",
+    "legacy_name": "Отведение прямой ноги на ягодицы в кроссовере в диагональ",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "41e9df62-ebc4-4842-b3df-a2a4544e3580",
+    "legacy_name": "Отведение прямой ноги на ягодицы в кроссовере назад",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a256651a-4f1e-449d-8a22-17af6d59c2d9",
+    "legacy_name": "Отведение прямой ногой на ягодицы, стоя в упоре",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b9a15517-65a6-40d5-ae6f-588531b8ad67",
+    "legacy_name": "Отведение прямых рук назад стоя",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "cd690427-e635-4e42-ba5f-6b4985a11535",
+    "legacy_name": "Отведение согнутой ноги наверх, стоя в упоре с длинной резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5f57cbea-2e60-433b-8721-38cc97fa6695",
+    "legacy_name": "Отведения бедра назад стоя с гантелью под коленом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a0c69415-6f57-4bb5-8d4e-f253a97c77e9",
+    "legacy_name": "Отведения бедра сидя в тренажёре (в наклоне вперёд)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "05d42acb-2d52-4a0b-8c65-7e4830a01edc",
+    "legacy_name": "Отведения бедра сидя в тренажёре (полулёжа)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e51d1d07-3e09-405f-8848-85925ad88ac4",
+    "legacy_name": "Отведения бедра сидя в тренажёре (ровно, под углом 90°)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9f3652f3-37f9-417a-9a0e-1bb1a8e74366",
+    "legacy_name": "Отведения в кроссовере в 1 руку с верхнего блока",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d557969c-61e9-4984-9085-76245f25ce17",
+    "legacy_name": "Отведения ноги в кроссовере в сторону",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f007d7a8-9f92-4765-85da-52d6632556f6",
+    "legacy_name": "Отведения ноги назад в упоре на коленях (с блином)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e54229e5-2e36-427c-9003-114134f1129e",
+    "legacy_name": "Отведения ноги назад стоя, поочерёдно",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ac1c5d01-ed46-454b-8125-5894ed8b5e45",
+    "legacy_name": "Отведения рук сидя в тренажёре в заднюю дельту",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a9c5a2a3-4b3c-480f-a519-a7781e2cb8d9",
+    "legacy_name": "Отведения с резинкой под углом назад",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9b308ddb-7b89-4adb-ac09-6b61ca3a28d3",
+    "legacy_name": "Отжимания \"алмазиком\"",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "df4d11d8-0a30-4fa5-bfca-2007ffec1eed",
+    "legacy_name": "Отжимания \"домиком\"",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4a16df16-2a7c-4473-ad89-ac5272ee918b",
+    "legacy_name": "Отжимания на брусьях",
+    "canonical_exercise_id": "4a16df16-2a7c-4473-ad89-ac5272ee918b",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старое название и техника описывают свободные брусья без противовеса. Основная UI-группа приводится к разделу «Грудь» ТЗ, трицепсы сохраняются среди целевых мышц."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c038232f-8b71-4c34-aeaa-653aad90fa3e",
+    "legacy_name": "Отжимания на брусьях в гравитроне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "47287ac8-3fcc-4c0b-9cc7-a5bb7e45b5f6",
+    "legacy_name": "Отжимания на трицепс в тренажёре",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "844f65ad-7541-45a6-adda-0e16741f0031",
+    "legacy_name": "Отжимания с узкой постановкой рук",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6924c872-e764-43bf-b1f5-6f39a48f7bdf",
+    "legacy_name": "Отжимания с узкой постановкой рук от колен",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "dda32178-3a20-4914-a8da-0d80cc6b4239",
+    "legacy_name": "Отжимания с широкой постановкой рук",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "37816fa5-a8a5-4c0c-b682-6ca56604441c",
+    "legacy_name": "Отжимания с широкой постановкой рук (с колен)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6d84f6e3-9e0d-426a-9ed8-5fa79f7895d1",
+    "legacy_name": "Отжимания с широкой постановкой рук + Сведения рук по направлению \"вниз\" в кроссовере с верхних блоков",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "834ac8fd-0bc4-4c83-ba89-c0f2994a8488",
+    "legacy_name": "Отжимания стоя с опорой на гриф",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "26ee58df-4a9a-4f4b-92d7-b08b699989e8",
+    "legacy_name": "Отжимания стоя с опорой на стену",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3c8e4d1c-8f3a-4668-a102-b2f869a48152",
+    "legacy_name": "Планка на локтях",
+    "canonical_exercise_id": "3c8e4d1c-8f3a-4668-a102-b2f869a48152",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старое название и техника указывают упор на предплечьях. UUID сохранён; тип результата изменится только для новых записей после готовности измерений v2."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "67b94580-db1c-43fb-8df6-6d934453e956",
+    "legacy_name": "Планка на локтях со сгибанием ног",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "221d2460-def2-42df-94da-f2a48fd20841",
+    "legacy_name": "Планка на прямых руках",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a997a963-7038-43ac-b685-8ef537752d84",
+    "legacy_name": "Планка с попеременным опусканием на локоть",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "45b92dbe-159a-4ef9-a073-8976072f84e9",
+    "legacy_name": "Плие с гирей/гантелью",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a41276e5-6479-4e44-bc81-be32a7a4a465",
+    "legacy_name": "Плие со штангой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3fc3f612-c744-44f2-b745-c5202aca4d36",
+    "legacy_name": "Плие статика",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f408ef92-b2c4-4dc8-88dc-bd01e96d7992",
+    "legacy_name": "Поднимание/опускание плечевого пояса в гравитроне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8c089ffa-a495-4cd9-87b9-240ca97beb8b",
+    "legacy_name": "Подтягивания (обратный хват)",
+    "canonical_exercise_id": "8c089ffa-a495-4cd9-87b9-240ca97beb8b",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старая техника явно указывает ладони к себе и свободный вис на перекладине; противовеса нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a3dcff40-011f-4855-a3c5-dc55d8b2451f",
+    "legacy_name": "Подтягивания (средний скалодромный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2c01023e-7755-4226-b913-b2a3477e6b2d",
+    "legacy_name": "Подтягивания (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "abb0a0f1-65ae-4e6c-87d0-fb269ccb0a60",
+    "legacy_name": "Подтягивания (широкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3ea8848b-45ab-41f8-9346-a235b785cd35",
+    "legacy_name": "Подтягивания (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6b7de4ff-5ace-42d5-b15e-f17752efe5a4",
+    "legacy_name": "Подтягивания в TRX",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d00426ef-1828-4ed8-9120-07483882186d",
+    "legacy_name": "Подтягивания в гравитроне (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f9f6f283-f16c-4199-90a8-d1d31c662cdc",
+    "legacy_name": "Подтягивания в гравитроне (средний параллельный хват 45°)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "769fc75c-af11-4d8a-b397-3220318fa7b6",
+    "legacy_name": "Подтягивания в гравитроне (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0e40423e-2c48-4dba-ae92-acc162a2a755",
+    "legacy_name": "Подтягивания в гравитроне (широкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e1d4f220-853a-41e1-8a4d-5321c52ba259",
+    "legacy_name": "Подтягивания в гравитроне (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fe6de0f9-4d6c-41c8-900d-a36adf95dc2a",
+    "legacy_name": "Подъём по ступенькам, прожимая ягодицу",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "043faeb4-7629-4e90-8824-da713a19e76f",
+    "legacy_name": "Подъём прямых рук с нижнего блока",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "46ee88c3-19bb-45fa-b330-eaef1a706514",
+    "legacy_name": "Подъём таза в машине Смита (носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c906474b-e16d-44c9-b6d7-0d8d5465ddd0",
+    "legacy_name": "Подъём таза в машине Смита (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4751a50c-6d1e-4e19-953a-7d21da3dbc68",
+    "legacy_name": "Подъём таза в машине Смита (стопы развернуты под 45°)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6207c718-fe10-4b98-9015-e7af586c59ed",
+    "legacy_name": "Подъём таза в машине Смита в 1 ногу (носок ровно, колено согнуто)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1b23f776-e620-4fe9-8cde-481bcbdc4432",
+    "legacy_name": "Подъёмы блина перед собой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a82d6715-d2a7-47ad-9c3a-844368790338",
+    "legacy_name": "Подъёмы гантелей перед собой \"молоточки\"",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a7af9b46-fecd-4de8-9dae-f1cc394cce70",
+    "legacy_name": "Подъёмы гантелей перед собой обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "24056836-a3df-4ed6-beee-fa66fdfc3fd1",
+    "legacy_name": "Подъёмы гантелей перед собой прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fb7023b1-bcad-46df-be0f-ae091b36d154",
+    "legacy_name": "Подъёмы на носки сидя в тренажёре",
+    "canonical_exercise_id": "fb7023b1-bcad-46df-be0f-ae091b36d154",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Совпадают сидячее положение, валики над коленями, платформа и подъём пяток. UUID сохранён; модель машины и исторический вес не переосмысляются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "58a0ad59-b73e-497e-85b5-27cf3c90ba52",
+    "legacy_name": "Подъёмы на носки стоя в наклоне 90° в тренажёре",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0f22ef83-fb37-4976-ad5a-97695e0b2a8f",
+    "legacy_name": "Подъёмы на носки стоя в тренажёре",
+    "canonical_exercise_id": "0f22ef83-fb37-4976-ad5a-97695e0b2a8f",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Имя и оборудование явно задают тренажёр стоя; техника описывает подъём пяток на платформе. UUID сохранён; модель машины и исторический вес не переосмысляются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1a4652ff-ce99-4b65-8fc1-30efe05c5971",
+    "legacy_name": "Подъёмы на носки стоя на возвышенности (без тренажера)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b3d70c9e-80c2-477c-8605-e00ca5dab528",
+    "legacy_name": "Подъёмы на носки стоя на возвышенности на одной ноге (без тренажера)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2c53aa26-624c-4aac-a7ac-eb23fb4f165b",
+    "legacy_name": "Подъёмы ног лёжа",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "347ead65-1539-4991-9086-47702adb3980",
+    "legacy_name": "Подъёмы согнутых ног в висе с опорой на прямые руки",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "96ae0f56-01f2-486a-b2b8-ed2fa159a32d",
+    "legacy_name": "Присед (ноги на ширине плеч)",
+    "canonical_exercise_id": "96ae0f56-01f2-486a-b2b8-ed2fa159a32d",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "В старой технике явно описаны снятие штанги со стоек и размещение грифа на верхней части спины. Equipment=Тренажёр противоречит технике; UUID сохраняется."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8ef2a7e1-d912-4c4a-be86-2fb1e037b58a",
+    "legacy_name": "Присед в вертикальном Гакке (стопы параллельно, на середине платформы)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f71dd06f-5103-4d47-8d67-f835c51eb1df",
+    "legacy_name": "Присед в вертикальном Гакке (стопы широко, на нижней части платформы)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "87eda580-3797-4684-a609-7781987871dd",
+    "legacy_name": "Присед в гакк-LEGEND (стопы параллельно, узко)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f740cdd2-2b51-4e65-a3f0-d1419735b4e4",
+    "legacy_name": "Присед в гакк-LEGEND (стопы широко, носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0bd92b70-a9ca-4784-b8f3-1e57bdf534c3",
+    "legacy_name": "Присед в гакк-LEGEND (стопы широко, параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "19b95dd3-0189-44b2-b7d0-da8190beaac9",
+    "legacy_name": "Присед в наклонном гакке (стопы широко, носки в стороны, середина платформы)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b8ca9a0e-8019-407b-8f62-a8ee00f7dce5",
+    "legacy_name": "Присед со штангой с широкой постановкой ног",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ec3008c4-6d95-4146-a476-6a395b17e8f4",
+    "legacy_name": "Приседание в кроссовере (рукоять перед собой)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "330d8aa8-e213-4f94-b09d-5ef642338697",
+    "legacy_name": "Приседание с гирей с попеременным перемещением веса",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ca8cf517-2876-476d-95d9-bd8e07b08b6f",
+    "legacy_name": "Приседания 110 градусов + \"Крабики\" с резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4aba236b-babf-4503-a9eb-585aa92e611e",
+    "legacy_name": "Приседания в 2 шага (1/4 + отведение бедра, и до конца)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "78cf5936-a468-49a8-8b67-c9beaf694f0d",
+    "legacy_name": "Приседания в Смите (пятки на возвышенности)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8238b772-ee1d-42b9-a01b-62d534768263",
+    "legacy_name": "Приседания в Смите с широкой постановкой ног",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ed3b562e-9a55-4081-b53c-444c7fedff22",
+    "legacy_name": "Приседания в Смите со средней параллельной постановкой ног",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e3218d0d-d555-40e7-b39f-347022cae415",
+    "legacy_name": "Приседания вертикальные в LEGEND",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1288384d-b1d2-413d-ab17-37f5365c0042",
+    "legacy_name": "Приседания на одной ноге (от возвышенности)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3c9ef750-7240-46de-846e-beb3d2359bc8",
+    "legacy_name": "Приседания с блином над головой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ec9362c2-e96d-4086-93b0-bd716aaa187b",
+    "legacy_name": "Приседания с нижним блоком",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2e56d8d8-2e8d-4026-8733-32fb3b995e01",
+    "legacy_name": "Приседания с пружинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6445ea97-27f3-459a-b34f-34aa2e5ee542",
+    "legacy_name": "Приседания со степов с отягощением, закреплённым на поясе",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "88a7eb56-b764-4bce-95c2-2bb1c1f88e8b",
+    "legacy_name": "Приседания со штангой за спиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "65a408dd-0f50-4bf3-badf-5eb7006eefd1",
+    "legacy_name": "Приседания со штангой, пятки на возвышенности",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "493f0abf-5f18-4133-92c1-667478d2b465",
+    "legacy_name": "Пронация плечевого сустава в планке (упор на локти)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1d5a48b3-facf-49bb-842f-04816da9b3c6",
+    "legacy_name": "Пронация плечевого сустава в планке (упор на прямые руки)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0c51f2b5-613b-4799-9f44-8fedb76b983a",
+    "legacy_name": "Прямые скручивания + Планка",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d447e34b-4a8e-4541-9f82-d48801d347d6",
+    "legacy_name": "Пуловер в кроссовере (канатная рукоять)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c71abe41-fd33-432c-89d2-ca6b99876df7",
+    "legacy_name": "Пуловер в кроссовере (прямая длинная рукоять, прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8e6722b9-d7f9-4fd3-bf8b-c5496c0252ef",
+    "legacy_name": "Пуловер в кроссовере (прямая короткая рукоять, прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "37777810-6c11-48d1-8671-f756166a39bf",
+    "legacy_name": "Пуловер в тренажёре",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f07d8c26-c7d5-4f97-9172-edab92a42c52",
+    "legacy_name": "Пуловер с гантелью",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "60c0d57c-6af5-47d8-b98a-f0aba4e05720",
+    "legacy_name": "Разведение ног лежа с короткой резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "af3f4317-96f6-402c-a15d-bf6a82566e25",
+    "legacy_name": "Разведение рук в заднюю дельту в наклоне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ec9bee4a-a5d0-458a-8ae5-ed9916aabe91",
+    "legacy_name": "Разгибание 1 ноги в тренажере",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a5beb0c9-78c5-45e6-9e91-460923494531",
+    "legacy_name": "Разгибание в кроссовере сверху в 1 руку прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "29c5c16e-61ff-4608-98a7-a00caa4a1453",
+    "legacy_name": "Разгибание в кроссовере сверху в 1 руку с пронацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5bbfec64-e309-4d4f-8119-a384741419f7",
+    "legacy_name": "Разгибание рук в кроссовере снизу в 2 руки с канатом, стоя спиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6adb52bc-0064-4957-bb01-6279c1b26429",
+    "legacy_name": "Разгибание рук в наклоне с длинной резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "28a0e5c4-4d1a-46d7-868b-db72c84bf885",
+    "legacy_name": "Разгибание стоя в 1 руку с длинной резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "20715c96-cfdb-49c9-ba14-7d23fa15d8ef",
+    "legacy_name": "Разгибания ног сидя (стопы завёрнуты внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "87d3d4b6-40c4-40cb-9ace-c1201bc20661",
+    "legacy_name": "Разгибания ног сидя (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d77a3346-2559-4e5b-93b6-c09190d23959",
+    "legacy_name": "Разгибания ног сидя (стопы развёрнуты в стороны, 45°)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c147acb2-9908-4490-a616-9f111ba0df41",
+    "legacy_name": "Разгибания рук в блоке (канатная рукоять)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9797e2a7-c1b5-4ad4-8b5c-7277b057b70e",
+    "legacy_name": "Разгибания рук в блоке (прямая рукоять, обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "599e5cd3-7037-436d-b323-7ad3283336fc",
+    "legacy_name": "Разгибания рук в блоке (прямая рукоять, прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6493f641-2320-453c-b473-f011930f5703",
+    "legacy_name": "Разгибания рук стоя с фитнес-резинкой, по одной руке",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7608cb53-fbfc-4daf-bd12-2c42dc32df4c",
+    "legacy_name": "Разножка",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "70791438-c2e5-46c0-b7d5-e4d6d1385bd3",
+    "legacy_name": "Румынская тяга",
+    "canonical_exercise_id": "70791438-c2e5-46c0-b7d5-e4d6d1385bd3",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "В старой технике прямо названы штанга и хват грифа; поле equipment=Тренажёр ошибочно. Гантельные и одноногие варианты не объединяются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b86b000d-4b99-4128-b9a4-ccf12fca63e6",
+    "legacy_name": "Румынская тяга (ноги шире плеч)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6ef8d5f6-8945-4fca-8dee-39531fc4c828",
+    "legacy_name": "Румынская тяга на 1 ноге (вторая нога в опоре на стену)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3a386dde-c8db-4520-bd79-3e92c697b50f",
+    "legacy_name": "Румынская тяга на двух ногах (с резинкой)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "498c15b9-2688-4cbe-94b5-e4877dd3b51d",
+    "legacy_name": "Румынская тяга на одной ноге (вторая нога на полу)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "72d926b7-c3cc-4695-bea4-020e81ce0839",
+    "legacy_name": "Румынская тяга на одной ноге (вторая нога отводится назад)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d73125eb-db5a-45e6-acce-38341c51e94d",
+    "legacy_name": "Румынская тяга на одной ноге с отведением другой (в Смите)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7e7ee6bd-c2ac-4138-a648-c7c8c552e4af",
+    "legacy_name": "Румынская тяга на одну ногу + \"Лягушка\"",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c55e6bdc-8ae8-4fdb-9414-d079ecb4057a",
+    "legacy_name": "Румынская тяга на одну ногу + Обратный жим ногами в Смите",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2dd6ab89-76e9-419d-a2e7-8d92a916a655",
+    "legacy_name": "Румынская тяга на одну ногу + Сгибания ног сидя (носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2c79c59e-fbfc-4b2e-b000-2bbb76dbd1ae",
+    "legacy_name": "Румынская тяга на одну ногу + Сгибания ног сидя (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b1c6a43f-c314-41c6-a1cc-323bdd9667d9",
+    "legacy_name": "Румынская тяга с гантелями (стопы на возвышенности)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7f9a47ab-da94-4c24-a5f6-834f9857c378",
+    "legacy_name": "Румынская тяга с гантелями (стопы на возвышенности), темп 3+1",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5b19df2e-bddc-4b7b-a535-136c859b20b0",
+    "legacy_name": "Румынская тяга с гантелями (стопы на полу)",
+    "canonical_exercise_id": "5b19df2e-bddc-4b7b-a535-136c859b20b0",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старые имя и техника описывают две гантели и стопы на полу, без одноногого или дефицитного варианта."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "cefb02e8-d85a-4482-8000-ab3d540afdb6",
+    "legacy_name": "Румынская тяга с гантелями (стопы на полу), темп 3+1",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f395f0d9-58e8-45b3-b275-9af1a5e8c9e6",
+    "legacy_name": "Румынская тяга с фиксированной траекторией (тренажер)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b9fb6c27-6928-45e7-833c-3fb7f2cddc6f",
+    "legacy_name": "Сведение ног лежа с длинной резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8ac61bb5-c04f-4032-a29d-e3ee2b7417b9",
+    "legacy_name": "Сведение прямых рук сидя в тренажере \"бабочка\" с валиками (ладони вниз)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6b05b571-eb62-4084-9fcd-0e22c6a855cf",
+    "legacy_name": "Сведение рук в кроссовере снизу",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "814a2894-a399-4dc4-8ca7-41162299d303",
+    "legacy_name": "Сведение рук в кроссовере снизу с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d473c6e3-9c11-41b4-814d-c67d24ca11c4",
+    "legacy_name": "Сведение рук в тренажёре \"бабочка\" с валиками с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "036c21c5-1a90-4197-9da8-e12ad2a897ae",
+    "legacy_name": "Сведение рук с гантелями лёжа на горизонтальной скамье",
+    "canonical_exercise_id": "036c21c5-1a90-4197-9da8-e12ad2a897ae",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Гантели и горизонтальная скамья; техника описывает разведение по дуге с небольшим сгибанием локтей. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "070238b7-77e9-46d3-a5ee-f0c5bdeda3e3",
+    "legacy_name": "Сведение рук с гантелями лёжа на наклонной скамье (15-20°)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2c495212-a481-48d3-891b-15eade6e1bd8",
+    "legacy_name": "Сведение рук снизу с супинацией с длинной резиной",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "03e4e0aa-5a4f-4178-8414-74ab63bd2d09",
+    "legacy_name": "Сведение слегка согнутых рук сидя в тренажёре «бабочка» с валиками (ладони друг к другу)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6707f435-70cb-4257-bb83-ba83e7e9b107",
+    "legacy_name": "Сведения бедёр сидя в тренажёре (стопы развернуты максимально в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a63fd8aa-cd32-41e8-9381-21ef4783be7d",
+    "legacy_name": "Сведения ног полулёжа с плотно прижатой поясницей",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6ecfff7a-2397-47bd-9248-c303113a3ca8",
+    "legacy_name": "Сведения ног сидя под углом 90° (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ddd045a8-8dc9-4b75-a5f8-720ab192ae97",
+    "legacy_name": "Сведения рук сидя в тренажере с ручками",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c4df3e7f-64e0-450c-9f27-1ee3925e66d1",
+    "legacy_name": "Сгибание в кроссовере снизу в 1 руку «молоток»",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "cf04227a-271d-4a92-adbb-de8724160d4f",
+    "legacy_name": "Сгибание в кроссовере снизу в 1 руку обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2fdfd4fb-f8f7-4456-9132-8fbdecf3737b",
+    "legacy_name": "Сгибание в кроссовере снизу в 1 руку прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b4603161-3d79-43ee-aa32-dfd1559e4131",
+    "legacy_name": "Сгибание в кроссовере снизу в 1 руку с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6bac52f7-92eb-447f-b8ac-e2fb1cbd3ce8",
+    "legacy_name": "Сгибание рук в кроссовере снизу в 2 руки обратным хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ce734db5-3b21-4ead-915d-7602ee9ec3cc",
+    "legacy_name": "Сгибание рук в кроссовере снизу в 2 руки прямым хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3f32e2f5-dbfd-44cd-82c0-c32db52145f2",
+    "legacy_name": "Сгибание рук стоя",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ebdf84f1-aebe-4049-a7cd-52b62bc077ff",
+    "legacy_name": "Сгибание стоя без опоры с короткой резиной в 1 ногу",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e2c17dfe-013f-4a76-8a46-d0be0d68eb61",
+    "legacy_name": "Сгибания ног лёжа в тренажёре (колени на весу, носки внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0ac6c0f4-d2a3-4cbd-bcc9-d75d4b4a806a",
+    "legacy_name": "Сгибания ног лёжа в тренажёре (колени на весу, стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d62efdc2-0134-4de9-b606-30371b26eadc",
+    "legacy_name": "Сгибания ног лёжа в тренажёре (колени прижаты, носки внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2f383da9-4ef2-41f6-97d0-ea4d8230636e",
+    "legacy_name": "Сгибания ног лёжа в тренажёре (колени прижаты, стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b1260cd8-f54a-499d-831e-7f7619241252",
+    "legacy_name": "Сгибания ног лёжа с гантелью (горизонтальная скамья)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2a95a721-779e-4d6e-a31f-403d2a07e8c9",
+    "legacy_name": "Сгибания ног лёжа с гантелью (наклонная скамья)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c19019c5-2fc1-4f05-9a37-5c7871bb005b",
+    "legacy_name": "Сгибания ног сидя (носки внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "54b651b5-d9c7-45e7-a93e-95a19aefb150",
+    "legacy_name": "Сгибания ног сидя (носки развёрнуты в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d39b7e65-dbc4-44bc-a5a5-e2dace904cc2",
+    "legacy_name": "Сгибания ног сидя (с супинацией)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3ba6da5d-ca00-4621-8f3f-24dc18f5ca03",
+    "legacy_name": "Сгибания ног сидя (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8ca18c1f-3373-4c9b-b711-d49db095c0f1",
+    "legacy_name": "Сгибания по одной ноге стоя в тренажёре (носок внутрь)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0c1a29be-2cdd-4aa5-b974-d77249e94fe1",
+    "legacy_name": "Сгибания по одной ноге стоя в тренажёре (носок ровно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8941749c-34dc-43bd-8735-e8d9d690fc52",
+    "legacy_name": "Сгибания рук \"молоты\"",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "76ccd76e-79e7-4a30-8292-039bc401ecec",
+    "legacy_name": "Сгибания рук с гантелями с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f267480a-6ef4-4ee2-8e8d-b9bb095c9e0f",
+    "legacy_name": "Сгибания рук со штангой на скамье Скотта",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b50ae6ab-2c99-439a-919f-275be82b0c31",
+    "legacy_name": "Сгибания рук со штангой стоя",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f015a526-8c75-42aa-8d88-b45b54063fa4",
+    "legacy_name": "Сиси-присед в тренажёре",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c24a8667-e775-4235-8d9b-27e5460d68a7",
+    "legacy_name": "Сиси-присед с ремнём",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7050855d-6dd5-41fe-ab7b-8ad7de6e00b3",
+    "legacy_name": "Скручивания на пресс лёжа на полу",
+    "canonical_exercise_id": "7050855d-6dd5-41fe-ab7b-8ad7de6e00b3",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "На полу, собственный вес, подъём лопаток, а не полный подъём туловища. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a142be66-7fda-4ee9-bc8b-fd22cf9dc0ad",
+    "legacy_name": "Скручивания на скамье с отрицательным наклоном",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "d8db0a28-1ec2-4786-b804-7c05bb147672",
+    "legacy_name": "Скручивания на фитболе",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "76368e3b-ba45-4101-8c29-e67f132470ae",
+    "legacy_name": "Становая тяга с ромбовидным грифом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "401ee86e-7d46-41f6-97c1-82a7bc1fa12c",
+    "legacy_name": "Стульчик",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ee14ac4b-9578-41d2-b7fb-5a20181cba43",
+    "legacy_name": "Суперсет: Гиперэкстензия (волнами/с вытянутыми руками) + Любое упражнение на пресс",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "6c5f2f35-1b56-4bc5-81d9-a39e068fa247",
+    "legacy_name": "Суперсет: Гиперэкстензия (волнами/с вытянутыми руками) + Обратные скручивания",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "06ce19ad-d9fd-4497-afd4-bdf1a7e0335a",
+    "legacy_name": "Суперсет: Гиперэкстензия (волнами/с вытянутыми руками) + Подъёмы согнутых ног в висе",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5db42671-7fed-4b5a-abc9-3e601d091579",
+    "legacy_name": "Суперсет: Гиперэкстензия (волнами/с вытянутыми руками) + Скручивания на пресс на фитболе",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5a26cc82-b42e-4369-9084-de412bfa6624",
+    "legacy_name": "Тяга в 1 руку в тренажере HAMMER, сидя боком",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2661805e-2faf-41ff-8697-3247c85534fa",
+    "legacy_name": "Тяга в заднюю дельту в наклоне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bc6a19eb-8928-41f1-9280-b68ff7a6afd2",
+    "legacy_name": "Тяга в заднюю дельту с фитнес-резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4da88b23-4cc2-448d-907c-881671f15974",
+    "legacy_name": "Тяга в кроссовере сверху в 1 руку с супинацией в упоре на колено",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "de3a77c5-57c2-415e-875e-e59321dbb030",
+    "legacy_name": "Тяга в кроссовере сверху в 2 руки, сидя на коленях (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "20090039-f890-428f-9520-521b9c6b7ce9",
+    "legacy_name": "Тяга верхнего блока в 1 руку, без супинации (ладонь развернута вперед)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "60a106d4-71b1-4768-a143-f34384d06177",
+    "legacy_name": "Тяга верхнего блока в 1 руку, без супинации (ладонь развернута к корпусу)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "640e66b5-a8ba-4d4d-ad34-2ee02b43000e",
+    "legacy_name": "Тяга верхнего блока в 1 руку, с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "59bb63ce-da5a-483b-a6c1-0f9f23ccc219",
+    "legacy_name": "Тяга верхнего блока за голову (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fdfe9a9d-d68a-4a5d-ac56-d1c1ceac945b",
+    "legacy_name": "Тяга верхнего блока к груди (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "34bf65af-0f90-4ce6-8b84-ef9d1e5beb35",
+    "legacy_name": "Тяга верхнего блока к груди (средний параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1010a4e0-44cb-47ad-a843-e109b0761433",
+    "legacy_name": "Тяга верхнего блока к груди (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c2779b4b-00e6-4420-82a8-88f96b753ea1",
+    "legacy_name": "Тяга верхнего блока к груди (широкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7446da89-d014-4457-a951-a5d77380216c",
+    "legacy_name": "Тяга верхнего блока к груди (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c3a76909-bf41-45ec-8e5d-3029f463b704",
+    "legacy_name": "Тяга верхнего блока к груди с прямыми руками",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3fed9208-1bf6-4669-bb11-b75b1bb38814",
+    "legacy_name": "Тяга верхнего блока средним параллельным хватом в половину амплитуды",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0ef4fb92-280d-416e-9d69-7b8c86cee52d",
+    "legacy_name": "Тяга верхнего блока широким хватом в половину амплитуды",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "dfebb389-38ff-432e-94ab-1bffb2e885f4",
+    "legacy_name": "Тяга гантелей к груди лёжа на скамье под углом 15-30°",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c0cdb52d-b0aa-4c6d-bf26-6e7a321114f4",
+    "legacy_name": "Тяга гантелей к поясу с упором в скамью 30° с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "8be42aed-ac27-4fc7-b7bb-9bbe0f92b741",
+    "legacy_name": "Тяга гантелей стоя в наклоне",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2fea538b-9f01-4c3e-af3c-d64e3903ee0c",
+    "legacy_name": "Тяга гантелей стоя в наклоне в 2 руки",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "057b4232-4702-4916-bd17-58e46e1df631",
+    "legacy_name": "Тяга гантели к поясу, без супинации",
+    "canonical_exercise_id": "057b4232-4702-4916-bd17-58e46e1df631",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Одна гантель, опора коленом и рукой на скамью, тяга к поясу без супинации. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bc279907-18f5-4032-8d50-fe730fcc7299",
+    "legacy_name": "Тяга гантели к поясу, с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "45d69fd4-c9fd-497b-8897-2ff3245e6733",
+    "legacy_name": "Тяга горизонтальная в мини-HAMMER в 2 руки (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c5162d2b-b989-4f18-9f51-ecdbb58d2d56",
+    "legacy_name": "Тяга горизонтальная в мини-HAMMER в 2 руки (широкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "20b17a16-326f-4c39-8cd8-ccf5aa48a3a5",
+    "legacy_name": "Тяга горизонтальная в мини-HAMMER в 2 руки (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f88506f0-942f-4586-b776-eac628e89d16",
+    "legacy_name": "Тяга горизонтальная рычажная в 1 руку, без супинации (узкий хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ed6e97f3-5a2a-48ba-a392-d7d145e27a33",
+    "legacy_name": "Тяга горизонтальная рычажная узким хватом в 2 руки",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "44d8c817-0bf9-40b7-a7cb-eb1c7c40dfa5",
+    "legacy_name": "Тяга горизонтального блока (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "7b8d87c1-c32d-493c-a732-2a8db9849dd6",
+    "legacy_name": "Тяга горизонтального блока (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "0fbbde40-4e40-4ad1-834a-7e6b3a3ef269",
+    "legacy_name": "Тяга горизонтального блока сидя (средний параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "58d5bf73-164f-448a-98f7-5ab20d3e7641",
+    "legacy_name": "Тяга горизонтального блока сидя (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "271f5832-6e34-48b7-8051-515be1482a8a",
+    "legacy_name": "Тяга горизонтального блока сидя в 1 руку в тренажёре с опорой грудью (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "22aeb80a-2353-4288-8732-fdd0cdff14b7",
+    "legacy_name": "Тяга горизонтального блока сидя в 1 руку, без супинации",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "584d26bb-3192-45c1-951b-1cfa8755ba94",
+    "legacy_name": "Тяга горизонтального блока сидя в 1 руку, с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "10c32c46-99e0-4fe8-beb4-be2d90969a9e",
+    "legacy_name": "Тяга горизонтального блока сидя в тренажёре с опорой грудью (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c139d275-8fdc-44c7-b687-e167388c1a9f",
+    "legacy_name": "Тяга горизонтального блока сидя в тренажёре с опорой грудью (широкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "b9e2476f-4898-41db-b276-3e223ca9a6ba",
+    "legacy_name": "Тяга горизонтального блока сидя в тренажёре с опорой грудью (широкий прямой хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ee064c34-1d24-4b54-90fe-6f3c9ae33fd3",
+    "legacy_name": "Тяга горизонтального блока широким прямым хватом с прямыми руками",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a31f8b23-e60c-4c34-9614-239534046adf",
+    "legacy_name": "Тяга длинной резинки в наклоне в 1 руку",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "18271885-1f34-4c4b-acd2-37961f092c68",
+    "legacy_name": "Тяга длинной резинки в наклоне в 2 руки",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e1a8a84c-e11a-433c-b117-a1374aec1906",
+    "legacy_name": "Тяга длинной резинки сверху",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "fa6ddc61-af33-44dd-9411-409e748097ed",
+    "legacy_name": "Тяга длинной резинки сверху в 1 руку с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "16708ee5-ad0a-4718-9e70-8595738e5251",
+    "legacy_name": "Тяга длинной резинки сверху в 2 руки узким хватом с супинацией",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e187ae52-78ce-4426-be60-7548e28f7933",
+    "legacy_name": "Тяга длинной резинки сверху в 2 руки широким хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "96c06e6e-9a2d-4a50-ba8e-c5fa2b634f3d",
+    "legacy_name": "Тяга за голову с резинкой",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "e77e071c-c451-46f8-86ac-110de4800088",
+    "legacy_name": "Тяга к подбородку узким хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "66e92397-9e9b-44f5-8ae7-9f8a9be71cb3",
+    "legacy_name": "Тяга канатной рукояти к груди",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "946e7f07-6248-49ef-9af8-0d08bd57b7ee",
+    "legacy_name": "Тяга канатной рукояти снизу в кроссовере",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "94a44409-a73f-40a6-8c70-7d8a184b6d70",
+    "legacy_name": "Тяга на заднюю дельту без наклона",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "3246851e-6dc3-43f4-9dd5-b493ba00398d",
+    "legacy_name": "Тяга одной гантели вверх",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "daec9e20-cfd8-40e9-95f7-dcbce7e1a67d",
+    "legacy_name": "Тяга сумо (с пола)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bb0852b5-6634-4ffa-9c4e-4bbbfee8f165",
+    "legacy_name": "Тяга сумо + Сведения ног сидя (носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f9683f58-bad7-4d13-804e-71fdb6ab64a7",
+    "legacy_name": "Тяга сумо + Сведения ног сидя (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5419e744-1443-4aaf-a527-8bb83d68806e",
+    "legacy_name": "Тяга сумо в Смите",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a8a18175-927c-49c4-a751-2c36403532e4",
+    "legacy_name": "Тяга сумо из ямы (с гирей)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5bd14c76-a086-4d89-9dfd-9ac536d0e520",
+    "legacy_name": "Тяга Т-грифа (средний параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "52fd7828-d93e-4d81-a5a2-4b93d9faff6d",
+    "legacy_name": "Тяга Т-грифа (узкий параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "476cee73-8ba3-41a1-bdc9-8e15642bc6a5",
+    "legacy_name": "Тяга Т-грифа в тренажере (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "bdb4fb88-1438-44e0-8077-d5c43127e20a",
+    "legacy_name": "Тяга Т-грифа в тренажере (параллельный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9c211922-1565-414f-b23a-a149fe61ee28",
+    "legacy_name": "Тяга Т-грифа в тренажере (с супинацией)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "2d86d222-7ce4-4387-9be3-798fca3d8f79",
+    "legacy_name": "Тяга штанги в наклоне (обратный хват)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "a76f5752-8e11-452d-bc9e-1e71116259e1",
+    "legacy_name": "Тяга штанги в наклоне (прямой хват)",
+    "canonical_exercise_id": "a76f5752-8e11-452d-bc9e-1e71116259e1",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Штанга, наклон стоя и прямой хват подтверждены названием и техникой. Обратный хват не объединяется. Старый UUID и история сохраняются; значения результатов не пересчитываются."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "5488bdfe-fc19-4af0-af42-37e9115505a5",
+    "legacy_name": "Тяга штанги к подбородку узким хватом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "c31bfb95-6f28-4757-9286-2ab7cc63ade0",
+    "legacy_name": "Французский жим",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "732c683a-744c-4671-9b9b-6a4cd8591d08",
+    "legacy_name": "Фронтальные приседания",
+    "canonical_exercise_id": "732c683a-744c-4671-9b9b-6a4cd8591d08",
+    "match_type": "equivalent",
+    "review_status": "confirmed",
+    "review_notes": "Старая техника описывает штангу на передней части плеч и снятие со стоек. Исправляется ошибочное equipment=Тренажёр, UUID сохраняется."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "af7fbc82-7935-4261-a3f0-74753c697528",
+    "legacy_name": "Челночный бег за минуту на скорость",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "68cc471b-52e7-476b-b752-247934577217",
+    "legacy_name": "Ягодичный мост на 1 ноге с доп весом",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "476cf8f3-7504-4597-aa15-6e853fe28349",
+    "legacy_name": "Ягодичный мостик в Смите (лёжа на наклонной скамье)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1717d40a-183f-46be-97dd-f9e421f67e2c",
+    "legacy_name": "Ягодичный мостик в Смите (стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "81b0c058-7f78-45c8-9b64-64840448b814",
+    "legacy_name": "Ягодичный мостик в Смите (широкая постановка ног, стопы в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "f73a9643-f775-4f0b-9d00-f6f6619191e9",
+    "legacy_name": "Ягодичный мостик в тренажёре (стопы параллельно, на ширине таза)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "9cf46591-5f7b-4ab6-927d-59506137b516",
+    "legacy_name": "Ягодичный мостик в тренажёре (стопы широко, носки в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "ec73c43f-683c-419a-88ba-df32c60716b8",
+    "legacy_name": "Ягодичный мостик со свободным весом (узкая постановка ног)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "1343253e-f9e9-44ae-8995-634ce34dd250",
+    "legacy_name": "Ягодичный мостик со свободным весом (широкая постановка ног, стопы в стороны)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  },
+  {
+    "legacy_source": "public.exercises",
+    "legacy_exercise_id": "4a5893b8-f33c-4468-8353-bdd9f4090a1a",
+    "legacy_name": "Ягодичный мостик со свободным весом (широкая постановка ног, стопы параллельно)",
+    "canonical_exercise_id": null,
+    "match_type": null,
+    "review_status": "needs_review",
+    "review_notes": "Существующий UUID сохраняется. Каноническая идентичность ещё не проверена; автоматического слияния нет."
+  }
+]

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {configurationKey,parseConfigurationKey,normalizeConfiguration} from '../src/lib/exerciseConfiguration.js';
+import {assertResultsSaved,markResultDraft} from '../src/lib/resultDraftGuard.js';
+assert.equal(configurationKey({}),'standard');
+assert.equal(configurationKey({grip_width_cm:'25,5'}),configurationKey({grip_width_cm:25.5}));
+assert.equal(configurationKey({bench_angle_degrees:'-15'}),configurationKey({bench_angle_degrees:-15}));
+const key=configurationKey({bench_angle_degrees:30,seat_setting:'3'});
+assert.notEqual(key,configurationKey({bench_angle_degrees:45,seat_setting:'3'}));
+assert.deepEqual(parseConfigurationKey(key),normalizeConfiguration({bench_angle_degrees:30,seat_setting:'3'}));
+assert.equal(parseConfigurationKey('Старые условия').notes,'Старые условия');
+assert.throws(()=>configurationKey({bench_angle_degrees:91}));
+assert.throws(()=>configurationKey({grip_width_cm:-1}));
+assert.throws(()=>configurationKey({grip_width_cm:'1e2'}));
+assert.throws(()=>configurationKey({notes:'a'.repeat(501)}));
+markResultDraft('one',true);markResultDraft('two',true);
+assert.throws(assertResultsSaved);markResultDraft('one',false);assert.throws(assertResultsSaved);
+markResultDraft('two',false);assert.doesNotThrow(assertResultsSaved);
+console.log('Configuration snapshots and unsaved result guard passed.');

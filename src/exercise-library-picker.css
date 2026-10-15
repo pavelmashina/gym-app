@@ -90,3 +90,7 @@
 .replace-modal .exercise-library-create-icon{width:40px;height:40px;border-radius:13px}
 .replace-modal .exercise-library-section{border-radius:16px}
 @media(max-width:390px){.exercise-library-filter-row,.exercise-library-create-form-grid{grid-template-columns:1fr}.exercise-library-heading h2,.exercise-library-create-form-head h3{font-size:20px}}
+.exercise-technique section + section{margin-top:18px}
+.exercise-technique h4{margin:0 0 8px;font-size:13px;color:var(--ink)}
+.exercise-technique ol,.exercise-technique ul{margin:0;padding-left:22px;line-height:1.6}
+.exercise-technique li + li{margin-top:6px}

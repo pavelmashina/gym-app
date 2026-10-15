@@ -41,6 +41,9 @@ jobs:
         run: pnpm run test
 
       - name: Build
+        env:
+          VITE_EXERCISE_CATALOG_V2: 'true'
+          VITE_EXERCISE_RESULTS_V2: 'true'
         run: pnpm run build
 
       - name: Configure Pages

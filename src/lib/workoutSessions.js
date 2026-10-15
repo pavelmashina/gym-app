@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { validateResultV2 } from './exerciseResultsV2.js';
 
 function mapSet(row) {
   return {
@@ -11,6 +12,7 @@ function mapSet(row) {
     reps: row.reps === null ? '' : String(row.reps),
     completed: row.completed,
     completedAt: row.completed_at ?? null,
+    resultV2: row.result_v2 ?? null,
   };
 }
 
@@ -19,7 +21,7 @@ async function loadExerciseNames(exerciseIds) {
   if (ids.length === 0) return new Map();
   const { data, error } = await supabase
     .from('exercises')
-    .select('id, name, muscle_group')
+    .select('*')
     .in('id', ids);
   if (error) throw error;
   return new Map((data ?? []).map((row) => [row.id, row]));
@@ -107,6 +109,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
           id: row.id,
           exerciseId: snapshotExerciseKey(row.exercise_id, row.exercise_name_snapshot),
           linkedExerciseId: row.exercise_id ?? null,
+          metricContract: exercise?.measurement_type ? {exercise_id:row.exercise_id,measurement_type:exercise.measurement_type,load_mode:exercise.load_mode,laterality:exercise.laterality,measurement_note:exercise.measurement_note} : null,
           name,
           muscleGroup: exercise?.muscle_group ?? inferMuscleGroupFromName(name),
           prescription: row.prescription_snapshot ?? '',
@@ -147,7 +150,7 @@ export async function loadWorkoutSession(sessionId) {
   if (exerciseIds.length > 0) {
     const response = await supabase
       .from('performed_sets')
-      .select('id, workout_session_exercise_id, source_scheduled_set_id, set_number, set_type, planned_reps, weight, reps, completed, completed_at')
+      .select('*')
       .in('workout_session_exercise_id', exerciseIds)
       .order('set_number', { ascending: true });
     if (response.error) throw new Error('Не удалось загрузить подходы тренировки.');
@@ -184,6 +187,7 @@ export async function loadWorkoutSession(sessionId) {
           name,
           muscleGroup: exercise?.muscle_group ?? inferMuscleGroupFromName(name),
           prescription: row.prescription_snapshot ?? '',
+          metricContract: exercise?.measurement_type ? {exercise_id:row.exercise_id,measurement_type:exercise.measurement_type,load_mode:exercise.load_mode,laterality:exercise.laterality,measurement_note:exercise.measurement_note} : null,
           note: row.note ?? '',
           sets: setRows.filter((set) => set.workout_session_exercise_id === row.id).map(mapSet),
         };
@@ -204,6 +208,15 @@ export async function startWorkout(scheduledWorkoutId) {
 }
 
 export async function updatePerformedSet(setId, values) {
+  if (values.resultV2) {
+    const result = {...values.resultV2, set_type:values.setType, completed:Boolean(values.completed)};
+    if (validateResultV2(result).length) throw new Error('Проверьте поля результата и сторону выполнения.');
+    const {data,error} = await supabase.from('performed_sets').update({result_v2:result,weight:null,reps:null,
+      set_type:values.setType,completed:result.completed,completed_at:result.completed?(values.completedAt||new Date().toISOString()):null,
+      updated_at:new Date().toISOString()}).eq('id',setId).select('*').single();
+    if(error||!data) throw new Error('Не удалось сохранить результат. Настройки уже записанного подхода менять нельзя.');
+    return mapSet(data);
+  }
   const payload = {
     set_type: values.setType,
     weight: values.weight === '' ? null : Number(values.weight),
@@ -220,7 +233,7 @@ export async function addPerformedSet(sessionExerciseId, setNumber, setType = 'w
   const { data, error } = await supabase
     .from('performed_sets')
     .insert({ workout_session_exercise_id: sessionExerciseId, set_number: setNumber, set_type: setType })
-    .select('id, workout_session_exercise_id, source_scheduled_set_id, set_number, set_type, planned_reps, weight, reps, completed, completed_at')
+    .select('*')
     .single();
   if (error || !data) throw new Error('Не удалось добавить подход.');
   return mapSet(data);
@@ -277,7 +290,7 @@ export async function getExerciseHistorySummary(exerciseKey, currentSessionId = 
 
   const { data: setRows, error: setsError } = await supabase
     .from('performed_sets')
-    .select('id, workout_session_exercise_id, source_scheduled_set_id, set_number, set_type, planned_reps, weight, reps, completed, completed_at')
+    .select('*')
     .in('workout_session_exercise_id', completedExerciseIds)
     .eq('completed', true)
     .order('set_number', { ascending: true });
@@ -291,7 +304,7 @@ export async function getExerciseHistorySummary(exerciseKey, currentSessionId = 
 
   let best = null;
   for (const row of sets) {
-    if (row.set_type !== 'working') continue;
+    if (row.result_v2 || row.set_type !== 'working') continue;
     const weight = Number(row.weight || 0);
     const reps = Number(row.reps || 0);
     if (weight <= 0 || reps <= 0) continue;

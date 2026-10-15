@@ -53,7 +53,7 @@ export async function loadStatistics() {
     exerciseIds.length
       ? supabase
           .from('performed_sets')
-          .select('id, workout_session_exercise_id, set_number, set_type, weight, reps, completed, completed_at')
+          .select('*')
           .in('workout_session_exercise_id', exerciseIds)
           .eq('completed', true)
           .order('set_number', { ascending: true })
@@ -110,6 +110,8 @@ export async function loadStatistics() {
       exerciseName: name,
       setNumber: Number(row.set_number || 0),
       setType: row.set_type,
+      resultV2: row.result_v2 ?? null,
+      completedAt: row.completed_at ?? null,
       weight,
       reps,
       volume: row.set_type === 'working' ? weight * reps : 0,

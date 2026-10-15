@@ -1,0 +1,2044 @@
+{
+  "grants": [
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_sessions",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_sessions",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_sessions",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_sessions",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_sessions",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "performed_sets",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "performed_sets",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "performed_sets",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "performed_sets",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "performed_sets",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "catalog_programs",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "catalog_programs",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "user_recent_exercises",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_recent_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_recent_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_recent_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_recent_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "workout_session_exercises",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_session_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_session_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_session_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "workout_session_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "exercises",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "program_exercise_sets",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_exercise_sets",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_exercise_sets",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_exercise_sets",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_exercise_sets",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "programs",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "programs",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "programs",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "programs",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "programs",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "program_weeks",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_weeks",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_weeks",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_weeks",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_weeks",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workouts",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workouts",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workouts",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workouts",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workouts",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "program_workout_exercises",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workout_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workout_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workout_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "program_workout_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_sets",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_sets",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_sets",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_sets",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_sets",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "user_programs",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_programs",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_programs",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_programs",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "user_programs",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workouts",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workouts",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workouts",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workouts",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workouts",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "table": "scheduled_workout_exercises",
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workout_exercises",
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workout_exercises",
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workout_exercises",
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "table": "scheduled_workout_exercises",
+      "privilege": "DELETE"
+    }
+  ],
+  "tables": [
+    {
+      "ddl": "create table public.catalog_programs (id uuid default gen_random_uuid() not null,name text not null,description text,categories text[] default '{}'::text[] not null,training_place text,level text,week_count smallint default 1 not null,workout_count smallint default 0 not null,source_key text not null,source_file text,source_sheet text,source_payload jsonb default '{}'::jsonb not null,published boolean default true not null,created_at timestamp with time zone default now() not null,updated_at timestamp with time zone default now() not null,equipment text);",
+      "rls": true,
+      "name": "catalog_programs"
+    },
+    {
+      "ddl": "create table public.exercises (id uuid default gen_random_uuid() not null,muscle_group text not null,target_muscle text,synergists text,exercise_type text not null,difficulty smallint,movement_type text not null,name text not null,technique text,notes text,source_sheet text default 'Зал'::text not null,source_row integer,created_at timestamp with time zone default now() not null,owner_id uuid,equipment text,description text,video_url text,video_path text);",
+      "rls": true,
+      "name": "exercises"
+    },
+    {
+      "ddl": "create table public.performed_sets (id uuid default gen_random_uuid() not null,workout_session_exercise_id uuid not null,source_scheduled_set_id uuid,set_number smallint not null,set_type text default 'working'::text not null,planned_reps smallint,weight numeric(8,2),reps smallint,completed boolean default false not null,completed_at timestamp with time zone,created_at timestamp with time zone default now() not null,updated_at timestamp with time zone default now() not null);",
+      "rls": true,
+      "name": "performed_sets"
+    },
+    {
+      "ddl": "create table public.program_exercise_sets (id uuid default gen_random_uuid() not null,workout_exercise_id uuid not null,set_number smallint not null,reps smallint);",
+      "rls": true,
+      "name": "program_exercise_sets"
+    },
+    {
+      "ddl": "create table public.program_weeks (id uuid default gen_random_uuid() not null,program_id uuid not null,week_number smallint not null,\"position\" smallint not null);",
+      "rls": true,
+      "name": "program_weeks"
+    },
+    {
+      "ddl": "create table public.program_workout_exercises (id uuid default gen_random_uuid() not null,workout_id uuid not null,exercise_id uuid,\"position\" smallint not null,exercise_name_snapshot text,prescription_snapshot text);",
+      "rls": true,
+      "name": "program_workout_exercises"
+    },
+    {
+      "ddl": "create table public.program_workouts (id uuid default gen_random_uuid() not null,week_id uuid not null,name text not null,\"position\" smallint not null,rest_days_after smallint default 1 not null);",
+      "rls": true,
+      "name": "program_workouts"
+    },
+    {
+      "ddl": "create table public.programs (id uuid default gen_random_uuid() not null,owner_id uuid not null,name text not null,description text,week_count smallint not null,categories text[] default '{}'::text[] not null,training_place text,equipment text,level text,cover_path text,status text default 'active'::text not null,created_at timestamp with time zone default now() not null,updated_at timestamp with time zone default now() not null,schedule_mode text default 'custom'::text not null,source_catalog_program_id uuid,structure_mode text default 'legacy_weeks'::text not null,cycle_repeat_count smallint default 1 not null);",
+      "rls": true,
+      "name": "programs"
+    },
+    {
+      "ddl": "create table public.scheduled_sets (id uuid default gen_random_uuid() not null,scheduled_workout_exercise_id uuid not null,set_number smallint not null,planned_reps smallint);",
+      "rls": true,
+      "name": "scheduled_sets"
+    },
+    {
+      "ddl": "create table public.scheduled_workout_exercises (id uuid default gen_random_uuid() not null,scheduled_workout_id uuid not null,source_program_workout_exercise_id uuid,exercise_id uuid,\"position\" smallint not null,exercise_name_snapshot text,prescription_snapshot text);",
+      "rls": true,
+      "name": "scheduled_workout_exercises"
+    },
+    {
+      "ddl": "create table public.scheduled_workouts (id uuid default gen_random_uuid() not null,user_program_id uuid not null,source_program_workout_id uuid,sequence_number smallint not null,week_number smallint not null,workout_name text not null,scheduled_date date not null,status text default 'scheduled'::text not null,created_at timestamp with time zone default now() not null,cycle_number smallint);",
+      "rls": true,
+      "name": "scheduled_workouts"
+    },
+    {
+      "ddl": "create table public.user_programs (id uuid default gen_random_uuid() not null,user_id uuid not null,program_id uuid not null,status text default 'active'::text not null,start_date date not null,joined_at timestamp with time zone default now() not null,paused_at timestamp with time zone,completed_at timestamp with time zone,updated_at timestamp with time zone default now() not null);",
+      "rls": true,
+      "name": "user_programs"
+    },
+    {
+      "ddl": "create table public.user_recent_exercises (user_id uuid not null,exercise_id uuid not null,last_used_at timestamp with time zone default now() not null);",
+      "rls": true,
+      "name": "user_recent_exercises"
+    },
+    {
+      "ddl": "create table public.workout_session_exercises (id uuid default gen_random_uuid() not null,workout_session_id uuid not null,source_scheduled_workout_exercise_id uuid,exercise_id uuid,\"position\" smallint not null,note text,exercise_name_snapshot text,prescription_snapshot text);",
+      "rls": true,
+      "name": "workout_session_exercises"
+    },
+    {
+      "ddl": "create table public.workout_sessions (id uuid default gen_random_uuid() not null,user_id uuid not null,scheduled_workout_id uuid not null,status text default 'active'::text not null,started_at timestamp with time zone default now() not null,ended_at timestamp with time zone,active_duration_seconds integer default 0 not null,created_at timestamp with time zone default now() not null,updated_at timestamp with time zone default now() not null,paused_at timestamp with time zone);",
+      "rls": true,
+      "name": "workout_sessions"
+    }
+  ],
+  "indexes": [
+    "CREATE INDEX program_workout_exercises_exercise_idx ON public.program_workout_exercises USING btree (exercise_id);",
+    "CREATE UNIQUE INDEX workout_sessions_one_live_or_completed_per_schedule_idx ON public.workout_sessions USING btree (scheduled_workout_id) WHERE (status = ANY (ARRAY['active'::text, 'completed'::text]));",
+    "CREATE INDEX catalog_programs_categories_idx ON public.catalog_programs USING gin (categories);",
+    "CREATE INDEX catalog_programs_training_place_idx ON public.catalog_programs USING btree (training_place);",
+    "CREATE INDEX scheduled_workouts_date_status_idx ON public.scheduled_workouts USING btree (scheduled_date, status);",
+    "CREATE INDEX catalog_programs_published_name_idx ON public.catalog_programs USING btree (published, name);",
+    "CREATE INDEX scheduled_workout_exercises_source_idx ON public.scheduled_workout_exercises USING btree (source_program_workout_exercise_id);",
+    "CREATE UNIQUE INDEX workout_sessions_one_active_per_user_idx ON public.workout_sessions USING btree (user_id) WHERE (status = 'active'::text);",
+    "CREATE INDEX workout_session_exercises_session_idx ON public.workout_session_exercises USING btree (workout_session_id, \"position\");",
+    "CREATE INDEX performed_sets_exercise_idx ON public.performed_sets USING btree (workout_session_exercise_id, set_number);",
+    "CREATE INDEX scheduled_workout_exercises_workout_idx ON public.scheduled_workout_exercises USING btree (scheduled_workout_id);",
+    "CREATE INDEX scheduled_workouts_user_program_date_idx ON public.scheduled_workouts USING btree (user_program_id, scheduled_date, sequence_number);",
+    "CREATE INDEX programs_source_catalog_idx ON public.programs USING btree (source_catalog_program_id);",
+    "CREATE INDEX workout_session_exercises_exercise_idx ON public.workout_session_exercises USING btree (exercise_id);",
+    "CREATE INDEX program_exercise_sets_exercise_idx ON public.program_exercise_sets USING btree (workout_exercise_id, set_number);",
+    "CREATE INDEX performed_sets_source_idx ON public.performed_sets USING btree (source_scheduled_set_id);",
+    "CREATE UNIQUE INDEX user_programs_one_live_idx ON public.user_programs USING btree (user_id, program_id) WHERE (status = ANY (ARRAY['active'::text, 'paused'::text]));",
+    "CREATE INDEX workout_sessions_user_started_idx ON public.workout_sessions USING btree (user_id, started_at DESC);",
+    "CREATE INDEX user_programs_user_status_idx ON public.user_programs USING btree (user_id, status, start_date);",
+    "CREATE INDEX exercises_movement_type_idx ON public.exercises USING btree (movement_type);",
+    "CREATE INDEX exercises_muscle_group_idx ON public.exercises USING btree (muscle_group);",
+    "CREATE INDEX program_weeks_program_idx ON public.program_weeks USING btree (program_id, \"position\");",
+    "CREATE INDEX scheduled_workouts_source_program_workout_idx ON public.scheduled_workouts USING btree (source_program_workout_id);",
+    "CREATE UNIQUE INDEX programs_owner_source_catalog_unique ON public.programs USING btree (owner_id, source_catalog_program_id) WHERE (source_catalog_program_id IS NOT NULL);",
+    "CREATE INDEX scheduled_workout_exercises_exercise_idx ON public.scheduled_workout_exercises USING btree (exercise_id);",
+    "CREATE INDEX user_recent_exercises_user_last_used_idx ON public.user_recent_exercises USING btree (user_id, last_used_at DESC);",
+    "CREATE INDEX exercises_owner_id_idx ON public.exercises USING btree (owner_id);",
+    "CREATE INDEX scheduled_sets_exercise_idx ON public.scheduled_sets USING btree (scheduled_workout_exercise_id);",
+    "CREATE INDEX workout_session_exercises_source_idx ON public.workout_session_exercises USING btree (source_scheduled_workout_exercise_id);",
+    "CREATE INDEX programs_owner_updated_idx ON public.programs USING btree (owner_id, updated_at DESC);",
+    "CREATE INDEX user_programs_program_idx ON public.user_programs USING btree (program_id);",
+    "CREATE INDEX program_workout_exercises_workout_idx ON public.program_workout_exercises USING btree (workout_id, \"position\");",
+    "CREATE INDEX exercises_exercise_type_idx ON public.exercises USING btree (exercise_type);",
+    "CREATE INDEX program_workouts_week_idx ON public.program_workouts USING btree (week_id, \"position\");"
+  ],
+  "policies": [
+    {
+      "cmd": "SELECT",
+      "name": "catalog_programs_select_published",
+      "qual": "(published = true)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "catalog_programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "exercises_authenticated_read",
+      "qual": "((owner_id IS NULL) OR (owner_id = auth.uid()))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "exercises_delete_own",
+      "qual": "(owner_id = auth.uid())",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "exercises_insert_own",
+      "qual": null,
+      "check": "(owner_id = auth.uid())",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "exercises_update_own",
+      "qual": "(owner_id = auth.uid())",
+      "check": "(owner_id = auth.uid())",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "performed_sets_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (workout_session_exercises wse\n     JOIN workout_sessions ws ON ((ws.id = wse.workout_session_id)))\n  WHERE ((wse.id = performed_sets.workout_session_exercise_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "performed_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "performed_sets_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM (workout_session_exercises wse\n     JOIN workout_sessions ws ON ((ws.id = wse.workout_session_id)))\n  WHERE ((wse.id = performed_sets.workout_session_exercise_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "performed_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "performed_sets_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (workout_session_exercises wse\n     JOIN workout_sessions ws ON ((ws.id = wse.workout_session_id)))\n  WHERE ((wse.id = performed_sets.workout_session_exercise_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "performed_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "performed_sets_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (workout_session_exercises wse\n     JOIN workout_sessions ws ON ((ws.id = wse.workout_session_id)))\n  WHERE ((wse.id = performed_sets.workout_session_exercise_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM (workout_session_exercises wse\n     JOIN workout_sessions ws ON ((ws.id = wse.workout_session_id)))\n  WHERE ((wse.id = performed_sets.workout_session_exercise_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "performed_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "program_exercise_sets_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (((program_workout_exercises pwe\n     JOIN program_workouts w ON ((w.id = pwe.workout_id)))\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pwe.id = program_exercise_sets.workout_exercise_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_exercise_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "program_exercise_sets_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM (((program_workout_exercises pwe\n     JOIN program_workouts w ON ((w.id = pwe.workout_id)))\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pwe.id = program_exercise_sets.workout_exercise_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_exercise_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "program_exercise_sets_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (((program_workout_exercises pwe\n     JOIN program_workouts w ON ((w.id = pwe.workout_id)))\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pwe.id = program_exercise_sets.workout_exercise_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_exercise_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "program_exercise_sets_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (((program_workout_exercises pwe\n     JOIN program_workouts w ON ((w.id = pwe.workout_id)))\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pwe.id = program_exercise_sets.workout_exercise_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM (((program_workout_exercises pwe\n     JOIN program_workouts w ON ((w.id = pwe.workout_id)))\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pwe.id = program_exercise_sets.workout_exercise_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_exercise_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "program_weeks_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM programs p\n  WHERE ((p.id = program_weeks.program_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_weeks",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "program_weeks_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM programs p\n  WHERE ((p.id = program_weeks.program_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_weeks",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "program_weeks_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM programs p\n  WHERE ((p.id = program_weeks.program_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_weeks",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "program_weeks_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM programs p\n  WHERE ((p.id = program_weeks.program_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM programs p\n  WHERE ((p.id = program_weeks.program_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_weeks",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "program_workout_exercises_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((program_workouts w\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((w.id = program_workout_exercises.workout_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "program_workout_exercises_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM ((program_workouts w\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((w.id = program_workout_exercises.workout_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "program_workout_exercises_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((program_workouts w\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((w.id = program_workout_exercises.workout_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "program_workout_exercises_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((program_workouts w\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((w.id = program_workout_exercises.workout_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM ((program_workouts w\n     JOIN program_weeks pw ON ((pw.id = w.week_id)))\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((w.id = program_workout_exercises.workout_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "program_workouts_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (program_weeks pw\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pw.id = program_workouts.week_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "program_workouts_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM (program_weeks pw\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pw.id = program_workouts.week_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "program_workouts_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (program_weeks pw\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pw.id = program_workouts.week_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "program_workouts_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (program_weeks pw\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pw.id = program_workouts.week_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM (program_weeks pw\n     JOIN programs p ON ((p.id = pw.program_id)))\n  WHERE ((pw.id = program_workouts.week_id) AND (p.owner_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "program_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "programs_delete_own",
+      "qual": "(( SELECT auth.uid() AS uid) = owner_id)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "programs_insert_own",
+      "qual": null,
+      "check": "(( SELECT auth.uid() AS uid) = owner_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "programs_select_own",
+      "qual": "(( SELECT auth.uid() AS uid) = owner_id)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "programs_update_own",
+      "qual": "(( SELECT auth.uid() AS uid) = owner_id)",
+      "check": "(( SELECT auth.uid() AS uid) = owner_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "scheduled_sets_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((scheduled_workout_exercises swe\n     JOIN scheduled_workouts sw ON ((sw.id = swe.scheduled_workout_id)))\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((swe.id = scheduled_sets.scheduled_workout_exercise_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "scheduled_sets_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM ((scheduled_workout_exercises swe\n     JOIN scheduled_workouts sw ON ((sw.id = swe.scheduled_workout_id)))\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((swe.id = scheduled_sets.scheduled_workout_exercise_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "scheduled_sets_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((scheduled_workout_exercises swe\n     JOIN scheduled_workouts sw ON ((sw.id = swe.scheduled_workout_id)))\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((swe.id = scheduled_sets.scheduled_workout_exercise_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "scheduled_sets_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((scheduled_workout_exercises swe\n     JOIN scheduled_workouts sw ON ((sw.id = swe.scheduled_workout_id)))\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((swe.id = scheduled_sets.scheduled_workout_exercise_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM ((scheduled_workout_exercises swe\n     JOIN scheduled_workouts sw ON ((sw.id = swe.scheduled_workout_id)))\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((swe.id = scheduled_sets.scheduled_workout_exercise_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_sets",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "scheduled_workout_exercises_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (scheduled_workouts sw\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((sw.id = scheduled_workout_exercises.scheduled_workout_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "scheduled_workout_exercises_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM (scheduled_workouts sw\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((sw.id = scheduled_workout_exercises.scheduled_workout_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "scheduled_workout_exercises_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (scheduled_workouts sw\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((sw.id = scheduled_workout_exercises.scheduled_workout_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "scheduled_workout_exercises_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (scheduled_workouts sw\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((sw.id = scheduled_workout_exercises.scheduled_workout_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM (scheduled_workouts sw\n     JOIN user_programs up ON ((up.id = sw.user_program_id)))\n  WHERE ((sw.id = scheduled_workout_exercises.scheduled_workout_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workout_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "scheduled_workouts_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM user_programs up\n  WHERE ((up.id = scheduled_workouts.user_program_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "scheduled_workouts_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM user_programs up\n  WHERE ((up.id = scheduled_workouts.user_program_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "scheduled_workouts_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM user_programs up\n  WHERE ((up.id = scheduled_workouts.user_program_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "scheduled_workouts_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM user_programs up\n  WHERE ((up.id = scheduled_workouts.user_program_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM user_programs up\n  WHERE ((up.id = scheduled_workouts.user_program_id) AND (up.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scheduled_workouts",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "user_programs_delete_own",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "user_programs_insert_own",
+      "qual": null,
+      "check": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "user_programs_select_own",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "user_programs_update_own",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "check": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_programs",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "user_recent_exercises_delete_own",
+      "qual": "(user_id = auth.uid())",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_recent_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "user_recent_exercises_insert_own",
+      "qual": null,
+      "check": "(user_id = auth.uid())",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_recent_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "user_recent_exercises_select_own",
+      "qual": "(user_id = auth.uid())",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_recent_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "user_recent_exercises_update_own",
+      "qual": "(user_id = auth.uid())",
+      "check": "(user_id = auth.uid())",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_recent_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "workout_session_exercises_delete_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM workout_sessions ws\n  WHERE ((ws.id = workout_session_exercises.workout_session_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_session_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "workout_session_exercises_insert_own",
+      "qual": null,
+      "check": "(EXISTS ( SELECT 1\n   FROM workout_sessions ws\n  WHERE ((ws.id = workout_session_exercises.workout_session_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_session_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "workout_session_exercises_select_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM workout_sessions ws\n  WHERE ((ws.id = workout_session_exercises.workout_session_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_session_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "workout_session_exercises_update_own",
+      "qual": "(EXISTS ( SELECT 1\n   FROM workout_sessions ws\n  WHERE ((ws.id = workout_session_exercises.workout_session_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "check": "(EXISTS ( SELECT 1\n   FROM workout_sessions ws\n  WHERE ((ws.id = workout_session_exercises.workout_session_id) AND (ws.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_session_exercises",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "workout_sessions_delete_own",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_sessions",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "workout_sessions_insert_own",
+      "qual": null,
+      "check": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_sessions",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "workout_sessions_select_own",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "check": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_sessions",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "workout_sessions_update_own",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "check": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workout_sessions",
+      "permissive": "PERMISSIVE"
+    }
+  ],
+  "triggers": [
+    "CREATE TRIGGER programs_guard_active_cycle_configuration BEFORE UPDATE OF structure_mode, cycle_repeat_count ON public.programs FOR EACH ROW EXECUTE FUNCTION private.guard_active_program_cycle_configuration();",
+    "CREATE TRIGGER programs_set_updated_at BEFORE UPDATE ON public.programs FOR EACH ROW EXECUTE FUNCTION private.set_updated_at();",
+    "CREATE TRIGGER program_exercise_sets_fill_reps BEFORE INSERT OR UPDATE OF reps, workout_exercise_id ON public.program_exercise_sets FOR EACH ROW EXECUTE FUNCTION fill_program_set_reps_from_prescription();"
+  ],
+  "functions": [
+    {
+      "sql": "CREATE OR REPLACE FUNCTION private.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+      "name": "set_updated_at",
+      "schema": "private"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.create_program_with_structure(p_program jsonb)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_owner_id uuid := auth.uid();\n  v_program_id uuid;\n  v_week_id uuid;\n  v_workout_id uuid;\n  v_workout_exercise_id uuid;\n  v_week jsonb;\n  v_workout jsonb;\n  v_exercise jsonb;\n  v_set jsonb;\n  v_workouts jsonb;\n  v_exercises jsonb;\n  v_sets jsonb;\n  v_weeks jsonb := p_program -> 'weeks';\n  v_week_idx bigint;\n  v_workout_idx bigint;\n  v_exercise_idx bigint;\n  v_set_idx bigint;\n  v_name text := btrim(coalesce(p_program ->> 'name', ''));\n  v_workout_name text;\n  v_week_count integer;\n  v_structure_mode text := coalesce(nullif(btrim(p_program ->> 'structure_mode'), ''), 'legacy_weeks');\n  v_cycle_repeat_count integer := 1;\n  v_exercise_id uuid;\n  v_exercise_name_snapshot text;\n  v_prescription_snapshot text;\n  v_reps integer;\n  v_rest_days_after integer;\nbegin\n  if v_owner_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  if p_program is null or jsonb_typeof(p_program) <> 'object' then raise exception 'Program payload must be an object' using errcode='22023'; end if;\n  if v_name = '' or char_length(v_name) > 80 then raise exception 'Program name must contain 1 to 80 characters' using errcode='22023'; end if;\n  if v_structure_mode not in ('legacy_weeks','cycle') then raise exception 'Invalid structure mode' using errcode='22023'; end if;\n\n  begin v_week_count := (p_program ->> 'week_count')::integer;\n  exception when others then raise exception 'Week count must be an integer' using errcode='22023'; end;\n  begin v_cycle_repeat_count := coalesce(nullif(p_program ->> 'cycle_repeat_count',''),'1')::integer;\n  exception when others then raise exception 'Cycle repeat count must be an integer' using errcode='22023'; end;\n\n  if v_week_count < 1 or v_week_count > 52 then raise exception 'Week count must be between 1 and 52' using errcode='22023'; end if;\n  if v_cycle_repeat_count < 1 or v_cycle_repeat_count > 52 then raise exception 'Cycle repeat count must be between 1 and 52' using errcode='22023'; end if;\n  if jsonb_typeof(v_weeks) <> 'array' then raise exception 'Weeks must be an array' using errcode='22023'; end if;\n  if v_structure_mode='cycle' and jsonb_array_length(v_weeks) <> 1 then raise exception 'Cycle programs must contain exactly one template cycle' using errcode='22023'; end if;\n  if v_structure_mode='legacy_weeks' and jsonb_array_length(v_weeks) <> v_week_count then raise exception 'Weeks array must match week_count' using errcode='22023'; end if;\n\n  insert into public.programs (\n    owner_id,name,description,week_count,categories,training_place,equipment,level,status,\n    structure_mode,cycle_repeat_count\n  ) values (\n    v_owner_id,v_name,nullif(btrim(coalesce(p_program->>'description','')),''),\n    case when v_structure_mode='cycle' then 1 else v_week_count end,\n    case when jsonb_typeof(p_program->'categories')='array' then array(select jsonb_array_elements_text(p_program->'categories')) else '{}'::text[] end,\n    nullif(btrim(coalesce(p_program->>'training_place','')),''),\n    nullif(btrim(coalesce(p_program->>'equipment','')),''),\n    nullif(btrim(coalesce(p_program->>'level','')),''),\n    'active',v_structure_mode,v_cycle_repeat_count\n  ) returning id into v_program_id;\n\n  for v_week,v_week_idx in select value,ordinality from jsonb_array_elements(v_weeks) with ordinality loop\n    v_workouts := v_week->'workouts';\n    if jsonb_typeof(v_workouts)<>'array' or jsonb_array_length(v_workouts)=0 then raise exception 'Every cycle/week must contain at least one workout' using errcode='22023'; end if;\n    insert into public.program_weeks(program_id,week_number,position)\n    values(v_program_id,v_week_idx::smallint,v_week_idx::smallint) returning id into v_week_id;\n\n    for v_workout,v_workout_idx in select value,ordinality from jsonb_array_elements(v_workouts) with ordinality loop\n      v_workout_name := btrim(coalesce(v_workout->>'name',''));\n      v_exercises := v_workout->'exercises';\n      begin v_rest_days_after := coalesce(nullif(v_workout->>'rest_days_after',''),'1')::integer;\n      exception when others then raise exception 'Rest days after workout must be an integer' using errcode='22023'; end;\n      if v_workout_name='' or char_length(v_workout_name)>80 then raise exception 'Workout name must contain 1 to 80 characters' using errcode='22023'; end if;\n      if v_rest_days_after<0 or v_rest_days_after>30 then raise exception 'Rest days after workout must be between 0 and 30' using errcode='22023'; end if;\n      if jsonb_typeof(v_exercises)<>'array' or jsonb_array_length(v_exercises)=0 then raise exception 'Every workout must contain at least one exercise' using errcode='22023'; end if;\n      insert into public.program_workouts(week_id,name,position,rest_days_after)\n      values(v_week_id,v_workout_name,v_workout_idx::smallint,v_rest_days_after::smallint) returning id into v_workout_id;\n\n      for v_exercise,v_exercise_idx in select value,ordinality from jsonb_array_elements(v_exercises) with ordinality loop\n        v_exercise_id := null;\n        if nullif(btrim(coalesce(v_exercise->>'exercise_id','')),'') is not null then\n          begin v_exercise_id := (v_exercise->>'exercise_id')::uuid;\n          exception when others then raise exception 'Invalid exercise id' using errcode='22023'; end;\n        end if;\n        v_exercise_name_snapshot := nullif(btrim(coalesce(v_exercise->>'exercise_name_snapshot',v_exercise->>'name','')),'');\n        v_prescription_snapshot := nullif(btrim(coalesce(v_exercise->>'prescription_snapshot',v_exercise->>'prescription','')),'');\n        if v_exercise_id is null and v_exercise_name_snapshot is null then raise exception 'Exercise id or snapshot name is required' using errcode='22023'; end if;\n\n        insert into public.program_workout_exercises(workout_id,exercise_id,exercise_name_snapshot,prescription_snapshot,position)\n        values(v_workout_id,v_exercise_id,v_exercise_name_snapshot,v_prescription_snapshot,v_exercise_idx::smallint)\n        returning id into v_workout_exercise_id;\n\n        v_sets := coalesce(v_exercise->'sets','[]'::jsonb);\n        if jsonb_typeof(v_sets)<>'array' then raise exception 'Exercise sets must be an array' using errcode='22023'; end if;\n        for v_set,v_set_idx in select value,ordinality from jsonb_array_elements(v_sets) with ordinality loop\n          if v_set->>'reps' is null or btrim(v_set->>'reps')='' then v_reps:=null;\n          else\n            begin v_reps := (v_set->>'reps')::integer;\n            exception when others then raise exception 'Reps must be an integer' using errcode='22023'; end;\n            if v_reps<1 or v_reps>999 then raise exception 'Reps must be between 1 and 999' using errcode='22023'; end if;\n          end if;\n          insert into public.program_exercise_sets(workout_exercise_id,set_number,reps)\n          values(v_workout_exercise_id,v_set_idx::smallint,v_reps);\n        end loop;\n      end loop;\n    end loop;\n  end loop;\n  return v_program_id;\nend;\n$function$\n",
+      "name": "create_program_with_structure",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.update_program_with_structure(p_program_id uuid, p_program jsonb)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_owner_id uuid := auth.uid();\n  v_week_id uuid; v_workout_id uuid; v_workout_exercise_id uuid;\n  v_week jsonb; v_workout jsonb; v_exercise jsonb; v_set jsonb;\n  v_workouts jsonb; v_exercises jsonb; v_sets jsonb; v_weeks jsonb := p_program->'weeks';\n  v_week_idx bigint; v_workout_idx bigint; v_exercise_idx bigint; v_set_idx bigint;\n  v_name text := btrim(coalesce(p_program->>'name','')); v_workout_name text;\n  v_week_count integer; v_structure_mode text := coalesce(nullif(btrim(p_program->>'structure_mode'),''),'legacy_weeks');\n  v_cycle_repeat_count integer := 1; v_exercise_id uuid; v_exercise_name_snapshot text; v_prescription_snapshot text;\n  v_reps integer; v_rest_days_after integer;\nbegin\n  if v_owner_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  if p_program is null or jsonb_typeof(p_program)<>'object' then raise exception 'Program payload must be an object' using errcode='22023'; end if;\n  if v_name='' or char_length(v_name)>80 then raise exception 'Program name must contain 1 to 80 characters' using errcode='22023'; end if;\n  if v_structure_mode not in ('legacy_weeks','cycle') then raise exception 'Invalid structure mode' using errcode='22023'; end if;\n  begin v_week_count := (p_program->>'week_count')::integer; exception when others then raise exception 'Week count must be an integer' using errcode='22023'; end;\n  begin v_cycle_repeat_count := coalesce(nullif(p_program->>'cycle_repeat_count',''),'1')::integer; exception when others then raise exception 'Cycle repeat count must be an integer' using errcode='22023'; end;\n  if v_week_count<1 or v_week_count>52 then raise exception 'Week count must be between 1 and 52' using errcode='22023'; end if;\n  if v_cycle_repeat_count<1 or v_cycle_repeat_count>52 then raise exception 'Cycle repeat count must be between 1 and 52' using errcode='22023'; end if;\n  if jsonb_typeof(v_weeks)<>'array' then raise exception 'Weeks must be an array' using errcode='22023'; end if;\n  if v_structure_mode='cycle' and jsonb_array_length(v_weeks)<>1 then raise exception 'Cycle programs must contain exactly one template cycle' using errcode='22023'; end if;\n  if v_structure_mode='legacy_weeks' and jsonb_array_length(v_weeks)<>v_week_count then raise exception 'Weeks array must match week_count' using errcode='22023'; end if;\n\n  update public.programs set\n    name=v_name,\n    description=nullif(btrim(coalesce(p_program->>'description','')),''),\n    week_count=case when v_structure_mode='cycle' then 1 else v_week_count end,\n    categories=case when jsonb_typeof(p_program->'categories')='array' then array(select jsonb_array_elements_text(p_program->'categories')) else '{}'::text[] end,\n    training_place=nullif(btrim(coalesce(p_program->>'training_place','')),''),\n    equipment=nullif(btrim(coalesce(p_program->>'equipment','')),''),\n    level=nullif(btrim(coalesce(p_program->>'level','')),''),\n    structure_mode=v_structure_mode,\n    cycle_repeat_count=v_cycle_repeat_count,\n    updated_at=now()\n  where id=p_program_id and owner_id=v_owner_id;\n  if not found then raise exception 'Program not found or access denied' using errcode='42501'; end if;\n\n  delete from public.program_weeks where program_id=p_program_id;\n  for v_week,v_week_idx in select value,ordinality from jsonb_array_elements(v_weeks) with ordinality loop\n    v_workouts:=v_week->'workouts';\n    if jsonb_typeof(v_workouts)<>'array' or jsonb_array_length(v_workouts)=0 then raise exception 'Every cycle/week must contain at least one workout' using errcode='22023'; end if;\n    insert into public.program_weeks(program_id,week_number,position) values(p_program_id,v_week_idx::smallint,v_week_idx::smallint) returning id into v_week_id;\n    for v_workout,v_workout_idx in select value,ordinality from jsonb_array_elements(v_workouts) with ordinality loop\n      v_workout_name:=btrim(coalesce(v_workout->>'name','')); v_exercises:=v_workout->'exercises';\n      begin v_rest_days_after:=coalesce(nullif(v_workout->>'rest_days_after',''),'1')::integer; exception when others then raise exception 'Rest days after workout must be an integer' using errcode='22023'; end;\n      if v_workout_name='' or char_length(v_workout_name)>80 then raise exception 'Workout name must contain 1 to 80 characters' using errcode='22023'; end if;\n      if v_rest_days_after<0 or v_rest_days_after>30 then raise exception 'Rest days after workout must be between 0 and 30' using errcode='22023'; end if;\n      if jsonb_typeof(v_exercises)<>'array' or jsonb_array_length(v_exercises)=0 then raise exception 'Every workout must contain at least one exercise' using errcode='22023'; end if;\n      insert into public.program_workouts(week_id,name,position,rest_days_after) values(v_week_id,v_workout_name,v_workout_idx::smallint,v_rest_days_after::smallint) returning id into v_workout_id;\n      for v_exercise,v_exercise_idx in select value,ordinality from jsonb_array_elements(v_exercises) with ordinality loop\n        v_exercise_id:=null;\n        if nullif(btrim(coalesce(v_exercise->>'exercise_id','')),'') is not null then begin v_exercise_id:=(v_exercise->>'exercise_id')::uuid; exception when others then raise exception 'Invalid exercise id' using errcode='22023'; end; end if;\n        v_exercise_name_snapshot:=nullif(btrim(coalesce(v_exercise->>'exercise_name_snapshot',v_exercise->>'name','')),'');\n        v_prescription_snapshot:=nullif(btrim(coalesce(v_exercise->>'prescription_snapshot',v_exercise->>'prescription','')),'');\n        if v_exercise_id is null and v_exercise_name_snapshot is null then raise exception 'Exercise id or snapshot name is required' using errcode='22023'; end if;\n        insert into public.program_workout_exercises(workout_id,exercise_id,exercise_name_snapshot,prescription_snapshot,position)\n        values(v_workout_id,v_exercise_id,v_exercise_name_snapshot,v_prescription_snapshot,v_exercise_idx::smallint) returning id into v_workout_exercise_id;\n        v_sets:=coalesce(v_exercise->'sets','[]'::jsonb);\n        if jsonb_typeof(v_sets)<>'array' then raise exception 'Exercise sets must be an array' using errcode='22023'; end if;\n        for v_set,v_set_idx in select value,ordinality from jsonb_array_elements(v_sets) with ordinality loop\n          if v_set->>'reps' is null or btrim(v_set->>'reps')='' then v_reps:=null; else begin v_reps:=(v_set->>'reps')::integer; exception when others then raise exception 'Reps must be an integer' using errcode='22023'; end; if v_reps<1 or v_reps>999 then raise exception 'Reps must be between 1 and 999' using errcode='22023'; end if; end if;\n          insert into public.program_exercise_sets(workout_exercise_id,set_number,reps) values(v_workout_exercise_id,v_set_idx::smallint,v_reps);\n        end loop;\n      end loop;\n    end loop;\n  end loop;\n  return p_program_id;\nend;\n$function$\n",
+      "name": "update_program_with_structure",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.create_program_with_schedule(p_program jsonb)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_program_id uuid; v_schedule_mode text:=coalesce(nullif(btrim(p_program->>'schedule_mode'),''),'custom');\nbegin\n  if v_schedule_mode not in ('custom','weekly_mwf','weekly_tts','cycle_2_2') then raise exception 'Invalid schedule mode' using errcode='22023'; end if;\n  v_program_id:=public.create_program_with_structure(p_program);\n  update public.programs set schedule_mode=v_schedule_mode,updated_at=now() where id=v_program_id and owner_id=(select auth.uid());\n  if not found then raise exception 'Program not found or access denied' using errcode='42501'; end if;\n  return v_program_id;\nend; $function$\n",
+      "name": "create_program_with_schedule",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.complete_workout(p_workout_session_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_scheduled_workout_id uuid;\n  v_user_program_id uuid;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n\n  update public.workout_sessions ws\n  set status='completed',\n      ended_at=now(),\n      active_duration_seconds = ws.active_duration_seconds + case when ws.paused_at is null then greatest(0, floor(extract(epoch from (now() - ws.started_at)))::integer) else 0 end,\n      paused_at=null,\n      updated_at=now()\n  where ws.id=p_workout_session_id and ws.user_id=v_user_id and ws.status='active'\n  returning ws.scheduled_workout_id into v_scheduled_workout_id;\n\n  if v_scheduled_workout_id is null then raise exception 'Active workout session not found or access denied' using errcode='P0002'; end if;\n\n  update public.scheduled_workouts sw set status='completed' where sw.id=v_scheduled_workout_id returning sw.user_program_id into v_user_program_id;\n\n  if v_user_program_id is not null and not exists (\n    select 1 from public.scheduled_workouts sw where sw.user_program_id=v_user_program_id and sw.status='scheduled'\n  ) then\n    update public.user_programs up set status='completed', completed_at=now(), updated_at=now()\n    where up.id=v_user_program_id and up.user_id=v_user_id and up.status in ('active','paused');\n  end if;\n  return p_workout_session_id;\nend;\n$function$\n",
+      "name": "complete_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.abandon_workout(p_workout_session_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_scheduled_workout_id uuid;\n  v_user_program_id uuid;\nbegin\n  if v_user_id is null then\n    raise exception 'Authentication required' using errcode = '42501';\n  end if;\n\n  update public.workout_sessions ws\n  set status = 'abandoned',\n      ended_at = now(),\n      active_duration_seconds = greatest(\n        ws.active_duration_seconds,\n        floor(extract(epoch from (now() - ws.started_at)))::integer\n      ),\n      updated_at = now()\n  where ws.id = p_workout_session_id\n    and ws.user_id = v_user_id\n    and ws.status = 'active'\n  returning ws.scheduled_workout_id into v_scheduled_workout_id;\n\n  if v_scheduled_workout_id is null then\n    raise exception 'Active workout session not found or access denied' using errcode = 'P0002';\n  end if;\n\n  update public.scheduled_workouts sw\n  set status = 'skipped'\n  where sw.id = v_scheduled_workout_id\n  returning sw.user_program_id into v_user_program_id;\n\n  if v_user_program_id is not null and not exists (\n    select 1\n    from public.scheduled_workouts sw\n    where sw.user_program_id = v_user_program_id\n      and sw.status = 'scheduled'\n  ) then\n    update public.user_programs up\n    set status = 'completed',\n        completed_at = now(),\n        updated_at = now()\n    where up.id = v_user_program_id\n      and up.user_id = v_user_id\n      and up.status in ('active','paused');\n  end if;\n\n  return p_workout_session_id;\nend;\n$function$\n",
+      "name": "abandon_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.adopt_catalog_program(p_catalog_program_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid:=auth.uid(); v_catalog public.catalog_programs%rowtype; v_program_id uuid; v_week_id uuid; v_workout_id uuid; v_workout_exercise_id uuid;\n  v_workout jsonb; v_exercise jsonb; v_workout_pos bigint; v_exercise_pos bigint; v_exercise_id uuid; v_name text; v_prescription text;\n  v_set_count integer; v_reps integer; v_match text[]; v_set_number integer; v_cycle_workouts jsonb;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  select * into v_catalog from public.catalog_programs where id=p_catalog_program_id and published=true;\n  if v_catalog.id is null then raise exception 'Catalog program not found or unavailable' using errcode='P0002'; end if;\n  select p.id into v_program_id from public.programs p where p.owner_id=v_user_id and p.source_catalog_program_id=p_catalog_program_id and p.status<>'archived' limit 1;\n  if v_program_id is not null then return v_program_id; end if;\n\n  v_cycle_workouts:=coalesce(v_catalog.source_payload->'cycle'->'workouts','[]'::jsonb);\n  if jsonb_typeof(v_cycle_workouts)<>'array' or jsonb_array_length(v_cycle_workouts)=0 then raise exception 'Catalog program has no cycle workouts' using errcode='22023'; end if;\n  insert into public.programs(owner_id,name,description,week_count,categories,training_place,equipment,level,status,schedule_mode,source_catalog_program_id,structure_mode,cycle_repeat_count)\n  values(v_user_id,left(v_catalog.name,80),v_catalog.description,1,v_catalog.categories,v_catalog.training_place,v_catalog.equipment,v_catalog.level,'active','custom',v_catalog.id,'cycle',1)\n  returning id into v_program_id;\n  insert into public.program_weeks(program_id,week_number,position) values(v_program_id,1,1) returning id into v_week_id;\n\n  for v_workout,v_workout_pos in select value,ordinality from jsonb_array_elements(v_cycle_workouts) with ordinality loop\n    insert into public.program_workouts(week_id,name,position,rest_days_after)\n    values(v_week_id,left(coalesce(nullif(btrim(v_workout->>'name'),''),'Тренировка '||v_workout_pos),80),v_workout_pos::smallint,1) returning id into v_workout_id;\n    for v_exercise,v_exercise_pos in select value,ordinality from jsonb_array_elements(coalesce(v_workout->'exercises','[]'::jsonb)) with ordinality loop\n      v_name:=nullif(btrim(v_exercise->>'name'),''); v_prescription:=nullif(btrim(v_exercise->>'prescription'),''); if v_name is null then continue; end if;\n      select e.id into v_exercise_id from public.exercises e where lower(btrim(e.name))=lower(v_name) order by e.id limit 1;\n      insert into public.program_workout_exercises(workout_id,exercise_id,exercise_name_snapshot,prescription_snapshot,position)\n      values(v_workout_id,v_exercise_id,v_name,v_prescription,v_exercise_pos::smallint) returning id into v_workout_exercise_id;\n      v_set_count:=1; v_reps:=null;\n      if v_prescription is not null then\n        v_match:=regexp_match(v_prescription,'(\\d+)\\s*[\\*xх×]\\s*(\\d+)','i');\n        if v_match is not null then v_set_count:=greatest(1,least(20,v_match[1]::integer)); v_reps:=greatest(1,least(999,v_match[2]::integer));\n        else\n          v_match:=regexp_match(v_prescription,'(\\d+)\\s*(?:подход(?:а|ов)?|круг(?:а|ов)?)','i'); if v_match is not null then v_set_count:=greatest(1,least(20,v_match[1]::integer)); end if;\n          v_match:=regexp_match(v_prescription,'по\\s*(\\d+)','i');\n          if v_match is not null then v_reps:=greatest(1,least(999,v_match[1]::integer));\n          elsif v_prescription~'^\\s*\\d+\\s*-\\s*\\d+' then v_match:=regexp_match(v_prescription,'^\\s*(\\d+)'); v_reps:=greatest(1,least(999,v_match[1]::integer));\n          elsif v_prescription~*'^\\s*\\d+\\s*(?:$|раз|повтор|повт|шаг)' then v_match:=regexp_match(v_prescription,'^\\s*(\\d+)'); v_reps:=greatest(1,least(999,v_match[1]::integer)); end if;\n        end if;\n      end if;\n      for v_set_number in 1..v_set_count loop insert into public.program_exercise_sets(workout_exercise_id,set_number,reps) values(v_workout_exercise_id,v_set_number::smallint,v_reps); end loop;\n      v_exercise_id:=null;\n    end loop;\n  end loop;\n  return v_program_id;\nend; $function$\n",
+      "name": "adopt_catalog_program",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.start_workout(p_scheduled_workout_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_session_id uuid;\n  v_session_exercise_id uuid;\n  v_scheduled record;\n  v_exercise record;\n  v_set record;\n  v_set_count integer;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n\n  select sw.id, sw.status, sw.scheduled_date, up.status as program_status into v_scheduled\n  from public.scheduled_workouts sw join public.user_programs up on up.id=sw.user_program_id\n  where sw.id=p_scheduled_workout_id and up.user_id=v_user_id;\n  if v_scheduled.id is null then raise exception 'Scheduled workout not found or access denied' using errcode='P0002'; end if;\n  if v_scheduled.program_status <> 'active' then raise exception 'Program is not active' using errcode='22023'; end if;\n\n  select ws.id into v_session_id from public.workout_sessions ws\n  where ws.user_id=v_user_id and ws.scheduled_workout_id=p_scheduled_workout_id and ws.status='active' limit 1;\n  if v_session_id is not null then return v_session_id; end if;\n  if exists(select 1 from public.workout_sessions ws where ws.user_id=v_user_id and ws.status='active') then\n    raise exception 'Another workout is already active' using errcode='23505';\n  end if;\n  if v_scheduled.scheduled_date > current_date then raise exception 'Future workout cannot be started' using errcode='22023'; end if;\n  if v_scheduled.status='completed' or exists(select 1 from public.workout_sessions ws where ws.user_id=v_user_id and ws.scheduled_workout_id=p_scheduled_workout_id and ws.status='completed') then\n    raise exception 'Workout is already completed' using errcode='23505';\n  end if;\n  if v_scheduled.status in ('skipped','cancelled') then raise exception 'Skipped or cancelled workout cannot be started' using errcode='22023'; end if;\n\n  insert into public.workout_sessions(user_id,scheduled_workout_id,status,paused_at)\n  values(v_user_id,p_scheduled_workout_id,'active',null) returning id into v_session_id;\n\n  for v_exercise in\n    select swe.id source_id, swe.exercise_id, swe.exercise_name_snapshot, swe.prescription_snapshot, swe.position\n    from public.scheduled_workout_exercises swe where swe.scheduled_workout_id=p_scheduled_workout_id order by swe.position\n  loop\n    insert into public.workout_session_exercises(workout_session_id,source_scheduled_workout_exercise_id,exercise_id,exercise_name_snapshot,prescription_snapshot,position)\n    values(v_session_id,v_exercise.source_id,v_exercise.exercise_id,v_exercise.exercise_name_snapshot,v_exercise.prescription_snapshot,v_exercise.position)\n    returning id into v_session_exercise_id;\n    v_set_count := 0;\n    for v_set in select ss.id source_id, ss.set_number, ss.planned_reps from public.scheduled_sets ss where ss.scheduled_workout_exercise_id=v_exercise.source_id order by ss.set_number\n    loop\n      v_set_count := v_set_count + 1;\n      insert into public.performed_sets(workout_session_exercise_id,source_scheduled_set_id,set_number,set_type,planned_reps,reps)\n      values(v_session_exercise_id,v_set.source_id,v_set.set_number,'working',v_set.planned_reps,v_set.planned_reps);\n    end loop;\n    if v_set_count=0 then insert into public.performed_sets(workout_session_exercise_id,set_number,set_type) values(v_session_exercise_id,1,'working'); end if;\n  end loop;\n  return v_session_id;\nend;\n$function$\n",
+      "name": "start_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.update_program_with_schedule(p_program_id uuid, p_program jsonb)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid:=auth.uid(); v_program_id uuid; v_schedule_mode text:=coalesce(nullif(btrim(p_program->>'schedule_mode'),''),'custom');\n  v_user_program record; v_scheduled record; v_last_fixed_sequence integer; v_last_fixed_date date; v_first_future_sequence integer; v_first_future_date date;\n  v_current_date date; v_new_start_date date; v_rest_days_after integer; v_template_count integer; v_template_index integer; v_structure_mode text;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  if v_schedule_mode not in ('custom','weekly_mwf','weekly_tts','cycle_2_2') then raise exception 'Invalid schedule mode' using errcode='22023'; end if;\n  v_program_id:=public.update_program_with_structure(p_program_id,p_program);\n  update public.programs set schedule_mode=v_schedule_mode,updated_at=now() where id=v_program_id and owner_id=v_user_id;\n  if not found then raise exception 'Program not found or access denied' using errcode='42501'; end if;\n  select structure_mode into v_structure_mode from public.programs where id=v_program_id;\n  select count(*) into v_template_count from public.program_weeks pw join public.program_workouts w on w.week_id=pw.id where pw.program_id=v_program_id;\n\n  for v_user_program in select up.id,up.start_date from public.user_programs up where up.user_id=v_user_id and up.program_id=v_program_id and up.status in ('active','paused') loop\n    v_last_fixed_sequence:=null; v_last_fixed_date:=null; v_first_future_sequence:=null; v_first_future_date:=null; v_new_start_date:=null;\n    select sw.sequence_number,sw.scheduled_date into v_last_fixed_sequence,v_last_fixed_date from public.scheduled_workouts sw\n    where sw.user_program_id=v_user_program.id and (sw.scheduled_date<current_date or sw.status in ('completed','skipped')) order by sw.sequence_number desc limit 1;\n    select sw.sequence_number,sw.scheduled_date into v_first_future_sequence,v_first_future_date from public.scheduled_workouts sw\n    where sw.user_program_id=v_user_program.id and sw.status='scheduled' and sw.scheduled_date>=current_date and (v_last_fixed_sequence is null or sw.sequence_number>v_last_fixed_sequence)\n    order by sw.sequence_number limit 1;\n    if v_first_future_sequence is null then continue; end if;\n\n    if v_last_fixed_sequence is null then\n      v_current_date:=case when v_first_future_sequence=1 then greatest(v_user_program.start_date,current_date) else greatest(v_first_future_date,current_date) end;\n    else\n      v_current_date:=v_last_fixed_date;\n      if v_schedule_mode='weekly_mwf' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (1,3,5); end loop;\n      elsif v_schedule_mode='weekly_tts' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (2,4,6); end loop;\n      elsif v_schedule_mode='cycle_2_2' then v_current_date:=v_current_date+case when mod(v_last_fixed_sequence,2)=1 then 1 else 3 end;\n      else\n        v_template_index:=case when v_structure_mode='cycle' and v_template_count>0 then mod(v_last_fixed_sequence-1,v_template_count)+1 else v_last_fixed_sequence end;\n        select numbered.rest_days_after into v_rest_days_after from (\n          select row_number() over(order by pw.position,w.position)::integer sequence_number,w.rest_days_after\n          from public.program_weeks pw join public.program_workouts w on w.week_id=pw.id where pw.program_id=v_program_id\n        ) numbered where numbered.sequence_number=v_template_index;\n        v_current_date:=v_current_date+(1+coalesce(v_rest_days_after,1));\n      end if;\n      if v_current_date<current_date then v_current_date:=current_date; end if;\n    end if;\n    if v_schedule_mode='weekly_mwf' then while extract(isodow from v_current_date)::integer not in (1,3,5) loop v_current_date:=v_current_date+1; end loop;\n    elsif v_schedule_mode='weekly_tts' then while extract(isodow from v_current_date)::integer not in (2,4,6) loop v_current_date:=v_current_date+1; end loop; end if;\n    v_new_start_date:=v_current_date;\n\n    for v_scheduled in select sw.id,sw.sequence_number from public.scheduled_workouts sw where sw.user_program_id=v_user_program.id and sw.status='scheduled' and sw.sequence_number>=v_first_future_sequence order by sw.sequence_number loop\n      update public.scheduled_workouts set scheduled_date=v_current_date where id=v_scheduled.id;\n      if v_schedule_mode='weekly_mwf' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (1,3,5); end loop;\n      elsif v_schedule_mode='weekly_tts' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (2,4,6); end loop;\n      elsif v_schedule_mode='cycle_2_2' then v_current_date:=v_current_date+case when mod(v_scheduled.sequence_number,2)=1 then 1 else 3 end;\n      else\n        v_template_index:=case when v_structure_mode='cycle' and v_template_count>0 then mod(v_scheduled.sequence_number-1,v_template_count)+1 else v_scheduled.sequence_number end;\n        select numbered.rest_days_after into v_rest_days_after from (\n          select row_number() over(order by pw.position,w.position)::integer sequence_number,w.rest_days_after\n          from public.program_weeks pw join public.program_workouts w on w.week_id=pw.id where pw.program_id=v_program_id\n        ) numbered where numbered.sequence_number=v_template_index;\n        v_current_date:=v_current_date+(1+coalesce(v_rest_days_after,1));\n      end if;\n    end loop;\n    update public.user_programs set start_date=case when v_first_future_sequence=1 then v_new_start_date else start_date end,updated_at=now() where id=v_user_program.id;\n  end loop;\n  return v_program_id;\nend; $function$\n",
+      "name": "update_program_with_schedule",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.start_program(p_program_id uuid, p_start_date date)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid:=auth.uid(); v_user_program_id uuid; v_scheduled_workout_id uuid; v_scheduled_exercise_id uuid;\n  v_current_date date:=p_start_date; v_sequence integer:=0; v_cycle integer; v_repeat_total integer:=1;\n  v_workout record; v_exercise record; v_set record; v_found_program uuid; v_schedule_mode text; v_structure_mode text; v_cycle_repeat_count integer; v_isodow integer;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  if p_start_date is null then raise exception 'Start date is required' using errcode='22023'; end if;\n  if p_start_date<current_date then raise exception 'Start date cannot be in the past' using errcode='22023'; end if;\n  select p.id,p.schedule_mode,p.structure_mode,p.cycle_repeat_count into v_found_program,v_schedule_mode,v_structure_mode,v_cycle_repeat_count\n  from public.programs p where p.id=p_program_id and p.status<>'archived';\n  if v_found_program is null then raise exception 'Program not found or unavailable' using errcode='P0002'; end if;\n  v_repeat_total:=case when v_structure_mode='cycle' then greatest(1,v_cycle_repeat_count) else 1 end;\n  v_isodow:=extract(isodow from p_start_date)::integer;\n  if v_schedule_mode='weekly_mwf' and v_isodow not in (1,3,5) then raise exception 'First workout must be Monday, Wednesday or Friday' using errcode='22023'; end if;\n  if v_schedule_mode='weekly_tts' and v_isodow not in (2,4,6) then raise exception 'First workout must be Tuesday, Thursday or Saturday' using errcode='22023'; end if;\n  if exists(select 1 from public.user_programs up where up.user_id=v_user_id and up.program_id=p_program_id and up.status in ('active','paused')) then raise exception 'Program is already active' using errcode='23505'; end if;\n  insert into public.user_programs(user_id,program_id,status,start_date) values(v_user_id,p_program_id,'active',p_start_date) returning id into v_user_program_id;\n\n  for v_cycle in 1..v_repeat_total loop\n    for v_workout in\n      select pw.week_number source_week_number,w.id workout_id,w.name workout_name,w.rest_days_after\n      from public.program_weeks pw join public.program_workouts w on w.week_id=pw.id\n      where pw.program_id=p_program_id order by pw.position,w.position\n    loop\n      v_sequence:=v_sequence+1;\n      insert into public.scheduled_workouts(user_program_id,source_program_workout_id,sequence_number,week_number,cycle_number,workout_name,scheduled_date,status)\n      values(v_user_program_id,v_workout.workout_id,v_sequence::smallint,\n        case when v_structure_mode='cycle' then v_cycle::smallint else v_workout.source_week_number end,\n        case when v_structure_mode='cycle' then v_cycle::smallint else null end,\n        v_workout.workout_name,v_current_date,'scheduled') returning id into v_scheduled_workout_id;\n\n      for v_exercise in\n        select pwe.id source_id,pwe.exercise_id,pwe.exercise_name_snapshot,pwe.prescription_snapshot,pwe.position\n        from public.program_workout_exercises pwe where pwe.workout_id=v_workout.workout_id order by pwe.position\n      loop\n        insert into public.scheduled_workout_exercises(scheduled_workout_id,source_program_workout_exercise_id,exercise_id,exercise_name_snapshot,prescription_snapshot,position)\n        values(v_scheduled_workout_id,v_exercise.source_id,v_exercise.exercise_id,v_exercise.exercise_name_snapshot,v_exercise.prescription_snapshot,v_exercise.position)\n        returning id into v_scheduled_exercise_id;\n        for v_set in select pes.set_number,pes.reps from public.program_exercise_sets pes where pes.workout_exercise_id=v_exercise.source_id order by pes.set_number loop\n          insert into public.scheduled_sets(scheduled_workout_exercise_id,set_number,planned_reps) values(v_scheduled_exercise_id,v_set.set_number,v_set.reps);\n        end loop;\n      end loop;\n\n      if v_schedule_mode='weekly_mwf' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (1,3,5); end loop;\n      elsif v_schedule_mode='weekly_tts' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (2,4,6); end loop;\n      elsif v_schedule_mode='cycle_2_2' then v_current_date:=v_current_date+case when mod(v_sequence,2)=1 then 1 else 3 end;\n      else v_current_date:=v_current_date+(1+coalesce(v_workout.rest_days_after,1)); end if;\n    end loop;\n  end loop;\n  if v_sequence=0 then raise exception 'Program has no workouts' using errcode='22023'; end if;\n  return v_user_program_id;\nend; $function$\n",
+      "name": "start_program",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.change_program_start_date(p_user_program_id uuid, p_start_date date)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid:=auth.uid(); v_program_id uuid; v_schedule_mode text; v_structure_mode text; v_current_date date:=p_start_date;\n  v_scheduled record; v_rest_days_after integer; v_isodow integer; v_template_count integer; v_template_index integer;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  if p_start_date is null then raise exception 'Start date is required' using errcode='22023'; end if;\n  if p_start_date<current_date then raise exception 'Start date cannot be in the past' using errcode='22023'; end if;\n  select up.program_id,p.schedule_mode,p.structure_mode into v_program_id,v_schedule_mode,v_structure_mode\n  from public.user_programs up join public.programs p on p.id=up.program_id\n  where up.id=p_user_program_id and up.user_id=v_user_id and up.status in ('active','paused');\n  if v_program_id is null then raise exception 'Program participation not found or unavailable' using errcode='P0002'; end if;\n  if exists(select 1 from public.scheduled_workouts sw join public.workout_sessions ws on ws.scheduled_workout_id=sw.id where sw.user_program_id=p_user_program_id) then raise exception 'Program has already started' using errcode='22023'; end if;\n  if exists(select 1 from public.scheduled_workouts sw where sw.user_program_id=p_user_program_id and sw.status<>'scheduled') then raise exception 'Program schedule already contains workout history' using errcode='22023'; end if;\n  v_isodow:=extract(isodow from p_start_date)::integer;\n  if v_schedule_mode='weekly_mwf' and v_isodow not in (1,3,5) then raise exception 'First workout must be Monday, Wednesday or Friday' using errcode='22023'; end if;\n  if v_schedule_mode='weekly_tts' and v_isodow not in (2,4,6) then raise exception 'First workout must be Tuesday, Thursday or Saturday' using errcode='22023'; end if;\n  select count(*) into v_template_count from public.program_weeks pw join public.program_workouts w on w.week_id=pw.id where pw.program_id=v_program_id;\n\n  for v_scheduled in select sw.id,sw.sequence_number from public.scheduled_workouts sw where sw.user_program_id=p_user_program_id order by sw.sequence_number loop\n    update public.scheduled_workouts set scheduled_date=v_current_date where id=v_scheduled.id;\n    if v_schedule_mode='weekly_mwf' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (1,3,5); end loop;\n    elsif v_schedule_mode='weekly_tts' then loop v_current_date:=v_current_date+1; exit when extract(isodow from v_current_date)::integer in (2,4,6); end loop;\n    elsif v_schedule_mode='cycle_2_2' then v_current_date:=v_current_date+case when mod(v_scheduled.sequence_number,2)=1 then 1 else 3 end;\n    else\n      v_template_index:=case when v_structure_mode='cycle' and v_template_count>0 then mod(v_scheduled.sequence_number-1,v_template_count)+1 else v_scheduled.sequence_number end;\n      select numbered.rest_days_after into v_rest_days_after from (\n        select row_number() over(order by pw.position,w.position)::integer sequence_number,w.rest_days_after\n        from public.program_weeks pw join public.program_workouts w on w.week_id=pw.id where pw.program_id=v_program_id\n      ) numbered where numbered.sequence_number=v_template_index;\n      v_current_date:=v_current_date+(1+coalesce(v_rest_days_after,1));\n    end if;\n  end loop;\n  update public.user_programs set start_date=p_start_date,updated_at=now() where id=p_user_program_id and user_id=v_user_id;\n  return p_user_program_id;\nend; $function$\n",
+      "name": "change_program_start_date",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION private.guard_active_program_cycle_configuration()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin\n  if (new.structure_mode is distinct from old.structure_mode\n      or new.cycle_repeat_count is distinct from old.cycle_repeat_count)\n     and exists (\n       select 1\n       from public.user_programs up\n       where up.program_id = old.id\n         and up.user_id = old.owner_id\n         and up.status in ('active','paused')\n     ) then\n    raise exception 'Cycle configuration cannot change while the program is active or paused' using errcode = '22023';\n  end if;\n  return new;\nend;\n$function$\n",
+      "name": "guard_active_program_cycle_configuration",
+      "schema": "private"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.resume_program(p_user_program_id uuid, p_resume_date date)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_program_id uuid;\n  v_schedule_mode text;\n  v_structure_mode text;\n  v_first_sequence integer;\n  v_current_date date := p_resume_date;\n  v_template_count integer;\n  v_template_index integer;\n  v_rest_days_after integer;\n  v_isodow integer;\n  v_row record;\nbegin\n  if v_user_id is null then\n    raise exception 'Authentication required' using errcode = '42501';\n  end if;\n  if p_resume_date is null then\n    raise exception 'Resume date is required' using errcode = '22023';\n  end if;\n  if p_resume_date < current_date then\n    raise exception 'Resume date cannot be in the past' using errcode = '22023';\n  end if;\n\n  select up.program_id, p.schedule_mode, p.structure_mode\n  into v_program_id, v_schedule_mode, v_structure_mode\n  from public.user_programs up\n  join public.programs p on p.id = up.program_id\n  where up.id = p_user_program_id\n    and up.user_id = v_user_id\n    and up.status = 'paused'\n  for update of up;\n\n  if v_program_id is null then\n    raise exception 'Paused program participation not found' using errcode = 'P0002';\n  end if;\n\n  if exists (\n    select 1\n    from public.workout_sessions ws\n    join public.scheduled_workouts sw on sw.id = ws.scheduled_workout_id\n    where sw.user_program_id = p_user_program_id\n      and ws.user_id = v_user_id\n      and ws.status = 'active'\n  ) then\n    raise exception 'Cannot resume program during an active workout' using errcode = '22023';\n  end if;\n\n  select min(sw.sequence_number)\n  into v_first_sequence\n  from public.scheduled_workouts sw\n  where sw.user_program_id = p_user_program_id\n    and sw.status = 'scheduled';\n\n  if v_first_sequence is null then\n    raise exception 'Program has no remaining scheduled workouts' using errcode = '22023';\n  end if;\n\n  v_isodow := extract(isodow from p_resume_date)::integer;\n  if v_schedule_mode = 'weekly_mwf' and v_isodow not in (1, 3, 5) then\n    raise exception 'First workout must be Monday, Wednesday or Friday' using errcode = '22023';\n  end if;\n  if v_schedule_mode = 'weekly_tts' and v_isodow not in (2, 4, 6) then\n    raise exception 'First workout must be Tuesday, Thursday or Saturday' using errcode = '22023';\n  end if;\n\n  select count(*)\n  into v_template_count\n  from public.program_weeks pw\n  join public.program_workouts w on w.week_id = pw.id\n  where pw.program_id = v_program_id;\n\n  for v_row in\n    select sw.id, sw.sequence_number, sw.status\n    from public.scheduled_workouts sw\n    where sw.user_program_id = p_user_program_id\n      and sw.sequence_number >= v_first_sequence\n    order by sw.sequence_number\n  loop\n    if v_row.status = 'scheduled' then\n      update public.scheduled_workouts\n      set scheduled_date = v_current_date\n      where id = v_row.id;\n    end if;\n\n    if v_schedule_mode = 'weekly_mwf' then\n      loop\n        v_current_date := v_current_date + 1;\n        exit when extract(isodow from v_current_date)::integer in (1, 3, 5);\n      end loop;\n    elsif v_schedule_mode = 'weekly_tts' then\n      loop\n        v_current_date := v_current_date + 1;\n        exit when extract(isodow from v_current_date)::integer in (2, 4, 6);\n      end loop;\n    elsif v_schedule_mode = 'cycle_2_2' then\n      v_current_date := v_current_date + case when mod(v_row.sequence_number, 2) = 1 then 1 else 3 end;\n    else\n      v_template_index := case\n        when v_structure_mode = 'cycle' and v_template_count > 0\n          then mod(v_row.sequence_number - 1, v_template_count) + 1\n        else v_row.sequence_number\n      end;\n\n      select numbered.rest_days_after\n      into v_rest_days_after\n      from (\n        select row_number() over (order by pw.position, w.position)::integer as sequence_number,\n               w.rest_days_after\n        from public.program_weeks pw\n        join public.program_workouts w on w.week_id = pw.id\n        where pw.program_id = v_program_id\n      ) numbered\n      where numbered.sequence_number = v_template_index;\n\n      v_current_date := v_current_date + (1 + coalesce(v_rest_days_after, 1));\n    end if;\n  end loop;\n\n  update public.user_programs\n  set status = 'active',\n      start_date = case when v_first_sequence = 1 then p_resume_date else start_date end,\n      updated_at = now()\n  where id = p_user_program_id\n    and user_id = v_user_id;\n\n  return p_user_program_id;\nend;\n$function$\n",
+      "name": "resume_program",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.complete_program(p_user_program_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\nbegin\n  if v_user_id is null then\n    raise exception 'Authentication required' using errcode = '42501';\n  end if;\n\n  perform 1\n  from public.user_programs up\n  where up.id = p_user_program_id\n    and up.user_id = v_user_id\n    and up.status in ('active', 'paused')\n  for update;\n\n  if not found then\n    raise exception 'Active or paused program participation not found' using errcode = 'P0002';\n  end if;\n\n  if exists (\n    select 1\n    from public.workout_sessions ws\n    join public.scheduled_workouts sw on sw.id = ws.scheduled_workout_id\n    where sw.user_program_id = p_user_program_id\n      and ws.user_id = v_user_id\n      and ws.status = 'active'\n  ) then\n    raise exception 'Cannot complete program during an active workout' using errcode = '22023';\n  end if;\n\n  update public.scheduled_workouts\n  set status = 'cancelled'\n  where user_program_id = p_user_program_id\n    and status = 'scheduled';\n\n  update public.user_programs\n  set status = 'completed',\n      completed_at = now(),\n      updated_at = now()\n  where id = p_user_program_id\n    and user_id = v_user_id;\n\n  return p_user_program_id;\nend;\n$function$\n",
+      "name": "complete_program",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.reschedule_scheduled_workout(p_scheduled_workout_id uuid, p_new_date date)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_user_program_id uuid;\n  v_program_id uuid;\n  v_sequence_number integer;\n  v_schedule_mode text;\n  v_structure_mode text;\n  v_previous_date date;\n  v_current_date date := p_new_date;\n  v_template_count integer;\n  v_template_index integer;\n  v_rest_days_after integer;\n  v_isodow integer;\n  v_row record;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode = '42501'; end if;\n  if p_new_date is null then raise exception 'New workout date is required' using errcode = '22023'; end if;\n  if p_new_date < current_date then raise exception 'New workout date cannot be in the past' using errcode = '22023'; end if;\n\n  select sw.user_program_id, sw.sequence_number, up.program_id, p.schedule_mode, p.structure_mode\n  into v_user_program_id, v_sequence_number, v_program_id, v_schedule_mode, v_structure_mode\n  from public.scheduled_workouts sw\n  join public.user_programs up on up.id = sw.user_program_id\n  join public.programs p on p.id = up.program_id\n  where sw.id = p_scheduled_workout_id\n    and sw.status = 'scheduled'\n    and up.user_id = v_user_id\n    and up.status = 'active'\n  for update of sw, up;\n\n  if v_user_program_id is null then\n    raise exception 'Active scheduled workout not found' using errcode = 'P0002';\n  end if;\n\n  if exists (\n    select 1\n    from public.workout_sessions ws\n    join public.scheduled_workouts sw on sw.id = ws.scheduled_workout_id\n    where sw.user_program_id = v_user_program_id\n      and ws.user_id = v_user_id\n      and ws.status = 'active'\n  ) then\n    raise exception 'Cannot reschedule during an active workout' using errcode = '22023';\n  end if;\n\n  if exists (\n    select 1\n    from public.scheduled_workouts sw\n    where sw.user_program_id = v_user_program_id\n      and sw.sequence_number > v_sequence_number\n      and sw.status in ('completed', 'skipped')\n  ) then\n    raise exception 'Cannot reschedule before later workout history' using errcode = '22023';\n  end if;\n\n  select max(sw.scheduled_date)\n  into v_previous_date\n  from public.scheduled_workouts sw\n  where sw.user_program_id = v_user_program_id\n    and sw.sequence_number < v_sequence_number\n    and sw.status <> 'cancelled';\n\n  if v_previous_date is not null and p_new_date <= v_previous_date then\n    raise exception 'New workout date must be after the previous workout' using errcode = '22023';\n  end if;\n\n  v_isodow := extract(isodow from p_new_date)::integer;\n  if v_schedule_mode = 'weekly_mwf' and v_isodow not in (1, 3, 5) then\n    raise exception 'Workout date must be Monday, Wednesday or Friday' using errcode = '22023';\n  end if;\n  if v_schedule_mode = 'weekly_tts' and v_isodow not in (2, 4, 6) then\n    raise exception 'Workout date must be Tuesday, Thursday or Saturday' using errcode = '22023';\n  end if;\n\n  select count(*)\n  into v_template_count\n  from public.program_weeks pw\n  join public.program_workouts w on w.week_id = pw.id\n  where pw.program_id = v_program_id;\n\n  for v_row in\n    select sw.id, sw.sequence_number, sw.status\n    from public.scheduled_workouts sw\n    where sw.user_program_id = v_user_program_id\n      and sw.sequence_number >= v_sequence_number\n    order by sw.sequence_number\n  loop\n    if v_row.status = 'scheduled' then\n      update public.scheduled_workouts\n      set scheduled_date = v_current_date\n      where id = v_row.id;\n    end if;\n\n    if v_schedule_mode = 'weekly_mwf' then\n      loop\n        v_current_date := v_current_date + 1;\n        exit when extract(isodow from v_current_date)::integer in (1, 3, 5);\n      end loop;\n    elsif v_schedule_mode = 'weekly_tts' then\n      loop\n        v_current_date := v_current_date + 1;\n        exit when extract(isodow from v_current_date)::integer in (2, 4, 6);\n      end loop;\n    elsif v_schedule_mode = 'cycle_2_2' then\n      v_current_date := v_current_date + case when mod(v_row.sequence_number, 2) = 1 then 1 else 3 end;\n    else\n      v_template_index := case\n        when v_structure_mode = 'cycle' and v_template_count > 0\n          then mod(v_row.sequence_number - 1, v_template_count) + 1\n        else v_row.sequence_number\n      end;\n\n      select numbered.rest_days_after\n      into v_rest_days_after\n      from (\n        select row_number() over(order by pw.position, w.position)::integer as sequence_number,\n               w.rest_days_after\n        from public.program_weeks pw\n        join public.program_workouts w on w.week_id = pw.id\n        where pw.program_id = v_program_id\n      ) numbered\n      where numbered.sequence_number = v_template_index;\n\n      v_current_date := v_current_date + (1 + coalesce(v_rest_days_after, 1));\n    end if;\n  end loop;\n\n  update public.user_programs\n  set start_date = case when v_sequence_number = 1 then p_new_date else start_date end,\n      updated_at = now()\n  where id = v_user_program_id and user_id = v_user_id;\n\n  return p_scheduled_workout_id;\nend;\n$function$\n",
+      "name": "reschedule_scheduled_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.skip_scheduled_workout(p_scheduled_workout_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_user_program_id uuid;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode = '42501'; end if;\n\n  select sw.user_program_id\n  into v_user_program_id\n  from public.scheduled_workouts sw\n  join public.user_programs up on up.id = sw.user_program_id\n  where sw.id = p_scheduled_workout_id\n    and sw.status = 'scheduled'\n    and up.user_id = v_user_id\n    and up.status = 'active'\n  for update of sw, up;\n\n  if v_user_program_id is null then\n    raise exception 'Active scheduled workout not found' using errcode = 'P0002';\n  end if;\n\n  if exists (\n    select 1\n    from public.workout_sessions ws\n    where ws.scheduled_workout_id = p_scheduled_workout_id\n      and ws.user_id = v_user_id\n      and ws.status = 'active'\n  ) then\n    raise exception 'Cannot skip an active workout' using errcode = '22023';\n  end if;\n\n  update public.scheduled_workouts\n  set status = 'skipped'\n  where id = p_scheduled_workout_id and status = 'scheduled';\n\n  if not exists (\n    select 1\n    from public.scheduled_workouts sw\n    where sw.user_program_id = v_user_program_id\n      and sw.status = 'scheduled'\n  ) then\n    update public.user_programs\n    set status = 'completed', completed_at = now(), updated_at = now()\n    where id = v_user_program_id and user_id = v_user_id;\n  else\n    update public.user_programs\n    set updated_at = now()\n    where id = v_user_program_id and user_id = v_user_id;\n  end if;\n\n  return p_scheduled_workout_id;\nend;\n$function$\n",
+      "name": "skip_scheduled_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.reorder_workout_session_exercises(p_workout_session_id uuid, p_ordered_exercise_ids uuid[], p_scope text DEFAULT 'session'::text)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_scheduled_workout_id uuid;\n  v_user_program_id uuid;\n  v_source_program_workout_id uuid;\n  v_count integer;\n  v_distinct_count integer;\n  v_item uuid;\n  v_position integer := 0;\n  v_source_order uuid[];\n  v_future record;\nbegin\n  if v_user_id is null then\n    raise exception 'Authentication required' using errcode = '42501';\n  end if;\n  if p_scope not in ('session', 'program') then\n    raise exception 'Invalid reorder scope' using errcode = '22023';\n  end if;\n  if p_ordered_exercise_ids is null or cardinality(p_ordered_exercise_ids) = 0 then\n    raise exception 'Exercise order is required' using errcode = '22023';\n  end if;\n\n  select ws.scheduled_workout_id, sw.user_program_id, sw.source_program_workout_id\n    into v_scheduled_workout_id, v_user_program_id, v_source_program_workout_id\n  from public.workout_sessions ws\n  join public.scheduled_workouts sw on sw.id = ws.scheduled_workout_id\n  where ws.id = p_workout_session_id\n    and ws.user_id = v_user_id\n    and ws.status = 'active';\n\n  if v_scheduled_workout_id is null then\n    raise exception 'Active workout session not found or access denied' using errcode = 'P0002';\n  end if;\n\n  select count(*) into v_count\n  from public.workout_session_exercises\n  where workout_session_id = p_workout_session_id;\n\n  select count(distinct value) into v_distinct_count\n  from unnest(p_ordered_exercise_ids) as value;\n\n  if cardinality(p_ordered_exercise_ids) <> v_count or v_distinct_count <> v_count then\n    raise exception 'Exercise order must contain every session exercise exactly once' using errcode = '22023';\n  end if;\n\n  if exists (\n    select 1\n    from unnest(p_ordered_exercise_ids) as requested(id)\n    where not exists (\n      select 1 from public.workout_session_exercises wse\n      where wse.id = requested.id and wse.workout_session_id = p_workout_session_id\n    )\n  ) then\n    raise exception 'Exercise order contains an invalid session exercise' using errcode = '22023';\n  end if;\n\n  update public.workout_session_exercises\n  set position = position + 1000\n  where workout_session_id = p_workout_session_id;\n\n  v_position := 0;\n  foreach v_item in array p_ordered_exercise_ids loop\n    v_position := v_position + 1;\n    update public.workout_session_exercises\n    set position = v_position\n    where id = v_item and workout_session_id = p_workout_session_id;\n  end loop;\n\n  if p_scope = 'program' then\n    if v_source_program_workout_id is null then\n      raise exception 'This workout is not linked to a reusable program workout' using errcode = '22023';\n    end if;\n\n    select array_agg(swe.source_program_workout_exercise_id order by requested.ordinality)\n      into v_source_order\n    from unnest(p_ordered_exercise_ids) with ordinality as requested(id, ordinality)\n    join public.workout_session_exercises wse on wse.id = requested.id\n    join public.scheduled_workout_exercises swe on swe.id = wse.source_scheduled_workout_exercise_id;\n\n    if v_source_order is null\n       or cardinality(v_source_order) <> v_count\n       or exists (select 1 from unnest(v_source_order) source_id where source_id is null) then\n      raise exception 'Unable to map this session order back to the program snapshot' using errcode = '22023';\n    end if;\n\n    for v_future in\n      select sw.id\n      from public.scheduled_workouts sw\n      where sw.user_program_id = v_user_program_id\n        and sw.source_program_workout_id = v_source_program_workout_id\n        and sw.status = 'scheduled'\n        and sw.id <> v_scheduled_workout_id\n        and sw.scheduled_date >= current_date\n      order by sw.sequence_number\n    loop\n      if (select count(*) from public.scheduled_workout_exercises swe where swe.scheduled_workout_id = v_future.id) <> v_count then\n        continue;\n      end if;\n\n      update public.scheduled_workout_exercises\n      set position = position + 1000\n      where scheduled_workout_id = v_future.id;\n\n      v_position := 0;\n      foreach v_item in array v_source_order loop\n        v_position := v_position + 1;\n        update public.scheduled_workout_exercises\n        set position = v_position\n        where scheduled_workout_id = v_future.id\n          and source_program_workout_exercise_id = v_item;\n      end loop;\n    end loop;\n  end if;\n\n  return p_workout_session_id;\nend;\n$function$\n",
+      "name": "reorder_workout_session_exercises",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.fill_program_set_reps_from_prescription()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_prescription text;\n  v_match text[];\nbegin\n  if new.reps is not null then\n    return new;\n  end if;\n\n  select pwe.prescription_snapshot\n    into v_prescription\n  from public.program_workout_exercises pwe\n  where pwe.id = new.workout_exercise_id;\n\n  if nullif(btrim(v_prescription), '') is null then\n    return new;\n  end if;\n\n  v_match := regexp_match(v_prescription, '(\\d+)\\s*[\\*xх×]\\s*(\\d+)', 'i');\n  if v_match is not null then\n    new.reps := greatest(1, least(999, v_match[2]::integer));\n    return new;\n  end if;\n\n  v_match := regexp_match(v_prescription, 'по\\s*(\\d+)', 'i');\n  if v_match is not null then\n    new.reps := greatest(1, least(999, v_match[1]::integer));\n    return new;\n  end if;\n\n  v_match := regexp_match(v_prescription, '(\\d+)\\s*-\\s*(\\d+)', 'i');\n  if v_match is not null then\n    new.reps := greatest(1, least(999, v_match[1]::integer));\n    return new;\n  end if;\n\n  v_match := regexp_match(v_prescription, '^\\s*(\\d+)\\s*(?:$|раз|повтор|повт|шаг|на(?:\\s|$))', 'i');\n  if v_match is not null then\n    new.reps := greatest(1, least(999, v_match[1]::integer));\n  end if;\n\n  return new;\nend;\n$function$\n",
+      "name": "fill_program_set_reps_from_prescription",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.reschedule_scheduled_workout_scoped(p_scheduled_workout_id uuid, p_new_date date, p_scope text)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_user_program_id uuid;\n  v_program_id uuid;\n  v_sequence_number integer;\n  v_schedule_mode text;\n  v_structure_mode text;\n  v_current_status text;\n  v_has_later_completed boolean := false;\n  v_previous_date date;\n  v_next_date date;\n  v_current_date date := p_new_date;\n  v_template_count integer;\n  v_template_index integer;\n  v_rest_days_after integer;\n  v_isodow integer;\n  v_row record;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode = '42501'; end if;\n  if p_new_date is null then raise exception 'New workout date is required' using errcode = '22023'; end if;\n  if p_new_date < current_date then raise exception 'New workout date cannot be in the past' using errcode = '22023'; end if;\n  if p_scope not in ('single', 'tail') then raise exception 'Invalid reschedule scope' using errcode = '22023'; end if;\n\n  select sw.user_program_id, sw.sequence_number, sw.status, up.program_id, p.schedule_mode, p.structure_mode\n  into v_user_program_id, v_sequence_number, v_current_status, v_program_id, v_schedule_mode, v_structure_mode\n  from public.scheduled_workouts sw\n  join public.user_programs up on up.id = sw.user_program_id\n  join public.programs p on p.id = up.program_id\n  where sw.id = p_scheduled_workout_id\n    and sw.status in ('scheduled', 'skipped')\n    and up.user_id = v_user_id\n    and up.status = 'active'\n  for update of sw, up;\n\n  if v_user_program_id is null then\n    raise exception 'Active editable workout not found' using errcode = 'P0002';\n  end if;\n\n  if exists (\n    select 1\n    from public.workout_sessions ws\n    join public.scheduled_workouts sw on sw.id = ws.scheduled_workout_id\n    where sw.user_program_id = v_user_program_id\n      and ws.user_id = v_user_id\n      and ws.status = 'active'\n  ) then\n    raise exception 'Cannot reschedule during an active workout' using errcode = '22023';\n  end if;\n\n  select exists (\n    select 1\n    from public.scheduled_workouts sw\n    where sw.user_program_id = v_user_program_id\n      and sw.sequence_number > v_sequence_number\n      and sw.status = 'completed'\n  ) into v_has_later_completed;\n\n  if v_current_status = 'scheduled' and v_has_later_completed then\n    raise exception 'Cannot reschedule before later workout history' using errcode = '22023';\n  end if;\n  if p_scope = 'tail' and v_has_later_completed then\n    raise exception 'Cannot reschedule before later workout history' using errcode = '22023';\n  end if;\n\n  select max(sw.scheduled_date)\n  into v_previous_date\n  from public.scheduled_workouts sw\n  where sw.user_program_id = v_user_program_id\n    and sw.sequence_number < v_sequence_number\n    and sw.status <> 'cancelled';\n\n  if not (v_current_status = 'skipped' and v_has_later_completed) then\n    if v_previous_date is not null and p_new_date <= v_previous_date then\n      raise exception 'New workout date must be after the previous workout' using errcode = '22023';\n    end if;\n  end if;\n\n  if p_scope = 'single' then\n    if not (v_current_status = 'skipped' and v_has_later_completed) then\n      select min(sw.scheduled_date)\n      into v_next_date\n      from public.scheduled_workouts sw\n      where sw.user_program_id = v_user_program_id\n        and sw.sequence_number > v_sequence_number\n        and sw.status <> 'cancelled';\n\n      if v_next_date is not null and p_new_date >= v_next_date then\n        raise exception 'New workout date must be before the next workout' using errcode = '22023';\n      end if;\n    end if;\n\n    update public.scheduled_workouts\n    set scheduled_date = p_new_date,\n        status = 'scheduled'\n    where id = p_scheduled_workout_id\n      and status in ('scheduled', 'skipped');\n\n    update public.user_programs\n    set start_date = case when v_sequence_number = 1 and not v_has_later_completed then p_new_date else start_date end,\n        updated_at = now()\n    where id = v_user_program_id and user_id = v_user_id;\n\n    return p_scheduled_workout_id;\n  end if;\n\n  v_isodow := extract(isodow from p_new_date)::integer;\n  if v_schedule_mode = 'weekly_mwf' and v_isodow not in (1, 3, 5) then\n    raise exception 'Workout date must be Monday, Wednesday or Friday' using errcode = '22023';\n  end if;\n  if v_schedule_mode = 'weekly_tts' and v_isodow not in (2, 4, 6) then\n    raise exception 'Workout date must be Tuesday, Thursday or Saturday' using errcode = '22023';\n  end if;\n\n  select count(*)\n  into v_template_count\n  from public.program_weeks pw\n  join public.program_workouts w on w.week_id = pw.id\n  where pw.program_id = v_program_id;\n\n  for v_row in\n    select sw.id, sw.sequence_number, sw.status\n    from public.scheduled_workouts sw\n    where sw.user_program_id = v_user_program_id\n      and sw.sequence_number >= v_sequence_number\n    order by sw.sequence_number\n  loop\n    if v_row.status in ('scheduled', 'skipped') then\n      update public.scheduled_workouts\n      set scheduled_date = v_current_date,\n          status = 'scheduled'\n      where id = v_row.id;\n    end if;\n\n    if v_schedule_mode = 'weekly_mwf' then\n      loop\n        v_current_date := v_current_date + 1;\n        exit when extract(isodow from v_current_date)::integer in (1, 3, 5);\n      end loop;\n    elsif v_schedule_mode = 'weekly_tts' then\n      loop\n        v_current_date := v_current_date + 1;\n        exit when extract(isodow from v_current_date)::integer in (2, 4, 6);\n      end loop;\n    elsif v_schedule_mode = 'cycle_2_2' then\n      v_current_date := v_current_date + case when mod(v_row.sequence_number, 2) = 1 then 1 else 3 end;\n    else\n      v_template_index := case\n        when v_structure_mode = 'cycle' and v_template_count > 0\n          then mod(v_row.sequence_number - 1, v_template_count) + 1\n        else v_row.sequence_number\n      end;\n\n      select numbered.rest_days_after\n      into v_rest_days_after\n      from (\n        select row_number() over(order by pw.position, w.position)::integer as sequence_number,\n               w.rest_days_after\n        from public.program_weeks pw\n        join public.program_workouts w on w.week_id = pw.id\n        where pw.program_id = v_program_id\n      ) numbered\n      where numbered.sequence_number = v_template_index;\n\n      v_current_date := v_current_date + (1 + coalesce(v_rest_days_after, 1));\n    end if;\n  end loop;\n\n  update public.user_programs\n  set start_date = case when v_sequence_number = 1 then p_new_date else start_date end,\n      updated_at = now()\n  where id = v_user_program_id and user_id = v_user_id;\n\n  return p_scheduled_workout_id;\nend;\n$function$\n",
+      "name": "reschedule_scheduled_workout_scoped",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.pause_workout(p_scheduled_workout_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_session_id uuid;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n\n  update public.workout_sessions ws\n  set active_duration_seconds = ws.active_duration_seconds + greatest(0, floor(extract(epoch from (now() - ws.started_at)))::integer),\n      paused_at = now(),\n      updated_at = now()\n  where ws.user_id = v_user_id\n    and ws.scheduled_workout_id = p_scheduled_workout_id\n    and ws.status = 'active'\n    and ws.paused_at is null\n  returning ws.id into v_session_id;\n\n  if v_session_id is null then\n    select ws.id into v_session_id\n    from public.workout_sessions ws\n    where ws.user_id=v_user_id and ws.scheduled_workout_id=p_scheduled_workout_id and ws.status='active' and ws.paused_at is not null\n    limit 1;\n  end if;\n  if v_session_id is null then raise exception 'Active workout session not found' using errcode='P0002'; end if;\n  return v_session_id;\nend;\n$function$\n",
+      "name": "pause_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.resume_workout(p_scheduled_workout_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare\n  v_user_id uuid := auth.uid();\n  v_session_id uuid;\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n\n  update public.workout_sessions ws\n  set started_at = now(), paused_at = null, updated_at = now()\n  where ws.user_id=v_user_id\n    and ws.scheduled_workout_id=p_scheduled_workout_id\n    and ws.status='active'\n    and ws.paused_at is not null\n  returning ws.id into v_session_id;\n\n  if v_session_id is null then raise exception 'Paused workout session not found' using errcode='P0002'; end if;\n  return v_session_id;\nend;\n$function$\n",
+      "name": "resume_workout",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.pause_program(p_user_program_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_user_id uuid := auth.uid();\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  perform 1 from public.user_programs up where up.id=p_user_program_id and up.user_id=v_user_id and up.status='active' for update;\n  if not found then raise exception 'Active program participation not found' using errcode='P0002'; end if;\n  if exists (\n    select 1 from public.workout_sessions ws join public.scheduled_workouts sw on sw.id=ws.scheduled_workout_id\n    where sw.user_program_id=p_user_program_id and ws.user_id=v_user_id and ws.status='active'\n  ) then raise exception 'Cannot pause program during an active or paused workout' using errcode='22023'; end if;\n  update public.user_programs set status='paused',paused_at=now(),updated_at=now() where id=p_user_program_id and user_id=v_user_id;\n  return p_user_program_id;\nend;\n$function$\n",
+      "name": "pause_program",
+      "schema": "public"
+    },
+    {
+      "sql": "CREATE OR REPLACE FUNCTION public.cancel_program(p_user_program_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_user_id uuid := auth.uid();\nbegin\n  if v_user_id is null then raise exception 'Authentication required' using errcode='42501'; end if;\n  update public.user_programs\n  set status='cancelled', updated_at=now()\n  where id=p_user_program_id and user_id=v_user_id and status in ('active','paused');\n  if not found then raise exception 'Active program participation not found' using errcode='P0002'; end if;\n  update public.scheduled_workouts set status='cancelled'\n  where user_program_id=p_user_program_id and status in ('scheduled','skipped');\n  return p_user_program_id;\nend;\n$function$\n",
+      "name": "cancel_program",
+      "schema": "public"
+    }
+  ],
+  "constraints": [
+    {
+      "sql": "alter table public.catalog_programs add constraint catalog_programs_name_check CHECK (((char_length(name) >= 1) AND (char_length(name) <= 120)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.catalog_programs add constraint catalog_programs_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.catalog_programs add constraint catalog_programs_source_key_key UNIQUE (source_key);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.catalog_programs add constraint catalog_programs_week_count_check CHECK (((week_count >= 1) AND (week_count <= 52)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.catalog_programs add constraint catalog_programs_workout_count_check CHECK (((workout_count >= 0) AND (workout_count <= 200)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.exercises add constraint exercises_difficulty_check CHECK (((difficulty IS NULL) OR ((difficulty >= 1) AND (difficulty <= 3))));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.exercises add constraint exercises_name_key UNIQUE (name);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.exercises add constraint exercises_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.exercises add constraint exercises_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_check CHECK (((NOT completed) OR (reps IS NOT NULL)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_planned_reps_check CHECK (((planned_reps IS NULL) OR ((planned_reps >= 1) AND (planned_reps <= 999))));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_reps_check CHECK (((reps IS NULL) OR ((reps >= 1) AND (reps <= 999))));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_set_number_check CHECK ((set_number > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_set_type_check CHECK ((set_type = ANY (ARRAY['working'::text, 'warmup'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_source_scheduled_set_id_fkey FOREIGN KEY (source_scheduled_set_id) REFERENCES scheduled_sets(id) ON DELETE SET NULL;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_weight_check CHECK (((weight IS NULL) OR ((weight >= (0)::numeric) AND (weight <= (10000)::numeric))));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_workout_session_exercise_id_fkey FOREIGN KEY (workout_session_exercise_id) REFERENCES workout_session_exercises(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.performed_sets add constraint performed_sets_workout_session_exercise_id_set_number_key UNIQUE (workout_session_exercise_id, set_number);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_exercise_sets add constraint program_exercise_sets_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_exercise_sets add constraint program_exercise_sets_reps_check CHECK (((reps IS NULL) OR ((reps >= 1) AND (reps <= 999))));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_exercise_sets add constraint program_exercise_sets_set_number_check CHECK ((set_number > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_exercise_sets add constraint program_exercise_sets_workout_exercise_id_fkey FOREIGN KEY (workout_exercise_id) REFERENCES program_workout_exercises(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.program_exercise_sets add constraint program_exercise_sets_workout_exercise_id_set_number_key UNIQUE (workout_exercise_id, set_number);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_weeks add constraint program_weeks_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_weeks add constraint program_weeks_position_check CHECK ((\"position\" > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_weeks add constraint program_weeks_program_id_fkey FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.program_weeks add constraint program_weeks_program_id_position_key UNIQUE (program_id, \"position\");",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_weeks add constraint program_weeks_program_id_week_number_key UNIQUE (program_id, week_number);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_weeks add constraint program_weeks_week_number_check CHECK (((week_number >= 1) AND (week_number <= 52)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workout_exercises add constraint program_workout_exercises_exercise_id_fkey FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE RESTRICT;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.program_workout_exercises add constraint program_workout_exercises_exercise_identity_check CHECK (((exercise_id IS NOT NULL) OR (NULLIF(btrim(exercise_name_snapshot), ''::text) IS NOT NULL)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workout_exercises add constraint program_workout_exercises_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workout_exercises add constraint program_workout_exercises_position_check CHECK ((\"position\" > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workout_exercises add constraint program_workout_exercises_workout_id_fkey FOREIGN KEY (workout_id) REFERENCES program_workouts(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.program_workout_exercises add constraint program_workout_exercises_workout_id_position_key UNIQUE (workout_id, \"position\");",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workouts add constraint program_workouts_name_check CHECK (((char_length(name) >= 1) AND (char_length(name) <= 80)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workouts add constraint program_workouts_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workouts add constraint program_workouts_position_check CHECK ((\"position\" > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workouts add constraint program_workouts_rest_days_after_check CHECK (((rest_days_after >= 0) AND (rest_days_after <= 30)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.program_workouts add constraint program_workouts_week_id_fkey FOREIGN KEY (week_id) REFERENCES program_weeks(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.program_workouts add constraint program_workouts_week_id_position_key UNIQUE (week_id, \"position\");",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_cycle_repeat_count_check CHECK (((cycle_repeat_count >= 1) AND (cycle_repeat_count <= 52)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_name_check CHECK (((char_length(name) >= 1) AND (char_length(name) <= 80)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_schedule_mode_check CHECK ((schedule_mode = ANY (ARRAY['custom'::text, 'weekly_mwf'::text, 'weekly_tts'::text, 'cycle_2_2'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_source_catalog_program_id_fkey FOREIGN KEY (source_catalog_program_id) REFERENCES catalog_programs(id) ON DELETE SET NULL;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'active'::text, 'archived'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_structure_mode_check CHECK ((structure_mode = ANY (ARRAY['legacy_weeks'::text, 'cycle'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.programs add constraint programs_week_count_check CHECK (((week_count >= 1) AND (week_count <= 52)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_sets add constraint scheduled_sets_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_sets add constraint scheduled_sets_planned_reps_check CHECK (((planned_reps IS NULL) OR ((planned_reps >= 1) AND (planned_reps <= 999))));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_sets add constraint scheduled_sets_scheduled_workout_exercise_id_fkey FOREIGN KEY (scheduled_workout_exercise_id) REFERENCES scheduled_workout_exercises(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.scheduled_sets add constraint scheduled_sets_scheduled_workout_exercise_id_set_number_key UNIQUE (scheduled_workout_exercise_id, set_number);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_sets add constraint scheduled_sets_set_number_check CHECK ((set_number > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_exercise_id_fkey FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE RESTRICT;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_exercise_identity_check CHECK (((exercise_id IS NOT NULL) OR (NULLIF(btrim(exercise_name_snapshot), ''::text) IS NOT NULL)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_position_check CHECK ((\"position\" > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_scheduled_workout_id_fkey FOREIGN KEY (scheduled_workout_id) REFERENCES scheduled_workouts(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_scheduled_workout_id_position_key UNIQUE (scheduled_workout_id, \"position\");",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workout_exercises add constraint scheduled_workout_exercises_source_program_workout_exercis_fkey FOREIGN KEY (source_program_workout_exercise_id) REFERENCES program_workout_exercises(id) ON DELETE SET NULL;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_cycle_number_check CHECK (((cycle_number IS NULL) OR (cycle_number > 0)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_sequence_number_check CHECK ((sequence_number > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_source_program_workout_id_fkey FOREIGN KEY (source_program_workout_id) REFERENCES program_workouts(id) ON DELETE SET NULL;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_status_check CHECK ((status = ANY (ARRAY['scheduled'::text, 'completed'::text, 'skipped'::text, 'cancelled'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_user_program_id_fkey FOREIGN KEY (user_program_id) REFERENCES user_programs(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_user_program_id_sequence_number_key UNIQUE (user_program_id, sequence_number);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_week_number_check CHECK (((week_number >= 1) AND (week_number <= 52)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.scheduled_workouts add constraint scheduled_workouts_workout_name_check CHECK (((char_length(workout_name) >= 1) AND (char_length(workout_name) <= 80)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.user_programs add constraint user_programs_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.user_programs add constraint user_programs_program_id_fkey FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE RESTRICT;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.user_programs add constraint user_programs_status_check CHECK ((status = ANY (ARRAY['active'::text, 'paused'::text, 'completed'::text, 'cancelled'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.user_programs add constraint user_programs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.user_recent_exercises add constraint user_recent_exercises_exercise_id_fkey FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.user_recent_exercises add constraint user_recent_exercises_pkey PRIMARY KEY (user_id, exercise_id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.user_recent_exercises add constraint user_recent_exercises_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_exercise_id_fkey FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE RESTRICT;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_exercise_identity_check CHECK (((exercise_id IS NOT NULL) OR (NULLIF(btrim(exercise_name_snapshot), ''::text) IS NOT NULL)));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_position_check CHECK ((\"position\" > 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_source_scheduled_workout_exercis_fkey FOREIGN KEY (source_scheduled_workout_exercise_id) REFERENCES scheduled_workout_exercises(id) ON DELETE SET NULL;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_workout_session_id_fkey FOREIGN KEY (workout_session_id) REFERENCES workout_sessions(id) ON DELETE CASCADE;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.workout_session_exercises add constraint workout_session_exercises_workout_session_id_position_key UNIQUE (workout_session_id, \"position\");",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_sessions add constraint workout_sessions_active_duration_seconds_check CHECK ((active_duration_seconds >= 0));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_sessions add constraint workout_sessions_pkey PRIMARY KEY (id);",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_sessions add constraint workout_sessions_scheduled_workout_id_fkey FOREIGN KEY (scheduled_workout_id) REFERENCES scheduled_workouts(id) ON DELETE RESTRICT;",
+      "foreign": true
+    },
+    {
+      "sql": "alter table public.workout_sessions add constraint workout_sessions_status_check CHECK ((status = ANY (ARRAY['active'::text, 'completed'::text, 'abandoned'::text])));",
+      "foreign": false
+    },
+    {
+      "sql": "alter table public.workout_sessions add constraint workout_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;",
+      "foreign": true
+    }
+  ]
+}

@@ -1,4 +1,7 @@
 import { supabase } from './supabase.js';
+import { normalizeCatalogSearch } from './exerciseCatalogV2.js';
+
+const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
 
 const EXERCISE_VIDEOS_BUCKET = 'exercise-videos';
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -29,7 +32,7 @@ export function normalizeExerciseMuscleGroup(value) {
 }
 
 export function normalizeExerciseEquipment(exercise) {
-  const explicit = String(exercise?.equipment || '').trim();
+  const explicit = String(exercise?.equipment_filter || exercise?.equipment || '').trim();
   if (explicit) return explicit;
   const source = `${exercise?.name || ''} ${exercise?.movement_type || ''}`.toLocaleLowerCase('ru');
   if (source.includes('гакк')) return 'Гакк';
@@ -52,7 +55,7 @@ async function signedVideoUrl(videoPath) {
 function mapExercise(row, userId, resolvedVideoUrl = null) {
   return {
     ...row,
-    display_muscle_group: normalizeExerciseMuscleGroup(row.muscle_group),
+    display_muscle_group: normalizeExerciseMuscleGroup(row.primary_group_name_ru || row.muscle_group),
     equipment: normalizeExerciseEquipment(row),
     isMine: Boolean(row.owner_id && row.owner_id === userId),
     resolvedVideoUrl: resolvedVideoUrl || row.video_url || null,
@@ -69,13 +72,21 @@ async function mapExercises(rows, userId) {
   return Promise.all((rows || []).map(async (row) => mapExercise(row, userId, await signedVideoUrl(row.video_path))));
 }
 
+async function loadCatalogRows() {
+  const rows = [];
+  for (let offset = 0; ; offset += 500) {
+    const result = await supabase.from(CATALOG_V2_ENABLED ? 'exercise_catalog_v2' : 'exercises')
+      .select('*').order('name', { ascending: true }).order('id', { ascending: true }).range(offset, offset + 499);
+    if (result.error) return result;
+    rows.push(...(result.data || []));
+    if ((result.data || []).length < 500) return { data: rows, error: null };
+  }
+}
+
 export async function listExerciseLibrary() {
   const user = await currentUser();
   const [exerciseResult, recentResult] = await Promise.all([
-    supabase
-      .from('exercises')
-      .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, equipment, owner_id, created_at')
-      .order('name', { ascending: true }),
+    loadCatalogRows(),
     supabase
       .from('user_recent_exercises')
       .select('exercise_id, last_used_at')
@@ -88,6 +99,17 @@ export async function listExerciseLibrary() {
 
   const all = await mapExercises(exerciseResult.data || [], user.id);
   const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
+  // Old history references keep their original IDs; they are not silently remapped.
+  const missingRecent = (recentResult.data || []).map(row => row.exercise_id).filter(id => !byId.has(id));
+  if (!CATALOG_V2_ENABLED && missingRecent.length) {
+    const result = await supabase.from('exercises').select('*').in('id', missingRecent);
+    if (result.error) throw new Error('Не удалось загрузить недавние упражнения.');
+    for (const exercise of await mapExercises(result.data, user.id)) {
+      byId.set(exercise.id, exercise);
+      // Historical IDs belong in Recent, not in the canonical All catalogue.
+      // pick() includes a selected historical row in its callback explicitly.
+    }
+  }
   const recent = (recentResult.data || []).map((row) => byId.get(row.exercise_id)).filter(Boolean);
   const mine = all.filter((exercise) => exercise.isMine).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   return { all, mine, recent };
@@ -177,14 +199,26 @@ export async function markExerciseRecent(exerciseId) {
   if (error) console.error('Unable to update recent exercises:', error);
 }
 
+export async function updateCustomExercise(exerciseId, {name,muscleGroup,equipment,description=''}) {
+  const user=await currentUser();
+  const cleanName=String(name||'').trim();
+  if(!cleanName || cleanName.length>100)throw new Error('Введите название длиной до 100 символов.');
+  if(!EXERCISE_MUSCLE_GROUPS.includes(muscleGroup)||muscleGroup==='Все')throw new Error('Выберите группу мышц.');
+  if(!EXERCISE_EQUIPMENT.includes(equipment)||equipment==='Все')throw new Error('Выберите оборудование.');
+  // Ownership is enforced both here and by database RLS. Identity and media are preserved.
+  const {data,error}=await supabase.from('exercises').update({name:cleanName,muscle_group:muscleGroup,equipment,description:String(description).trim()||null})
+    .eq('id',exerciseId).eq('owner_id',user.id).select('*').single();
+  if(error||!data)throw new Error('Не удалось обновить своё упражнение.');
+  return mapExercise(data,user.id,await signedVideoUrl(data.video_path));
+}
+
 export function filterExerciseList(exercises, { query = '', muscleGroup = 'Все', equipment = 'Все' } = {}) {
-  const q = String(query || '').trim().toLocaleLowerCase('ru');
+  const tokens = normalizeCatalogSearch(query).split(' ').filter(Boolean);
   return (exercises || []).filter((exercise) => {
     if (muscleGroup !== 'Все' && normalizeExerciseMuscleGroup(exercise.muscle_group) !== muscleGroup) return false;
     if (equipment !== 'Все' && normalizeExerciseEquipment(exercise) !== equipment) return false;
-    if (!q) return true;
-    return [exercise.name, exercise.muscle_group, exercise.target_muscle, exercise.synergists, exercise.movement_type, exercise.equipment, exercise.description]
-      .filter(Boolean)
-      .some((value) => String(value).toLocaleLowerCase('ru').includes(q));
+    const text = normalizeCatalogSearch([exercise.name, exercise.muscle_group, exercise.target_muscle, exercise.synergists, exercise.movement_type, exercise.equipment, exercise.description,
+      exercise.family_name_ru, exercise.equipment_name_ru, ...(exercise.aliases || []).map(alias => alias.alias)].filter(Boolean).join(' '));
+    return tokens.every(token => text.includes(token));
   });
 }

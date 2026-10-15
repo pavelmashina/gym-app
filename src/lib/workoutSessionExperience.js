@@ -6,7 +6,7 @@ export async function getExerciseDetails(exerciseId) {
   if (!exerciseId) return null;
   const { data, error } = await supabase
     .from('exercises')
-    .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, equipment, owner_id')
+    .select('*')
     .eq('id', exerciseId)
     .maybeSingle();
   if (error) throw new Error('Не удалось загрузить информацию об упражнении.');

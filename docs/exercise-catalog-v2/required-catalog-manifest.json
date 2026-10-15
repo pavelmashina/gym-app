@@ -1,0 +1,874 @@
+[
+  {
+    "section": "basic",
+    "required_name": "Приседания без отягощения",
+    "status": "review",
+    "canonical_key": "bodyweight_squat",
+    "exercise_id": "a7e43226-a21b-4c1e-bcfd-e538a12ab971",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Приседания со штангой на спине",
+    "status": "review",
+    "canonical_key": "barbell_back_squat",
+    "exercise_id": "96ae0f56-01f2-486a-b2b8-ed2fa159a32d",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Фронтальные приседания со штангой",
+    "status": "review",
+    "canonical_key": "barbell_front_squat",
+    "exercise_id": "732c683a-744c-4671-9b9b-6a4cd8591d08",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Приседания с гантелью у груди",
+    "status": "review",
+    "canonical_key": "dumbbell_goblet_squat",
+    "exercise_id": "bfbc3440-16fe-4814-af46-b81223e95820",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Приседания со штангой в тренажёре Смита",
+    "status": "review",
+    "canonical_key": "smith_squat",
+    "exercise_id": "01d0cbc0-7bf6-4314-b0e6-1dd9e2535ba6",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Выпады с собственным весом",
+    "status": "review",
+    "canonical_key": "bodyweight_lunge",
+    "exercise_id": "7ede4c3e-1fec-4020-bd5d-23259399d85c",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Выпады с гантелями на месте",
+    "status": "review",
+    "canonical_key": "stationary_dumbbell_lunge",
+    "exercise_id": "9d259e8b-3af6-4171-8ce7-426a8e335ce1",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Выпады с гантелями в ходьбе",
+    "status": "review",
+    "canonical_key": "walking_dumbbell_lunge",
+    "exercise_id": "0181b46a-b57b-4053-ac8a-9ad18aaa3af3",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Обратные выпады с гантелями",
+    "status": "review",
+    "canonical_key": "reverse_dumbbell_lunge",
+    "exercise_id": "893127f3-1878-4fca-957f-7d98602d0cf6",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Болгарские сплит-приседания с гантелями",
+    "status": "review",
+    "canonical_key": "dumbbell_bulgarian_split_squat",
+    "exercise_id": "e96395e9-b446-4f48-83be-c779cae898ff",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Зашагивания на платформу с гантелями",
+    "status": "review",
+    "canonical_key": "dumbbell_step_up",
+    "exercise_id": "f7f081e6-75b8-420e-b0f9-880cd6b05b33",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Становая тяга со штангой (классическая)",
+    "status": "review",
+    "canonical_key": "conventional_barbell_deadlift",
+    "exercise_id": "0c2279b6-97f4-4dfa-b936-80dec16a5dfc",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Становая тяга со штангой (сумо)",
+    "status": "review",
+    "canonical_key": "sumo_barbell_deadlift",
+    "exercise_id": "db73482b-46ac-4350-aa88-e2e5a9e9da6c",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Румынская тяга со штангой",
+    "status": "review",
+    "canonical_key": "barbell_romanian_deadlift",
+    "exercise_id": "70791438-c2e5-46c0-b7d5-e4d6d1385bd3",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Румынская тяга с гантелями",
+    "status": "review",
+    "canonical_key": "dumbbell_romanian_deadlift",
+    "exercise_id": "5b19df2e-bddc-4b7b-a535-136c859b20b0",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Становая тяга с гирей",
+    "status": "review",
+    "canonical_key": "kettlebell_deadlift",
+    "exercise_id": "6a2068cf-dc83-49b9-953b-8b635efc7fdd",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Ягодичный мост без отягощения",
+    "status": "review",
+    "canonical_key": "bodyweight_glute_bridge",
+    "exercise_id": "decefed9-baaf-4cfc-b4d5-f1d658c93279",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Ягодичный мост со штангой",
+    "status": "review",
+    "canonical_key": "barbell_glute_bridge",
+    "exercise_id": "ae53f8e4-3090-43ee-81de-a1408591da36",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Ягодичный мост на одной ноге",
+    "status": "review",
+    "canonical_key": "single_leg_glute_bridge",
+    "exercise_id": "e7f3735c-f45f-4550-a75d-f5f1a60147d6",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъёмы на носки стоя с собственным весом",
+    "status": "review",
+    "canonical_key": "standing_bodyweight_calf_raise",
+    "exercise_id": "2b61c652-28ee-406c-ad30-fe5e6d4d0745",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъёмы на носки стоя с гантелями",
+    "status": "review",
+    "canonical_key": "standing_dumbbell_calf_raise",
+    "exercise_id": "6f95b938-14ed-47e4-80a9-dc59498eae6e",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъёмы на носки сидя с гантелями",
+    "status": "review",
+    "canonical_key": "seated_dumbbell_calf_raise",
+    "exercise_id": "7bc6dc14-12ed-4dc8-b913-1d8ce6037379",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим штанги лёжа",
+    "status": "review",
+    "canonical_key": "barbell_bench_press",
+    "exercise_id": "0bd546b5-298b-440c-9290-f7353d29b5f9",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим гантелей лёжа",
+    "status": "review",
+    "canonical_key": "dumbbell_bench_press",
+    "exercise_id": "f8e177fb-c061-47e7-9f1a-d0096f4b66b6",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим штанги лёжа узким хватом",
+    "status": "review",
+    "canonical_key": "close_grip_barbell_bench_press",
+    "exercise_id": "bcc5cf79-444e-4459-a146-34c9129f846b",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим штанги лёжа на наклонной скамье (головой вверх)",
+    "status": "review",
+    "canonical_key": "incline_barbell_bench_press",
+    "exercise_id": "96981126-525c-4dde-8bb6-52c6c7b62024",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим гантелей лёжа на наклонной скамье (головой вверх)",
+    "status": "review",
+    "canonical_key": "incline_dumbbell_bench_press",
+    "exercise_id": "33bb0098-d5d7-48e9-9065-ddf4b3ea78d3",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим гантелей лёжа на наклонной скамье (головой вниз)",
+    "status": "review",
+    "canonical_key": "decline_dumbbell_bench_press",
+    "exercise_id": "2e604bd6-4829-46c5-824b-e2feb8a072fa",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разведение гантелей лёжа",
+    "status": "review",
+    "canonical_key": "flat_dumbbell_fly",
+    "exercise_id": "036c21c5-1a90-4197-9da8-e12ad2a897ae",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разведение гантелей лёжа на наклонной скамье",
+    "status": "review",
+    "canonical_key": "incline_dumbbell_fly",
+    "exercise_id": "c1f299e8-eb8c-4b9e-9ecf-1d469337f597",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Отжимания от пола",
+    "status": "review",
+    "canonical_key": "floor_push_up",
+    "exercise_id": "aa7fa8b0-b244-4363-b427-ac91c33e6b64",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Отжимания от пола с узкой постановкой рук",
+    "status": "review",
+    "canonical_key": "close_hand_push_up",
+    "exercise_id": "614d26dc-f4e8-430c-9f8c-436422ab03cb",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Отжимания от возвышенной опоры",
+    "status": "review",
+    "canonical_key": "elevated_push_up",
+    "exercise_id": "24350c95-bab9-4d7a-b786-26568958b075",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Отжимания на брусьях",
+    "status": "review",
+    "canonical_key": "parallel_bar_dip",
+    "exercise_id": "4a16df16-2a7c-4473-ad89-ac5272ee918b",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подтягивания прямым хватом",
+    "status": "review",
+    "canonical_key": "pronated_pull_up",
+    "exercise_id": "e1a52172-52a7-4f6e-9de2-ee7a1162e1af",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подтягивания обратным хватом",
+    "status": "review",
+    "canonical_key": "supinated_chin_up",
+    "exercise_id": "8c089ffa-a495-4cd9-87b9-240ca97beb8b",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подтягивания нейтральным хватом",
+    "status": "review",
+    "canonical_key": "neutral_grip_pull_up",
+    "exercise_id": "175cc9a7-d15f-4819-b405-daba022e6a65",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Горизонтальные подтягивания на перекладине",
+    "status": "review",
+    "canonical_key": "inverted_bar_row",
+    "exercise_id": "96abdb21-25dc-426d-b4eb-c0f83e2e9922",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Тяга штанги в наклоне",
+    "status": "review",
+    "canonical_key": "bent_over_barbell_row",
+    "exercise_id": "a76f5752-8e11-452d-bc9e-1e71116259e1",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Тяга гантели одной рукой в наклоне",
+    "status": "review",
+    "canonical_key": "single_arm_dumbbell_row",
+    "exercise_id": "057b4232-4702-4916-bd17-58e46e1df631",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Тяга двух гантелей в наклоне",
+    "status": "review",
+    "canonical_key": "bent_over_dumbbell_row",
+    "exercise_id": "3aebfa9a-e947-46dd-8d72-59f965884d87",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Тяга Т-грифа в наклоне",
+    "status": "review",
+    "canonical_key": "unsupported_t_bar_row",
+    "exercise_id": "44073924-6847-49cc-8cb4-7d86cda50a1c",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Шраги с гантелями",
+    "status": "review",
+    "canonical_key": "dumbbell_shrug",
+    "exercise_id": "a14e2f75-cfff-4f9f-a1bf-2b9a5c943db2",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Шраги со штангой",
+    "status": "review",
+    "canonical_key": "barbell_shrug",
+    "exercise_id": "3a80ece1-6a6c-4add-ae56-ed2dc9041398",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Гиперэкстензия",
+    "status": "review",
+    "canonical_key": "back_extension",
+    "exercise_id": "fd88d366-6d64-4be1-9805-2c258a3b006a",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим штанги стоя",
+    "status": "review",
+    "canonical_key": "standing_barbell_overhead_press",
+    "exercise_id": "2b54e2dd-f330-4fa6-8afa-a26e51bbbe36",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим гантелей стоя",
+    "status": "review",
+    "canonical_key": "standing_dumbbell_overhead_press",
+    "exercise_id": "7b554323-f07d-4df6-94c9-da5842b2dc76",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим гантелей сидя",
+    "status": "review",
+    "canonical_key": "seated_dumbbell_overhead_press",
+    "exercise_id": "d117af6f-af63-446f-a0d1-ff6a3e3ae75f",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Жим Арнольда сидя",
+    "status": "review",
+    "canonical_key": "seated_arnold_press",
+    "exercise_id": "bc311f12-5548-4677-9a25-fb80dcc09185",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъём гантелей через стороны стоя",
+    "status": "review",
+    "canonical_key": "standing_dumbbell_lateral_raise",
+    "exercise_id": "226be321-8e3f-4b52-8ce7-8dc024dfddc3",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъём гантелей перед собой стоя",
+    "status": "review",
+    "canonical_key": "standing_dumbbell_front_raise",
+    "exercise_id": "33eaade2-3a16-4a49-ac81-94bf83f962f2",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разведение гантелей в наклоне",
+    "status": "review",
+    "canonical_key": "bent_over_dumbbell_reverse_fly",
+    "exercise_id": "96dac21c-8758-4711-99f3-753a769ea86e",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Сгибание рук со штангой стоя",
+    "status": "review",
+    "canonical_key": "standing_barbell_curl",
+    "exercise_id": "2939954b-86a4-4b40-83f8-f87013e636a4",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Сгибание рук с EZ-грифом стоя",
+    "status": "review",
+    "canonical_key": "standing_ez_bar_curl",
+    "exercise_id": "09c86bd6-8148-4e34-85bd-c09fcbcf515a",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Сгибание рук с гантелями стоя",
+    "status": "review",
+    "canonical_key": "standing_dumbbell_curl",
+    "exercise_id": "26d1c114-07b3-4258-8cca-b160e57c3e4e",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Попеременное сгибание рук с гантелями",
+    "status": "review",
+    "canonical_key": "alternating_dumbbell_curl",
+    "exercise_id": "fd875908-43ea-4404-8039-b9b68fdc3fee",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Молотковые сгибания с гантелями",
+    "status": "review",
+    "canonical_key": "dumbbell_hammer_curl",
+    "exercise_id": "97fec42d-315a-4d84-88c7-0f6f887c763c",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Концентрированное сгибание руки с гантелью",
+    "status": "review",
+    "canonical_key": "concentration_dumbbell_curl",
+    "exercise_id": "daf2d79f-1765-411c-b3dd-8051eb9d4f3f",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Сгибание рук на скамье Скотта с EZ-грифом",
+    "status": "review",
+    "canonical_key": "ez_bar_preacher_curl",
+    "exercise_id": "77a52bfd-064c-4457-a7d2-20283e05db98",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разгибание рук со штангой лёжа",
+    "status": "review",
+    "canonical_key": "lying_barbell_triceps_extension",
+    "exercise_id": "0ee0fc2b-1daf-4432-a394-f8449444016b",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разгибание рук с EZ-грифом лёжа",
+    "status": "review",
+    "canonical_key": "lying_ez_triceps_extension",
+    "exercise_id": "0bc34246-f026-481c-92cf-3517011d7195",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разгибание руки с гантелью из-за головы",
+    "status": "review",
+    "canonical_key": "single_arm_overhead_dumbbell_extension",
+    "exercise_id": "e9d1de0c-9654-4884-91a0-b92680b05126",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разгибание рук с гантелью из-за головы сидя",
+    "status": "review",
+    "canonical_key": "seated_two_hand_overhead_extension",
+    "exercise_id": "85ecc2ec-1c0f-469f-89d8-5eced43374a1",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Разгибание руки с гантелью в наклоне",
+    "status": "review",
+    "canonical_key": "dumbbell_triceps_kickback",
+    "exercise_id": "f1145880-1e90-4b4d-b85f-6aed4fa1710d",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Скручивания лёжа на полу",
+    "status": "review",
+    "canonical_key": "floor_crunch",
+    "exercise_id": "7050855d-6dd5-41fe-ab7b-8ad7de6e00b3",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Обратные скручивания лёжа",
+    "status": "review",
+    "canonical_key": "reverse_floor_crunch",
+    "exercise_id": "f2b017bd-f9df-4430-8f0c-3c149be66346",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъём туловища лёжа",
+    "status": "review",
+    "canonical_key": "floor_sit_up",
+    "exercise_id": "7ffc6ed2-a1b2-4819-8f7a-73b4fa7efbe5",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъём коленей в висе",
+    "status": "review",
+    "canonical_key": "hanging_knee_raise",
+    "exercise_id": "efba8624-e1ad-4110-b7eb-386c802ac857",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Подъём прямых ног в висе",
+    "status": "review",
+    "canonical_key": "hanging_straight_leg_raise",
+    "exercise_id": "3c5fc9fe-3854-4621-baff-0ae6e3ae1fb5",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Планка на предплечьях",
+    "status": "review",
+    "canonical_key": "forearm_plank",
+    "exercise_id": "3c8e4d1c-8f3a-4668-a102-b2f869a48152",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "basic",
+    "required_name": "Боковая планка на предплечье",
+    "status": "review",
+    "canonical_key": "side_forearm_plank",
+    "exercise_id": "c173db45-f7cb-4230-9b8e-a292afee2eae",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Скручивания с поворотом корпуса",
+    "status": "review",
+    "canonical_key": "rotational_crunch",
+    "exercise_id": "7d17b5df-2ff4-47cb-822f-fba5c59aa87f",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Роллаут с роликом для пресса",
+    "status": "review",
+    "canonical_key": "kneeling_ab_rollout",
+    "exercise_id": "c261e0b9-970b-4f7f-9460-3614082c838e",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Упражнение «Мёртвый жук»",
+    "status": "review",
+    "canonical_key": "dead_bug",
+    "exercise_id": "7e7d540a-dca0-4073-b1db-b29e6f6379f0",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Упражнение «Птица-собака»",
+    "status": "review",
+    "canonical_key": "bird_dog",
+    "exercise_id": "2b1ce373-7755-48a8-a870-db23596eea1a",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Фермерская прогулка с гантелями",
+    "status": "review",
+    "canonical_key": "dumbbell_farmer_carry",
+    "exercise_id": "1bb75302-939d-443a-a0d6-c0c3eadb5b26",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Свинг с гирей",
+    "status": "review",
+    "canonical_key": "two_hand_kettlebell_swing",
+    "exercise_id": "7d48a731-0376-4924-a050-25f260801a4f",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Бёрпи без отжимания",
+    "status": "review",
+    "canonical_key": "burpee_without_push_up",
+    "exercise_id": "3419a7c8-e645-4717-b607-f8e00cca9baf",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "basic",
+    "required_name": "Бёрпи с отжиманием",
+    "status": "review",
+    "canonical_key": "burpee_with_push_up",
+    "exercise_id": "a55d109a-6981-4c18-b144-f53c2fdc6b92",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Жим ногами в тренажёре под 45°",
+    "status": "review",
+    "canonical_key": "sled_leg_press_45",
+    "exercise_id": "53ed3f17-a1b3-4979-b201-b5f088987a70",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Горизонтальный жим ногами в тренажёре",
+    "status": "review",
+    "canonical_key": "horizontal_leg_press",
+    "exercise_id": "2e74cb00-485e-444a-8e08-09d64f610423",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Гакк-приседания в тренажёре",
+    "status": "review",
+    "canonical_key": "hack_machine_squat",
+    "exercise_id": "c4c9339d-e990-4d61-b085-0bb363cbfb8e",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Разгибание ног сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_leg_extension",
+    "exercise_id": "57454a7c-cb67-4531-be51-3c03d303b601",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Сгибание ног лёжа в тренажёре",
+    "status": "review",
+    "canonical_key": "prone_leg_curl",
+    "exercise_id": "33ca6e15-fa9c-4bfa-81d5-db177137ca04",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Сгибание ног сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_leg_curl",
+    "exercise_id": "904cfc81-dded-4836-9ae4-078e54fe2856",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Отведение ног сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_hip_abduction",
+    "exercise_id": "91de8ad1-3d29-48f6-a1af-342f5018baac",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Приведение ног сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_hip_adduction",
+    "exercise_id": "f0077274-4a85-43b4-835d-c25b4fc53f51",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Подъёмы на носки стоя в тренажёре",
+    "status": "review",
+    "canonical_key": "standing_machine_calf_raise",
+    "exercise_id": "0f22ef83-fb37-4976-ad5a-97695e0b2a8f",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "machine",
+    "required_name": "Подъёмы на носки сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_machine_calf_raise",
+    "exercise_id": "fb7023b1-bcad-46df-be0f-ae091b36d154",
+    "identity_origin": "preserved_legacy"
+  },
+  {
+    "section": "machine",
+    "required_name": "Ягодичный мост в тренажёре",
+    "status": "review",
+    "canonical_key": "machine_hip_thrust",
+    "exercise_id": "a76529cc-1ebe-40c0-a412-9825fc947cbe",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Жим от груди сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_machine_chest_press",
+    "exercise_id": "38bd0bbb-151c-420f-a9d0-b339aa96660b",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Наклонный жим от груди в тренажёре",
+    "status": "review",
+    "canonical_key": "incline_machine_chest_press",
+    "exercise_id": "ab290a53-c870-4978-8787-fa30d5c27656",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Сведение рук в тренажёре «Бабочка»",
+    "status": "review",
+    "canonical_key": "pec_deck_fly",
+    "exercise_id": "0dd82113-6f4f-464a-820d-50a9e61abd7b",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Сведение рук в кроссовере стоя",
+    "status": "review",
+    "canonical_key": "standing_cable_fly",
+    "exercise_id": "c0542305-6ade-4ff0-81d4-0f0529254c71",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Тяга верхнего блока к груди",
+    "status": "review",
+    "canonical_key": "lat_pulldown",
+    "exercise_id": "db93f828-37bb-492d-b449-48bae1d6a798",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Тяга горизонтального блока сидя",
+    "status": "review",
+    "canonical_key": "seated_cable_row",
+    "exercise_id": "3b7cd8b5-7908-4cea-b5ff-e22961f0075b",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Горизонтальная тяга в рычажном тренажёре",
+    "status": "review",
+    "canonical_key": "lever_machine_row",
+    "exercise_id": "55cdb540-b8c4-4fe1-87fe-9bc96edb3f8d",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Тяга Т-грифа с упором для груди",
+    "status": "review",
+    "canonical_key": "chest_supported_t_bar_row",
+    "exercise_id": "450e241e-b93a-4b38-afef-0a8f6589c058",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Подтягивания с противовесом в гравитроне",
+    "status": "review",
+    "canonical_key": "assisted_pull_up",
+    "exercise_id": "8345999a-9619-42d2-9b70-8f66dacae347",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Жим вверх сидя в тренажёре",
+    "status": "review",
+    "canonical_key": "seated_machine_overhead_press",
+    "exercise_id": "93e3269a-9a13-4801-9866-7fb654d3ad41",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Подъём рук через стороны в тренажёре",
+    "status": "review",
+    "canonical_key": "machine_lateral_raise",
+    "exercise_id": "ba92ab87-79df-4f04-bb6f-fcca7369a0f1",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Обратное разведение рук в тренажёре «Бабочка»",
+    "status": "review",
+    "canonical_key": "reverse_pec_deck",
+    "exercise_id": "447b9c6d-f020-4869-bf13-e08678e76cc9",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Сгибание рук на нижнем блоке",
+    "status": "review",
+    "canonical_key": "low_cable_curl",
+    "exercise_id": "38d0ee65-70cb-4556-8442-046fcee7485d",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Сгибание рук в тренажёре Скотта",
+    "status": "review",
+    "canonical_key": "machine_preacher_curl",
+    "exercise_id": "a173db4f-3e6c-43cb-b6a1-82c8fe36c778",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Разгибание рук на верхнем блоке с прямой рукоятью",
+    "status": "review",
+    "canonical_key": "straight_bar_pushdown",
+    "exercise_id": "3b5250dc-eb8c-4475-858d-999f35c3a799",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Разгибание рук на верхнем блоке с канатной рукоятью",
+    "status": "review",
+    "canonical_key": "rope_pushdown",
+    "exercise_id": "34d67d39-5f1a-4cd4-8c3b-0f80731f2a7d",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Разгибание руки на верхнем блоке одной рукой",
+    "status": "review",
+    "canonical_key": "single_arm_pushdown",
+    "exercise_id": "4e5d7836-3bbe-482c-adbf-52d899093d87",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Скручивания в тренажёре",
+    "status": "review",
+    "canonical_key": "machine_crunch",
+    "exercise_id": "0340bd88-0bd9-40ff-af47-d08bec834226",
+    "identity_origin": "new_canonical"
+  },
+  {
+    "section": "machine",
+    "required_name": "Скручивания на верхнем блоке",
+    "status": "review",
+    "canonical_key": "kneeling_cable_crunch",
+    "exercise_id": "f6cd9c4c-3cdc-43dd-920b-26f32940fe6c",
+    "identity_origin": "new_canonical"
+  }
+]

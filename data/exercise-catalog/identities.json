@@ -1,0 +1,462 @@
+{
+  "barbell_back_squat": {
+    "id": "96ae0f56-01f2-486a-b2b8-ed2fa159a32d",
+    "origin": "preserved_legacy"
+  },
+  "barbell_bench_press": {
+    "id": "0bd546b5-298b-440c-9290-f7353d29b5f9",
+    "origin": "preserved_legacy"
+  },
+  "floor_push_up": {
+    "id": "aa7fa8b0-b244-4363-b427-ac91c33e6b64",
+    "origin": "new_canonical"
+  },
+  "pronated_pull_up": {
+    "id": "e1a52172-52a7-4f6e-9de2-ee7a1162e1af",
+    "origin": "new_canonical"
+  },
+  "barbell_romanian_deadlift": {
+    "id": "70791438-c2e5-46c0-b7d5-e4d6d1385bd3",
+    "origin": "preserved_legacy"
+  },
+  "forearm_plank": {
+    "id": "3c8e4d1c-8f3a-4668-a102-b2f869a48152",
+    "origin": "preserved_legacy"
+  },
+  "barbell_front_squat": {
+    "id": "732c683a-744c-4671-9b9b-6a4cd8591d08",
+    "origin": "preserved_legacy"
+  },
+  "dumbbell_romanian_deadlift": {
+    "id": "5b19df2e-bddc-4b7b-a535-136c859b20b0",
+    "origin": "preserved_legacy"
+  },
+  "inverted_bar_row": {
+    "id": "96abdb21-25dc-426d-b4eb-c0f83e2e9922",
+    "origin": "preserved_legacy"
+  },
+  "supinated_chin_up": {
+    "id": "8c089ffa-a495-4cd9-87b9-240ca97beb8b",
+    "origin": "preserved_legacy"
+  },
+  "parallel_bar_dip": {
+    "id": "4a16df16-2a7c-4473-ad89-ac5272ee918b",
+    "origin": "preserved_legacy"
+  },
+  "bodyweight_squat": {
+    "id": "a7e43226-a21b-4c1e-bcfd-e538a12ab971",
+    "origin": "new_canonical"
+  },
+  "dumbbell_goblet_squat": {
+    "id": "bfbc3440-16fe-4814-af46-b81223e95820",
+    "origin": "new_canonical"
+  },
+  "smith_squat": {
+    "id": "01d0cbc0-7bf6-4314-b0e6-1dd9e2535ba6",
+    "origin": "new_canonical"
+  },
+  "bodyweight_lunge": {
+    "id": "7ede4c3e-1fec-4020-bd5d-23259399d85c",
+    "origin": "new_canonical"
+  },
+  "stationary_dumbbell_lunge": {
+    "id": "9d259e8b-3af6-4171-8ce7-426a8e335ce1",
+    "origin": "new_canonical"
+  },
+  "walking_dumbbell_lunge": {
+    "id": "0181b46a-b57b-4053-ac8a-9ad18aaa3af3",
+    "origin": "new_canonical"
+  },
+  "reverse_dumbbell_lunge": {
+    "id": "893127f3-1878-4fca-957f-7d98602d0cf6",
+    "origin": "new_canonical"
+  },
+  "dumbbell_bulgarian_split_squat": {
+    "id": "e96395e9-b446-4f48-83be-c779cae898ff",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "f39f707e-f5ef-4200-88d4-ffa5b956e8fe",
+    "evidence": "В названии указаны гантели; техника описывает заднюю ногу на скамье и одностороннее приседание."
+  },
+  "dumbbell_step_up": {
+    "id": "f7f081e6-75b8-420e-b0f9-880cd6b05b33",
+    "origin": "new_canonical"
+  },
+  "conventional_barbell_deadlift": {
+    "id": "0c2279b6-97f4-4dfa-b936-80dec16a5dfc",
+    "origin": "new_canonical"
+  },
+  "sumo_barbell_deadlift": {
+    "id": "db73482b-46ac-4350-aa88-e2e5a9e9da6c",
+    "origin": "new_canonical"
+  },
+  "kettlebell_deadlift": {
+    "id": "6a2068cf-dc83-49b9-953b-8b635efc7fdd",
+    "origin": "new_canonical"
+  },
+  "bodyweight_glute_bridge": {
+    "id": "decefed9-baaf-4cfc-b4d5-f1d658c93279",
+    "origin": "new_canonical"
+  },
+  "barbell_glute_bridge": {
+    "id": "ae53f8e4-3090-43ee-81de-a1408591da36",
+    "origin": "new_canonical"
+  },
+  "single_leg_glute_bridge": {
+    "id": "e7f3735c-f45f-4550-a75d-f5f1a60147d6",
+    "origin": "new_canonical"
+  },
+  "standing_bodyweight_calf_raise": {
+    "id": "2b61c652-28ee-406c-ad30-fe5e6d4d0745",
+    "origin": "new_canonical"
+  },
+  "standing_dumbbell_calf_raise": {
+    "id": "6f95b938-14ed-47e4-80a9-dc59498eae6e",
+    "origin": "new_canonical"
+  },
+  "seated_dumbbell_calf_raise": {
+    "id": "7bc6dc14-12ed-4dc8-b913-1d8ce6037379",
+    "origin": "new_canonical"
+  },
+  "dumbbell_bench_press": {
+    "id": "f8e177fb-c061-47e7-9f1a-d0096f4b66b6",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "cd79057b-72e9-48ec-b57c-45d0c81e8f65",
+    "evidence": "Горизонтальная скамья и две гантели явно указаны в названии и описании жима."
+  },
+  "close_grip_barbell_bench_press": {
+    "id": "bcc5cf79-444e-4459-a146-34c9129f846b",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "212f3a21-2400-46c2-b87d-0c4435cef0dc",
+    "evidence": "Название однозначно задаёт горизонтальную скамью, штангу и узкий хват; оборудование подтверждает штангу. Техника отсутствует, поэтому переносится только идентичность, не инструкция."
+  },
+  "incline_barbell_bench_press": {
+    "id": "96981126-525c-4dde-8bb6-52c6c7b62024",
+    "origin": "new_canonical"
+  },
+  "incline_dumbbell_bench_press": {
+    "id": "33bb0098-d5d7-48e9-9065-ddf4b3ea78d3",
+    "origin": "new_canonical"
+  },
+  "decline_dumbbell_bench_press": {
+    "id": "2e604bd6-4829-46c5-824b-e2feb8a072fa",
+    "origin": "new_canonical"
+  },
+  "flat_dumbbell_fly": {
+    "id": "036c21c5-1a90-4197-9da8-e12ad2a897ae",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "e21c35d9-2384-4a90-9ad9-361c90cb04e0",
+    "evidence": "Гантели и горизонтальная скамья; техника описывает разведение по дуге с небольшим сгибанием локтей."
+  },
+  "incline_dumbbell_fly": {
+    "id": "c1f299e8-eb8c-4b9e-9ecf-1d469337f597",
+    "origin": "new_canonical"
+  },
+  "close_hand_push_up": {
+    "id": "614d26dc-f4e8-430c-9f8c-436422ab03cb",
+    "origin": "new_canonical"
+  },
+  "elevated_push_up": {
+    "id": "24350c95-bab9-4d7a-b786-26568958b075",
+    "origin": "new_canonical"
+  },
+  "neutral_grip_pull_up": {
+    "id": "175cc9a7-d15f-4819-b405-daba022e6a65",
+    "origin": "new_canonical"
+  },
+  "bent_over_barbell_row": {
+    "id": "a76f5752-8e11-452d-bc9e-1e71116259e1",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "5214d20e-df86-4cb0-aeac-e82ae4bd23d3",
+    "evidence": "Штанга, наклон стоя и прямой хват подтверждены названием и техникой. Обратный хват не объединяется."
+  },
+  "single_arm_dumbbell_row": {
+    "id": "057b4232-4702-4916-bd17-58e46e1df631",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "2dc6ae57-2643-4431-aca6-4db79f897e09",
+    "evidence": "Одна гантель, опора коленом и рукой на скамью, тяга к поясу без супинации."
+  },
+  "bent_over_dumbbell_row": {
+    "id": "3aebfa9a-e947-46dd-8d72-59f965884d87",
+    "origin": "new_canonical"
+  },
+  "unsupported_t_bar_row": {
+    "id": "44073924-6847-49cc-8cb4-7d86cda50a1c",
+    "origin": "new_canonical"
+  },
+  "dumbbell_shrug": {
+    "id": "a14e2f75-cfff-4f9f-a1bf-2b9a5c943db2",
+    "origin": "new_canonical"
+  },
+  "barbell_shrug": {
+    "id": "3a80ece1-6a6c-4add-ae56-ed2dc9041398",
+    "origin": "new_canonical"
+  },
+  "back_extension": {
+    "id": "fd88d366-6d64-4be1-9805-2c258a3b006a",
+    "origin": "new_canonical"
+  },
+  "standing_barbell_overhead_press": {
+    "id": "2b54e2dd-f330-4fa6-8afa-a26e51bbbe36",
+    "origin": "new_canonical"
+  },
+  "standing_dumbbell_overhead_press": {
+    "id": "7b554323-f07d-4df6-94c9-da5842b2dc76",
+    "origin": "preserved_legacy",
+    "evidence": "Совпадают стойка, две гантели и жим над головой.",
+    "unused_prepublication_id": "6512c457-eda9-4fa9-a33c-2d86b80538fa"
+  },
+  "seated_dumbbell_overhead_press": {
+    "id": "d117af6f-af63-446f-a0d1-ff6a3e3ae75f",
+    "origin": "new_canonical"
+  },
+  "seated_arnold_press": {
+    "id": "bc311f12-5548-4677-9a25-fb80dcc09185",
+    "origin": "new_canonical"
+  },
+  "standing_dumbbell_lateral_raise": {
+    "id": "226be321-8e3f-4b52-8ce7-8dc024dfddc3",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "8028b2a8-3a6b-48e2-9d5d-8125b94087bc",
+    "evidence": "Описание явно задаёт положение стоя и подъём гантелей через стороны до уровня плеч."
+  },
+  "standing_dumbbell_front_raise": {
+    "id": "33eaade2-3a16-4a49-ac81-94bf83f962f2",
+    "origin": "new_canonical"
+  },
+  "bent_over_dumbbell_reverse_fly": {
+    "id": "96dac21c-8758-4711-99f3-753a769ea86e",
+    "origin": "new_canonical"
+  },
+  "standing_barbell_curl": {
+    "id": "2939954b-86a4-4b40-83f8-f87013e636a4",
+    "origin": "new_canonical"
+  },
+  "standing_ez_bar_curl": {
+    "id": "09c86bd6-8148-4e34-85bd-c09fcbcf515a",
+    "origin": "new_canonical"
+  },
+  "standing_dumbbell_curl": {
+    "id": "26d1c114-07b3-4258-8cca-b160e57c3e4e",
+    "origin": "new_canonical"
+  },
+  "alternating_dumbbell_curl": {
+    "id": "fd875908-43ea-4404-8039-b9b68fdc3fee",
+    "origin": "new_canonical"
+  },
+  "dumbbell_hammer_curl": {
+    "id": "97fec42d-315a-4d84-88c7-0f6f887c763c",
+    "origin": "new_canonical"
+  },
+  "concentration_dumbbell_curl": {
+    "id": "daf2d79f-1765-411c-b3dd-8051eb9d4f3f",
+    "origin": "new_canonical"
+  },
+  "ez_bar_preacher_curl": {
+    "id": "77a52bfd-064c-4457-a7d2-20283e05db98",
+    "origin": "new_canonical"
+  },
+  "lying_barbell_triceps_extension": {
+    "id": "0ee0fc2b-1daf-4432-a394-f8449444016b",
+    "origin": "new_canonical"
+  },
+  "lying_ez_triceps_extension": {
+    "id": "0bc34246-f026-481c-92cf-3517011d7195",
+    "origin": "new_canonical"
+  },
+  "single_arm_overhead_dumbbell_extension": {
+    "id": "e9d1de0c-9654-4884-91a0-b92680b05126",
+    "origin": "new_canonical"
+  },
+  "seated_two_hand_overhead_extension": {
+    "id": "85ecc2ec-1c0f-469f-89d8-5eced43374a1",
+    "origin": "new_canonical"
+  },
+  "dumbbell_triceps_kickback": {
+    "id": "f1145880-1e90-4b4d-b85f-6aed4fa1710d",
+    "origin": "new_canonical"
+  },
+  "floor_crunch": {
+    "id": "7050855d-6dd5-41fe-ab7b-8ad7de6e00b3",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "34005c24-b20b-48ac-953c-e277f028488f",
+    "evidence": "На полу, собственный вес, подъём лопаток, а не полный подъём туловища."
+  },
+  "reverse_floor_crunch": {
+    "id": "f2b017bd-f9df-4430-8f0c-3c149be66346",
+    "origin": "preserved_legacy",
+    "unused_prepublication_id": "e182dd67-98ad-445d-a324-d3387f72da42",
+    "evidence": "Собственный вес, положение на полу и отрыв таза при согнутых коленях явно описаны."
+  },
+  "floor_sit_up": {
+    "id": "7ffc6ed2-a1b2-4819-8f7a-73b4fa7efbe5",
+    "origin": "new_canonical"
+  },
+  "hanging_knee_raise": {
+    "id": "efba8624-e1ad-4110-b7eb-386c802ac857",
+    "origin": "new_canonical"
+  },
+  "hanging_straight_leg_raise": {
+    "id": "3c5fc9fe-3854-4621-baff-0ae6e3ae1fb5",
+    "origin": "new_canonical"
+  },
+  "side_forearm_plank": {
+    "id": "c173db45-f7cb-4230-9b8e-a292afee2eae",
+    "origin": "new_canonical"
+  },
+  "rotational_crunch": {
+    "id": "7d17b5df-2ff4-47cb-822f-fba5c59aa87f",
+    "origin": "new_canonical"
+  },
+  "kneeling_ab_rollout": {
+    "id": "c261e0b9-970b-4f7f-9460-3614082c838e",
+    "origin": "new_canonical"
+  },
+  "dead_bug": {
+    "id": "7e7d540a-dca0-4073-b1db-b29e6f6379f0",
+    "origin": "new_canonical"
+  },
+  "bird_dog": {
+    "id": "2b1ce373-7755-48a8-a870-db23596eea1a",
+    "origin": "new_canonical"
+  },
+  "dumbbell_farmer_carry": {
+    "id": "1bb75302-939d-443a-a0d6-c0c3eadb5b26",
+    "origin": "new_canonical"
+  },
+  "two_hand_kettlebell_swing": {
+    "id": "7d48a731-0376-4924-a050-25f260801a4f",
+    "origin": "new_canonical"
+  },
+  "burpee_without_push_up": {
+    "id": "3419a7c8-e645-4717-b607-f8e00cca9baf",
+    "origin": "new_canonical"
+  },
+  "burpee_with_push_up": {
+    "id": "a55d109a-6981-4c18-b144-f53c2fdc6b92",
+    "origin": "new_canonical"
+  },
+  "sled_leg_press_45": {
+    "id": "53ed3f17-a1b3-4979-b201-b5f088987a70",
+    "origin": "new_canonical"
+  },
+  "horizontal_leg_press": {
+    "id": "2e74cb00-485e-444a-8e08-09d64f610423",
+    "origin": "new_canonical"
+  },
+  "hack_machine_squat": {
+    "id": "c4c9339d-e990-4d61-b085-0bb363cbfb8e",
+    "origin": "new_canonical"
+  },
+  "seated_leg_extension": {
+    "id": "57454a7c-cb67-4531-be51-3c03d303b601",
+    "origin": "new_canonical"
+  },
+  "prone_leg_curl": {
+    "id": "33ca6e15-fa9c-4bfa-81d5-db177137ca04",
+    "origin": "new_canonical"
+  },
+  "seated_leg_curl": {
+    "id": "904cfc81-dded-4836-9ae4-078e54fe2856",
+    "origin": "new_canonical"
+  },
+  "seated_hip_abduction": {
+    "id": "91de8ad1-3d29-48f6-a1af-342f5018baac",
+    "origin": "new_canonical"
+  },
+  "seated_hip_adduction": {
+    "id": "f0077274-4a85-43b4-835d-c25b4fc53f51",
+    "origin": "new_canonical"
+  },
+  "standing_machine_calf_raise": {
+    "id": "0f22ef83-fb37-4976-ad5a-97695e0b2a8f",
+    "origin": "preserved_legacy",
+    "evidence": "Имя и оборудование явно задают тренажёр стоя; техника описывает подъём пяток на платформе.",
+    "unused_prepublication_id": "98efd6f1-3b41-4b1f-9b5e-b4ec555e59ac"
+  },
+  "seated_machine_calf_raise": {
+    "id": "fb7023b1-bcad-46df-be0f-ae091b36d154",
+    "origin": "preserved_legacy",
+    "evidence": "Совпадают сидячее положение, валики над коленями, платформа и подъём пяток.",
+    "unused_prepublication_id": "8d7fdd55-5296-433e-8660-911df39d9d99"
+  },
+  "machine_hip_thrust": {
+    "id": "a76529cc-1ebe-40c0-a412-9825fc947cbe",
+    "origin": "new_canonical"
+  },
+  "seated_machine_chest_press": {
+    "id": "38bd0bbb-151c-420f-a9d0-b339aa96660b",
+    "origin": "new_canonical"
+  },
+  "incline_machine_chest_press": {
+    "id": "ab290a53-c870-4978-8787-fa30d5c27656",
+    "origin": "new_canonical"
+  },
+  "pec_deck_fly": {
+    "id": "0dd82113-6f4f-464a-820d-50a9e61abd7b",
+    "origin": "new_canonical"
+  },
+  "standing_cable_fly": {
+    "id": "c0542305-6ade-4ff0-81d4-0f0529254c71",
+    "origin": "new_canonical"
+  },
+  "lat_pulldown": {
+    "id": "db93f828-37bb-492d-b449-48bae1d6a798",
+    "origin": "new_canonical"
+  },
+  "seated_cable_row": {
+    "id": "3b7cd8b5-7908-4cea-b5ff-e22961f0075b",
+    "origin": "new_canonical"
+  },
+  "lever_machine_row": {
+    "id": "55cdb540-b8c4-4fe1-87fe-9bc96edb3f8d",
+    "origin": "new_canonical"
+  },
+  "chest_supported_t_bar_row": {
+    "id": "450e241e-b93a-4b38-afef-0a8f6589c058",
+    "origin": "new_canonical"
+  },
+  "assisted_pull_up": {
+    "id": "8345999a-9619-42d2-9b70-8f66dacae347",
+    "origin": "new_canonical"
+  },
+  "seated_machine_overhead_press": {
+    "id": "93e3269a-9a13-4801-9866-7fb654d3ad41",
+    "origin": "new_canonical"
+  },
+  "machine_lateral_raise": {
+    "id": "ba92ab87-79df-4f04-bb6f-fcca7369a0f1",
+    "origin": "new_canonical"
+  },
+  "reverse_pec_deck": {
+    "id": "447b9c6d-f020-4869-bf13-e08678e76cc9",
+    "origin": "new_canonical"
+  },
+  "low_cable_curl": {
+    "id": "38d0ee65-70cb-4556-8442-046fcee7485d",
+    "origin": "new_canonical"
+  },
+  "machine_preacher_curl": {
+    "id": "a173db4f-3e6c-43cb-b6a1-82c8fe36c778",
+    "origin": "new_canonical"
+  },
+  "straight_bar_pushdown": {
+    "id": "3b5250dc-eb8c-4475-858d-999f35c3a799",
+    "origin": "new_canonical"
+  },
+  "rope_pushdown": {
+    "id": "34d67d39-5f1a-4cd4-8c3b-0f80731f2a7d",
+    "origin": "new_canonical"
+  },
+  "single_arm_pushdown": {
+    "id": "4e5d7836-3bbe-482c-adbf-52d899093d87",
+    "origin": "new_canonical"
+  },
+  "machine_crunch": {
+    "id": "0340bd88-0bd9-40ff-af47-d08bec834226",
+    "origin": "new_canonical"
+  },
+  "kneeling_cable_crunch": {
+    "id": "f6cd9c4c-3cdc-43dd-920b-26f32940fe6c",
+    "origin": "new_canonical"
+  }
+}
