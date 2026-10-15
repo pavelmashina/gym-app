@@ -12,6 +12,7 @@ import './nutrition-catalog-controls.css';
 import './design-system.css';
 import './design-system-audit.css';
 import './bottom-navigation.css';
+import './ui-layout-audit.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
