@@ -92,7 +92,7 @@ export async function listExerciseLibrary() {
       .select('exercise_id, last_used_at')
       .eq('user_id', user.id)
       .order('last_used_at', { ascending: false })
-      .limit(10),
+      .limit(5),
   ]);
   if (exerciseResult.error) throw new Error('Не удалось загрузить базу упражнений.');
   if (recentResult.error) throw new Error('Не удалось загрузить недавние упражнения.');
