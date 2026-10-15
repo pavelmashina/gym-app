@@ -1,13 +1,13 @@
 import {useEffect,useState} from 'react';
 import {listEquipmentForExercise,createEquipmentInstance} from '../lib/exerciseEquipment.js';
 
-export default function EquipmentInstancePicker({exerciseId,value,onChange,disabled}) {
+export default function EquipmentInstancePicker({exerciseId,value,onChange,disabled,enabled=true}) {
   const [data,setData]=useState({profiles:[],instances:[]});
   const [error,setError]=useState('');
   const [open,setOpen]=useState(false);
   const [saving,setSaving]=useState(false);
   const [draft,setDraft]=useState({profileId:'',name:'',manufacturer:'',model:''});
-  useEffect(()=>{let active=true;listEquipmentForExercise(exerciseId).then(result=>{if(active)setData(result)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[exerciseId]);
+  useEffect(()=>{if(!enabled)return undefined;let active=true;listEquipmentForExercise(exerciseId).then(result=>{if(active)setData(result)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[exerciseId,enabled]);
   async function create(){setSaving(true);setError('');try{
     const instance=await createEquipmentInstance(draft);
     setData(current=>({...current,instances:[...current.instances,instance]}));onChange(instance.id);setOpen(false);
