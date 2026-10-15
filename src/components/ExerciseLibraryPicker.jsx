@@ -6,7 +6,6 @@ import {
   updateCustomExercise,
   filterExerciseList,
   listExerciseLibrary,
-  markExerciseRecent,
 } from '../lib/exerciseLibrary.js';
 import '../exercise-library-picker.css';
 import ExerciseTechnique from './ExerciseTechnique.jsx';
@@ -92,12 +91,10 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
   const filterConfig = useMemo(() => ({ query, muscleGroup, equipment }), [query, muscleGroup, equipment]);
   const visible = useMemo(() => {
     const filter = (items) => filterExerciseList(items, filterConfig).filter((exercise) => exercise.id !== excludeId);
-    return { recent: filter(library.recent).slice(0, 10), mine: filter(library.mine), all: filter(library.all) };
+    return { recent: filter(library.recent).slice(0, 5), mine: filter(library.mine), all: filter(library.all) };
   }, [library, filterConfig, excludeId]);
 
-  async function pick(exercise) {
-    await markExerciseRecent(exercise.id);
-    setLibrary((current) => ({ ...current, recent: [exercise, ...current.recent.filter((item) => item.id !== exercise.id)].slice(0, 10) }));
+  function pick(exercise) {
     if (multi) {
       const next = selectedIds.includes(exercise.id) ? selectedIds.filter((id) => id !== exercise.id) : [...selectedIds, exercise.id];
       onChange?.(next, library.all.some(item=>item.id===exercise.id)?library.all:[...library.all,exercise]);
