@@ -442,7 +442,7 @@ function CompletedWorkout({ entry, onDone }) {
     <section className="completed-share-section">
       <h3>Поделитесь результатами тренировки со своими друзьями</h3>
       <button className="completed-share-button" type="button" onClick={shareResult}>
-        <span className="completed-share-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 9 20 3v6c5 .3 8.4 3.2 9 9.1-2.2-3.1-5.2-4.4-9-4.1v6l-8-7V9Z"/><path d="M20 12H9a6 6 0 0 0-6 6v8"/></svg></span>
+        <span className="completed-share-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 15V3"/><path d="m7.5 7.5 4.5-4.5 4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></span>
         <span>{shareState === 'copied' ? 'Скопировано' : shareState === 'error' ? 'Не удалось скопировать' : 'Поделиться'}</span>
       </button>
     </section>
