@@ -41,7 +41,31 @@ export function SportPitScreen(){
   const [error,setError]=useState('');
   const [selected,setSelected]=useState(null);
 
-  useEffect(()=>{let active=true;setLoading(true);setError('');supabase.from('supplement_catalog').select('id,slug,title,category,short_description,description,recommendations,composition,calories,protein_g,fat_g,carbs_g,serving_label,image_url,caution,sort_order').eq('is_active',true).order('sort_order',{ascending:true}).then(({data,error:requestError})=>{if(!active)return;if(requestError){console.error('Unable to load supplement catalog:',requestError);setError('Не удалось загрузить каталог.');}else setItems(data||[]);setLoading(false);});return()=>{active=false};},[]);
+  useEffect(()=>{
+    let active=true;
+    async function loadCatalog(){
+      setLoading(true);
+      setError('');
+      try {
+        const {data,error:requestError}=await supabase.from('supplement_catalog')
+          .select('id,slug,title,category,short_description,description,recommendations,composition,calories,protein_g,fat_g,carbs_g,serving_label,image_url,caution,sort_order')
+          .eq('is_active',true)
+          .order('sort_order',{ascending:true});
+        if(!active)return;
+        if(requestError)throw requestError;
+        setItems(Array.isArray(data)?data:[]);
+      } catch(requestError) {
+        if(!active)return;
+        console.error('Unable to load supplement catalog:',requestError);
+        setItems([]);
+        setError('Не удалось загрузить каталог.');
+      } finally {
+        if(active)setLoading(false);
+      }
+    }
+    loadCatalog();
+    return()=>{active=false};
+  },[]);
 
   const filtered=useMemo(()=>{const normalized=query.trim().toLocaleLowerCase('ru');if(!normalized)return items;return items.filter(item=>[item.title,item.category,item.short_description].filter(Boolean).some(value=>value.toLocaleLowerCase('ru').includes(normalized)));},[items,query]);
 
