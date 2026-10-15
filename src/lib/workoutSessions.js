@@ -1,19 +1,27 @@
 import { supabase } from './supabase.js';
 import { validateResultV2 } from './exerciseResultsV2.js';
-import { markExerciseRecent } from './exerciseLibrary.js';
 
 async function markRecentExerciseForSet(setId) {
-  const { data, error } = await supabase
-    .from('performed_sets')
-    .select('workout_session_exercises(exercise_id)')
-    .eq('id', setId)
-    .maybeSingle();
-  if (error) {
-    console.error('Unable to resolve recent exercise from performed set:', error);
-    return;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('performed_sets')
+      .select('workout_session_exercises(exercise_id)')
+      .eq('id', setId)
+      .maybeSingle();
+    if (error) throw error;
+    const exerciseId = data?.workout_session_exercises?.exercise_id;
+    if (!exerciseId) return;
+    const { error: recentError } = await supabase.from('user_recent_exercises').upsert({
+      user_id: user.id,
+      exercise_id: exerciseId,
+      last_used_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,exercise_id' });
+    if (recentError) throw recentError;
+  } catch (error) {
+    console.error('Unable to update recent exercise from performed set:', error);
   }
-  const exerciseId = data?.workout_session_exercises?.exercise_id;
-  if (exerciseId) await markExerciseRecent(exerciseId);
 }
 
 function mapSet(row) {
