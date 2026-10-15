@@ -27,6 +27,7 @@ import { formatExerciseCount } from '../lib/formatRussianCount.js';
 const KG_PER_LB = 0.45359237;
 const WEIGHT_UNIT_STORAGE_KEY = 'gym-exercise-weight-units-v2';
 const REST_SECONDS_STORAGE_KEY = 'gym-exercise-rest-seconds-v1';
+const EXECUTION_SETTINGS_STORAGE_PREFIX = 'gym-exercise-execution-settings-v1:';
 const DEFAULT_REST_SECONDS = 90;
 const REST_PRESETS = [30, 60, 90, 120];
 
@@ -170,10 +171,15 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   const [infoLoading, setInfoLoading] = useState(false);
   const [weightUnits, setWeightUnits] = useState(() => readStoredObject(WEIGHT_UNIT_STORAGE_KEY));
   const [restSettings, setRestSettings] = useState(() => readStoredObject(REST_SECONDS_STORAGE_KEY));
-  const [executionSettings, setExecutionSettings] = useState(() => Object.fromEntries(workout.exercises.map((exercise) => {
-    const saved = exercise.sets.find((set) => set.resultV2)?.resultV2;
-    return [exercise.id, { configuration: parseConfigurationKey(saved?.configuration_key || 'standard'), equipmentInstanceId: saved?.equipment_instance_id || null }];
-  })));
+  const executionSettingsStorageKey = `${EXECUTION_SETTINGS_STORAGE_PREFIX}${session.id}`;
+  const [executionSettings, setExecutionSettings] = useState(() => {
+    const stored = readStoredObject(executionSettingsStorageKey);
+    return Object.fromEntries(workout.exercises.map((exercise) => {
+      const saved = exercise.sets.find((set) => set.resultV2)?.resultV2;
+      const persisted = stored[exercise.id];
+      return [exercise.id, persisted || { configuration: parseConfigurationKey(saved?.configuration_key || 'standard'), equipmentInstanceId: saved?.equipment_instance_id || null }];
+    }));
+  });
   const [restTimer, setRestTimer] = useState(null);
   const [activeExerciseIndex, setActiveExerciseIndex] = useState(0);
   const notifiedTimerId = useRef(null);
@@ -205,7 +211,11 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
     return executionSettings[exercise.id] || { configuration: parseConfigurationKey('standard'), equipmentInstanceId: null };
   }
   function patchExecutionSettings(exercise, patch) {
-    setExecutionSettings((current) => ({ ...current, [exercise.id]: { ...getExecutionSettings(exercise), ...patch } }));
+    setExecutionSettings((current) => {
+      const next = { ...current, [exercise.id]: { ...(current[exercise.id] || { configuration: parseConfigurationKey('standard'), equipmentInstanceId: null }), ...patch } };
+      try { localStorage.setItem(executionSettingsStorageKey, JSON.stringify(next)); } catch {}
+      return next;
+    });
   }
   function getUnit(exercise) { return weightUnits[exerciseStorageKey(exercise)] === 'lb' ? 'lb' : 'kg'; }
   function setUnit(exercise, unit) { const key = exerciseStorageKey(exercise); setWeightUnits((current) => { const next = { ...current, [key]: unit }; localStorage.setItem(WEIGHT_UNIT_STORAGE_KEY, JSON.stringify(next)); return next; }); }
