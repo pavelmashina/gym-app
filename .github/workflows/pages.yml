@@ -37,8 +37,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: MVP contract tests
-        run: pnpm run test
+      - name: Workout lifecycle contracts
+        run: pnpm run test:lifecycle
+
+      - name: MVP core contracts
+        run: pnpm run test:core
+
+      - name: Product QA contracts
+        run: pnpm run test:qa
+
+      - name: Mobile PWA contracts
+        run: pnpm run test:mobile
+
+      - name: Interface refinement contracts
+        run: pnpm run test:interface
+
+      - name: Workout UI navigation contracts
+        run: pnpm run test:workout-ui
+
+      - name: Commercial contracts
+        run: pnpm run test:commercial
+
+      - name: Program draft contracts
+        run: pnpm run test:drafts
+
+      - name: Exercise catalog contracts
+        run: pnpm run test:catalog-db
 
       - name: Standalone workout integration
         run: pnpm run test:standalone
