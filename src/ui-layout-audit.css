@@ -1,0 +1,292 @@
+/* Final mobile layout audit: sizing, text resilience and date badges.
+   This layer fixes composition without hiding overflow bugs. */
+
+:where(
+  .phone,
+  .exercise-phone,
+  .statistics-phone,
+  .nutrition-screen,
+  .sportpit-screen,
+  .program-detail-phone,
+  .create-program-phone,
+  .workout-session-phone,
+  .account-screen,
+  .settings-screen,
+  .menu-screen
+) {
+  max-width: 430px;
+  min-width: 0;
+}
+
+:where(
+  .content,
+  .exercise-catalog-content,
+  .statistics-content,
+  .nutrition-content,
+  .sportpit-content,
+  .program-detail-content,
+  .create-program-content,
+  .workout-session-content,
+  .account-content,
+  .settings-content,
+  .menu-screen-content
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(
+  .calendar-card,
+  .date-card,
+  .summary,
+  .summary-col,
+  .home-data-alert,
+  .program-detail-schedule article,
+  .program-detail-weeks > section,
+  .program-schedule-item,
+  .program-schedule-workout,
+  .program-start-card,
+  .statistics-section,
+  .statistics-state-card,
+  .statistics-period-shell,
+  .recipe-card,
+  .meal-plan-card,
+  .sportpit-card,
+  .sportpit-detail-card,
+  .my-program-card,
+  .workout-exercise-card,
+  .workout-plan-card,
+  .account-card,
+  .settings-card,
+  .menu-card
+) {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Text should expand its parent rather than escape it. */
+:where(
+  .summary-col,
+  .program-detail-workout-copy,
+  .program-detail-week-workout,
+  .program-schedule-workout > div,
+  .my-program-copy,
+  .recipe-card-copy,
+  .meal-plan-card-copy,
+  .sportpit-card-copy,
+  .statistics-section,
+  .workout-exercise-title-button,
+  .exercise-info-copy,
+  .account-card,
+  .settings-card,
+  .menu-card
+) :where(h1,h2,h3,strong,p,span,small) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.date-row {
+  min-width: 0;
+  gap: var(--space-2);
+}
+
+.date-title {
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.home-edit-day {
+  flex: 0 0 auto;
+}
+
+/* Long workout titles must not collide with the fixed action inside the card. */
+.summary-col.workout {
+  height: auto;
+  min-height: 160px;
+  padding-bottom: 68px !important;
+}
+
+.summary-col.workout h3,
+.summary-col.workout p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.summary-col.food {
+  height: auto;
+}
+
+.food-grid {
+  min-width: 0;
+}
+
+/* Shared geometry for compact date/day badges. */
+.program-detail-day,
+.program-schedule-day {
+  width: max-content;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 34px;
+  padding: 7px 9px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.program-detail-schedule article,
+.program-schedule-workout {
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+}
+
+.program-detail-meta-card > div,
+.program-selected-rhythm,
+.program-schedule-rest,
+.statistics-photo-date-head {
+  min-width: 0;
+}
+
+.program-detail-meta-card strong,
+.program-selected-rhythm strong,
+.program-selected-rhythm span,
+.program-schedule-rest strong,
+.statistics-photo-date-head strong,
+.statistics-photo-date-head span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Date headers can wrap on narrow devices instead of leaving the card. */
+.statistics-photo-date-head {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.home-schedule-workout,
+.home-schedule-scope-intro,
+.home-schedule-date-field,
+.program-start-date-field,
+.program-start-preview {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.home-schedule-workout :where(span,strong),
+.home-schedule-scope-intro,
+.program-start-preview :where(span,strong) {
+  overflow-wrap: anywhere;
+}
+
+.home-schedule-date-field input,
+.program-start-date-field input {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Reusable card rows should grow with content; avoid text/card collisions. */
+.program-detail-weeks header,
+.account-data-row,
+.payment-row,
+.toggle-row,
+.settings-link,
+.home-data-alert {
+  height: auto;
+  min-height: 0;
+}
+
+.program-detail-weeks header {
+  min-height: 50px;
+  flex-wrap: wrap;
+  padding-block: 10px;
+}
+
+.my-program-card,
+.recipe-card,
+.meal-plan-card,
+.sportpit-card {
+  align-items: center;
+}
+
+.my-program-copy,
+.recipe-card-copy,
+.meal-plan-card-copy,
+.sportpit-card-copy {
+  min-width: 0;
+}
+
+.workout-exercise-title-row,
+.exercise-actions-heading,
+.workout-active-head {
+  min-width: 0;
+}
+
+.workout-exercise-name-link strong,
+.workout-active-head h1 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Calendar grid remains inside its card even at the narrowest supported width. */
+.calendar-card,
+.month-row,
+.weekdays,
+.days {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.weekdays,
+.days {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.day {
+  min-width: 0;
+}
+
+/* Root horizontal overflow should be prevented by sizing, not clipping. */
+img,
+video,
+iframe,
+svg {
+  max-width: 100%;
+}
+
+@media (max-width: 370px) {
+  .date-card {
+    padding: 16px !important;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-col {
+    min-height: 136px;
+  }
+
+  .summary-col.workout {
+    min-height: 158px;
+  }
+
+  .program-detail-schedule article,
+  .program-schedule-workout {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .program-detail-day,
+  .program-schedule-day {
+    justify-self: start;
+  }
+
+  .program-detail-rest {
+    grid-column: 1;
+  }
+}
