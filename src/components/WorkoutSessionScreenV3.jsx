@@ -226,7 +226,7 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   const notifiedTimerId = useRef(null);
   const cardRefs = useRef(new Map());
 
-  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 500); return () => window.clearInterval(timer); }, []);
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   const elapsed = useMemo(() => session.activeDurationSeconds + Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000)), [now, session.activeDurationSeconds, session.startedAt]);
 
   useEffect(() => {
