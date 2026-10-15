@@ -16,8 +16,8 @@ assert.doesNotMatch(picker,/markExerciseRecent/);
 assert.match(picker,/recent:\s*filter\(library\.recent\)\.slice\(0, 5\)/);
 assert.match(library,/user_recent_exercises[\s\S]*?\.limit\(5\)/);
 assert.match(workoutSessions,/markRecentExerciseForSet/);
-assert.match(workoutSessions,/if \(payload\.completed\) await markRecentExerciseForSet\(setId\)/);
-assert.match(workoutSessions,/if \(result\.completed\) await markRecentExerciseForSet\(setId\)/);
+assert.match(workoutSessions,/if \(payload\.completed\) void markRecentExerciseForSet\(setId\)/);
+assert.match(workoutSessions,/if \(result\.completed\) void markRecentExerciseForSet\(setId\)/);
 
 // Draft autosave remains active, but success/restored notices are silent.
 assert.match(createProgram,/writeProgramDraft/);
