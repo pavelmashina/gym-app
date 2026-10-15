@@ -76,8 +76,13 @@ body .bottom-nav:not(.app-bottom-nav) {
 }
 
 .app-nav-item.active:not(.home) .app-nav-icon {
-  background: var(--ink);
-  color: var(--surface);
+  background: transparent;
+  color: var(--ink);
+}
+
+.app-nav-item.active:not(.home) .app-nav-label {
+  color: var(--ink);
+  font-weight: var(--weight-bold);
 }
 
 .app-nav-item.home {
