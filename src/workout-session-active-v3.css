@@ -130,11 +130,165 @@
   .exercise-rest-settings > div { grid-template-columns:1fr 1fr; }
   .rest-countdown-copy strong { max-width:36%; font-size:22px; }
 }
-.result-set-v2{padding:14px;border:1px solid var(--line);border-radius:14px;display:grid;gap:10px;margin-bottom:12px}
-.result-set-v2-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.result-set-v2 label{display:grid;gap:6px;font-size:12px;min-width:0}
-.result-set-v2 input,.result-set-v2 select{width:100%;min-width:0;box-sizing:border-box;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
-.result-set-v2 small{line-height:1.45;color:var(--muted)}
-.result-set-v2 .add-set-actions{display:flex;flex-wrap:wrap;gap:8px}
-.result-set-v2 .add-set-actions button{min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
-.result-set-v2 .add-set-actions button:first-child{background:var(--ink);color:var(--surface)}
+
+/* Exercise-level execution settings. Saved results keep their own immutable snapshot. */
+.exercise-execution-settings {
+  margin: 12px 0 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.exercise-execution-settings > details {
+  margin: 0;
+}
+
+.exercise-execution-settings summary {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+}
+
+.exercise-execution-settings fieldset {
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.exercise-execution-settings .result-set-v2-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.exercise-execution-settings input,
+.exercise-execution-settings select {
+  min-height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 8px 10px;
+}
+
+/* Restore compact set-entry geometry instead of one settings card per set. */
+.result-set-v2.compact {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 36px 32px;
+  align-items: end;
+  gap: 7px;
+  margin: 0;
+  padding: 7px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.result-set-v2.compact.done {
+  opacity: .72;
+}
+
+.result-set-v2-number {
+  min-height: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.result-set-v2.compact .result-set-v2-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 7px;
+}
+
+.result-set-v2.compact label {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.result-set-v2.compact label > span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.result-set-v2.compact input,
+.result-set-v2.compact select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: center;
+}
+
+.result-set-v2-side {
+  width: 52px;
+}
+
+.result-set-v2-complete,
+.result-set-v2-delete {
+  width: 32px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.result-set-v2-complete {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.result-set-v2-delete {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.result-set-v2-discard,
+.result-set-v2.compact .workout-session-error {
+  grid-column: 2 / -1;
+}
+
+.result-set-v2-discard {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  text-decoration: underline;
+}
+
+@media (max-width: 370px) {
+  .result-set-v2.compact {
+    grid-template-columns: 28px minmax(0, 1fr) 34px 28px;
+    gap: 5px;
+  }
+  .exercise-execution-settings .result-set-v2-fields {
+    grid-template-columns: 1fr;
+  }
+}
