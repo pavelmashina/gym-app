@@ -347,3 +347,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.exercise-actions-popup .exercise-action-row.danger {
+  color: #9a3434;
+}
