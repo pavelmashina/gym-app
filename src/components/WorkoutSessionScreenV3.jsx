@@ -269,20 +269,26 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
     try { await updatePerformedSet(set.id, set); } catch (e) { setLocalError(e.message); }
   }
   async function saveV2(exercise, set) {
-    const saved=await updatePerformedSet(set.id, set);
-    patchSet(exercise.id, set.id, saved);
     if(set.completed) startRest(exercise);
+    try {
+      const saved=await updatePerformedSet(set.id, set);
+      patchSet(exercise.id, set.id, saved);
+    } catch(e) {
+      if(set.completed)setRestTimer(current=>current?.exerciseId===exercise.id?null:current);
+      throw e;
+    }
   }
   function startRest(exercise) { const duration = getRestSeconds(exercise); setRestTimer({ id: crypto.randomUUID(), exerciseId: exercise.id, exerciseName: exercise.name, duration, endsAt: Date.now() + duration * 1000 }); notifiedTimerId.current = null; }
   async function toggleComplete(exercise, set) {
     if (!set.completed && (!set.reps || Number(set.reps) <= 0)) { setLocalError('Укажите количество повторений перед завершением подхода.'); return; }
     const next={...set,completed:!set.completed};
     patchSet(exercise.id,set.id,{weight:next.weight,reps:next.reps,completed:next.completed});
+    if(next.completed)startRest(exercise);
     setSavingSetId(set.id);
     try {
       await updatePerformedSet(set.id,next);
-      if(next.completed)startRest(exercise);
     } catch(e) {
+      if(next.completed)setRestTimer(current=>current?.exerciseId===exercise.id?null:current);
       patchSet(exercise.id,set.id,{completed:set.completed});
       setLocalError(e.message);
     } finally { setSavingSetId(null); }
