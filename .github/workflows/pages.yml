@@ -55,6 +55,9 @@ jobs:
       - name: Workout UI navigation contracts
         run: pnpm run test:workout-ui
 
+      - name: Workout performance UI contracts
+        run: pnpm run test:workout-performance
+
       - name: Full UI audit contracts
         run: pnpm run test:ui-audit
 
