@@ -91,9 +91,9 @@ body .bottom-nav:not(.app-bottom-nav) {
 }
 
 .app-nav-item.home .app-nav-icon {
-  width: 50px;
-  height: 50px;
-  margin-top: -13px;
+  width: 60px;
+  height: 60px;
+  margin-top: -22px;
   border: 2px solid var(--ink);
   border-radius: 50%;
   background: var(--surface);
@@ -102,8 +102,8 @@ body .bottom-nav:not(.app-bottom-nav) {
 }
 
 .app-nav-item.home .app-nav-icon svg {
-  width: 27px;
-  height: 27px;
+  width: 32px;
+  height: 32px;
 }
 
 .app-nav-item.home.active .app-nav-icon {
