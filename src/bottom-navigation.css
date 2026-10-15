@@ -123,3 +123,12 @@ body .bottom-nav:not(.app-bottom-nav) {
   }
   .app-nav-label { font-size: 8px; }
 }
+
+
+/* Root sections reserve space for the single fixed panel. */
+#root:has(> .app-bottom-nav) .exercise-catalog-content,
+#root:has(> .app-bottom-nav) .statistics-content,
+#root:has(> .app-bottom-nav) .nutrition-content,
+#root:has(> .app-bottom-nav) .sportpit-content {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important;
+}
