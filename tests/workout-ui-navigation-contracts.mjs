@@ -18,13 +18,13 @@ const standaloneCss=read('src/standalone-workout.css');
 
 // One shared bottom navigation, fixed 5-column geometry, centralized active route.
 assert.match(app,/BottomNavigation/);
-assert.match(app,/activeScreen={activeScreen}/);
+assert.match(app,/activeScreen=\{activeScreen\}/);
 assert.match(nav,/id: 'training'/);
 assert.match(nav,/id: 'statistics'/);
 assert.match(nav,/id: 'home'/);
 assert.match(nav,/id: 'nutrition'/);
 assert.match(nav,/id: 'sportpit'/);
-assert.match(nav,/aria-current={active ? 'page'/);
+assert.match(nav,/aria-current=\{active \? 'page'/);
 assert.match(navCss,/grid-template-columns:\s*repeat\(5/);
 assert.match(navCss,/position:\s*fixed/);
 assert.match(navCss,/\.app-nav-item\.home \.app-nav-icon[\s\S]*margin-top:\s*-13px/);
