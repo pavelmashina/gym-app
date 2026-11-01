@@ -55,7 +55,11 @@ Single UI family: Inter, weights 400/500/600/700/800.
 ## Supplement detail page
 - The original full-width media block is **230px high** (token `--detail-hero-image-height`), 28px radius. Do not change the block's size when changing an image.
 - Photos use `object-fit: contain` and keep their aspect ratio. Letterbox space is filled by the existing background gradient, never by stretching or cropping the image.
-- Detail media should use a source **at least 2× the maximum rendered size** (prefer 960px-wide assets); retain local offline fallbacks. Do not upscale the 128px catalog thumbnails as the detail's primary source.
+- The **catalog thumbnail and its product detail must show the exact same image**: use `item.image_url` when provided, otherwise the same bundled `SPORTPIT_IMAGES[item.slug]` fallback on both. Never replace the selected image with a different category photograph. Detail clarity is limited by source quality; use higher-resolution versions of the same image when available, without inventing alternative imagery.
 - Detail screens use 18px page gutters (16px on narrow viewports), 8px / 12px / 16px spacing steps, H1 28/32, H2 20/24, body 14/20, captions 12/16, and card radius 24px / padding 18px.
 - The supplement product page hides the bottom navigation and exposes the catalog underneath the page during a right-edge swipe-back gesture.
 - A back swipe begins within 48px of the **left** edge, tracks finger movement 1:1, springs back when cancelled, and completes smoothly when released beyond the completion threshold. Modal dialogs are never bypassed by the gesture.
+
+- Sportpit detail top bar shows the **individual supplement title**, centered alongside the `i` disclaimer control; do not display the generic "СпортПит" title there or duplicate the supplement title below the image.
+- The detailed category label (e.g. "Белковая добавка") is hidden; the first text under the hero image is the description.
+- Text in the product description, recommendation paragraphs, composition rows, warning copy and informational notes is justified (`text-align: justify`), with automatic hyphenation where supported.

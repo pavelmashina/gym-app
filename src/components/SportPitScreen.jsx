@@ -2,19 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { supabase } from '../lib/supabase.js';
 import { SPORTPIT_IMAGES } from '../data/sportpitImages.js';
-import { SPORTPIT_HIRES_IMAGES } from '../data/sportpitHiResImages.js';
 import '../sportpit-screen.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>}
 function SearchIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>}
 
 function ProductVisual({ item, compact = false }) {
-  // Catalog thumbnails remain lightweight; the full detail opens a larger image.
-  // A failed remote image falls back to the local asset, not a broken icon.
+  // The catalog card and detail page show the same image, without substitutions.
   const fallback = SPORTPIT_IMAGES[item.slug] || '';
-  const primary = compact
-    ? (item.image_url || fallback)
-    : (item.image_url || SPORTPIT_HIRES_IMAGES[item.slug] || fallback);
+  const primary = item.image_url || fallback;
   const [source, setSource] = useState(primary);
   useEffect(() => setSource(primary), [primary]);
   return <div className={`sportpit-product-visual${compact ? ' compact' : ''}`}>
@@ -51,10 +47,17 @@ function SupplementDetails({ item, onBack }){
   }, [infoOpen]);
 
   return <div className="sportpit-screen sportpit-detail-screen">
-    <header className="sportpit-detail-topbar"><button type="button" onClick={onBack} aria-label="Назад"><BackIcon/></button><strong>СпортПит</strong><span/></header>
+    <header className="sportpit-detail-topbar">
+      <button type="button" onClick={onBack} aria-label="Назад"><BackIcon /></button>
+      <div className="sportpit-topbar-heading">
+        <h1 className="sportpit-topbar-title">{item.title}</h1>
+        <button type="button" className="sportpit-info-toggle sportpit-topbar-info" aria-label="Информация и меры предосторожности" aria-haspopup="dialog" onClick={() => setInfoOpen(true)}>i</button>
+      </div>
+      <span aria-hidden="true" />
+    </header>
     <main className="sportpit-detail-content">
       <ProductVisual item={item}/>
-      <div className="sportpit-detail-title"><span>{item.category}</span><div className="sportpit-detail-name"><h1>{item.title}</h1><button type="button" className="sportpit-info-toggle" aria-label="Информация и меры предосторожности" aria-haspopup="dialog" onClick={() => setInfoOpen(true)}>i</button></div><p>{item.description}</p></div>
+      <p className="sportpit-detail-description">{item.description}</p>
       <section className="sportpit-detail-card"><h2>Рекомендации по приёму</h2><p>{item.recommendations}</p></section>
       <section className="sportpit-detail-card"><h2>Состав</h2><ul>{composition.map((value,index)=><li key={`${index}-${value}`}>{value}</li>)}</ul></section>
       <section className="sportpit-detail-card"><div className="sportpit-kbju-head"><div><h2>Примерное КБЖУ</h2><span>{item.serving_label}</span></div></div><div className="sportpit-kbju"><div><strong>{Number(item.calories)}</strong><span>ккал</span></div><div><strong>{Number(item.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(item.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(item.carbs_g)} г</strong><span>Углеводы</span></div></div><small>Фактические значения зависят от конкретного продукта и производителя — проверяйте этикетку.</small></section>

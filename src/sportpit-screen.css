@@ -51,26 +51,6 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
   gap:var(--space-4);
   padding:var(--space-2) var(--page-x) var(--space-6);
 }
-.sportpit-detail-screen .sportpit-detail-title{display:grid;gap:var(--space-2);padding:0 var(--space-1)}
-.sportpit-detail-screen .sportpit-detail-name{gap:var(--space-3);align-items:center}
-.sportpit-detail-screen .sportpit-detail-title h1{
-  margin:0!important;
-  font-size:var(--text-h1)!important;
-  line-height:var(--lh-h1)!important;
-  font-weight:var(--weight-bold)!important;
-  letter-spacing:-.65px!important;
-}
-.sportpit-detail-screen .sportpit-detail-title>span{
-  font-size:var(--text-micro)!important;
-  line-height:var(--lh-micro)!important;
-  font-weight:var(--weight-bold)!important;
-}
-.sportpit-detail-screen .sportpit-detail-title p{
-  margin:0;
-  font-size:var(--text-body)!important;
-  line-height:var(--lh-body)!important;
-  font-weight:var(--weight-regular)!important;
-}
 .sportpit-detail-screen .sportpit-detail-card{
   padding:var(--card-pad)!important;
   border-radius:var(--radius-lg)!important;
@@ -115,4 +95,56 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
   font-size:var(--text-body);
   line-height:var(--lh-body);
   margin:var(--space-4) 0;
+}
+
+/* Product detail top bar: product name and its info action, no duplicate heading. */
+.sportpit-detail-topbar .sportpit-topbar-heading{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--space-2);
+}
+.sportpit-detail-topbar .sportpit-topbar-title{
+  min-width:0;
+  max-width:100%;
+  margin:0;
+  text-align:center;
+  overflow-wrap:anywhere;
+  font-size:18px;
+  line-height:22px;
+  font-weight:var(--weight-bold);
+  letter-spacing:-.2px;
+}
+.sportpit-detail-topbar .sportpit-topbar-info{
+  flex:0 0 30px;
+  width:30px!important;
+  height:30px!important;
+  min-height:30px!important;
+  padding:0!important;
+  border:1.5px solid var(--muted)!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:var(--muted)!important;
+  box-shadow:none!important;
+  font-size:16px;
+  line-height:1;
+}
+.sportpit-detail-screen .sportpit-detail-description{
+  margin:0;
+  padding:0 var(--space-1);
+  font-size:var(--text-body)!important;
+  line-height:var(--lh-body)!important;
+  font-weight:var(--weight-regular);
+  color:var(--muted);
+}
+.sportpit-detail-screen .sportpit-detail-description,
+.sportpit-detail-screen .sportpit-detail-card p,
+.sportpit-detail-screen .sportpit-detail-card li,
+.sportpit-detail-screen .sportpit-detail-card>small,
+.sportpit-info-dialog p{
+  text-align:justify;
+  text-justify:inter-word;
+  hyphens:auto;
+  overflow-wrap:break-word;
 }
