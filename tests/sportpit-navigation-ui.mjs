@@ -41,7 +41,7 @@ assert.match(swipe, /translate3d/);
 assert.match(swipe, /current\.button\.click\(\)/);
 assert.match(design, /--detail-hero-image-height:230px/);
 assert.match(styles, /height:var\(--detail-hero-image-height\)/);
-assert.match(styles, /\.sportpit-detail-screen \{[\s\S]*?position:fixed/);
+assert.match(styles, /\.sportpit-detail-screen\s*\{[\s\S]*?position:fixed/);
 assert.match(sportpit, /sportpit-stack/);
 assert.match(sportpit, /SPORTPIT_HIRES_IMAGES/);
 assert.match(imageMap, /commons\.wikimedia\.org/);
