@@ -22,45 +22,6 @@ function scrollIsAtTop(target) {
   return Boolean(detail) || window.scrollY <= 1;
 }
 
-/**
- * The offset belongs to <html>, not the active React screen.
- * Data refreshes can remount screens; their replacement receives the same CSS
- * offset immediately and cannot snap back until the refresh promise settles.
- */
-export function useStablePullSurface() {
-  const endTimer = useRef(null);
-
-  function clearPending() {
-    if (endTimer.current !== null) {
-      window.clearTimeout(endTimer.current);
-      endTimer.current = null;
-    }
-  }
-
-  function clearSurface() {
-    clearPending();
-    const root = document.documentElement;
-    root.classList.remove('gym-pull-active');
-    root.style.removeProperty('--gym-pull-offset');
-    root.style.removeProperty('--gym-pull-transition');
-  }
-
-  function setOffset(distance, animate = false) {
-    clearPending();
-    const root = document.documentElement;
-    root.style.setProperty('--gym-pull-transition', animate ? `${RELEASE_DURATION_MS}ms` : '0ms');
-    root.style.setProperty('--gym-pull-offset', `${Math.max(0, distance)}px`);
-    root.classList.add('gym-pull-active');
-  }
-
-  function returnToTop() {
-    setOffset(0, true);
-    endTimer.current = window.setTimeout(clearSurface, RELEASE_DURATION_MS + 40);
-  }
-
-  return { setOffset, returnToTop, clearPending, clearSurface };
-}
-
 export function PullToRefresh({ onRefresh, disabled = false }) {
   const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);

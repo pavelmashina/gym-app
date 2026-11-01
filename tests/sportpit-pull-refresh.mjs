@@ -26,7 +26,7 @@ assert.match(css,/hyphens:none/);
 assert.match(css,/font-size:var\(--text-h1\)/);
 assert.match(css,/width:22px!important/);
 assert.match(pull,/PULL_REFRESH_THRESHOLD = 150/);
-assert.match(pull,/addEventListener\('touchmove', handleMove, \{ passive:false \}\)/);
+assert.match(pull,/addEventListener\('touchmove', handleMove, \{ passive:\s*false \}\)/);
 assert.match(pull,/setRefreshing\(true\)/);
 assert.match(pull,/scrollIsAtTop/);
 assert.match(app,/PullToRefresh onRefresh=\{refreshActiveScreen\}/);
