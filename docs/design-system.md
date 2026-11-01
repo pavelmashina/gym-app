@@ -63,3 +63,19 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Sportpit detail top bar shows the **individual supplement title**, centered alongside the `i` disclaimer control; do not display the generic "СпортПит" title there or duplicate the supplement title below the image.
 - The detailed category label (e.g. "Белковая добавка") is hidden; the first text under the hero image is the description.
 - Text in the product description, recommendation paragraphs, composition rows, warning copy and informational notes is justified (`text-align: justify`), with automatic hyphenation where supported.
+
+## Typography and spacing — sportpit detail (current)
+- Family: **Inter**, fallbacks Arial/sans-serif.
+- Product title in topbar: **28px / 32px**, weight **700** (H1, enlarged from 18px). It may wrap at word boundaries but cannot break words with hyphens.
+- Section headings: **20px / 24px**, weight **700**; description, recommendations and composition: **14px / 20px**, weight **400**, muted color.
+- Secondary captions and notices: **12px / 16px**, weight **500**. Info icon: **12px** in a **22×22px** circle.
+- Page horizontal padding: **18px** (16px on narrow screens); between sections: **16px**; below heading: **12px**; text group spacing: **8px**.
+- Cards: **18px** inner padding, **24px** rounding, 12px between independent card items.
+- Photo container: unchanged **230px** high and **28px** rounding. Image is centered and contained within **220px** width and **198px** height; original bundled **128×128px** fallback is shown at native width to avoid blurry upscaling.
+- Composition format: heading → **1px divider** → bulleted list; **12px** between divider and bullet content; **8px** between bullet items; matching body font/color/line-height of recommendations.
+- Justified body text has **no automatic hyphenation** (`hyphens:none`); natural wrapping between whole words remains enabled.
+
+## Pull-to-refresh gesture
+- Starts only when the active page is scrolled to the top; swipe-back has priority within the leftmost 50px, and modals are excluded.
+- Dragging down gradually reveals the loading wheel; a strong **150px downward gesture** is required to refresh. A shorter pull cancels, without reloading.
+- Refresh remounts ordinary non-workout pages to fetch current data; supplement details stay open while catalog entries are refetched. Active workout screens are excluded to avoid resetting in-progress sets.

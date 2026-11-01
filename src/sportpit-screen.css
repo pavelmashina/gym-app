@@ -111,23 +111,23 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
   margin:0;
   text-align:center;
   overflow-wrap:anywhere;
-  font-size:18px;
-  line-height:22px;
+  font-size:var(--text-h1);
+  line-height:var(--lh-h1);
   font-weight:var(--weight-bold);
-  letter-spacing:-.2px;
+  letter-spacing:-.65px;
 }
 .sportpit-detail-topbar .sportpit-topbar-info{
-  flex:0 0 30px;
-  width:30px!important;
-  height:30px!important;
-  min-height:30px!important;
+  flex:0 0 22px;
+  width:22px!important;
+  height:22px!important;
+  min-height:22px!important;
   padding:0!important;
   border:1.5px solid var(--muted)!important;
   border-radius:50%!important;
   background:transparent!important;
   color:var(--muted)!important;
   box-shadow:none!important;
-  font-size:16px;
+  font-size:12px;
   line-height:1;
 }
 .sportpit-detail-screen .sportpit-detail-description{
@@ -145,6 +145,46 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
 .sportpit-info-dialog p{
   text-align:justify;
   text-justify:inter-word;
-  hyphens:auto;
-  overflow-wrap:break-word;
+  hyphens:none;
+  -webkit-hyphens:none;
+  overflow-wrap:normal;
+  word-break:normal;
 }
+
+/* Detail image is always fully contained and never zoomed/cropped.
+   The embedded fallback is only 128x128: cap its displayed size to avoid blur. */
+.sportpit-detail-screen .sportpit-product-visual:not(.compact)>img{
+  width:auto!important;
+  height:auto!important;
+  max-width:min(66%,220px)!important;
+  max-height:calc(var(--detail-hero-image-height) - 32px)!important;
+  object-fit:contain!important;
+  object-position:center;
+  justify-self:center;
+  align-self:center;
+}
+.sportpit-detail-screen .sportpit-product-visual:not(.compact)>img.sportpit-native-photo{
+  max-width:128px!important;
+  max-height:128px!important;
+}
+/* Composition shares typography and text color with Recommendations. */
+.sportpit-detail-screen .sportpit-composition-card>h2{margin-bottom:var(--space-3)!important}
+.sportpit-detail-screen .sportpit-composition-card ul{
+  margin:0;
+  padding:var(--space-3) 0 0 var(--space-5);
+  border-top:1px solid var(--line);
+  list-style:disc outside!important;
+}
+.sportpit-detail-screen .sportpit-composition-card li{
+  display:list-item;
+  margin:0 0 var(--space-2);
+  padding:0!important;
+  border:0!important;
+  list-style-type:disc!important;
+  color:var(--muted);
+  font-size:var(--text-body)!important;
+  line-height:var(--lh-body)!important;
+  font-weight:var(--weight-regular)!important;
+}
+.sportpit-detail-screen .sportpit-composition-card li:last-child{margin-bottom:0}
+.sportpit-detail-screen .sportpit-composition-card li::marker{color:var(--muted)}

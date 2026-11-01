@@ -13,9 +13,10 @@ function ProductVisual({ item, compact = false }) {
   const primary = item.image_url || fallback;
   const [source, setSource] = useState(primary);
   useEffect(() => setSource(primary), [primary]);
+  const bundledLowRes = source === fallback && fallback.startsWith('data:');
   return <div className={`sportpit-product-visual${compact ? ' compact' : ''}`}>
     {source
-      ? <img src={source} alt={item.title} loading={compact ? 'lazy' : 'eager'} decoding="async" onError={() => setSource((current) => current !== fallback ? fallback : '')} />
+      ? <img className={!compact && bundledLowRes ? 'sportpit-native-photo' : undefined} src={source} alt={item.title} loading={compact ? 'lazy' : 'eager'} decoding="async" onError={() => setSource((current) => current !== fallback ? fallback : '')} />
       : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}
   </div>;
 }
@@ -59,7 +60,7 @@ function SupplementDetails({ item, onBack }){
       <ProductVisual item={item}/>
       <p className="sportpit-detail-description">{item.description}</p>
       <section className="sportpit-detail-card"><h2>Рекомендации по приёму</h2><p>{item.recommendations}</p></section>
-      <section className="sportpit-detail-card"><h2>Состав</h2><ul>{composition.map((value,index)=><li key={`${index}-${value}`}>{value}</li>)}</ul></section>
+      <section className="sportpit-detail-card sportpit-composition-card"><h2>Состав</h2><ul>{composition.map((value,index)=><li key={`${index}-${value}`}>{value}</li>)}</ul></section>
       <section className="sportpit-detail-card"><div className="sportpit-kbju-head"><div><h2>Примерное КБЖУ</h2><span>{item.serving_label}</span></div></div><div className="sportpit-kbju"><div><strong>{Number(item.calories)}</strong><span>ккал</span></div><div><strong>{Number(item.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(item.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(item.carbs_g)} г</strong><span>Углеводы</span></div></div><small>Фактические значения зависят от конкретного продукта и производителя — проверяйте этикетку.</small></section>
     </main>
     {infoOpen && <div className="sportpit-info-overlay">
@@ -73,7 +74,7 @@ function SupplementDetails({ item, onBack }){
   </div>;
 }
 
-export function SportPitScreen(){
+export function SportPitScreen({ refreshKey = 0 }){
   const [items,setItems]=useState([]);
   const [query,setQuery]=useState('');
   const [loading,setLoading]=useState(true);
@@ -92,7 +93,9 @@ export function SportPitScreen(){
           .order('sort_order',{ascending:true});
         if(!active)return;
         if(requestError)throw requestError;
-        setItems(Array.isArray(data)?data:[]);
+        const nextItems=Array.isArray(data)?data:[];
+        setItems(nextItems);
+        setSelected(current=>current ? (nextItems.find(entry=>entry.id===current.id) || current) : null);
       } catch(requestError) {
         if(!active)return;
         console.error('Unable to load supplement catalog:',requestError);
@@ -104,7 +107,7 @@ export function SportPitScreen(){
     }
     loadCatalog();
     return()=>{active=false};
-  },[]);
+  },[refreshKey]);
 
   const filtered=useMemo(()=>{const normalized=query.trim().toLocaleLowerCase('ru');if(!normalized)return items;return items.filter(item=>[item.title,item.category,item.short_description].filter(Boolean).some(value=>value.toLocaleLowerCase('ru').includes(normalized)));},[items,query]);
 

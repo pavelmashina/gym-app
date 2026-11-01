@@ -11,6 +11,7 @@ import { SportPitScreen } from './components/SportPitScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { BottomNavigation } from './components/BottomNavigation.jsx';
+import { PullToRefresh, PULL_REFRESH_THRESHOLD } from './components/PullToRefresh.jsx';
 import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
@@ -64,6 +65,7 @@ export default function App() {
   const [workoutScheduledId, setWorkoutScheduledId] = useState(null);
   const [trainingInitialTab, setTrainingInitialTab] = useState(() => incomingProgramShareCode() ? 'received' : 'recommendations');
   const [trainingRefreshKey, setTrainingRefreshKey] = useState(0);
+  const [pullRefreshKey, setPullRefreshKey] = useState(0);
 
   const user = session?.user ?? null;
   const userId = user?.id ?? null;
@@ -295,16 +297,23 @@ export default function App() {
     setActiveScreen('home');
   }
 
+  function refreshActiveScreen() {
+    // Remount ordinary views to refetch their data, keeping SportPit detail
+    // mounted so the same product remains open during refresh.
+    setPullRefreshKey((value) => value + 1);
+    return new Promise((resolve) => window.setTimeout(resolve, 800));
+  }
+
   function renderActiveScreen() {
     if (activeScreen === 'settings') {
-      return <SettingsScreen user={user} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
+      return <SettingsScreen key={pullRefreshKey} user={user} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
     }
-    if (activeScreen === 'plan') return <PlanScreen subscription={subscription} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
-    if (activeScreen === 'privacy') return <PrivacyPolicyScreen onBack={closeUtilityScreen} />;
-    if (activeScreen === 'support') return <SupportScreen user={user} onBack={closeUtilityScreen} />;
-    if (activeScreen === 'faq') return <FaqScreen onBack={closeUtilityScreen} />;
+    if (activeScreen === 'plan') return <PlanScreen key={pullRefreshKey} subscription={subscription} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'privacy') return <PrivacyPolicyScreen key={pullRefreshKey} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'support') return <SupportScreen key={pullRefreshKey} user={user} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'faq') return <FaqScreen key={pullRefreshKey} onBack={closeUtilityScreen} />;
     if (activeScreen === 'account') {
-      return <AccountScreen user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={openSettingsFromAccount} />;
+      return <AccountScreen key={pullRefreshKey} user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={openSettingsFromAccount} />;
     }
     if (activeScreen === 'workout-session' && workoutScheduledId) {
       return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} />;
@@ -313,12 +322,12 @@ export default function App() {
       return <CreateProgramScreen key={`${userId}:${launchingProgramId ?? editingProgramId ?? 'new'}`} userId={userId} programId={launchingProgramId ?? editingProgramId} launchOnly={Boolean(launchingProgramId)} onBack={() => { setEditingProgramId(null); setLaunchingProgramId(null); setActiveScreen('training'); }} onCreated={finishProgramSave} />;
     }
     if (activeScreen === 'training') {
-      return <ExercisesScreen initialTab={trainingInitialTab} refreshKey={trainingRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
+      return <ExercisesScreen key={pullRefreshKey} initialTab={trainingInitialTab} refreshKey={trainingRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
     }
-    if (activeScreen === 'statistics') return <StatisticsScreen />;
-    if (activeScreen === 'nutrition') return <NutritionScreen user={user} profile={profile} />;
-    if (activeScreen === 'sportpit') return <SportPitScreen />;
-    return <HomeScreen menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} nutritionPlan={nutritionPlan} />;
+    if (activeScreen === 'statistics') return <StatisticsScreen key={pullRefreshKey} />;
+    if (activeScreen === 'nutrition') return <NutritionScreen key={pullRefreshKey} user={user} profile={profile} />;
+    if (activeScreen === 'sportpit') return <SportPitScreen refreshKey={pullRefreshKey} />;
+    return <HomeScreen key={pullRefreshKey} menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} nutritionPlan={nutritionPlan} />;
   }
 
   if (authConfigError) return <main className="auth-shell"><section className="auth-card"><div className="auth-brand">GYM</div><h1>Ошибка конфигурации</h1><p className="auth-subtitle">{authConfigError}</p></section></main>;
@@ -327,5 +336,5 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   const showBottomNavigation = BOTTOM_NAV_SCREENS.includes(activeScreen);
-  return <>{renderActiveScreen()}{showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}</>;
+  return <>{renderActiveScreen()}{showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}<PullToRefresh onRefresh={refreshActiveScreen} disabled={activeScreen === 'workout-session' || menuOpen} /></>;
 }
