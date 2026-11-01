@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { listPrograms } from '../lib/programs.js';
 import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
@@ -25,7 +26,6 @@ const EMPTY_COPY = {
 };
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
-function ProfileIcon() { return <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="11" r="5" /><path d="M7 27c1.2-5.7 4.2-8.4 9-8.4s7.8 2.7 9 8.4" /></svg>; }
 function FilterIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>; }
 function SortIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M8 6h9M8 12h6M8 18h3" /><path d="m4 5 2 2 2-2M6 7v11" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
@@ -136,7 +136,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
   if (selectedProgramId) return <ProgramDetailScreen programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onEdit={(programId) => onEditProgram?.(programId)} onStart={(programId) => onStartProgram?.(programId)} />;
 
   return <div className="phone exercise-phone">
-    <header className="exercise-appbar"><div><span className="exercise-eyebrow">Раздел</span><h1>Тренировки</h1></div><button className="profile-btn" type="button" aria-label="Профиль"><ProfileIcon /></button></header>
+    <RootSectionHeader title="Тренировки" />
     <main className="exercise-catalog-content">
       <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>

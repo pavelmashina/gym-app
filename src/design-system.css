@@ -41,6 +41,22 @@ input,select,textarea{border-radius:var(--radius-md)!important}
 .nutrition-topbar{padding:calc(env(safe-area-inset-top) + 16px) var(--page-x) 12px!important}
 .nutrition-brand{font-size:var(--text-h2)!important;line-height:var(--lh-h2)!important;font-weight:var(--weight-bold)!important}
 
+
+/* The four root tabs share a single title and identical geometry. */
+.root-section-header{
+  display:flex;
+  align-items:center;
+  padding:calc(env(safe-area-inset-top) + var(--space-4)) var(--page-x) var(--space-3);
+}
+.root-section-header h1{
+  margin:0!important;
+  font-size:var(--text-h1)!important;
+  line-height:var(--lh-h1)!important;
+  font-weight:var(--weight-bold)!important;
+  letter-spacing:-.65px!important;
+}
+.root-section-header + main{padding-top:var(--space-2)!important}
+
 /* Standard cards */
 .calendar-card,.date-card,.account-card,.settings-card,.menu-card,.nutrition-card,.statistics-section,.statistics-state-card,.statistics-period-shell,.statistics-favorites-toolbar,.statistics-favorite-picker,.sportpit-global-warning,.sportpit-warning,.sportpit-detail-card,.program-step2-summary,.create-program-form-card,.program-select-card,.workout-plan-card,.catalog-filter-panel{border-radius:var(--radius-lg)!important;padding:var(--card-pad)!important;box-shadow:var(--shadow-card)!important}
 .calendar-card,.date-card,.statistics-section,.statistics-state-card,.statistics-period-shell,.program-step2-summary,.create-program-form-card,.program-select-card,.workout-plan-card{border-color:var(--line)!important}

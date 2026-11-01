@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { supabase } from '../lib/supabase.js';
 import { SPORTPIT_IMAGES } from '../data/sportpitImages.js';
 import '../sportpit-screen.css';
@@ -71,7 +72,7 @@ export function SportPitScreen(){
 
   if(selected)return <SupplementDetails item={selected} onBack={()=>setSelected(null)}/>;
 
-  return <div className="sportpit-screen"><header className="sportpit-appbar"><div><span>Справочник</span><h1>СпортПит</h1></div></header><main className="sportpit-content">
+  return <div className="sportpit-screen"><RootSectionHeader title="СпортПит" /><main className="sportpit-content">
     <label className="sportpit-search"><SearchIcon/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Поиск по названию" aria-label="Поиск спортивного питания"/>{query&&<button type="button" aria-label="Очистить поиск" onClick={()=>setQuery('')}>×</button>}</label>
     <section className="sportpit-catalog-head"><div><span>Каталог</span><h2>Спортивное питание</h2></div><strong>{filtered.length}</strong></section>
     <section className="sportpit-global-warning"><strong>Перед применением</strong><span>Любые добавки следует использовать после консультации со специалистом и с учётом состояния здоровья, питания и лекарств.</span></section>

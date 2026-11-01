@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { supabase } from '../lib/supabase.js';
 import '../nutrition-screen.css';
 import '../meal-plans.css';
@@ -284,7 +285,7 @@ export function NutritionScreen({ user, profile }) {
   if (selectedMealPlan) return <MealPlanDetails plan={selectedMealPlan} meals={selectedMealPlanMeals} onBack={() => { setSelectedMealPlan(null); setSelectedMealPlanMeals([]); }} />;
 
   return <div className="nutrition-screen">
-    <header className="nutrition-topbar"><div className="nutrition-brand">Питание</div><span className="nutrition-topbar-spacer" /></header>
+    <RootSectionHeader title="Питание" />
     <main className="nutrition-content">
       <div className="nutrition-tabs" role="tablist" aria-label="Разделы питания">{TABS.map((item) => <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'active' : ''} onClick={() => changeTab(item.id)}><span className="nutrition-tab-icon"><TabIcon type={item.icon} /></span><span className="nutrition-tab-label">{item.label}</span></button>)}</div>
 
