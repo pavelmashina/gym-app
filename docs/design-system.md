@@ -111,8 +111,14 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - The rendered URLs include `?v=20261101-seamless` to prevent browsers/CDNs from reusing the previously cached photos.
 
 ## Nutrition: standardizing the three tabs
-- Preserve one root screen title “Питание” and the three navigation tabs. The calculator retains only its title “Калькулятор КБЖУ” beneath the tabs; the introductory eyebrow “Персональный расчёт” and introductory explanation are removed.
+- Preserve one root screen title “Питание” and the three navigation tabs. Remove all repeated calculator headings/eyebrows and introductory copy below the tabs; the tab label “Калькулятор КБЖУ” remains for navigation.
 - “Рецепты” and “Готовые рационы” start directly with catalog filters and favorites controls. Remove the duplicated “Каталог” / “Избранное” eyebrow, section heading, and item-count pill; **do not** remove navigation labels, favorites filtering, results or empty states.
 - `src/nutrition-standard.css` is the final scoped typography and spacing layer for nutrition, loaded after shared style audits. It reuses the tokens in `src/design-system.css` for the calculator, catalogs, recipe details and meal-plan details.
 - Typography: H1 **28/32** bold, H2 **20/24** bold, catalog item titles **16/21** semibold, regular text **14/20**, labels/captions **12/16**, micro tags **10/13**. Tab labels follow the established **11/14** compact navigation standard.
 - Spacing: page inset **18px** (small screen adaptation is in shared styles), subview/content sections **16px**, lists **12px**, card padding **18px**, form label/input spacing **8px**, calculator controls **50px** tall, card radius **24px**.
+
+## Root header → first content block: Nutrition and SportPit
+- Both root screens render the same `RootSectionHeader` component: identical top/bottom padding and title typography.
+- The first content block begins **8px below the shared header boundary** via `--space-2`, enforced by `.root-section-header + .nutrition-content` and `.root-section-header + .sportpit-content`.
+- The Nutrition visual-tabs strip has **0px top padding**; its first icon tiles align vertically with the top of the SportPit disclaimer card. Bottom padding of the tabs remains **8px**.
+- The calculator begins immediately with the “Ваши данные” card under the navigation strip; it has no duplicate “Калькулятор КБЖУ” heading in the content area.

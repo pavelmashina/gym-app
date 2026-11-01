@@ -59,6 +59,10 @@ input,select,textarea{border-radius:var(--radius-md)!important}
   letter-spacing:-.65px!important;
 }
 .root-section-header + main{padding-top:var(--space-2)!important}
+/* Nutrition and SportPit root screens must start their first content block at
+   the same point below the shared header, regardless of the active tab. */
+.root-section-header + .nutrition-content,
+.root-section-header + .sportpit-content{padding-top:var(--space-2)!important}
 
 /* Standard cards */
 .calendar-card,.date-card,.account-card,.settings-card,.menu-card,.nutrition-card,.statistics-section,.statistics-state-card,.statistics-period-shell,.statistics-favorites-toolbar,.statistics-favorite-picker,.sportpit-global-warning,.sportpit-warning,.sportpit-detail-card,.program-step2-summary,.create-program-form-card,.program-select-card,.workout-plan-card,.catalog-filter-panel{border-radius:var(--radius-lg)!important;padding:var(--card-pad)!important;box-shadow:var(--shadow-card)!important}

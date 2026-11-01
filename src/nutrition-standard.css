@@ -1,7 +1,9 @@
 /* Nutrition design contract. Imported after the base and layout-audit sheets.
    All sizes come from src/design-system.css; no extra local font scale. */
 
-/* Shared section geometry across calculator, recipes and meal plans. */
+/* Shared section geometry across calculator, recipes and meal plans.
+   The first visual tile begins exactly where the root content area begins:
+   the same 8px distance from the shared page title as SportPit. */
 .nutrition-screen .nutrition-content{
   gap:var(--space-4) !important;
   padding-top:var(--space-2) !important;
@@ -25,7 +27,7 @@
 }
 .nutrition-screen .nutrition-tabs{
   gap:var(--space-3) !important;
-  padding:var(--space-1) 0 var(--space-2) !important;
+  padding:0 0 var(--space-2) !important;
 }
 .nutrition-screen .nutrition-tabs button{
   gap:var(--space-2) !important;
