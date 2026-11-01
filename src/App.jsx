@@ -11,6 +11,7 @@ import { SportPitScreen } from './components/SportPitScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { BottomNavigation } from './components/BottomNavigation.jsx';
+import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
 import { incomingProgramShareCode } from './lib/programSharing.js';
@@ -43,6 +44,7 @@ function LoadingScreen() {
 }
 
 export default function App() {
+  useSwipeBackNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeScreen, setActiveScreen] = useState(() => incomingProgramShareCode() ? 'training' : 'home');
   const [accountReturnScreen, setAccountReturnScreen] = useState('home');

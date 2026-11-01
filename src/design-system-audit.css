@@ -81,3 +81,11 @@
 .account-delete-loss-hero{border-radius:var(--radius-lg)!important;padding:var(--space-5)!important}
 
 /* Deliberate compact-data exceptions: charts, heatmaps, set-table column labels and calendar weekdays remain below 10px when density requires it. */
+
+/* No rectangular focus outline on catalog search inputs; preserve the caret.
+   Global keyboard focus treatment remains on ordinary controls. */
+:where(.exercise-search,.exercise-library-search,.sportpit-search) input:focus,
+:where(.exercise-search,.exercise-library-search,.sportpit-search) input:focus-visible{
+  outline:none!important;
+  box-shadow:none!important;
+}

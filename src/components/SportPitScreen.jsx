@@ -22,16 +22,39 @@ function SupplementCard({ item, onOpen }){
 
 function SupplementDetails({ item, onBack }){
   const composition=Array.isArray(item.composition)?item.composition:[];
+  const [infoOpen, setInfoOpen] = useState(false);
+
+  useEffect(() => {
+    if (!infoOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setInfoOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [infoOpen]);
+
   return <div className="sportpit-screen sportpit-detail-screen">
     <header className="sportpit-detail-topbar"><button type="button" onClick={onBack} aria-label="Назад"><BackIcon/></button><strong>СпортПит</strong><span/></header>
     <main className="sportpit-detail-content">
       <ProductVisual item={item}/>
-      <div className="sportpit-detail-title"><span>{item.category}</span><h1>{item.title}</h1><p>{item.description}</p></div>
-      <section className="sportpit-warning"><strong>Важно</strong><p>{item.caution}</p></section>
+      <div className="sportpit-detail-title"><span>{item.category}</span><div className="sportpit-detail-name"><h1>{item.title}</h1><button type="button" className="sportpit-info-toggle" aria-label="Информация и меры предосторожности" aria-haspopup="dialog" onClick={() => setInfoOpen(true)}>i</button></div><p>{item.description}</p></div>
       <section className="sportpit-detail-card"><h2>Рекомендации по приёму</h2><p>{item.recommendations}</p></section>
       <section className="sportpit-detail-card"><h2>Состав</h2><ul>{composition.map((value,index)=><li key={`${index}-${value}`}>{value}</li>)}</ul></section>
       <section className="sportpit-detail-card"><div className="sportpit-kbju-head"><div><h2>Примерное КБЖУ</h2><span>{item.serving_label}</span></div></div><div className="sportpit-kbju"><div><strong>{Number(item.calories)}</strong><span>ккал</span></div><div><strong>{Number(item.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(item.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(item.carbs_g)} г</strong><span>Углеводы</span></div></div><small>Фактические значения зависят от конкретного продукта и производителя — проверяйте этикетку.</small></section>
     </main>
+    {infoOpen && <div className="sportpit-info-overlay">
+      <button type="button" className="sportpit-info-scrim" aria-label="Закрыть информацию" onClick={() => setInfoOpen(false)} />
+      <section className="sportpit-info-dialog" role="dialog" aria-modal="true" aria-labelledby="sportpit-info-title">
+        <header><h2 id="sportpit-info-title">Важно знать</h2><button type="button" className="sportpit-info-close" onClick={() => setInfoOpen(false)} aria-label="Закрыть" autoFocus>×</button></header>
+        <p>{item.caution || 'Перед применением спортивных добавок проконсультируйтесь со специалистом.'}</p>
+        <button type="button" className="sportpit-info-done" onClick={() => setInfoOpen(false)}>Понятно</button>
+      </section>
+    </div>}
   </div>;
 }
 
@@ -74,7 +97,6 @@ export function SportPitScreen(){
 
   return <div className="sportpit-screen"><RootSectionHeader title="СпортПит" /><main className="sportpit-content">
     <label className="sportpit-search"><SearchIcon/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Поиск по названию" aria-label="Поиск спортивного питания"/>{query&&<button type="button" aria-label="Очистить поиск" onClick={()=>setQuery('')}>×</button>}</label>
-    <section className="sportpit-catalog-head"><div><span>Каталог</span><h2>Спортивное питание</h2></div><strong>{filtered.length}</strong></section>
     <section className="sportpit-global-warning"><strong>Перед применением</strong><span>Любые добавки следует использовать после консультации со специалистом и с учётом состояния здоровья, питания и лекарств.</span></section>
     {loading&&<div className="sportpit-state">Загружаем каталог…</div>}{error&&<div className="sportpit-state error">{error}</div>}{!loading&&!error&&filtered.length===0&&<div className="sportpit-state">Ничего не найдено.</div>}
     {!loading&&!error&&<div className="sportpit-list">{filtered.map(item=><SupplementCard key={item.id} item={item} onOpen={setSelected}/>)}</div>}

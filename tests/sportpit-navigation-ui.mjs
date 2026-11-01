@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { isBackSwipeGesture } from '../src/lib/swipeBackNavigation.js';
+
+const read = (file) => fs.readFileSync(file, 'utf8');
+const gesture = (x1,y1,x2,y2,left=0) => isBackSwipeGesture({startX:x1,startY:y1,endX:x2,endY:y2,screenLeft:left});
+assert.equal(gesture(24,100,140,112),true,'Left-edge horizontal swipe goes back.');
+assert.equal(gesture(24,100,140,220),false,'Vertical scrolling cannot trigger back.');
+assert.equal(gesture(105,100,260,102),false,'Horizontal carousel swipe away from edge is preserved.');
+assert.equal(gesture(115,100,260,100,100),true,'Centered app uses its own left edge.');
+assert.equal(gesture(60,100,25,100),false,'Swipe to the left does not navigate.');
+assert.equal(gesture(25,100,70,105),false,'Short movements are ignored.');
+const sportpit = read('src/components/SportPitScreen.jsx');
+const styles = read('src/sportpit-screen.css');
+const audit = read('src/design-system-audit.css');
+const app = read('src/App.jsx');
+const workout = read('src/components/WorkoutSessionScreenV3.jsx');
+assert.doesNotMatch(sportpit, /<section className="sportpit-catalog-head">/);
+assert.match(sportpit, /className="sportpit-global-warning"/);
+assert.match(sportpit, /className="sportpit-info-toggle"/);
+assert.match(sportpit, /className="sportpit-info-dialog"/);
+assert.doesNotMatch(sportpit, /<section className="sportpit-warning">/);
+assert.match(styles, /sportpit-detail-screen .sportpit-product-visual:not\(\.compact\)>img\{[\s\S]*?object-fit:contain/);
+assert.match(styles, /body:has\(\.sportpit-detail-screen\) \.app-bottom-nav\{display:none!important\}/);
+assert.match(audit, /\.sportpit-search\) input:focus-visible\{[\s\S]*?outline:none!important/);
+assert.match(app, /useSwipeBackNavigation\(\)/);
+assert.match(workout, /data-swipe-back/);
+console.log('Sportpit detail and swipe-back contracts passed.');
