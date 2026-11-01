@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { listPrograms } from '../lib/programs.js';
 import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
+import { ReceiveProgramPanel } from './ReceiveProgramPanel.jsx';
 import { EMPTY_PROGRAM_FILTERS, matchesProgramFilters, programFilterOptions } from '../lib/programFilters.js';
 import '../exercise-catalog.css';
 import '../program-list.css';
@@ -10,6 +11,7 @@ const TRAINING_TABS = [
   { id: 'recommendations', label: 'Рекомендации' },
   { id: 'catalog', label: 'Каталог' },
   { id: 'your-programs', label: 'Мои программы' },
+  { id: 'received', label: 'Получить программу' },
   { id: 'completed', label: 'Пройденные программы' },
   { id: 'create', label: 'Создать свою программу' },
 ];
@@ -18,6 +20,7 @@ const EMPTY_COPY = {
   recommendations: { title: 'Рекомендации', text: 'Здесь появятся программы, которые подойдут под ваши цели и уровень подготовки.' },
   catalog: { title: 'Каталог программ', text: 'Готовые программы тренировок.' },
   'your-programs': { title: 'Мои программы', text: 'Здесь отображаются все программы, созданные вами.' },
+  received: { title: 'Получить программу', text: 'Примите программу по ссылке от другого пользователя.' },
   completed: { title: 'Пройденные программы', text: 'Здесь отображаются 10 последних полностью пройденных программ.' },
 };
 
@@ -146,6 +149,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
 
       {!isCatalogTab && !isCompletedTab && <button className="create-program-wide" type="button" onClick={openCreateProgram}><span className="create-program-plus"><PlusIcon /></span><span className="create-program-copy"><strong>Создать свою программу</strong><small>Соберите тренировочный цикл из упражнений</small></span><span className="create-program-arrow">›</span></button>}
 
+      {activeTab === 'received' && <ReceiveProgramPanel onAccepted={(programId) => { setProgramsReloadKey((value) => value + 1); setSelectedProgramId(programId); }} />}
       {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} onJoin={(programId) => onStartProgram?.(programId)} />}
       {isProgramsTab && programsLoading && <div className="my-programs-state"><div className="exercise-list-spinner" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>}
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
