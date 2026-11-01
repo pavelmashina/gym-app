@@ -22,7 +22,7 @@ const app = read('src/App.jsx');
 const workout = read('src/components/WorkoutSessionScreenV3.jsx');
 assert.doesNotMatch(sportpit, /<section className="sportpit-catalog-head">/);
 assert.match(sportpit, /className="sportpit-global-warning"/);
-assert.match(sportpit, /className="sportpit-info-toggle"/);
+assert.match(sportpit, /className="sportpit-info-toggle sportpit-topbar-info"/);
 assert.match(sportpit, /className="sportpit-info-dialog"/);
 assert.doesNotMatch(sportpit, /<section className="sportpit-warning">/);
 assert.match(styles, /sportpit-detail-screen .sportpit-product-visual:not\(\.compact\)>img\{[\s\S]*?object-fit:contain/);
