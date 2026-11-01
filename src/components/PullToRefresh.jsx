@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import '../pull-to-refresh.css';
 
 export const PULL_REFRESH_THRESHOLD = 150;
@@ -23,8 +23,8 @@ function scrollIsAtTop(target) {
 }
 
 export function PullToRefresh({ onRefresh, disabled = false }) {
-  const [pull, setPull] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
+  const indicatorRef = useRef(null);
+  const wheelRef = useRef(null);
   const refreshRef = useRef(onRefresh);
   const busyRef = useRef(false);
   const disabledRef = useRef(disabled);
@@ -53,6 +53,19 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
       root.style.removeProperty('--gym-pull-transition');
     }
 
+    function updateIndicator(distance, busy = false, animate = false) {
+      const indicator = indicatorRef.current;
+      if (!indicator) return;
+      const progress = Math.min(1, Math.max(0, distance / MAX_VISUAL_PULL));
+      const y = busy ? 12 : -54 + distance * .67;
+      indicator.classList.toggle('refreshing', busy);
+      indicator.classList.toggle('is-settling', animate);
+      indicator.style.transform = `translate3d(-50%,${y}px,0)`;
+      indicator.style.opacity = String(busy ? 1 : progress);
+      indicator.setAttribute('aria-label', busy ? 'Обновление' : 'Потяните вниз для обновления');
+      if (wheelRef.current) wheelRef.current.style.transform = `rotate(${Math.round(progress * 260)}deg)`;
+    }
+
     function offset(distance, animate = false) {
       clearPending();
       root.style.setProperty('--gym-pull-transition', animate ? `${RELEASE_DURATION_MS}ms` : '0ms');
@@ -74,15 +87,18 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
         const next = queued ?? 0;
         queued = null;
         offset(next);
-        setPull(next);
+        updateIndicator(next);
       });
     }
 
     function returnToTop() {
       cancelFrame();
       offset(0, true);
-      releaseTimer = window.setTimeout(clearSurface, RELEASE_DURATION_MS + 40);
-      setPull(0);
+      updateIndicator(0, false, true);
+      releaseTimer = window.setTimeout(() => {
+        clearSurface();
+        indicatorRef.current?.classList.remove('is-settling');
+      }, RELEASE_DURATION_MS + 40);
     }
 
     function handleStart(event) {
@@ -127,13 +143,11 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
       }
       busyRef.current = true;
       offset(HOLD_OFFSET, true);
-      setPull(HOLD_OFFSET);
-      setRefreshing(true);
+      updateIndicator(HOLD_OFFSET, true, true);
       Promise.resolve().then(() => refreshRef.current()).catch(error => {
         console.error('Unable to refresh current screen:', error);
       }).finally(() => {
         if (disposed) return;
-        setRefreshing(false);
         busyRef.current = false;
         returnToTop();
       });
@@ -160,14 +174,10 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
     };
   }, []);
 
-  const progress = pull / MAX_VISUAL_PULL;
-  // Keep the status panel at the front of the viewport, above every screen
-  // and above the held page throughout the refresh.
-  const y = refreshing ? 12 : -54 + pull * .67;
-  return <div className={`pull-refresh-indicator${refreshing ? ' refreshing' : ''}`}
-    style={{ transform: `translate3d(-50%,${y}px,0)`, opacity: refreshing ? 1 : progress }}
-    role="status" aria-live="polite" aria-label={refreshing ? 'Обновление экрана' : undefined}>
-    <span className="pull-refresh-wheel" style={{ transform: `rotate(${Math.round(progress * 260)}deg)` }} />
-    <span className="pull-refresh-label">{refreshing ? 'Обновляем…' : progress === 1 ? 'Отпустите' : 'Потяните ещё'}</span>
+  return <div ref={indicatorRef} className="pull-refresh-indicator"
+    style={{ transform:'translate3d(-50%,-54px,0)', opacity:0 }}
+    role="status" aria-live="polite" aria-label="Потяните вниз для обновления">
+    <span ref={wheelRef} className="pull-refresh-wheel" />
+    <span className="pull-refresh-label">Обновление</span>
   </div>;
 }

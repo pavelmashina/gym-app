@@ -17,5 +17,5 @@ for (const [format, minBytes] of Object.entries(formats)) {
 }
 const ui = fs.readFileSync('src/components/SportPitScreen.jsx', 'utf8');
 assert.match(ui, /assets\/sportpit/);
-assert.match(ui, /compact \? 'thumbnail' : 'hero'/);
+assert.match(ui, /compact \? 'square' : 'hero'/);
 console.log('All 18 generated supplement photos exist and are valid WebP files.');

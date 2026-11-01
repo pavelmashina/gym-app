@@ -96,3 +96,10 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Sportpit refresh waits for the actual catalog fetch's completion event, with a bounded failsafe. Other screens use a minimum loading interval.
 - Sportpit's introductory disclaimer shows exactly two lines by default using line clamp. The user can expand it with “еще” and collapse it using “скрыть”; the control is focusable and exposes `aria-expanded`.
 - Nutrition bottom navigation icon: the knife blade points left, toward the fork.
+
+## Refinement: two distinct photo formats, fixed refresh label, inline disclaimer
+- Sportpit cover cards use the 1024×1024 `square` photo; the individual supplement page uses the 1200×700 `hero` photo in a full-width, 230px-tall, 24px-radius frame.
+- Generated high-resolution hero images display directly with `object-fit:cover`, without lower-quality canvas repainting; only legacy fallback images use the image-extension compositor.
+- In the collapsed sportpit disclaimer the text and “еще” button fit **together** within exactly two 16px lines. The expansion button overlays the end of line two. Expanded “скрыть” stays beneath the full text.
+- The refresh indicator always reads “Обновление”; gesture-driven transforms update once per animation frame directly (without a React render on each touch move). CSS transition applies only to the release/return animation.
+- The nutrition icon knife is moved 1.25 icon units farther from the fork, keeping its blade pointed toward the fork.

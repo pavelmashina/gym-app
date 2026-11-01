@@ -9,15 +9,16 @@ function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentC
 function SearchIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>}
 
 function ProductVisual({ item, compact = false }) {
-  // Never substitute another product photo: both views share the exact source.
+  // Use dedicated square cover and wide detail images of the same supplement.
   const fallback = SPORTPIT_IMAGES[item.slug] || '';
   const primary = item.image_url || fallback;
-  // The generated photographs are available in square, catalog and hero formats.
-  // Preserve a complete fallback chain if assets have not been published yet.
+  // Square covers are 1024×1024; full-width detail heroes are 1200×700.
+  // Keep existing remote/bundled fallbacks for missing generated files.
   const generated = ['protein', 'gainer', 'creatine', 'bcaa', 'omega3', 'vitamins'].includes(item.slug)
-    ? `${import.meta.env.BASE_URL}assets/sportpit/${compact ? 'thumbnail' : 'hero'}/${item.slug}.webp`
+    ? `${import.meta.env.BASE_URL}assets/sportpit/${compact ? 'square' : 'hero'}/${item.slug}.webp`
     : '';
   const [source, setSource] = useState(generated || primary);
+  const isGeneratedHero = !compact && Boolean(generated) && source === generated;
   const [enhanced, setEnhanced] = useState(false);
   const visualRef = useRef(null);
   const imageRef = useRef(null);
@@ -29,7 +30,7 @@ function ProductVisual({ item, compact = false }) {
   }, [generated, primary]);
 
   useEffect(() => {
-    if (compact || !source) return undefined;
+    if (compact || !source || isGeneratedHero) return undefined;
     let disposed = false;
     const render = () => {
       if (disposed) return;
@@ -49,13 +50,13 @@ function ProductVisual({ item, compact = false }) {
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(render);
     if (observer && visualRef.current) observer.observe(visualRef.current);
     return () => { disposed = true; observer?.disconnect(); };
-  }, [compact, source]);
+  }, [compact, source, isGeneratedHero]);
 
-  return <div ref={visualRef} className={`sportpit-product-visual${compact ? ' compact' : ''}${enhanced ? ' sportpit-photo-ready' : ''}`}>
+  return <div ref={visualRef} className={`sportpit-product-visual${compact ? ' compact' : ''}${isGeneratedHero ? ' sportpit-generated-hero' : ''}${enhanced && !isGeneratedHero ? ' sportpit-photo-ready' : ''}`}>
     {source ? <>
       <img ref={imageRef} src={source} alt={item.title} loading={compact ? 'lazy' : 'eager'} decoding="async"
         onLoad={() => {
-          if (compact) return;
+          if (compact || isGeneratedHero) return;
           const frame = visualRef.current;
           if (!frame || !imageRef.current || !canvasRef.current) return;
           try {
@@ -168,7 +169,7 @@ export function SportPitScreen({ refreshKey = 0 }){
       <RootSectionHeader title="СпортПит" /><main className="sportpit-content">
     <aside className="sportpit-global-warning" role="note" aria-label="Важная информация">
       <span className="sportpit-disclaimer-icon" aria-hidden="true">i</span>
-      <div className="sportpit-disclaimer-copy">
+      <div className={`sportpit-disclaimer-copy ${disclaimerExpanded ? 'expanded' : 'collapsed'}`}>
         <p id="sportpit-disclaimer-text" className={disclaimerExpanded ? 'expanded' : 'collapsed'}>Информация носит справочный характер и не является медицинской рекомендацией. Перед применением спортивного питания и добавок проконсультируйтесь со специалистом, учитывайте индивидуальные особенности организма, питание, лекарства и возможные противопоказания.</p>
         <button type="button" className="sportpit-disclaimer-toggle" aria-expanded={disclaimerExpanded} aria-controls="sportpit-disclaimer-text" onClick={() => setDisclaimerExpanded(value => !value)}>{disclaimerExpanded ? 'скрыть' : 'еще'}</button>
       </div>

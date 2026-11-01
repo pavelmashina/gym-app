@@ -17,7 +17,7 @@
   box-shadow:var(--shadow-card);
   pointer-events:none;
   will-change:transform,opacity;
-  transition:transform 130ms ease-out, opacity 130ms ease-out;
+  transition:none;
 }
 .pull-refresh-wheel{
   flex:none;
@@ -51,4 +51,9 @@ html.gym-pull-active #root > .sportpit-stack .sportpit-detail-screen {
   html.gym-pull-active #root > :not(.app-bottom-nav):not(.pull-refresh-indicator) {
     transition-duration:0ms !important;
   }
+}
+
+/* Only release transitions animate. Touch tracking uses raw rAF-coalesced transforms. */
+.pull-refresh-indicator.is-settling{
+  transition:transform 320ms cubic-bezier(.22,1,.36,1), opacity 320ms ease-out;
 }
