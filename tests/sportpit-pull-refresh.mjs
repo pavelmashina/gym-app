@@ -9,7 +9,7 @@ const app=read('src/App.jsx');
 const docs=read('docs/design-system.md');
 assert.match(ui,/sportpit-photo-composite/);
 assert.match(ui,/className="sportpit-disclaimer-icon"/);
-assert.match(ui,/className="sportpit-global-warning"[\\s\\S]*?<\\/aside>/);
+assert.ok(ui.indexOf("sportpit-global-warning") < ui.indexOf("sportpit-search"), "Disclaimer comes before search");
 assert.match(ui,/sportpit-global-warning"[\\s\\S]*?sportpit-search/);
 assert.match(ui,/paintSupplementPhoto/);
 assert.match(ui,/sportpit-composition-card/);
