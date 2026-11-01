@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test:lifecycle": "node tests/workout-lifecycle-contracts.mjs",
     "test:standalone": "node tests/standalone-workouts.mjs",
+    "test:program-sharing": "node tests/program-sharing.mjs",
     "test:catalog-release": "node scripts/verify-catalog-release.mjs",
     "test:core": "node tests/mvp-core-contracts.mjs",
     "test:qa": "node tests/mvp-product-qa-contracts.mjs",
