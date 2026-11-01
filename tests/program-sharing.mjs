@@ -32,6 +32,9 @@ try {
     'insert into exercises(id,name,muscle_group,exercise_type,movement_type,technique,equipment) values($1,$2,$3,$4,$5,$6,$7)',
     [e.id,e.name,e.muscle_group,e.exercise_type,e.movement_type,e.technique,e.equipment]);
   await db.exec(buildCatalogRelease({publish:true}));
+  await db.exec(`create table public.profiles(id uuid primary key references auth.users(id),display_name text);
+    insert into public.profiles(id,display_name) values('${alice}','Alice'),('${bob}','Bob');`);
+
   await db.exec(read('../supabase/schema/program-sharing.sql'));
 
   await login(alice);
