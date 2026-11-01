@@ -15,7 +15,7 @@ function ProductVisual({ item, compact = false }) {
   // Square covers are 1024×1024; full-width detail heroes are 1200×700.
   // Keep existing remote/bundled fallbacks for missing generated files.
   const generated = ['protein', 'gainer', 'creatine', 'bcaa', 'omega3', 'vitamins'].includes(item.slug)
-    ? `${import.meta.env.BASE_URL}assets/sportpit/${compact ? 'square' : 'hero'}/${item.slug}.webp`
+    ? `${import.meta.env.BASE_URL}assets/sportpit/${compact ? 'square' : 'hero'}/${item.slug}.webp?v=20261101-seamless`
     : '';
   const [source, setSource] = useState(generated || primary);
   const isGeneratedHero = !compact && Boolean(generated) && source === generated;

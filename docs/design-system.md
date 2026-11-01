@@ -103,3 +103,9 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - In the collapsed sportpit disclaimer the text and “еще” button fit **together** within exactly two 16px lines. The expansion button overlays the end of line two. Expanded “скрыть” stays beneath the full text.
 - The refresh indicator always reads “Обновление”; gesture-driven transforms update once per animation frame directly (without a React render on each touch move). CSS transition applies only to the release/return animation.
 - The nutrition icon knife is moved 1.25 icon units farther from the fork, keeping its blade pointed toward the fork.
+
+## 2026-11-01 — Seamless supplement photography replacement
+- Replaced all 18 binary WebP assets for six categories with new generated photographs, not edge-blurred enlargements of the old pictures.
+- Each category has a **1200×700** seamless wide `hero` (detail), a matching **1024×1024** `square` (catalog cover), and a **256×256** `thumbnail`. Cover and detail depict the same updated product artwork.
+- All photo files reside at `public/assets/sportpit/{hero,square,thumbnail}/<slug>.webp`; they are committed as Git binary blobs and checked by the photo asset CI audit.
+- The rendered URLs include `?v=20261101-seamless` to prevent browsers/CDNs from reusing the previously cached photos.
