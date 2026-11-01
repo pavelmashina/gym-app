@@ -106,8 +106,13 @@ $$;
 revoke all on function public.create_program_share(uuid) from public,anon,authenticated;
 grant execute on function public.create_program_share(uuid) to authenticated;
 
+-- Privileged invitation operations live outside the exposed Data API schema.
+create schema if not exists sharing_private;
+revoke all on schema sharing_private from public, anon;
+grant usage on schema sharing_private to authenticated;
+
 -- Restricted invitation lookup: no source table rows or JSON payload are returned.
-create or replace function public.preview_program_share(p_code uuid)
+create or replace function sharing_private.preview_program_share(p_code uuid)
 returns jsonb language plpgsql security definer set search_path = ''
 as $$
 declare
@@ -141,11 +146,16 @@ begin
   );
 end;
 $$;
+revoke all on function sharing_private.preview_program_share(uuid) from public,anon,authenticated;
+grant execute on function sharing_private.preview_program_share(uuid) to authenticated;
+create or replace function public.preview_program_share(p_code uuid)
+returns jsonb language sql security invoker set search_path = ''
+as $ select sharing_private.preview_program_share(p_code); $;
 revoke all on function public.preview_program_share(uuid) from public,anon,authenticated;
 grant execute on function public.preview_program_share(uuid) to authenticated;
 
 -- Atomic and idempotent import: each recipient gets their own editable program.
-create or replace function public.accept_program_share(p_code uuid)
+create or replace function sharing_private.accept_program_share(p_code uuid)
 returns uuid language plpgsql security definer set search_path = ''
 as $$
 declare
@@ -170,5 +180,10 @@ begin
   return v_new_program;
 end;
 $$;
+revoke all on function sharing_private.accept_program_share(uuid) from public,anon,authenticated;
+grant execute on function sharing_private.accept_program_share(uuid) to authenticated;
+create or replace function public.accept_program_share(p_code uuid)
+returns uuid language sql security invoker set search_path = ''
+as $ select sharing_private.accept_program_share(p_code); $;
 revoke all on function public.accept_program_share(uuid) from public,anon,authenticated;
 grant execute on function public.accept_program_share(uuid) to authenticated;
