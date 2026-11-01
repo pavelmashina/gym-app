@@ -83,3 +83,9 @@ Single UI family: Inter, weights 400/500/600/700/800.
 ## Sportpit 2026-11-01 refinements
 - Above the search field, show one compact neutral disclaimer strip with an outlined information icon; match the catalog UI reference and avoid a second advisory block below the search.
 - During pull-to-refresh, the **entire active screen moves down with the finger** with resistance until 104px. Beyond 150px of actual gesture travel, releasing holds the screen at 76px while refresh runs, then springs back. Short pulls spring back without refreshing.
+
+## Generated sportpit image assets
+- Image pipeline: use the original photo in the detail and the corresponding thumbnail of the **same photograph** in the catalog. The browser chooses `public/assets/sportpit/hero/<slug>.webp` or `.../thumbnail/<slug>.webp`.
+- Supported slugs: `protein`, `gainer`, `creatine`, `bcaa`, `omega3`, `vitamins`. Product records are still controlled by Supabase; adding an asset never invents a catalog record.
+- A missing generated image falls back first to the current Supabase URL and then to the bundled backup image. Publishing the binary WebP files is a separate requirement before the generated photos can appear online.
+- Generated asset archive: `gym_sportpit_generated_assets.zip` has high-resolution 1024×1024 originals, 1200×700 hero variants and 256×256 thumbnails. Paths inside that archive are relative to `public/assets/sportpit/`.

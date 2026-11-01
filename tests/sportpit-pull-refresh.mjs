@@ -44,3 +44,6 @@ assert.match(pull,/movePage\(start\.screen, distance\)/);
 assert.match(pull,/movePage\(current\.screen, 76, true\)/);
 assert.match(pull,/movePage\(current\.screen, 0, true\)/);
 assert.match(css,/\.sportpit-content \.sportpit-global-warning/);
+
+assert.match(ui,/assets\\/sportpit\\/\\$\\{compact \? 'thumbnail' : 'hero'\\}/);
+assert.match(ui,/current === generated \? primary/);

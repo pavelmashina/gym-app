@@ -12,16 +12,21 @@ function ProductVisual({ item, compact = false }) {
   // Never substitute another product photo: both views share the exact source.
   const fallback = SPORTPIT_IMAGES[item.slug] || '';
   const primary = item.image_url || fallback;
-  const [source, setSource] = useState(primary);
+  // The generated photographs are available in square, catalog and hero formats.
+  // Preserve a complete fallback chain if assets have not been published yet.
+  const generated = ['protein', 'gainer', 'creatine', 'bcaa', 'omega3', 'vitamins'].includes(item.slug)
+    ? `${import.meta.env.BASE_URL}assets/sportpit/${compact ? 'thumbnail' : 'hero'}/${item.slug}.webp`
+    : '';
+  const [source, setSource] = useState(generated || primary);
   const [enhanced, setEnhanced] = useState(false);
   const visualRef = useRef(null);
   const imageRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    setSource(primary);
+    setSource(generated || primary);
     setEnhanced(false);
-  }, [primary]);
+  }, [generated, primary]);
 
   useEffect(() => {
     if (compact || !source) return undefined;
@@ -58,7 +63,7 @@ function ProductVisual({ item, compact = false }) {
             setEnhanced(true);
           } catch (error) { console.warn('Unable to enhance supplement photo:', error); }
         }}
-        onError={() => setSource((current) => current !== fallback ? fallback : '')} />
+        onError={() => setSource((current) => current === generated ? primary : (current !== fallback ? fallback : ''))} />
       {!compact && <canvas ref={canvasRef} className="sportpit-photo-composite" aria-hidden="true" />}
     </> : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}
   </div>;
