@@ -151,22 +151,6 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
   word-break:normal;
 }
 
-/* Detail image is always fully contained and never zoomed/cropped.
-   The embedded fallback is only 128x128: cap its displayed size to avoid blur. */
-.sportpit-detail-screen .sportpit-product-visual:not(.compact)>img{
-  width:auto!important;
-  height:auto!important;
-  max-width:min(66%,220px)!important;
-  max-height:calc(var(--detail-hero-image-height) - 32px)!important;
-  object-fit:contain!important;
-  object-position:center;
-  justify-self:center;
-  align-self:center;
-}
-.sportpit-detail-screen .sportpit-product-visual:not(.compact)>img.sportpit-native-photo{
-  max-width:128px!important;
-  max-height:128px!important;
-}
 /* Composition shares typography and text color with Recommendations. */
 .sportpit-detail-screen .sportpit-composition-card>h2{margin-bottom:var(--space-3)!important}
 .sportpit-detail-screen .sportpit-composition-card ul{
@@ -188,3 +172,40 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
 }
 .sportpit-detail-screen .sportpit-composition-card li:last-child{margin-bottom:0}
 .sportpit-detail-screen .sportpit-composition-card li::marker{color:var(--muted)}
+
+/* Sportpit visual: same original in the middle, image-aware extended edges. */
+.sportpit-detail-screen .sportpit-product-visual:not(.compact){
+  position:relative;
+  width:100%;
+  height:var(--detail-hero-image-height);
+  border-radius:var(--sportpit-photo-radius)!important;
+  isolation:isolate;
+  background:var(--surface-2);
+}
+.sportpit-detail-screen .sportpit-product-visual:not(.compact)>img{
+  position:absolute;
+  inset:0;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  background:transparent;
+}
+.sportpit-detail-screen .sportpit-photo-composite{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 150ms ease-out;
+}
+.sportpit-detail-screen .sportpit-photo-ready .sportpit-photo-composite{opacity:1}
+.sportpit-screen .sportpit-detail-card,
+.sportpit-screen .sportpit-global-warning,
+.sportpit-screen .sportpit-info-dialog{
+  padding:var(--sportpit-card-padding)!important;
+}
+.sportpit-screen .sportpit-card{padding:var(--sportpit-card-padding)!important}

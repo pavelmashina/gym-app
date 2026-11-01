@@ -1,23 +1,66 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { supabase } from '../lib/supabase.js';
 import { SPORTPIT_IMAGES } from '../data/sportpitImages.js';
+import { paintSupplementPhoto } from '../lib/supplementPhotoEnhancement.js';
 import '../sportpit-screen.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>}
 function SearchIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>}
 
 function ProductVisual({ item, compact = false }) {
-  // The catalog card and detail page show the same image, without substitutions.
+  // Never substitute another product photo: both views share the exact source.
   const fallback = SPORTPIT_IMAGES[item.slug] || '';
   const primary = item.image_url || fallback;
   const [source, setSource] = useState(primary);
-  useEffect(() => setSource(primary), [primary]);
-  const bundledLowRes = source === fallback && fallback.startsWith('data:');
-  return <div className={`sportpit-product-visual${compact ? ' compact' : ''}`}>
-    {source
-      ? <img className={!compact && bundledLowRes ? 'sportpit-native-photo' : undefined} src={source} alt={item.title} loading={compact ? 'lazy' : 'eager'} decoding="async" onError={() => setSource((current) => current !== fallback ? fallback : '')} />
-      : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}
+  const [enhanced, setEnhanced] = useState(false);
+  const visualRef = useRef(null);
+  const imageRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    setSource(primary);
+    setEnhanced(false);
+  }, [primary]);
+
+  useEffect(() => {
+    if (compact || !source) return undefined;
+    let disposed = false;
+    const render = () => {
+      if (disposed) return;
+      const image = imageRef.current;
+      const canvas = canvasRef.current;
+      const frame = visualRef.current;
+      if (!image?.complete || !image.naturalWidth || !canvas || !frame) return;
+      try {
+        paintSupplementPhoto({ canvas, image, width: frame.clientWidth, height: frame.clientHeight });
+        if (!disposed) setEnhanced(true);
+      } catch (error) {
+        console.warn('Unable to enhance supplement photo:', error);
+        if (!disposed) setEnhanced(false);
+      }
+    };
+    render();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(render);
+    if (observer && visualRef.current) observer.observe(visualRef.current);
+    return () => { disposed = true; observer?.disconnect(); };
+  }, [compact, source]);
+
+  return <div ref={visualRef} className={`sportpit-product-visual${compact ? ' compact' : ''}${enhanced ? ' sportpit-photo-ready' : ''}`}>
+    {source ? <>
+      <img ref={imageRef} src={source} alt={item.title} loading={compact ? 'lazy' : 'eager'} decoding="async"
+        onLoad={() => {
+          if (compact) return;
+          const frame = visualRef.current;
+          if (!frame || !imageRef.current || !canvasRef.current) return;
+          try {
+            paintSupplementPhoto({ canvas: canvasRef.current, image: imageRef.current, width: frame.clientWidth, height: frame.clientHeight });
+            setEnhanced(true);
+          } catch (error) { console.warn('Unable to enhance supplement photo:', error); }
+        }}
+        onError={() => setSource((current) => current !== fallback ? fallback : '')} />
+      {!compact && <canvas ref={canvasRef} className="sportpit-photo-composite" aria-hidden="true" />}
+    </> : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}
   </div>;
 }
 

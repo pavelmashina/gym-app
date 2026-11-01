@@ -53,9 +53,9 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Do not repair overlaps by adding arbitrary `z-index` or hiding overflow; fix the grid/flex sizing and spacing.
 
 ## Supplement detail page
-- The original full-width media block is **230px high** (token `--detail-hero-image-height`), 28px radius. Do not change the block's size when changing an image.
-- Photos use `object-fit: contain` and keep their aspect ratio. Letterbox space is filled by the existing background gradient, never by stretching or cropping the image.
-- The **catalog thumbnail and its product detail must show the exact same image**: use `item.image_url` when provided, otherwise the same bundled `SPORTPIT_IMAGES[item.slug]` fallback on both. Never replace the selected image with a different category photograph. Detail clarity is limited by source quality; use higher-resolution versions of the same image when available, without inventing alternative imagery.
+- The original full-width media block is **230px high** (`--detail-hero-image-height`) and **24px radius** (`--sportpit-photo-radius`). Keep its dimensions when changing the image.
+- Photos keep their original aspect ratio and touch whichever pair of edges (top/bottom or left/right) fits first. Missing side bands are synthesized from blurred edge strips of **the same image** in `src/lib/supplementPhotoEnhancement.js`; the subject is not cropped.
+- The catalog thumbnail and product detail must show the **same central photo**: `item.image_url` if supplied, otherwise `SPORTPIT_IMAGES[item.slug]`. The detail version synthesizes side textures from that photo only and applies gentle sharpening. This is deterministic compositing, **not AI generative outpainting**; high-quality originals are still needed for truly sharp detail.
 - Detail screens use 18px page gutters (16px on narrow viewports), 8px / 12px / 16px spacing steps, H1 28/32, H2 20/24, body 14/20, captions 12/16, and card radius 24px / padding 18px.
 - The supplement product page hides the bottom navigation and exposes the catalog underneath the page during a right-edge swipe-back gesture.
 - A back swipe begins within 48px of the **left** edge, tracks finger movement 1:1, springs back when cancelled, and completes smoothly when released beyond the completion threshold. Modal dialogs are never bypassed by the gesture.
@@ -70,8 +70,8 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Section headings: **20px / 24px**, weight **700**; description, recommendations and composition: **14px / 20px**, weight **400**, muted color.
 - Secondary captions and notices: **12px / 16px**, weight **500**. Info icon: **12px** in a **22×22px** circle.
 - Page horizontal padding: **18px** (16px on narrow screens); between sections: **16px**; below heading: **12px**; text group spacing: **8px**.
-- Cards: **18px** inner padding, **24px** rounding, 12px between independent card items.
-- Photo container: unchanged **230px** high and **28px** rounding. Image is centered and contained within **220px** width and **198px** height; original bundled **128×128px** fallback is shown at native width to avoid blurry upscaling.
+- Sportpit cards: **16px** inner padding (`--sportpit-card-padding`), **24px** rounding, 12px between independent card items.
+- Photo container: **230px** high with **24px** rounding. The photo fits its full height or width without cropping, while remaining margins are filled from its own border textures. Rendering is up to **2× device resolution** with light edge sharpening; native detail cannot be restored from the original 128×128px sources.
 - Composition format: heading → **1px divider** → bulleted list; **12px** between divider and bullet content; **8px** between bullet items; matching body font/color/line-height of recommendations.
 - Justified body text has **no automatic hyphenation** (`hyphens:none`); natural wrapping between whole words remains enabled.
 

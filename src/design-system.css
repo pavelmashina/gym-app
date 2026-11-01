@@ -10,6 +10,8 @@
   --weight-regular:400;--weight-medium:500;--weight-semibold:600;--weight-bold:700;--weight-extra:800;
   --control-h:50px;--topbar-control:44px;--card-pad:18px;--card-gap:12px;--section-gap:24px;
   --detail-hero-image-height:230px;
+  --sportpit-card-padding:16px;
+  --sportpit-photo-radius:24px;
   --shadow-card:0 6px 24px rgba(0,0,0,.05);--shadow-float:0 10px 30px rgba(0,0,0,.10);
   --r-xl:var(--radius-xl);--r-lg:var(--radius-lg);--r-md:var(--radius-md);
   --shadow:var(--shadow-card);--shadow-strong:var(--shadow-float);
