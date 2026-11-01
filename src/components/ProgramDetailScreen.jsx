@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram } from '../lib/programs.js';
+import { ShareProgramButton } from './ShareProgramButton.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { rescheduleScheduledWorkout, skipScheduledWorkout } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -199,6 +200,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
     <main className="program-detail-content">
       {program.coverUrl && <div className="program-detail-cover"><img src={program.coverUrl} alt="" /></div>}
       <section className="program-detail-hero"><span>Тренировочная программа</span><h1>{program.name}</h1>{program.description && <p>{program.description}</p>}{program.categories.length > 0 && <div className="program-detail-tags">{program.categories.map((item) => <span key={item}>{item}</span>)}</div>}</section>
+      <ShareProgramButton programId={program.id} />
 
       <section className={`program-detail-start-state${canStart ? ' not-started' : ' joined'}`}><span className="program-detail-status-badge">{participationLabel(participation)}</span>
         {canStart ? <><strong>Начните, когда будете готовы</strong><p>{isCycle ? `В цикле ${totalTemplateWorkouts} тренировок · повторений цикла: ${program.cycleRepeatCount}.` : 'Программа создана в старом формате и сохраняет исходную последовательность тренировок.'}</p></> : isPaused ? <><strong>Программа на паузе</strong><p>Будущие тренировки временно скрыты из календаря. История и сохранённый состав тренировок не изменяются.</p></> : <><strong>Вы присоединились к программе</strong><p>Первая тренировка запланирована на {formatDate(participation.startDate)}.</p>{canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}{canEditStartDate && editingStartDate && <div className="program-detail-date-editor"><label><span>Новая дата первой тренировки</span><input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{startDateError && <small className="error">{startDateError}</small>}<div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div></div>}</>}
