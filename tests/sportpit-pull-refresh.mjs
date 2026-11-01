@@ -9,6 +9,10 @@ const app=read('src/App.jsx');
 const docs=read('docs/design-system.md');
 assert.match(ui,/sportpit-photo-composite/);
 assert.match(ui,/className="sportpit-disclaimer-icon"/);
+assert.match(ui,/sportpit-disclaimer-toggle/);
+assert.match(ui,/aria-expanded=\{disclaimerExpanded\}/);
+assert.match(ui,/disclaimerExpanded \? 'скрыть' : 'еще'/);
+assert.match(ui,/gym-sportpit-refresh-complete/);
 assert.ok(ui.indexOf("sportpit-global-warning") < ui.indexOf("sportpit-search"), "Disclaimer comes before search");
 assert.ok(ui.indexOf("sportpit-global-warning") >= 0 && ui.indexOf("sportpit-search") > ui.indexOf("sportpit-global-warning"));
 assert.match(ui,/paintSupplementPhoto/);
@@ -39,11 +43,21 @@ assert.match(enhanced,/drawImage/);
 assert.match(design,/--sportpit-card-padding:16px/);
 assert.match(design,/--sportpit-photo-radius:24px/);
 
-assert.match(pull,/function movePage\(page, offset, animate = false\)/);
-assert.match(pull,/movePage\(start\.screen, distance\)/);
-assert.match(pull,/movePage\(current\.screen, 76, true\)/);
-assert.match(pull,/movePage\(current\.screen, 0, true\)/);
+assert.match(pull,/const HOLD_OFFSET = 76/);
+assert.match(pull,/root\.classList\.add\('gym-pull-active'\)/);
+assert.match(pull,/window\.requestAnimationFrame/);
+assert.match(pull,/offset\(HOLD_OFFSET, true\)/);
+assert.match(pull,/\.finally\(\(\) =>/);
+assert.match(pull,/returnToTop\(\)/);
+assert.doesNotMatch(pull,/page\.style\.transform/);
 assert.match(css,/\.sportpit-content \.sportpit-global-warning/);
 
 assert.ok(ui.includes("assets/sportpit/") && ui.includes("thumbnail") && ui.includes("hero"));
 assert.match(ui,/current === generated \? primary/);
+
+const nav=read('src/components/BottomNavigation.jsx');
+assert.match(nav, /M16 3c-3 2-4 5-4 8h4/);
+assert.match(refreshCss, /z-index:2147483000/);
+assert.match(refreshCss, /html\.gym-pull-active #root >/);
+assert.match(css, /-webkit-line-clamp:2/);
+assert.match(app, /gym-sportpit-refresh-complete/);

@@ -16,7 +16,7 @@ function HomeIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7v9h-6v-6h-4v6H4z" /></svg>;
 }
 function NutritionIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v7M4 3v5c0 2 1.3 3 3 3s3-1 3-3V3M7 11v10M16 3v18M16 3c3 2 4 5 4 8h-4" /></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v7M4 3v5c0 2 1.3 3 3 3s3-1 3-3V3M7 11v10M16 3v18M16 3c-3 2-4 5-4 8h4" /></svg>;
 }
 function SportPitIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8M9 3v4l-2 2v10c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V9l-2-2V3M8 12h8" /></svg>;

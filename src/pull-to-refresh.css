@@ -3,7 +3,7 @@
   position:fixed;
   top:env(safe-area-inset-top,0px);
   left:50%;
-  z-index:120;
+  z-index:2147483000;
   display:flex;
   align-items:center;
   gap:var(--space-2);
@@ -17,7 +17,7 @@
   box-shadow:var(--shadow-card);
   pointer-events:none;
   will-change:transform,opacity;
-  transition:transform 160ms ease-out, opacity 160ms ease-out;
+  transition:transform 130ms ease-out, opacity 130ms ease-out;
 }
 .pull-refresh-wheel{
   flex:none;
@@ -35,13 +35,20 @@
   .pull-refresh-indicator.refreshing .pull-refresh-wheel{animation-duration:1200ms}
 }
 
-/* Drag the active page under the finger without changing page layout. */
-.pull-refresh-dragging{
-  position:relative;
+/* Keep the active page offset on an ancestor that persists across React remounts.
+   The bottom navigation stays fixed and the status panel is always above it. */
+html.gym-pull-active #root > :not(.app-bottom-nav):not(.pull-refresh-indicator) {
+  transform:translate3d(0,var(--gym-pull-offset,0px),0) !important;
+  transition:transform var(--gym-pull-transition,0ms) cubic-bezier(.22,.8,.2,1) !important;
   will-change:transform;
   overscroll-behavior-y:contain;
 }
-.sportpit-detail-screen.pull-refresh-dragging{position:fixed}
-@media(prefers-reduced-motion:reduce){
-  .pull-refresh-dragging{transition-duration:0ms!important}
+/* Fixed supplement detail must remain aligned with the transformed catalog root. */
+html.gym-pull-active #root > .sportpit-stack .sportpit-detail-screen {
+  left:0;
+}
+@media(prefers-reduced-motion:reduce) {
+  html.gym-pull-active #root > :not(.app-bottom-nav):not(.pull-refresh-indicator) {
+    transition-duration:0ms !important;
+  }
 }

@@ -128,6 +128,7 @@ export function SportPitScreen({ refreshKey = 0 }){
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
   const [selected,setSelected]=useState(null);
+  const [disclaimerExpanded,setDisclaimerExpanded]=useState(false);
 
   useEffect(()=>{
     let active=true;
@@ -150,7 +151,10 @@ export function SportPitScreen({ refreshKey = 0 }){
         setItems([]);
         setError('Не удалось загрузить каталог.');
       } finally {
-        if(active)setLoading(false);
+        if(active){
+          setLoading(false);
+          if(refreshKey > 0) window.dispatchEvent(new CustomEvent('gym-sportpit-refresh-complete',{detail:{refreshKey}}));
+        }
       }
     }
     loadCatalog();
@@ -164,7 +168,10 @@ export function SportPitScreen({ refreshKey = 0 }){
       <RootSectionHeader title="СпортПит" /><main className="sportpit-content">
     <aside className="sportpit-global-warning" role="note" aria-label="Важная информация">
       <span className="sportpit-disclaimer-icon" aria-hidden="true">i</span>
-      <p>Информация носит справочный характер и не является медицинской рекомендацией. Перед применением добавок проконсультируйтесь со специалистом.</p>
+      <div className="sportpit-disclaimer-copy">
+        <p id="sportpit-disclaimer-text" className={disclaimerExpanded ? 'expanded' : 'collapsed'}>Информация носит справочный характер и не является медицинской рекомендацией. Перед применением спортивного питания и добавок проконсультируйтесь со специалистом, учитывайте индивидуальные особенности организма, питание, лекарства и возможные противопоказания.</p>
+        <button type="button" className="sportpit-disclaimer-toggle" aria-expanded={disclaimerExpanded} aria-controls="sportpit-disclaimer-text" onClick={() => setDisclaimerExpanded(value => !value)}>{disclaimerExpanded ? 'скрыть' : 'еще'}</button>
+      </div>
     </aside>
     <label className="sportpit-search"><SearchIcon/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Поиск по названию" aria-label="Поиск спортивного питания"/>{query&&<button type="button" aria-label="Очистить поиск" onClick={()=>setQuery('')}>×</button>}</label>
     {loading&&<div className="sportpit-state">Загружаем каталог…</div>}{error&&<div className="sportpit-state error">{error}</div>}{!loading&&!error&&filtered.length===0&&<div className="sportpit-state">Ничего не найдено.</div>}

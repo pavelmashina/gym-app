@@ -11,7 +11,7 @@ import { SportPitScreen } from './components/SportPitScreen.jsx';
 import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { BottomNavigation } from './components/BottomNavigation.jsx';
-import { PullToRefresh, PULL_REFRESH_THRESHOLD } from './components/PullToRefresh.jsx';
+import { PullToRefresh } from './components/PullToRefresh.jsx';
 import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
@@ -298,10 +298,30 @@ export default function App() {
   }
 
   function refreshActiveScreen() {
-    // Remount ordinary views to refetch their data, keeping SportPit detail
-    // mounted so the same product remains open during refresh.
-    setPullRefreshKey((value) => value + 1);
-    return new Promise((resolve) => window.setTimeout(resolve, 800));
+    // A real data-completion event keeps SportPit held until Supabase responds;
+    // other screens use a short minimum hold while their views reload.
+    if (activeScreen !== 'sportpit') {
+      setPullRefreshKey(value => value + 1);
+      return new Promise(resolve => window.setTimeout(resolve, 800));
+    }
+    const expectedKey = pullRefreshKey + 1;
+    return new Promise(resolve => {
+      let finished = false;
+      const earliest = new Promise(done => window.setTimeout(done, 650));
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        window.removeEventListener('gym-sportpit-refresh-complete', handleComplete);
+        window.clearTimeout(timeout);
+        earliest.then(resolve);
+      };
+      const handleComplete = event => {
+        if (event.detail?.refreshKey === expectedKey) finish();
+      };
+      window.addEventListener('gym-sportpit-refresh-complete', handleComplete);
+      const timeout = window.setTimeout(finish, 12000);
+      setPullRefreshKey(value => value + 1);
+    });
   }
 
   function renderActiveScreen() {

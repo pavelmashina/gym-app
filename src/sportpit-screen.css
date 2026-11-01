@@ -241,3 +241,34 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
   color:var(--ink);
   text-align:left;
 }
+
+/* Two-line compact disclaimer with explicit accessible expansion. */
+.sportpit-content .sportpit-global-warning{align-items:start}
+.sportpit-global-warning .sportpit-disclaimer-copy{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1)}
+.sportpit-global-warning .sportpit-disclaimer-copy p{
+  margin:0;
+  font-size:var(--text-caption);
+  line-height:var(--lh-caption);
+  color:var(--ink);
+  overflow-wrap:break-word;
+}
+.sportpit-global-warning .sportpit-disclaimer-copy p.collapsed{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+}
+.sportpit-global-warning .sportpit-disclaimer-toggle{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:var(--text-caption);
+  line-height:var(--lh-caption);
+  font-weight:var(--weight-semibold);
+  padding:0;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.sportpit-global-warning .sportpit-disclaimer-toggle:focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:2px}

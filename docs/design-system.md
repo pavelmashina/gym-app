@@ -89,3 +89,10 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Supported slugs: `protein`, `gainer`, `creatine`, `bcaa`, `omega3`, `vitamins`. Product records are still controlled by Supabase; adding an asset never invents a catalog record.
 - All **18 binary WebP images are committed in the repository** under `public/assets/sportpit/{hero,square,thumbnail}/`. Each of six categories has a 1200×700 hero, 1024×1024 square and 256×256 thumbnail. If a generated asset fails, the UI falls back to the current Supabase image and then the bundled backup image.
 - Generated asset archive: `gym_sportpit_generated_assets.zip` has high-resolution 1024×1024 originals, 1200×700 hero variants and 256×256 thumbnails. Paths inside that archive are relative to `public/assets/sportpit/`.
+
+## November 2026: stable refresh and expandable sportpit disclaimer
+- During touch dragging the page offset is held in `html.gym-pull-active` and `--gym-pull-offset`, so content can remount without resetting its vertical position. Touch updates are coalesced with `requestAnimationFrame`; no `position:relative` flip occurs during dragging.
+- After release beyond 150px, the page remains at 76px until the refresh promise finishes; the loading indicator has highest app `z-index` and stays above the page. Only after completion does the page animate back over 300ms.
+- Sportpit refresh waits for the actual catalog fetch's completion event, with a bounded failsafe. Other screens use a minimum loading interval.
+- Sportpit's introductory disclaimer shows exactly two lines by default using line clamp. The user can expand it with “еще” and collapse it using “скрыть”; the control is focusable and exposes `aria-expanded`.
+- Nutrition bottom navigation icon: the knife blade points left, toward the fork.
