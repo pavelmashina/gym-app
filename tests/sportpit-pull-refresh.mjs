@@ -55,7 +55,7 @@ assert.match(pull,/returnToTop\(\)/);
 assert.doesNotMatch(pull,/page\.style\.transform/);
 assert.match(css,/\.sportpit-content \.sportpit-global-warning/);
 
-assert.ok(ui.includes("assets/sportpit/") && ui.includes("thumbnail") && ui.includes("hero"));
+assert.ok(ui.includes("assets/sportpit/") && ui.includes("square") && ui.includes("hero"));
 assert.match(ui,/current === generated \? primary/);
 
 const nav=read('src/components/BottomNavigation.jsx');
