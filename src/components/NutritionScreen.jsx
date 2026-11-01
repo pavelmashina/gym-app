@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
+import { calculateNutrition } from '../lib/nutritionCalculator.js';
 import { supabase } from '../lib/supabase.js';
 import '../nutrition-screen.css';
 import '../meal-plans.css';
@@ -19,10 +20,10 @@ const ACTIVITY = [
 ];
 
 const GOALS = [
-  { id: 'cut', label: 'Сушка', calorieMultiplier: 0.8, protein: 2.2, fat: 0.8 },
-  { id: 'loss', label: 'Похудение', calorieMultiplier: 0.85, protein: 1.8, fat: 0.8 },
-  { id: 'maintain', label: 'Поддержание', calorieMultiplier: 1, protein: 1.6, fat: 0.9 },
-  { id: 'gain', label: 'Набор', calorieMultiplier: 1.1, protein: 1.8, fat: 1 },
+  { id: 'cut', label: 'Сушка', defaultPercent: '20' },
+  { id: 'loss', label: 'Похудение', defaultPercent: '15' },
+  { id: 'maintain', label: 'Поддержание', defaultPercent: '0' },
+  { id: 'gain', label: 'Набор', defaultPercent: '10' },
 ];
 
 const EMPTY_RECIPE_FILTERS = { mealType: '', goal: '', minCalories: '', maxCalories: '' };
@@ -55,20 +56,6 @@ function ageFromBirthDate(value) {
   const beforeBirthday = now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate());
   if (beforeBirthday) age -= 1;
   return age > 0 ? age : null;
-}
-
-function calculateMacros({ sex, height, weight, activity, goal, age }) {
-  const activityData = ACTIVITY.find((item) => item.id === activity);
-  const goalData = GOALS.find((item) => item.id === goal);
-  const w = Number(weight); const h = Number(height); const a = Number(age);
-  if (!activityData || !goalData || !w || !h || !a) return null;
-  const bmr = 10 * w + 6.25 * h - 5 * a + (sex === 'male' ? 5 : -161);
-  const maintenance = bmr * activityData.factor;
-  const calories = Math.max(1200, Math.round(maintenance * goalData.calorieMultiplier));
-  const protein = Math.round(w * goalData.protein);
-  const fat = Math.round(w * goalData.fat);
-  const carbs = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4));
-  return { calories, protein, fat, carbs };
 }
 
 function caloriesMatch(value, min, max) {
@@ -165,7 +152,7 @@ function MealPlanFilters({ value, onChange, goals, onReset }) {
 
 export function NutritionScreen({ user, profile }) {
   const [tab, setTab] = useState('calculator');
-  const [form, setForm] = useState({ sex: '', height: '', weight: '', activity: '', goal: '', age: '' });
+  const [form, setForm] = useState({ sex: '', height: '', weight: '', activity: '', goal: '', age: '', adjustmentPercent: '0', proteinPercent: '25', fatPercent: '25', carbsPercent: '50' });
   const [result, setResult] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -225,7 +212,15 @@ export function NutritionScreen({ user, profile }) {
     return () => { active = false; };
   }, [tab, mealPlans.length]);
 
-  const canCalculate = useMemo(() => Boolean(['male', 'female'].includes(form.sex) && Number(form.height) > 0 && Number(form.weight) > 0 && Number(form.age) > 0 && form.activity && form.goal), [form]);
+  const macroShareTotal = Number(form.proteinPercent) + Number(form.fatPercent) + Number(form.carbsPercent);
+  const calculationPreview = useMemo(() => {
+    const factor = ACTIVITY.find((item) => item.id === form.activity)?.factor;
+    if (!factor || !form.sex || !form.height || !form.weight || !form.age || !form.goal) return null;
+    if (form.goal !== 'maintain' && form.adjustmentPercent === '') return null;
+    if ([form.proteinPercent, form.fatPercent, form.carbsPercent].some((value) => value === '')) return null;
+    return calculateNutrition({ ...form, activityFactor: factor });
+  }, [form]);
+  const canCalculate = Boolean(calculationPreview);
   const recipeMealTypes = useMemo(() => [...new Set(recipes.map((item) => item.meal_type).filter(Boolean))], [recipes]);
   const recipeGoals = useMemo(() => [...new Set(recipes.map((item) => item.goal).filter(Boolean))], [recipes]);
   const planGoals = useMemo(() => [...new Set(mealPlans.map((item) => item.goal).filter(Boolean))], [mealPlans]);
@@ -243,8 +238,17 @@ export function NutritionScreen({ user, profile }) {
     return caloriesMatch(plan.calories_per_day, planFilters.minCalories, planFilters.maxCalories);
   }), [mealPlans, planFavoritesOnly, favorites, planFilters]);
 
-  function update(key, value) { setForm((current) => ({ ...current, [key]: value })); setResult(null); setMessage(''); }
-  function runCalculation() { const next = calculateMacros(form); setResult(next); setMessage(next ? '' : 'Заполните все поля для расчёта.'); }
+  function update(key, value) {
+    setForm((current) => key === 'goal'
+      ? { ...current, goal: value, adjustmentPercent: GOALS.find((item) => item.id === value)?.defaultPercent ?? '0' }
+      : { ...current, [key]: value });
+    setResult(null);
+    setMessage('');
+  }
+  function runCalculation() {
+    setResult(calculationPreview);
+    setMessage(calculationPreview ? '' : 'Проверьте введённые данные и сумму долей БЖУ (должно быть 100%).');
+  }
 
   async function saveResult() {
     if (!result || saving) return;
@@ -291,9 +295,10 @@ export function NutritionScreen({ user, profile }) {
 
       {tab === 'calculator' && <section className="nutrition-calculator"><div className="nutrition-intro"><span>Персональный расчёт</span><h1>Калькулятор КБЖУ</h1><p>Помогает оценить суточную потребность в калориях, белках, жирах и углеводах с учётом параметров тела, активности и вашей цели.</p></div>
         <section className="nutrition-card"><h2>Ваши данные</h2><div className="nutrition-segment"><button type="button" className={form.sex === 'male' ? 'active' : ''} onClick={() => update('sex', 'male')}>Мужской</button><button type="button" className={form.sex === 'female' ? 'active' : ''} onClick={() => update('sex', 'female')}>Женский</button></div><div className="nutrition-grid"><label>Рост, см<input type="number" min="120" max="230" value={form.height} onChange={(e) => update('height', e.target.value)} /></label><label>Вес, кг<input type="number" min="30" max="350" step="0.1" value={form.weight} onChange={(e) => update('weight', e.target.value)} /></label></div><label className="nutrition-field">Возраст<input type="number" min="16" max="100" value={form.age} onChange={(e) => update('age', e.target.value)} /><small>{profile?.birth_date ? 'Подставлен автоматически из даты рождения. Можно изменить для этого расчёта.' : 'Возраст нужен для корректного расчёта основного обмена.'}</small></label><label className="nutrition-field">Дневная активность<select value={form.activity} onChange={(e) => update('activity', e.target.value)}><option value="">Выберите активность</option>{ACTIVITY.map((item) => <option key={item.id} value={item.id}>{item.label} — {item.text}</option>)}</select></label></section>
-        <section className="nutrition-card"><h2>Цель</h2><div className="nutrition-goals">{GOALS.map((item) => <button type="button" key={item.id} className={form.goal === item.id ? 'active' : ''} onClick={() => update('goal', item.id)}>{item.label}</button>)}</div></section>
+        <section className="nutrition-card"><h2>Цель</h2><div className="nutrition-goals">{GOALS.map((item) => <button type="button" key={item.id} className={form.goal === item.id ? 'active' : ''} onClick={() => update('goal', item.id)}>{item.label}</button>)}</div>{form.goal && form.goal !== 'maintain' && <label className="nutrition-field">{form.goal === 'gain' ? 'Профицит, %' : 'Дефицит, %'}<input type="number" min="0" max={form.goal === 'gain' ? '200' : '99'} step="0.5" value={form.adjustmentPercent} onChange={(event) => update('adjustmentPercent', event.target.value)} /><small>Процент изменения от суточного расхода калорий, как в Excel-калькуляторе.</small></label>}</section>
+        <section className="nutrition-card"><h2>Распределение БЖУ</h2><div className="nutrition-macro-share-grid">{[['proteinPercent', 'Белки, %'], ['fatPercent', 'Жиры, %'], ['carbsPercent', 'Углеводы, %']].map(([key, label]) => <label key={key}>{label}<input type="number" min="0" max="100" step="0.5" value={form[key]} onChange={(event) => update(key, event.target.value)} /></label>)}</div><small className={Math.abs(macroShareTotal - 100) < 0.00001 ? 'nutrition-macro-share-hint' : 'nutrition-macro-share-hint invalid'}>Сумма: {macroShareTotal.toLocaleString('ru-RU')}% из 100%. По умолчанию — 25% / 25% / 50%, как в таблице.</small></section>
         {!result && <button className="nutrition-calc-button" type="button" disabled={!canCalculate} onClick={runCalculation}>Рассчитать</button>}
-        {result && <section className="nutrition-result"><span className="nutrition-result-kicker">Ваша дневная цель</span><strong className="nutrition-calories">{result.calories}<small> ккал</small></strong><div className="nutrition-macros"><div><strong>{result.protein} г</strong><span>Белки</span></div><div><strong>{result.fat} г</strong><span>Жиры</span></div><div><strong>{result.carbs} г</strong><span>Углеводы</span></div></div><p>Расчёт — ориентир, а не медицинская рекомендация. Фактическая потребность может отличаться.</p><button type="button" className="nutrition-save" disabled={saving} onClick={saveResult}>{saving ? 'Сохраняем…' : 'Сохранить КБЖУ'}</button><button type="button" className="nutrition-reset" onClick={() => { setResult(null); setMessage(''); }}>Не сохранять и пересчитать</button></section>}
+        {result && <section className="nutrition-result"><span className="nutrition-result-kicker">Ваша дневная цель</span><strong className="nutrition-calories">{result.calories}<small> ккал</small></strong><div className="nutrition-macros"><div><strong>{result.protein} г</strong><span>Белки</span></div><div><strong>{result.fat} г</strong><span>Жиры</span></div><div><strong>{result.carbs} г</strong><span>Углеводы</span></div></div><p>Основной обмен: {Math.round(result.bmr)} ккал · С учётом активности: {Math.round(result.maintenance)} ккал.</p><p>Расчёт — ориентир, а не медицинская рекомендация. Фактическая потребность может отличаться.</p><button type="button" className="nutrition-save" disabled={saving} onClick={saveResult}>{saving ? 'Сохраняем…' : 'Сохранить КБЖУ'}</button><button type="button" className="nutrition-reset" onClick={() => { setResult(null); setMessage(''); }}>Не сохранять и пересчитать</button></section>}
         {message && <div className="nutrition-message" role="status">{message}</div>}
       </section>}
 
