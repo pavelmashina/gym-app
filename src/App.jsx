@@ -13,6 +13,7 @@ import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { BottomNavigation } from './components/BottomNavigation.jsx';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
+import { incomingProgramShareCode } from './lib/programSharing.js';
 
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
 const UTILITY_SCREENS = ['settings', 'plan', 'privacy', 'support', 'faq'];
@@ -43,7 +44,7 @@ function LoadingScreen() {
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeScreen, setActiveScreen] = useState('home');
+  const [activeScreen, setActiveScreen] = useState(() => incomingProgramShareCode() ? 'training' : 'home');
   const [accountReturnScreen, setAccountReturnScreen] = useState('home');
   const [utilityReturnScreen, setUtilityReturnScreen] = useState('home');
   const [reopenMenuOnUtilityBack, setReopenMenuOnUtilityBack] = useState(false);
@@ -59,13 +60,19 @@ export default function App() {
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [launchingProgramId, setLaunchingProgramId] = useState(null);
   const [workoutScheduledId, setWorkoutScheduledId] = useState(null);
-  const [trainingInitialTab, setTrainingInitialTab] = useState('recommendations');
+  const [trainingInitialTab, setTrainingInitialTab] = useState(() => incomingProgramShareCode() ? 'received' : 'recommendations');
   const [trainingRefreshKey, setTrainingRefreshKey] = useState(0);
 
   const user = session?.user ?? null;
   const userId = user?.id ?? null;
 
   useEffect(() => { applyCachedAppearance(); }, []);
+
+  useEffect(() => {
+    if (!userId || !incomingProgramShareCode()) return;
+    setTrainingInitialTab('received');
+    setActiveScreen('training');
+  }, [userId]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return undefined;
