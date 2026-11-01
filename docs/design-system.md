@@ -87,5 +87,5 @@ Single UI family: Inter, weights 400/500/600/700/800.
 ## Generated sportpit image assets
 - Image pipeline: use the original photo in the detail and the corresponding thumbnail of the **same photograph** in the catalog. The browser chooses `public/assets/sportpit/hero/<slug>.webp` or `.../thumbnail/<slug>.webp`.
 - Supported slugs: `protein`, `gainer`, `creatine`, `bcaa`, `omega3`, `vitamins`. Product records are still controlled by Supabase; adding an asset never invents a catalog record.
-- A missing generated image falls back first to the current Supabase URL and then to the bundled backup image. Publishing the binary WebP files is a separate requirement before the generated photos can appear online.
+- All **18 binary WebP images are committed in the repository** under `public/assets/sportpit/{hero,square,thumbnail}/`. Each of six categories has a 1200×700 hero, 1024×1024 square and 256×256 thumbnail. If a generated asset fails, the UI falls back to the current Supabase image and then the bundled backup image.
 - Generated asset archive: `gym_sportpit_generated_assets.zip` has high-resolution 1024×1024 originals, 1200×700 hero variants and 256×256 thumbnails. Paths inside that archive are relative to `public/assets/sportpit/`.
