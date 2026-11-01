@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { isBackSwipeGesture } from '../src/lib/swipeBackNavigation.js';
+import { isBackSwipeGesture, backSwipeShouldComplete } from '../src/lib/swipeBackNavigation.js';
 
 const read = (file) => fs.readFileSync(file, 'utf8');
 const gesture = (x1,y1,x2,y2,left=0) => isBackSwipeGesture({startX:x1,startY:y1,endX:x2,endY:y2,screenLeft:left});
@@ -9,6 +9,11 @@ assert.equal(gesture(24,100,140,220),false,'Vertical scrolling cannot trigger ba
 assert.equal(gesture(105,100,260,102),false,'Horizontal carousel swipe away from edge is preserved.');
 assert.equal(gesture(115,100,260,100,100),true,'Centered app uses its own left edge.');
 assert.equal(gesture(60,100,25,100),false,'Swipe to the left does not navigate.');
+assert.equal(gesture(60,100,160,102),false,'Swipe must begin at the 48px left edge.');
+assert.equal(backSwipeShouldComplete({dx:140,width:394,elapsedMs:400}),true,'One-third screen swipe closes the page.');
+assert.equal(backSwipeShouldComplete({dx:80,width:394,elapsedMs:100}),true,'Fast flick closes the page.');
+assert.equal(backSwipeShouldComplete({dx:50,width:394,elapsedMs:100}),false,'Tiny flick cancels.');
+assert.equal(backSwipeShouldComplete({dx:90,width:394,elapsedMs:550}),false,'Short slow drag cancels.');
 assert.equal(gesture(25,100,70,105),false,'Short movements are ignored.');
 const sportpit = read('src/components/SportPitScreen.jsx');
 const styles = read('src/sportpit-screen.css');
@@ -26,3 +31,18 @@ assert.match(audit, /\.sportpit-search\) input:focus-visible\{[\s\S]*?outline:no
 assert.match(app, /useSwipeBackNavigation\(\)/);
 assert.match(workout, /data-swipe-back/);
 console.log('Sportpit detail and swipe-back contracts passed.');
+
+const swipe = read('src/lib/swipeBackNavigation.js');
+const design = read('src/design-system.css');
+const docs = read('docs/design-system.md');
+const imageMap = read('src/data/sportpitHiResImages.js');
+assert.match(swipe, /touchmove.*onMove|addEventListener\('touchmove', onMove/);
+assert.match(swipe, /translate3d/);
+assert.match(swipe, /current\.button\.click\(\)/);
+assert.match(design, /--detail-hero-image-height:230px/);
+assert.match(styles, /height:var\(--detail-hero-image-height\)/);
+assert.match(styles, /\.sportpit-detail-screen \{[\s\S]*?position:fixed/);
+assert.match(sportpit, /sportpit-stack/);
+assert.match(sportpit, /SPORTPIT_HIRES_IMAGES/);
+assert.match(imageMap, /commons\.wikimedia\.org/);
+assert.match(docs, /Supplement detail page/);

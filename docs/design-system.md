@@ -51,3 +51,11 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Long exercise/program names use `overflow-wrap: anywhere` instead of forcing horizontal page overflow.
 - Variable-content cards use `min-height` rather than fixed `height`.
 - Do not repair overlaps by adding arbitrary `z-index` or hiding overflow; fix the grid/flex sizing and spacing.
+
+## Supplement detail page
+- The original full-width media block is **230px high** (token `--detail-hero-image-height`), 28px radius. Do not change the block's size when changing an image.
+- Photos use `object-fit: contain` and keep their aspect ratio. Letterbox space is filled by the existing background gradient, never by stretching or cropping the image.
+- Detail media should use a source **at least 2× the maximum rendered size** (prefer 960px-wide assets); retain local offline fallbacks. Do not upscale the 128px catalog thumbnails as the detail's primary source.
+- Detail screens use 18px page gutters (16px on narrow viewports), 8px / 12px / 16px spacing steps, H1 28/32, H2 20/24, body 14/20, captions 12/16, and card radius 24px / padding 18px.
+- The supplement product page hides the bottom navigation and exposes the catalog underneath the page during a right-edge swipe-back gesture.
+- A back swipe begins within 48px of the **left** edge, tracks finger movement 1:1, springs back when cancelled, and completes smoothly when released beyond the completion threshold. Modal dialogs are never bypassed by the gesture.

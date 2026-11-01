@@ -2,14 +2,26 @@ import { useEffect, useMemo, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { supabase } from '../lib/supabase.js';
 import { SPORTPIT_IMAGES } from '../data/sportpitImages.js';
+import { SPORTPIT_HIRES_IMAGES } from '../data/sportpitHiResImages.js';
 import '../sportpit-screen.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>}
 function SearchIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>}
 
-function ProductVisual({ item, compact=false }){
-  const image = item.image_url || SPORTPIT_IMAGES[item.slug];
-  return <div className={`sportpit-product-visual${compact?' compact':''}`}>{image ? <img src={image} alt={item.title} loading={compact ? 'lazy' : 'eager'} /> : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}</div>;
+function ProductVisual({ item, compact = false }) {
+  // Catalog thumbnails remain lightweight; the full detail opens a larger image.
+  // A failed remote image falls back to the local asset, not a broken icon.
+  const fallback = SPORTPIT_IMAGES[item.slug] || '';
+  const primary = compact
+    ? (item.image_url || fallback)
+    : (item.image_url || SPORTPIT_HIRES_IMAGES[item.slug] || fallback);
+  const [source, setSource] = useState(primary);
+  useEffect(() => setSource(primary), [primary]);
+  return <div className={`sportpit-product-visual${compact ? ' compact' : ''}`}>
+    {source
+      ? <img src={source} alt={item.title} loading={compact ? 'lazy' : 'eager'} decoding="async" onError={() => setSource((current) => current !== fallback ? fallback : '')} />
+      : <div className="sportpit-jar"><span>{item.title}</span><b>SPORT</b></div>}
+  </div>;
 }
 
 function SupplementCard({ item, onOpen }){
@@ -93,12 +105,14 @@ export function SportPitScreen(){
 
   const filtered=useMemo(()=>{const normalized=query.trim().toLocaleLowerCase('ru');if(!normalized)return items;return items.filter(item=>[item.title,item.category,item.short_description].filter(Boolean).some(value=>value.toLocaleLowerCase('ru').includes(normalized)));},[items,query]);
 
-  if(selected)return <SupplementDetails item={selected} onBack={()=>setSelected(null)}/>;
-
-  return <div className="sportpit-screen"><RootSectionHeader title="СпортПит" /><main className="sportpit-content">
+  return <div className="sportpit-stack">
+    <div className="sportpit-screen sportpit-catalog-screen" aria-hidden={Boolean(selected)} inert={Boolean(selected) ? true : undefined}>
+      <RootSectionHeader title="СпортПит" /><main className="sportpit-content">
     <label className="sportpit-search"><SearchIcon/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Поиск по названию" aria-label="Поиск спортивного питания"/>{query&&<button type="button" aria-label="Очистить поиск" onClick={()=>setQuery('')}>×</button>}</label>
     <section className="sportpit-global-warning"><strong>Перед применением</strong><span>Любые добавки следует использовать после консультации со специалистом и с учётом состояния здоровья, питания и лекарств.</span></section>
     {loading&&<div className="sportpit-state">Загружаем каталог…</div>}{error&&<div className="sportpit-state error">{error}</div>}{!loading&&!error&&filtered.length===0&&<div className="sportpit-state">Ничего не найдено.</div>}
     {!loading&&!error&&<div className="sportpit-list">{filtered.map(item=><SupplementCard key={item.id} item={item} onOpen={setSelected}/>)}</div>}
-  </main></div>;
+  </main></div>
+    {selected && <SupplementDetails item={selected} onBack={() => setSelected(null)} />}
+  </div>;
 }
