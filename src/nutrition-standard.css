@@ -1,0 +1,298 @@
+/* Nutrition design contract. Imported after the base and layout-audit sheets.
+   All sizes come from src/design-system.css; no extra local font scale. */
+
+/* Shared section geometry across calculator, recipes and meal plans. */
+.nutrition-screen .nutrition-content{
+  gap:var(--space-4) !important;
+  padding-top:var(--space-2) !important;
+}
+.nutrition-screen .nutrition-calculator,
+.nutrition-screen .recipe-catalog,
+.nutrition-screen .meal-plan-catalog{
+  display:grid;
+  gap:var(--space-4) !important;
+  min-width:0;
+}
+.nutrition-screen .nutrition-intro{
+  padding:0 var(--space-1) !important;
+}
+.nutrition-screen .nutrition-intro h1{
+  margin:0 !important;
+  font-size:var(--text-h1) !important;
+  line-height:var(--lh-h1) !important;
+  font-weight:var(--weight-bold) !important;
+  letter-spacing:-.65px;
+}
+.nutrition-screen .nutrition-tabs{
+  gap:var(--space-3) !important;
+  padding:var(--space-1) 0 var(--space-2) !important;
+}
+.nutrition-screen .nutrition-tabs button{
+  gap:var(--space-2) !important;
+}
+.nutrition-screen .nutrition-tab-label{
+  font-size:11px !important;
+  line-height:14px !important;
+  font-weight:var(--weight-semibold) !important;
+}
+
+/* Consistent card radius, padding and section typography. */
+.nutrition-screen .nutrition-card,
+.nutrition-screen .catalog-filter-panel{
+  padding:var(--card-pad) !important;
+  border-radius:var(--radius-lg) !important;
+  box-shadow:var(--shadow-card) !important;
+}
+.nutrition-screen .nutrition-card h2{
+  margin:0 0 var(--space-3) !important;
+  font-size:var(--text-h2) !important;
+  line-height:var(--lh-h2) !important;
+  font-weight:var(--weight-bold) !important;
+}
+.nutrition-screen .nutrition-grid,
+.nutrition-screen .nutrition-segment,
+.nutrition-screen .nutrition-goals{
+  gap:var(--space-2) !important;
+}
+.nutrition-screen .nutrition-segment{
+  margin-bottom:var(--space-4) !important;
+}
+.nutrition-screen .nutrition-field{
+  margin-top:var(--space-3) !important;
+}
+.nutrition-screen .nutrition-grid label,
+.nutrition-screen .nutrition-field,
+.nutrition-screen .nutrition-macro-share-grid label{
+  min-width:0;
+  gap:var(--space-2) !important;
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .nutrition-field small,
+.nutrition-screen .nutrition-macro-share-hint{
+  display:block;
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-regular) !important;
+  margin-top:var(--space-2);
+}
+.nutrition-screen .nutrition-macro-share-grid{
+  gap:var(--space-2) !important;
+}
+.nutrition-screen .nutrition-grid input,
+.nutrition-screen .nutrition-field input,
+.nutrition-screen .nutrition-field select,
+.nutrition-screen .nutrition-macro-share-grid input{
+  width:100%;
+  min-width:0;
+  height:var(--control-h);
+  min-height:var(--control-h) !important;
+  padding:0 var(--space-3) !important;
+  border:1px solid var(--line);
+  border-radius:var(--radius-md) !important;
+  background:var(--surface-2);
+  color:var(--ink);
+  font-size:var(--text-body) !important;
+  line-height:var(--lh-body) !important;
+  font-weight:var(--weight-regular) !important;
+}
+.nutrition-screen .nutrition-segment button,
+.nutrition-screen .nutrition-goals button{
+  min-height:42px;
+  padding:var(--space-3) var(--space-2) !important;
+  border-radius:var(--radius-sm) !important;
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .nutrition-calc-button,
+.nutrition-screen .nutrition-save,
+.nutrition-screen .nutrition-reset{
+  min-height:var(--control-h) !important;
+  border-radius:var(--radius-md) !important;
+  padding:0 var(--space-4) !important;
+  font-size:var(--text-body) !important;
+  line-height:var(--lh-body) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+
+/* Calculation result uses the same hierarchy as other dashboard cards. */
+.nutrition-screen .nutrition-result{
+  padding:var(--card-pad) !important;
+  border-radius:var(--radius-lg) !important;
+}
+.nutrition-screen .nutrition-result-kicker{
+  margin-bottom:var(--space-2) !important;
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .nutrition-calories{
+  margin:var(--space-2) 0 var(--space-4) !important;
+  font-size:var(--text-display) !important;
+  line-height:var(--lh-display) !important;
+  font-weight:var(--weight-bold);
+}
+.nutrition-screen .nutrition-calories small{
+  font-size:var(--text-h3) !important;
+  line-height:var(--lh-h3) !important;
+}
+.nutrition-screen .nutrition-macros{gap:var(--space-2) !important}
+.nutrition-screen .nutrition-macros div{
+  gap:var(--space-1) !important;
+  padding:var(--space-3) var(--space-2) !important;
+  border-radius:var(--radius-md) !important;
+}
+.nutrition-screen .nutrition-macros strong{
+  font-size:var(--text-h3) !important;
+  line-height:var(--lh-h3) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .nutrition-macros span,
+.nutrition-screen .nutrition-result p{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+}
+.nutrition-screen .nutrition-result p{margin:var(--space-3) 0 !important}
+.nutrition-screen .nutrition-reset{margin-top:var(--space-2) !important}
+.nutrition-screen .nutrition-message,
+.nutrition-screen .recipe-state{
+  padding:var(--space-4) !important;
+  border-radius:var(--radius-md) !important;
+  font-size:var(--text-body) !important;
+  line-height:var(--lh-body) !important;
+}
+
+/* Catalogs start with controls, not a duplicate heading/count. */
+.nutrition-screen .catalog-toolbar{gap:var(--space-2) !important}
+.nutrition-screen .catalog-tool-button{
+  min-height:44px !important;
+  padding:var(--space-2) var(--space-3) !important;
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .catalog-filter-panel{gap:var(--space-3) !important}
+.nutrition-screen .catalog-filter-panel label{gap:var(--space-2) !important}
+.nutrition-screen .catalog-filter-panel label>span{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .catalog-filter-panel select,
+.nutrition-screen .catalog-filter-panel input{
+  min-height:46px !important;
+  padding:var(--space-2) var(--space-3) !important;
+  font-size:var(--text-body) !important;
+  line-height:var(--lh-body) !important;
+}
+.nutrition-screen .catalog-filter-reset{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .recipe-list,
+.nutrition-screen .meal-plan-list{gap:var(--card-gap) !important}
+.nutrition-screen .recipe-card,
+.nutrition-screen .meal-plan-card{
+  padding:var(--space-3) !important;
+  gap:var(--space-3) !important;
+  border-radius:var(--radius-lg) !important;
+}
+.nutrition-screen .recipe-card-shell .recipe-card,
+.nutrition-screen .meal-plan-card-shell .meal-plan-card{
+  padding-right:48px !important;
+}
+.nutrition-screen .recipe-card-copy,
+.nutrition-screen .meal-plan-card-copy{gap:var(--space-2) !important}
+.nutrition-screen .recipe-card-copy>strong,
+.nutrition-screen .meal-plan-card-copy>strong{
+  font-size:var(--text-h3) !important;
+  line-height:var(--lh-h3) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .recipe-card-copy small,
+.nutrition-screen .meal-plan-card-copy small{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-medium) !important;
+}
+.nutrition-screen .recipe-tags,
+.nutrition-screen .meal-plan-tags{gap:var(--space-1) !important}
+.nutrition-screen .recipe-tags b,
+.nutrition-screen .meal-plan-tags b{
+  font-size:var(--text-micro) !important;
+  line-height:var(--lh-micro) !important;
+  font-weight:var(--weight-semibold) !important;
+  padding:var(--space-1) var(--space-2) !important;
+}
+
+/* The same layout tokens apply to individual recipes and meal plan steps. */
+.nutrition-screen .recipe-detail-content,
+.nutrition-screen .meal-plan-detail-content{
+  gap:var(--space-4) !important;
+  padding:var(--space-2) var(--page-x) var(--space-6) !important;
+}
+.nutrition-screen .recipe-hero-image{
+  border-radius:var(--radius-lg) !important;
+  box-shadow:var(--shadow-card);
+}
+.nutrition-screen .recipe-detail-title{padding:0 var(--space-1) !important}
+.nutrition-screen .recipe-detail-title span,
+.nutrition-screen .meal-plan-progress>span{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .recipe-detail-title h1{
+  margin:var(--space-2) 0 0 !important;
+  font-size:var(--text-h1) !important;
+  line-height:var(--lh-h1) !important;
+  font-weight:var(--weight-bold) !important;
+}
+.nutrition-screen .recipe-macros{gap:var(--space-2) !important}
+.nutrition-screen .recipe-macros div{
+  gap:var(--space-1) !important;
+  padding:var(--space-3) var(--space-2) !important;
+  border-radius:var(--radius-md) !important;
+}
+.nutrition-screen .recipe-macros strong{
+  font-size:var(--text-body) !important;
+  line-height:var(--lh-body) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .recipe-macros span{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-medium) !important;
+}
+.nutrition-screen .recipe-section ul li,
+.nutrition-screen .recipe-section ol li{
+  padding:var(--space-3) 0 !important;
+}
+.nutrition-screen .recipe-section ul li,
+.nutrition-screen .recipe-section ol li p{
+  font-size:var(--text-body) !important;
+  line-height:var(--lh-body) !important;
+  font-weight:var(--weight-regular) !important;
+}
+.nutrition-screen .recipe-section ol li{
+  grid-template-columns:32px minmax(0,1fr);
+  gap:var(--space-3) !important;
+}
+.nutrition-screen .recipe-section ol span{
+  width:32px;
+  height:32px;
+  border-radius:var(--radius-sm);
+  font-size:var(--text-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}
+.nutrition-screen .meal-plan-progress{gap:var(--space-2) !important;padding:0 var(--space-1) !important}
+.nutrition-screen .meal-plan-step-nav{gap:var(--space-2) !important}
+.nutrition-screen .meal-plan-meal-dots{gap:var(--space-2) !important}
+.nutrition-screen .meal-plan-meal-dots button{
+  font-size:var(--text-caption) !important;
+  line-height:var(--lh-caption) !important;
+  font-weight:var(--weight-semibold) !important;
+}

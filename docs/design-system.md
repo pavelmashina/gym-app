@@ -109,3 +109,10 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Each category has a **1200×700** seamless wide `hero` (detail), a matching **1024×1024** `square` (catalog cover), and a **256×256** `thumbnail`. Cover and detail depict the same updated product artwork.
 - All photo files reside at `public/assets/sportpit/{hero,square,thumbnail}/<slug>.webp`; they are committed as Git binary blobs and checked by the photo asset CI audit.
 - The rendered URLs include `?v=20261101-seamless` to prevent browsers/CDNs from reusing the previously cached photos.
+
+## Nutrition: standardizing the three tabs
+- Preserve one root screen title “Питание” and the three navigation tabs. The calculator retains only its title “Калькулятор КБЖУ” beneath the tabs; the introductory eyebrow “Персональный расчёт” and introductory explanation are removed.
+- “Рецепты” and “Готовые рационы” start directly with catalog filters and favorites controls. Remove the duplicated “Каталог” / “Избранное” eyebrow, section heading, and item-count pill; **do not** remove navigation labels, favorites filtering, results or empty states.
+- `src/nutrition-standard.css` is the final scoped typography and spacing layer for nutrition, loaded after shared style audits. It reuses the tokens in `src/design-system.css` for the calculator, catalogs, recipe details and meal-plan details.
+- Typography: H1 **28/32** bold, H2 **20/24** bold, catalog item titles **16/21** semibold, regular text **14/20**, labels/captions **12/16**, micro tags **10/13**. Tab labels follow the established **11/14** compact navigation standard.
+- Spacing: page inset **18px** (small screen adaptation is in shared styles), subview/content sections **16px**, lists **12px**, card padding **18px**, form label/input spacing **8px**, calculator controls **50px** tall, card radius **24px**.

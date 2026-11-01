@@ -13,6 +13,7 @@ import './design-system.css';
 import './design-system-audit.css';
 import './bottom-navigation.css';
 import './ui-layout-audit.css';
+import './nutrition-standard.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

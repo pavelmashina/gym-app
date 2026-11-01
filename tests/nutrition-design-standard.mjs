@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const read = (path) => fs.readFileSync(path, 'utf8');
+const ui = read('src/components/NutritionScreen.jsx');
+const styles = read('src/nutrition-standard.css');
+const main = read('src/main.jsx');
+const docs = read('docs/design-system.md');
+
+assert.doesNotMatch(ui, /Персональный расчёт/);
+assert.doesNotMatch(ui, /Помогает оценить суточную потребность/);
+assert.match(ui, /className="nutrition-intro"><h1>Калькулятор КБЖУ<\/h1><\/div>/);
+assert.doesNotMatch(ui, /className="recipe-catalog-head"/);
+assert.doesNotMatch(ui, /className="meal-plan-catalog-head"/);
+assert.match(ui, /<CatalogToolbar filterOpen=\{recipeFilterOpen\}/);
+assert.match(ui, /<CatalogToolbar filterOpen=\{planFilterOpen\}/);
+assert.match(ui, /filteredRecipes\.map\(\(recipe\)/);
+assert.match(ui, /filteredMealPlans\.map\(\(plan\)/);
+assert.match(ui, /label: 'Рецепты'/);
+assert.match(ui, /label: 'Готовые рационы'/);
+assert.match(main, /import '\.\/nutrition-standard\.css';/);
+assert.ok(main.indexOf("import './nutrition-standard.css'") > main.indexOf("import './ui-layout-audit.css'"), 'Nutrition CSS should be loaded after shared audits');
+assert.match(styles, /\.nutrition-screen \.nutrition-card h2/);
+assert.match(styles, /font-size:var\(--text-h2\)/);
+assert.match(styles, /font-size:var\(--text-body\)/);
+assert.match(styles, /font-size:var\(--text-caption\)/);
+assert.match(styles, /gap:var\(--space-4\)/);
+assert.match(styles, /padding:var\(--card-pad\)/);
+assert.match(styles, /min-height:var\(--control-h\)/);
+assert.match(styles, /\.nutrition-screen \.recipe-detail-content/);
+assert.match(styles, /\.nutrition-screen \.meal-plan-detail-content/);
+assert.match(docs, /Nutrition: standardizing the three tabs/);
+console.log('Nutrition sections, typography, spacing and catalog headings verified.');
