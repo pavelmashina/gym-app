@@ -73,6 +73,9 @@ jobs:
       - name: Standalone workout integration
         run: pnpm run test:standalone
 
+      - name: Program sharing integration
+        run: pnpm run test:program-sharing
+
       - name: Build
         env:
           VITE_EXERCISE_CATALOG_V2: 'true'
