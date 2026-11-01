@@ -150,7 +150,7 @@ revoke all on function sharing_private.preview_program_share(uuid) from public,a
 grant execute on function sharing_private.preview_program_share(uuid) to authenticated;
 create or replace function public.preview_program_share(p_code uuid)
 returns jsonb language sql security invoker set search_path = ''
-as $ select sharing_private.preview_program_share(p_code); $;
+as $$ select sharing_private.preview_program_share(p_code); $$;
 revoke all on function public.preview_program_share(uuid) from public,anon,authenticated;
 grant execute on function public.preview_program_share(uuid) to authenticated;
 
@@ -184,6 +184,6 @@ revoke all on function sharing_private.accept_program_share(uuid) from public,an
 grant execute on function sharing_private.accept_program_share(uuid) to authenticated;
 create or replace function public.accept_program_share(p_code uuid)
 returns uuid language sql security invoker set search_path = ''
-as $ select sharing_private.accept_program_share(p_code); $;
+as $$ select sharing_private.accept_program_share(p_code); $$;
 revoke all on function public.accept_program_share(uuid) from public,anon,authenticated;
 grant execute on function public.accept_program_share(uuid) to authenticated;
