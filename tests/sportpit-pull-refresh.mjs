@@ -10,7 +10,7 @@ const docs=read('docs/design-system.md');
 assert.match(ui,/sportpit-photo-composite/);
 assert.match(ui,/className="sportpit-disclaimer-icon"/);
 assert.ok(ui.indexOf("sportpit-global-warning") < ui.indexOf("sportpit-search"), "Disclaimer comes before search");
-assert.match(ui,/sportpit-global-warning"[\\s\\S]*?sportpit-search/);
+assert.ok(ui.indexOf("sportpit-global-warning") >= 0 && ui.indexOf("sportpit-search") > ui.indexOf("sportpit-global-warning"));
 assert.match(ui,/paintSupplementPhoto/);
 assert.match(ui,/sportpit-composition-card/);
 assert.match(ui, /\[refreshKey\]/);
