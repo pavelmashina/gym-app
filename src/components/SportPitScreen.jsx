@@ -157,8 +157,11 @@ export function SportPitScreen({ refreshKey = 0 }){
   return <div className="sportpit-stack">
     <div className="sportpit-screen sportpit-catalog-screen" aria-hidden={Boolean(selected)} inert={Boolean(selected) ? true : undefined}>
       <RootSectionHeader title="СпортПит" /><main className="sportpit-content">
+    <aside className="sportpit-global-warning" role="note" aria-label="Важная информация">
+      <span className="sportpit-disclaimer-icon" aria-hidden="true">i</span>
+      <p>Информация носит справочный характер и не является медицинской рекомендацией. Перед применением добавок проконсультируйтесь со специалистом.</p>
+    </aside>
     <label className="sportpit-search"><SearchIcon/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Поиск по названию" aria-label="Поиск спортивного питания"/>{query&&<button type="button" aria-label="Очистить поиск" onClick={()=>setQuery('')}>×</button>}</label>
-    <section className="sportpit-global-warning"><strong>Перед применением</strong><span>Любые добавки следует использовать после консультации со специалистом и с учётом состояния здоровья, питания и лекарств.</span></section>
     {loading&&<div className="sportpit-state">Загружаем каталог…</div>}{error&&<div className="sportpit-state error">{error}</div>}{!loading&&!error&&filtered.length===0&&<div className="sportpit-state">Ничего не найдено.</div>}
     {!loading&&!error&&<div className="sportpit-list">{filtered.map(item=><SupplementCard key={item.id} item={item} onOpen={setSelected}/>)}</div>}
   </main></div>

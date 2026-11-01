@@ -79,3 +79,7 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Starts only when the active page is scrolled to the top; swipe-back has priority within the leftmost 50px, and modals are excluded.
 - Dragging down gradually reveals the loading wheel; a strong **150px downward gesture** is required to refresh. A shorter pull cancels, without reloading.
 - Refresh remounts ordinary non-workout pages to fetch current data; supplement details stay open while catalog entries are refetched. Active workout screens are excluded to avoid resetting in-progress sets.
+
+## Sportpit 2026-11-01 refinements
+- Above the search field, show one compact neutral disclaimer strip with an outlined information icon; match the catalog UI reference and avoid a second advisory block below the search.
+- During pull-to-refresh, the **entire active screen moves down with the finger** with resistance until 104px. Beyond 150px of actual gesture travel, releasing holds the screen at 76px while refresh runs, then springs back. Short pulls spring back without refreshing.

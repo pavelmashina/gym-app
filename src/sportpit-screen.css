@@ -209,3 +209,35 @@ body:has(.sportpit-detail-screen) .app-bottom-nav{display:none!important}
   padding:var(--sportpit-card-padding)!important;
 }
 .sportpit-screen .sportpit-card{padding:var(--sportpit-card-padding)!important}
+
+/* Disclaimer first, matching the compact info strip in the UI reference. */
+.sportpit-content .sportpit-global-warning{
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  align-items:center;
+  gap:var(--space-3);
+  padding:var(--space-4)!important;
+  background:var(--surface-2);
+  border:0;
+  border-radius:var(--radius-md)!important;
+  box-shadow:none!important;
+}
+.sportpit-global-warning .sportpit-disclaimer-icon{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border:1.5px solid var(--muted);
+  border-radius:50%;
+  font-size:12px;
+  font-weight:var(--weight-bold);
+  color:var(--muted);
+}
+.sportpit-global-warning p{
+  margin:0;
+  font-size:var(--text-caption);
+  line-height:var(--lh-caption);
+  font-weight:var(--weight-regular);
+  color:var(--ink);
+  text-align:left;
+}

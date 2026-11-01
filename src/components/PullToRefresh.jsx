@@ -31,6 +31,23 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
 
   useEffect(() => {
     let start = null;
+    let releaseTimer = null;
+
+    function movePage(page, offset, animate = false) {
+      if (!page?.isConnected) return;
+      page.style.transition = animate ? 'transform 270ms cubic-bezier(.2,.8,.2,1)' : 'none';
+      page.style.transform = offset > 0 ? `translate3d(0,${offset}px,0)` : 'translate3d(0,0,0)';
+      page.classList.toggle('pull-refresh-dragging',offset > 0);
+      if (!offset) {
+        if (releaseTimer) clearTimeout(releaseTimer);
+        releaseTimer = window.setTimeout(() => {
+          if (!page.isConnected) return;
+          page.style.removeProperty('transition');
+          page.style.removeProperty('transform');
+          page.classList.remove('pull-refresh-dragging');
+        }, 300);
+      }
+    }
     function handleStart(event) {
       start = null;
       if (busyRef.current || disabledRef.current || event.touches.length !== 1) return;
@@ -42,7 +59,7 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
       if (!screen) return;
       const rect = screen.getBoundingClientRect();
       if (touch.clientX < rect.left + 50) return; // reserve the edge for swipe-back
-      start = { x: touch.clientX, y: touch.clientY, direction: null, deltaY: 0 };
+      start = { x: touch.clientX, y: touch.clientY, direction: null, deltaY: 0, screen };
     }
     function handleMove(event) {
       if (!start || event.touches.length !== 1) return;
@@ -56,16 +73,20 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
       if (start.direction !== 'refresh') return;
       if (event.cancelable) event.preventDefault();
       start.deltaY = Math.max(0, dy);
-      setPull(Math.min(MAX_VISUAL_PULL, start.deltaY / PULL_REFRESH_THRESHOLD * MAX_VISUAL_PULL));
+      const distance = Math.min(MAX_VISUAL_PULL, start.deltaY / PULL_REFRESH_THRESHOLD * MAX_VISUAL_PULL);
+      movePage(start.screen, distance);
+      setPull(distance);
     }
     function handleEnd() {
       if (!start) return;
       const current = start;
       start = null;
       if (current.direction !== 'refresh' || current.deltaY < PULL_REFRESH_THRESHOLD) {
+        movePage(current.screen, 0, true);
         setPull(0);
         return;
       }
+      movePage(current.screen, 76, true);
       busyRef.current = true;
       setPull(MAX_VISUAL_PULL);
       setRefreshing(true);
@@ -73,11 +94,16 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
         console.error('Unable to refresh current screen', err);
       }).finally(() => {
         setRefreshing(false);
+        movePage(current.screen, 0, true);
         setPull(0);
         busyRef.current = false;
       });
     }
-    function handleCancel() { start = null; if (!busyRef.current) setPull(0); }
+    function handleCancel() {
+      if (start?.screen) movePage(start.screen, 0, true);
+      start = null;
+      if (!busyRef.current) setPull(0);
+    }
     document.addEventListener('touchstart', handleStart, { passive:true });
     document.addEventListener('touchmove', handleMove, { passive:false });
     document.addEventListener('touchend', handleEnd, { passive:true });
@@ -87,6 +113,12 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
       document.removeEventListener('touchmove', handleMove);
       document.removeEventListener('touchend', handleEnd);
       document.removeEventListener('touchcancel', handleCancel);
+      if (releaseTimer) clearTimeout(releaseTimer);
+      if (start?.screen) {
+        start.screen.style.removeProperty('transform');
+        start.screen.style.removeProperty('transition');
+        start.screen.classList.remove('pull-refresh-dragging');
+      }
     };
   }, []);
 

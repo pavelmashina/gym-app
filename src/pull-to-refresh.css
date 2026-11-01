@@ -34,3 +34,14 @@
   .pull-refresh-indicator{transition:none}
   .pull-refresh-indicator.refreshing .pull-refresh-wheel{animation-duration:1200ms}
 }
+
+/* Drag the active page under the finger without changing page layout. */
+.pull-refresh-dragging{
+  position:relative;
+  will-change:transform;
+  overscroll-behavior-y:contain;
+}
+.sportpit-detail-screen.pull-refresh-dragging{position:fixed}
+@media(prefers-reduced-motion:reduce){
+  .pull-refresh-dragging{transition-duration:0ms!important}
+}
