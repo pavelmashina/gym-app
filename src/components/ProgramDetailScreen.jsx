@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram } from '../lib/programs.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
+import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { rescheduleScheduledWorkout, skipScheduledWorkout } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -198,8 +199,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   return <div className="phone program-detail-phone">
     <header className="program-detail-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Моя программа</strong><span /></header>
     <main className="program-detail-content">
-      {program.coverUrl && <div className="program-detail-cover"><img src={program.coverUrl} alt="" /></div>}
-      <section className="program-detail-hero"><span>Тренировочная программа</span><h1>{program.name}</h1>{program.description && <p>{program.description}</p>}{program.categories.length > 0 && <div className="program-detail-tags">{program.categories.map((item) => <span key={item}>{item}</span>)}</div>}</section>
+      <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
       <ShareProgramButton programId={program.id} />
 
       <section className={`program-detail-start-state${canStart ? ' not-started' : ' joined'}`}><span className="program-detail-status-badge">{participationLabel(participation)}</span>
@@ -219,8 +219,8 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
         {!canEditProgram && <div className="program-detail-compat-note">Редактирование структуры станет доступно после завершения или остановки текущего запуска. История и расписание сохраняются.</div>}
       </section>
 
-      <section className="program-detail-stats">{isCycle ? <><div><span>Циклов</span><strong>{program.cycleRepeatCount}</strong></div><div><span>В цикле</span><strong>{totalTemplateWorkouts}</strong></div><div><span>Всего</span><strong>{totalPlannedWorkouts}</strong></div></> : <><div><span>Этапов</span><strong>{program.programWeeks.length}</strong></div><div><span>Тренировок</span><strong>{totalTemplateWorkouts}</strong></div><div><span>Упражнений</span><strong>{totalExercises}</strong></div></>}</section>
-      <section className="program-detail-meta-card"><div><span>Место</span><strong>{program.trainingPlace || 'Нет данных'}</strong></div><div><span>Оборудование</span><strong>{program.equipment || 'Нет данных'}</strong></div><div><span>Уровень</span><strong>{program.level || 'Нет данных'}</strong></div></section>
+      <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />
+      <ProgramOverviewMeta program={program} />
 
       <section className="program-detail-section"><div className="program-detail-section-head"><span>{participation ? 'Календарь' : (isCycle ? 'Повторение цикла' : 'Последовательность')}</span><h2>{participation ? 'Запланированные тренировки' : (isCycle ? `${program.cycleRepeatCount} × цикл` : 'Старая структура программы')}</h2></div><div className="program-detail-schedule">{preview.map((item) => {
         const overdue = Boolean(participation && item.status === 'scheduled' && item.scheduledDate < localToday());

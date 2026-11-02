@@ -14,6 +14,7 @@ import './design-system-audit.css';
 import './bottom-navigation.css';
 import './ui-layout-audit.css';
 import './nutrition-standard.css';
+import './training-program-polish.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

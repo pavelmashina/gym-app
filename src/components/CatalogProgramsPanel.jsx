@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
 import '../catalog-programs.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
+import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta } from './ProgramOverview.jsx';
 
 const ALL = 'Все';
 const NO_DATA = 'Нет данных';
@@ -56,13 +57,12 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('info');
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
 
   useEffect(() => {
     let active = true;
-    setLoading(true); setError(''); setActiveTab('info');
+    setLoading(true); setError('');
     getCatalogProgram(programId).then((result) => { if (active) setProgram(result); }).catch((requestError) => { if (active) setError(requestError.message); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [programId]);
@@ -81,37 +81,38 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
     }
   }
 
-  return (
-    <div className="catalog-detail-layer" role="dialog" aria-modal="true" aria-label="Программа из каталога">
-      <div className="catalog-detail-phone">
-        <header className="catalog-detail-header"><button type="button" aria-label="Назад к каталогу" onClick={onBack}><BackIcon /></button><strong>Каталог программ</strong><span /></header>
-        {loading && <div className="catalog-detail-state">Загружаем программу…</div>}
-        {!loading && error && <div className="catalog-detail-state error">{error}</div>}
-        {!loading && program && <>
-          <nav className="catalog-detail-tabs" aria-label="Разделы программы"><button className={activeTab === 'info' ? 'active' : ''} type="button" onClick={() => setActiveTab('info')}>О программе</button><button className={activeTab === 'workouts' ? 'active' : ''} type="button" onClick={() => setActiveTab('workouts')}>Тренировки</button></nav>
-          <main className="catalog-detail-content has-footer">
-            {activeTab === 'info' && <>
-              <div className="catalog-detail-cover-placeholder catalog-program-placeholder" aria-hidden="true"><span className="catalog-placeholder-icon" /></div>
-              <section className="catalog-detail-hero catalog-detail-hero-light"><span className="catalog-detail-kicker">{program.categories[0] || 'Готовая программа'}</span><h1>{program.name}</h1></section>
-              <section className="catalog-detail-section catalog-about-section"><div className="catalog-detail-section-head"><span>Информация о программе</span></div><div className="catalog-info-card">
-                <InfoRow label="Направление" value={program.categories.length ? program.categories.join(', ') : ''} />
-                <InfoRow label="Место тренировок" value={program.trainingPlace} />
-                <InfoRow label="Уровень" value={program.level} />
-                <InfoRow label="Оборудование" value={program.equipment} />
-                <InfoRow label="Тренировок в одном цикле" value={program.workoutCount ? String(program.workoutCount) : ''} />
-                <InfoRow label="Количество повторений цикла" value="Выбирается при присоединении" />
-                <InfoRow label="Продолжительность" value="Зависит от ритма и количества повторений" />
-              </div></section>
-              <section className="catalog-detail-section"><div className="catalog-detail-section-head"><span>Описание</span></div><div className={`catalog-description-card${program.description ? '' : ' empty'}`}>{program.description || NO_DATA}</div></section>
-            </>}
-            {activeTab === 'workouts' && <section className="catalog-detail-section catalog-workouts-tab-section"><div className="catalog-detail-section-head"><span>Один цикл программы</span><strong>{workouts.length ? formatRussianCount(workouts.length, ['тренировка', 'тренировки', 'тренировок']) : NO_DATA}</strong></div>{workouts.length > 0 ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div> : <div className="catalog-detail-empty-card">{NO_DATA}</div>}<div className="catalog-source-note">Один цикл можно повторить любое количество раз при присоединении. Исходные схемы подходов и повторений сохранены из загруженного каталога.</div></section>}
-            {joinError && <div className="catalog-join-error">{joinError}</div>}
-          </main>
-          <footer className="catalog-detail-footer"><button type="button" onClick={handleJoin} disabled={joining}>{joining ? 'Добавляем программу…' : 'Присоединиться к программе'}</button></footer>
-        </>}
-      </div>
+  return <div className="catalog-detail-layer" role="dialog" aria-modal="true" aria-label="Программа из каталога">
+    <div className="catalog-detail-phone program-detail-phone">
+      <header className="program-detail-header"><button type="button" aria-label="Назад к каталогу" onClick={onBack}><BackIcon /></button><strong>Программа</strong><span /></header>
+      {loading && <div className="program-detail-state"><div className="exercise-list-spinner" /><span>Загружаем программу…</span></div>}
+      {!loading && error && <div className="program-detail-state error">{error}</div>}
+      {!loading && program && <>
+        <main className="program-detail-content catalog-unified-detail">
+          <ProgramOverviewIntro program={program} />
+          <section className="program-detail-start-state not-started">
+            <span className="program-detail-status-badge">Программа из каталога</span>
+            <strong>Присоединитесь, когда будете готовы</strong>
+            <p>При добавлении можно выбрать количество повторений цикла и расписание тренировок.</p>
+          </section>
+          <ProgramOverviewStats items={[
+            { label: 'Цикл', value: 1 },
+            { label: 'В цикле', value: program.workoutCount || workouts.length },
+            { label: 'Повторов', value: 'На выбор' },
+          ]} />
+          <ProgramOverviewMeta program={program} />
+          <section className="program-detail-section">
+            <div className="program-detail-section-head"><span>Структура</span><h2>Один цикл тренировок</h2></div>
+            {workouts.length > 0
+              ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div>
+              : <div className="catalog-detail-empty-card">Нет данных</div>}
+            <div className="catalog-source-note">Исходные упражнения, подходы и повторения сохранены из каталога. После присоединения программа появится в «Моих программах».</div>
+          </section>
+          {joinError && <div className="catalog-join-error" role="alert">{joinError}</div>}
+        </main>
+        <footer className="program-detail-footer catalog-unified-footer"><button className="program-detail-start-button" type="button" onClick={handleJoin} disabled={joining}>{joining ? 'Добавляем программу…' : 'Присоединиться к программе'}</button></footer>
+      </>}
     </div>
-  );
+  </div>;
 }
 
 export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filtersOpen = false, onJoin }) {

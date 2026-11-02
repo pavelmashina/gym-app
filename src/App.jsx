@@ -12,6 +12,7 @@ import { StatisticsScreen } from './components/StatisticsScreen.jsx';
 import { WorkoutSessionScreen } from './components/WorkoutSessionScreen.jsx';
 import { BottomNavigation } from './components/BottomNavigation.jsx';
 import { PullToRefresh } from './components/PullToRefresh.jsx';
+import { AppUpdateNotice } from './components/AppUpdateNotice.jsx';
 import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
@@ -405,6 +406,7 @@ export default function App() {
     {renderActiveScreen()}
     {showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}
     <PullToRefresh onRefresh={refreshActiveScreen} disabled={activeScreen === 'workout-session' || menuOpen || draftChoiceOpen} />
+    <AppUpdateNotice />
     {draftChoiceOpen && <div className="program-draft-choice-overlay" role="presentation">
       <button type="button" className="program-draft-choice-scrim" aria-label="Закрыть выбор черновика" onClick={() => setDraftChoiceOpen(false)} />
       <section className="program-draft-choice-dialog" role="dialog" aria-modal="true" aria-labelledby="program-draft-choice-title" aria-describedby="program-draft-choice-desc">

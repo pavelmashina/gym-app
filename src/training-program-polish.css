@@ -1,0 +1,61 @@
+/* All program list covers match Recipe / Meal Plan square geometry.
+   Absolutely positioned imagery cannot stretch grid tracks or shift the card. */
+.exercise-catalog-content .my-program-card,
+.exercise-catalog-content .catalog-program-card {
+  display:grid;
+  grid-template-columns:104px minmax(0,1fr) 18px!important;
+  align-items:center;
+  gap:var(--space-3)!important;
+  min-width:0;
+  min-height:128px;
+  padding:var(--space-3)!important;
+  border-radius:var(--radius-lg)!important;
+}
+.exercise-catalog-content .my-program-cover,
+.exercise-catalog-content .catalog-program-cover {
+  width:104px!important;
+  height:104px!important;
+  min-width:104px!important;
+  min-height:104px!important;
+  max-height:104px!important;
+  aspect-ratio:1!important;
+  overflow:hidden!important;
+  padding:0!important;
+  border-radius:18px!important;
+  position:relative!important;
+  align-self:center;
+  background:var(--surface-2);
+}
+.exercise-catalog-content .my-program-cover img,
+.exercise-catalog-content .catalog-program-cover img {
+  position:absolute!important;
+  inset:0;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+.exercise-catalog-content .my-program-copy {padding:0!important;min-width:0!important}
+.exercise-catalog-content .catalog-program-card-copy {min-width:0!important}
+.exercise-catalog-content .my-programs-list,
+.exercise-catalog-content .catalog-program-list {gap:var(--card-gap)!important}
+.catalog-detail-phone.program-detail-phone{padding-bottom:0;overflow-y:auto}
+.catalog-unified-detail{padding-bottom:calc(130px + env(safe-area-inset-bottom))!important}
+.catalog-unified-footer{z-index:95}
+.program-detail-cover-empty{display:block;position:relative}
+.program-detail-cover-empty>.program-neutral-placeholder{border-radius:inherit}
+@media(max-width:370px){
+  .exercise-catalog-content .my-program-card,
+  .exercise-catalog-content .catalog-program-card {
+    grid-template-columns:88px minmax(0,1fr) 16px!important;
+    gap:var(--space-2)!important;
+  }
+  .exercise-catalog-content .my-program-cover,
+  .exercise-catalog-content .catalog-program-cover {
+    width:88px!important;height:88px!important;
+    min-width:88px!important;min-height:88px!important;max-height:88px!important;
+  }
+}

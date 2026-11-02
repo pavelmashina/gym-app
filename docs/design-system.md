@@ -142,3 +142,9 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Training section headers do not repeat tab names or the generic label “Программы”. Catalog counters are suppressed; on My Programs the create-program button appears before filtering/sorting controls.
 - The received-program form follows shared typography/spacing tokens, with a short instruction instead of another heading.
 - If a valid locally saved new-program draft exists, tapping Create displays an accessible choice popup **before** the editor. Continue restores the draft untouched, Start over explicitly deletes the draft before opening an empty editor, and Cancel leaves the user on Training. Invalid drafts offer only a safe start-over option.
+
+## Training program detail unification & update notice
+- Training list cards use **square 104×104 photo boxes**, exactly like Recipes and Ready Meal Plans; images are absolutely positioned with object-fit:cover so arbitrary aspect ratios cannot stretch or shift the card.
+- Both catalog and personal program detail pages reuse `ProgramOverviewIntro`, `ProgramOverviewStats`, and `ProgramOverviewMeta`, with the same order: cover → name/description/categories → state/action → metrics → metadata → workouts. Personal pages retain their live scheduling, editing and sharing. Catalog programs show their cycle and a join action, but no share button.
+- The Receive Program tab has no duplicate Create Program button. Training tab symbols are 43×43 CSS background images and share a single pixel size across all six tab tiles.
+- The GitHub Pages workflow embeds `VITE_APP_BUILD_ID=github.sha` in the Vite bundle and writes `dist/version.json` with that SHA only after a successful build. The active app checks the deployed manifest every 90 seconds and on focus/visibility; when it differs, a discreet **Обновить** button offers an explicit hard-navigation to the new build, preserving URL/share parameters. Never prompt on local `dev` builds or when offline.

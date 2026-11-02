@@ -78,9 +78,13 @@ jobs:
 
       - name: Build
         env:
+          VITE_APP_BUILD_ID: ${{ github.sha }}
           VITE_EXERCISE_CATALOG_V2: 'true'
           VITE_EXERCISE_RESULTS_V2: 'true'
         run: pnpm run build
+
+      - name: Write deployed version manifest
+        run: printf '{"version":"%s"}\\n' "$GITHUB_SHA" > dist/version.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v6

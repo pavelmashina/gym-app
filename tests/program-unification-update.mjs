@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read=p=>readFileSync(p,'utf8');
+const user=read('src/components/ProgramDetailScreen.jsx');
+const catalog=read('src/components/CatalogProgramsPanel.jsx');
+const shared=read('src/components/ProgramOverview.jsx');
+const styles=read('src/training-program-polish.css');
+const tabs=read('src/training-icon-tabs-adjustments.css');
+const design=read('src/design-system.css');
+const exercises=read('src/components/ExercisesScreen.jsx');
+const app=read('src/App.jsx');
+const workflow=read('.github/workflows/pages.yml');
+const update=read('src/components/AppUpdateNotice.jsx');
+for(const part of ['ProgramOverviewIntro','ProgramOverviewStats','ProgramOverviewMeta']) {
+  assert.match(shared,new RegExp('export function '+part));
+  assert.match(user,new RegExp('<'+part));
+  assert.match(catalog,new RegExp('<'+part));
+}
+assert.match(user,/<ShareProgramButton programId=\{program.id\}/);
+assert.doesNotMatch(catalog,/ShareProgramButton/);
+assert.doesNotMatch(catalog,/catalog-detail-tabs/);
+assert.match(catalog,/program-detail-header/);
+assert.match(catalog,/program-detail-content catalog-unified-detail/);
+assert.match(styles,/grid-template-columns:104px minmax\(0,1fr\) 18px/);
+assert.match(styles,/object-fit:cover!important/);
+assert.match(styles,/max-height:104px!important/);
+assert.match(exercises,/activeTab !== 'received' && <button className="create-program-wide"/);
+assert.match(tabs,/background-size: 43px 43px/);
+assert.match(design,/background-size:43px 43px!important/);
+assert.match(workflow,/VITE_APP_BUILD_ID:/);
+assert.match(workflow,/dist\/version\.json/);
+assert.match(update,/version\.json\?t=/);
+assert.match(update,/document\.visibilityState/);
+assert.match(update,/>Обновить<\/button>/);
+assert.match(app,/<AppUpdateNotice \/>/);
+console.log('Program card geometry, unified details, training icons and update availability passed.');

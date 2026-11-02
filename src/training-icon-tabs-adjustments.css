@@ -78,7 +78,7 @@
   width: var(--training-icon-block-width);
   height: var(--training-icon-block-width);
   border-radius: 21px;
-  background-size: 36px 36px;
+  background-size: 43px 43px;
 
   /*
     Двигает фон вместе с иконкой на --icon-x.
