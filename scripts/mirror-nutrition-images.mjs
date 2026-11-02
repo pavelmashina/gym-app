@@ -39,7 +39,12 @@ async function download(id) {
   }
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const url = `https://images.unsplash.com/photo-${id}?fm=jpg&fit=crop&w=1200&q=82`;
+      // The original image for cut-1800:3 was removed (HTTP 404).
+      // Mirror the existing working photo for the matching cottage-cheese recipe.
+      const availableId = id === '1571212515416-fca77afa66ee'
+        ? '1490645935967-10de6ba17061'
+        : id;
+      const url = `https://images.unsplash.com/photo-${availableId}?fm=jpg&fit=crop&w=1200&q=82`;
       const response = await fetch(url, {
         redirect:'follow',
         signal:AbortSignal.timeout(25000),
