@@ -1,0 +1,35 @@
+name: Mirror recipe and meal-plan photos into GitHub
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/mirror-nutrition-images.mjs'
+      - '.github/workflows/mirror-nutrition-images.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Download and verify photos
+        run: node scripts/mirror-nutrition-images.mjs
+      - name: Commit actual JPEG files to the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/nutrition/photos
+          if git diff --cached --quiet; then
+            echo "Images are already mirrored"
+          else
+            git commit -m "Bundle 16 recipe and meal-plan photos for offline-stable delivery"
+            git push origin HEAD:main
+          fi
