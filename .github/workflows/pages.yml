@@ -84,7 +84,7 @@ jobs:
         run: pnpm run build
 
       - name: Write deployed version manifest
-        run: printf '{"version":"%s"}\\n' "$GITHUB_SHA" > dist/version.json
+        run: printf '{"version":"%s"}' "$GITHUB_SHA" > dist/version.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
