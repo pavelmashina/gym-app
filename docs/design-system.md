@@ -134,3 +134,11 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - The unreachable URL `photo-1571212515416-fca77afa66ee` returned 404; its local file is a matching cottage-cheese photograph (the successful `photo-1490645935967-10de6ba17061` source).
 - `nutritionImageSrc` resolves known Unsplash references to GitHub Pages assets; unknown image sources preserve their original URL and failed image loads show a neutral image placeholder instead of a broken icon.
 - `scripts/mirror-nutrition-images.mjs` records and verifies the upstream sources; workflow exists for reproducible downloads. It does **not** re-download during routine app builds.
+
+## Training / nutrition detail polish — November 2026
+- Recipe and meal-plan detail pages hide the bottom app navigation, but only while nested details are displayed. Increase detail-page bottom padding to 76px and content bottom padding to 64px, allowing users to scroll the last card farther up.
+- On a meal-plan detail page, horizontal touch gestures on the image switch meals: left = next, right = previous, minimum 55px horizontally and predominantly horizontal. The 48px left edge is reserved for native swipe-back, and indices clamp to existing meal range. Dots and previous/next controls remain.
+- Training tab icons are selected via `data-training-tab` IDs instead of nth-child positions: recommendations sparkles, catalog grid, mine bookmark, received arrow into a tray, completed checkmark, create plus-square.
+- Training section headers do not repeat tab names or the generic label “Программы”. Catalog counters are suppressed; on My Programs the create-program button appears before filtering/sorting controls.
+- The received-program form follows shared typography/spacing tokens, with a short instruction instead of another heading.
+- If a valid locally saved new-program draft exists, tapping Create displays an accessible choice popup **before** the editor. Continue restores the draft untouched, Start over explicitly deletes the draft before opening an empty editor, and Cancel leaves the user on Training. Invalid drafts offer only a safe start-over option.

@@ -152,7 +152,7 @@ export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filter
 
   return <>
     {filtersOpen && <section className="catalog-filters"><FilterGroup title="Место" values={places} selected={place} onSelect={setPlace} /><FilterGroup title="Направление" values={categories} selected={category} onSelect={setCategory} /><FilterGroup title="Уровень" values={levels} selected={level} onSelect={setLevel} />{hasFilters && <button className="catalog-filters-reset" type="button" onClick={() => { setPlace(ALL); setCategory(ALL); setLevel(ALL); }}>Сбросить фильтры</button>}</section>}
-    <div className="catalog-results-head"><span>{loading ? 'Загрузка…' : formatRussianCount(filteredPrograms.length, ['программа', 'программы', 'программ'])}</span>{hasFilters && <strong>Фильтр включён</strong>}</div>
+    {hasFilters && <div className="catalog-results-filter-status" role="status">Фильтр включён</div>}
     {loading && <div className="my-programs-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем каталог программ…</span></div>}
     {!loading && error && <div className="my-programs-state error"><span>{error}</span><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></div>}
     {!loading && !error && filteredPrograms.length === 0 && <div className="catalog-empty"><strong>Программы не найдены</strong><span>Попробуйте изменить поиск или фильтры.</span></div>}

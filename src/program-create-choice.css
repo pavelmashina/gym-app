@@ -1,0 +1,30 @@
+/* Saved-program continuation sheet, consistent with monochrome Gym design. */
+.program-draft-choice-overlay{
+  position:fixed;inset:0;z-index:2147483020;display:grid;
+  place-items:center;padding:var(--page-x);
+}
+.program-draft-choice-scrim{position:absolute;inset:0;width:100%;border:0;background:rgba(0,0,0,.43)}
+.program-draft-choice-dialog{
+  position:relative;z-index:1;width:min(100%,394px);max-height:85dvh;
+  overflow-y:auto;padding:var(--space-5);border-radius:var(--radius-lg);
+  background:var(--surface);color:var(--ink);box-shadow:0 18px 46px rgba(0,0,0,.19);
+}
+.program-draft-choice-dialog h2{
+  font-size:var(--text-h2);line-height:var(--lh-h2);
+  font-weight:var(--weight-bold);margin:0 0 var(--space-3);
+}
+.program-draft-choice-dialog p{
+  margin:0 0 var(--space-4);font-size:var(--text-body);
+  line-height:var(--lh-body);color:var(--muted)
+}
+.program-draft-choice-dialog .program-draft-choice-error{color:#a63232}
+.program-draft-choice-actions{display:grid;gap:var(--space-2)}
+.program-draft-choice-actions button{
+  min-height:var(--control-h);padding:var(--space-3);
+  border-radius:var(--radius-md);font:inherit;font-size:var(--text-body);
+  line-height:var(--lh-body);font-weight:var(--weight-semibold);cursor:pointer;
+}
+.program-draft-choice-actions .primary{background:var(--ink);color:var(--surface);border:1px solid var(--ink)}
+.program-draft-choice-actions .secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.program-draft-choice-actions .cancel{min-height:42px;background:transparent;color:var(--muted);border:0}
+@media(prefers-reduced-motion:reduce){.program-draft-choice-dialog{scroll-behavior:auto}}

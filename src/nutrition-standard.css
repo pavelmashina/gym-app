@@ -298,3 +298,21 @@
   line-height:var(--lh-caption) !important;
   font-weight:var(--weight-semibold) !important;
 }
+
+/* Nested recipe / meal-plan detail pages never show the root navigation.
+   Keep enough bottom breathing room for the last card and pagination controls. */
+body:has(.recipe-detail-screen) .app-bottom-nav,
+body:has(.meal-plan-detail-screen) .app-bottom-nav {display:none!important}
+.nutrition-screen.recipe-detail-screen,
+.nutrition-screen.meal-plan-detail-screen {padding-bottom:76px!important}
+.nutrition-screen.recipe-detail-screen .recipe-detail-content,
+.nutrition-screen.meal-plan-detail-screen .meal-plan-detail-content {
+  padding-bottom:64px!important;
+  scroll-padding-bottom:64px;
+}
+.meal-plan-swipe-image {
+  touch-action:pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.meal-plan-swipe-image img {-webkit-user-drag:none;pointer-events:none}

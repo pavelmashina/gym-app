@@ -16,6 +16,8 @@ import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
 import { incomingProgramShareCode } from './lib/programSharing.js';
+import { programDraftKey, readProgramDraft, clearProgramDraft } from './lib/programDraft.js';
+import './program-create-choice.css';
 
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
 const UTILITY_SCREENS = ['settings', 'plan', 'privacy', 'support', 'faq'];
@@ -66,6 +68,9 @@ export default function App() {
   const [trainingInitialTab, setTrainingInitialTab] = useState(() => incomingProgramShareCode() ? 'received' : 'recommendations');
   const [trainingRefreshKey, setTrainingRefreshKey] = useState(0);
   const [pullRefreshKey, setPullRefreshKey] = useState(0);
+  const [draftChoiceOpen, setDraftChoiceOpen] = useState(false);
+  const [draftChoiceError, setDraftChoiceError] = useState('');
+  const [draftChoiceValid, setDraftChoiceValid] = useState(false);
 
   const user = session?.user ?? null;
   const userId = user?.id ?? null;
@@ -209,6 +214,7 @@ export default function App() {
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key !== 'Escape') return;
+      if (draftChoiceOpen) { setDraftChoiceOpen(false); return; }
       setMenuOpen(false);
       if (activeScreen === 'settings') { closeSettingsScreen(); return; }
       if (UTILITY_SCREENS.includes(activeScreen)) { closeUtilityScreen(); return; }
@@ -250,7 +256,7 @@ export default function App() {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('click', handleDocumentClick);
     return () => { document.removeEventListener('keydown', handleKeyDown); document.removeEventListener('click', handleDocumentClick); };
-  }, [userId, activeScreen, accountReturnScreen, utilityReturnScreen, reopenMenuOnUtilityBack, settingsReturnScreen, reopenMenuOnSettingsBack]);
+  }, [userId, activeScreen, accountReturnScreen, utilityReturnScreen, reopenMenuOnUtilityBack, settingsReturnScreen, reopenMenuOnSettingsBack, draftChoiceOpen]);
 
   const authConfigError = useMemo(() => {
     if (isSupabaseConfigured) return null;
@@ -277,8 +283,43 @@ export default function App() {
     setActiveScreen(nextScreen);
   }
 
+  function enterCreateProgram() {
+    setDraftChoiceOpen(false);
+    setDraftChoiceError('');
+    setMenuOpen(false);
+    setEditingProgramId(null);
+    setLaunchingProgramId(null);
+    setWorkoutScheduledId(null);
+    setActiveScreen('create-program');
+  }
+
   function openCreateProgram() {
-    setMenuOpen(false); setEditingProgramId(null); setLaunchingProgramId(null); setWorkoutScheduledId(null); setActiveScreen('create-program');
+    const key = programDraftKey(userId);
+    if (!key) { enterCreateProgram(); return; }
+    try {
+      if (!localStorage.getItem(key)) { enterCreateProgram(); return; }
+      // Read and validate before offering restoration. Existing data remains
+      // untouched until the user explicitly chooses "Начать заново".
+      const existing = readProgramDraft(localStorage, key);
+      setDraftChoiceValid(Boolean(existing));
+      setDraftChoiceError('');
+      setDraftChoiceOpen(Boolean(existing));
+      if (!existing) enterCreateProgram();
+    } catch {
+      setDraftChoiceValid(false);
+      setDraftChoiceError('Черновик не удалось прочитать. Можно удалить его и начать новую программу.');
+      setDraftChoiceOpen(true);
+    }
+  }
+
+  function startFreshProgram() {
+    try {
+      clearProgramDraft(localStorage, programDraftKey(userId));
+    } catch {
+      setDraftChoiceError('Не удалось удалить черновик. Проверьте доступ к хранилищу устройства.');
+      return;
+    }
+    enterCreateProgram();
   }
   function openProgramEditor(programId) {
     setMenuOpen(false); setTrainingInitialTab('your-programs'); setLaunchingProgramId(null); setWorkoutScheduledId(null); setEditingProgramId(programId); setActiveScreen('create-program');
@@ -359,5 +400,22 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   const showBottomNavigation = BOTTOM_NAV_SCREENS.includes(activeScreen);
-  return <>{renderActiveScreen()}{showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}<PullToRefresh onRefresh={refreshActiveScreen} disabled={activeScreen === 'workout-session' || menuOpen} /></>;
+  return <>
+    {renderActiveScreen()}
+    {showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}
+    <PullToRefresh onRefresh={refreshActiveScreen} disabled={activeScreen === 'workout-session' || menuOpen || draftChoiceOpen} />
+    {draftChoiceOpen && <div className="program-draft-choice-overlay" role="presentation">
+      <button type="button" className="program-draft-choice-scrim" aria-label="Закрыть выбор черновика" onClick={() => setDraftChoiceOpen(false)} />
+      <section className="program-draft-choice-dialog" role="dialog" aria-modal="true" aria-labelledby="program-draft-choice-title" aria-describedby="program-draft-choice-desc">
+        <h2 id="program-draft-choice-title">Продолжить создание программы?</h2>
+        <p id="program-draft-choice-desc">На этом устройстве есть сохранённый черновик. Продолжить с места остановки или начать заново?</p>
+        {draftChoiceError && <p className="program-draft-choice-error" role="alert">{draftChoiceError}</p>}
+        <div className="program-draft-choice-actions">
+          {draftChoiceValid && <button type="button" className="primary" onClick={enterCreateProgram} autoFocus>Продолжить создание</button>}
+          <button type="button" className={draftChoiceValid ? 'secondary' : 'primary'} onClick={startFreshProgram}>Начать заново</button>
+          <button type="button" className="cancel" onClick={() => setDraftChoiceOpen(false)}>Отмена</button>
+        </div>
+      </section>
+    </div>}
+  </>;
 }

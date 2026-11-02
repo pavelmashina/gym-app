@@ -116,7 +116,6 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     return result;
   }, [programs, query, sortDirection, activeTab, programFilters]);
 
-  const activeTabConfig = TRAINING_TABS.find((tab) => tab.id === activeTab);
   const isCatalogTab = activeTab === 'catalog';
   const isCompletedTab = activeTab === 'completed';
   const isProgramsTab = activeTab === 'your-programs' || isCompletedTab;
@@ -139,8 +138,8 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     <RootSectionHeader title="Тренировки" />
     <main className="exercise-catalog-content">
       <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
-      <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
-      <section className="training-section-head"><div className="training-section-title"><span>Программы</span><h2>{EMPTY_COPY[activeTab]?.title ?? activeTabConfig?.label}</h2></div><div className="training-tools">{(isCatalogTab || isProgramsTab) && <button className={filtersOpen || (isProgramsTab && hasProgramFilters) ? 'active' : ''} type="button" onClick={() => setFiltersOpen((current) => !current)} aria-expanded={filtersOpen}><FilterIcon /><span>Фильтры{isProgramsTab && hasProgramFilters ? ' •' : ''}</span></button>}{(isCatalogTab || activeTab === 'your-programs') && <button type="button" onClick={() => setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')}><SortIcon /><span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span></button>}</div></section>
+      <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button data-training-tab={tab.id} className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
+      
 
       {isProgramsTab && filtersOpen && <section className="program-list-filters" aria-label="Фильтры программ">
         {Object.entries({ place: 'Место тренировок', category: 'Направление', level: 'Уровень' }).map(([key, label]) => <label key={key}><span>{label}</span><select value={programFilters[key]} onChange={(event) => setProgramFilters((current) => ({ ...current, [key]: event.target.value }))}><option value="">Все</option>{filterOptions[key].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>)}
@@ -148,6 +147,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       </section>}
 
       {!isCatalogTab && !isCompletedTab && <button className="create-program-wide" type="button" onClick={openCreateProgram}><span className="create-program-plus"><PlusIcon /></span><span className="create-program-copy"><strong>Создать свою программу</strong><small>Соберите тренировочный цикл из упражнений</small></span><span className="create-program-arrow">›</span></button>}
+      {(isCatalogTab || isProgramsTab) && <div className="training-toolbar-row"><div className="training-tools" role="group" aria-label="Настройка списка программ">{(isCatalogTab || isProgramsTab) && <button className={filtersOpen || (isProgramsTab && hasProgramFilters) ? 'active' : ''} type="button" onClick={() => setFiltersOpen((current) => !current)} aria-expanded={filtersOpen}><FilterIcon /><span>Фильтры{isProgramsTab && hasProgramFilters ? ' •' : ''}</span></button>}{(isCatalogTab || activeTab === 'your-programs') && <button type="button" onClick={() => setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')}><SortIcon /><span>{sortDirection === 'asc' ? 'А–Я' : 'Я–А'}</span></button>}</div></div>}
 
       {activeTab === 'received' && <ReceiveProgramPanel onAccepted={(programId) => { setProgramsReloadKey((value) => value + 1); setSelectedProgramId(programId); }} />}
       {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} onJoin={(programId) => onStartProgram?.(programId)} />}

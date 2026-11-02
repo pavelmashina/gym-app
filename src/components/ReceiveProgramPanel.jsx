@@ -39,7 +39,7 @@ export function ReceiveProgramPanel({onAccepted}) {
   }
 
   return <section className="received-program-panel">
-    <div className="received-program-heading"><h2>Принять программу</h2><p>Вставьте ссылку, которую вам отправили, или код приглашения. Программа появится в разделе «Мои программы».</p></div>
+    <div className="received-program-heading"><p>Вставьте ссылку или код приглашения. После подтверждения программа появится в разделе «Мои программы».</p></div>
     <form onSubmit={e=>{e.preventDefault();void inspect(input)}}>
       <label htmlFor="received-program-code">Ссылка или код</label>
       <input id="received-program-code" type="text" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={input} onChange={e=>setInput(e.target.value)} placeholder="Вставить приглашение"/>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { nutritionImageSrc } from '../lib/nutritionImages.js';
 import { calculateNutrition } from '../lib/nutritionCalculator.js';
@@ -114,9 +114,32 @@ function MealPlanCard({ plan, onOpen, favorite, onToggleFavorite }) {
   </div>;
 }
 
+export function mealSwipeTarget(startX, startY, endX, endY, count, index) {
+  const deltaX = endX - startX;
+  const deltaY = Math.abs(endY - startY);
+  if (count < 2 || Math.abs(deltaX) < 55 || Math.abs(deltaX) < deltaY * 1.25) return index;
+  return Math.min(count - 1, Math.max(0, index + (deltaX < 0 ? 1 : -1)));
+}
+
 function MealPlanDetails({ plan, meals, onBack }) {
   const [index, setIndex] = useState(0);
+  const swipeStart = useRef(null);
   useEffect(() => setIndex(0), [plan.id]);
+
+  function onMealImageTouchStart(event) {
+    if (event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    // Give the application's left-edge Back gesture precedence.
+    const screenLeft = event.currentTarget.closest('.meal-plan-detail-screen')?.getBoundingClientRect().left ?? 0;
+    swipeStart.current = touch.clientX - screenLeft <= 48 ? null : { x: touch.clientX, y: touch.clientY };
+  }
+  function onMealImageTouchEnd(event) {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start || event.changedTouches.length !== 1) return;
+    const touch = event.changedTouches[0];
+    setIndex(current => mealSwipeTarget(start.x, start.y, touch.clientX, touch.clientY, meals.length, current));
+  }
   const meal = meals[index];
   if (!meal) return <div className="nutrition-screen meal-plan-detail-screen"><header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack}><BackIcon /></button><strong>{plan.title}</strong><span /></header><main className="meal-plan-detail-content"><div className="recipe-state">В этом рационе пока нет блюд.</div></main></div>;
   const ingredients = Array.isArray(meal.ingredients) ? meal.ingredients : [];
@@ -125,7 +148,7 @@ function MealPlanDetails({ plan, meals, onBack }) {
     <header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack} aria-label="Назад к рационам"><BackIcon /></button><strong>{plan.title}</strong><span /></header>
     <main className="meal-plan-detail-content">
       <div className="meal-plan-progress"><span>Приём пищи {index + 1} из {meals.length}</span><div><i style={{ width: `${((index + 1) / meals.length) * 100}%` }} /></div></div>
-      <div className="recipe-hero-image"><NutritionPhoto url={meal.image_url} alt={meal.title} loading="eager" /></div>
+      <div className="recipe-hero-image meal-plan-swipe-image" onTouchStart={onMealImageTouchStart} onTouchEnd={onMealImageTouchEnd} onTouchCancel={() => { swipeStart.current = null; }} aria-label="Фото блюда. Листайте влево и вправо, чтобы переключать приёмы пищи"><NutritionPhoto url={meal.image_url} alt={meal.title} loading="eager" /></div>
       <div className="recipe-detail-title"><span>{meal.meal_type}</span><h1>{meal.title}</h1></div>
       <section className="recipe-macros"><div><strong>{meal.calories}</strong><span>ккал</span></div><div><strong>{Number(meal.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(meal.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(meal.carbs_g)} г</strong><span>Углеводы</span></div></section>
       <section className="nutrition-card recipe-section"><h2>Ингредиенты</h2><ul>{ingredients.map((item, ingredientIndex) => <li key={`${ingredientIndex}-${item}`}>{item}</li>)}</ul></section>

@@ -105,3 +105,12 @@
 .received-program-preview h3 { font-size: 20px; line-height: 1.2; margin: 8px 0; overflow-wrap: anywhere; }
 .received-program-details { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
 .received-program-details span { padding: 7px 9px; border-radius: 10px; background: var(--surface-2); font-size: 12px; font-weight: 700; }
+
+/* Receive-program follows the same compact typography as other GYM screens. */
+.received-program-panel {gap:var(--space-4)}
+.received-program-heading p {margin:0;font-size:var(--text-body);line-height:var(--lh-body)}
+.received-program-panel form {gap:var(--space-3)}
+.received-program-panel form label {font-size:var(--text-caption);line-height:var(--lh-caption);font-weight:var(--weight-semibold)}
+.received-program-panel input {min-height:var(--control-h);border-radius:var(--radius-md)}
+.received-program-preview {padding:var(--card-pad);border-radius:var(--radius-lg)}
+.catalog-results-filter-status {margin:var(--space-2) 0;color:var(--muted);font-size:var(--text-caption)}
