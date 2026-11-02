@@ -27,7 +27,7 @@ function EditHeader({ title, onBack }) { return <header className="account-topba
 function Field({ label, children, hint }) { return <label className="account-form-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>; }
 function ConfirmModal({ title, text, confirmLabel, danger = false, loading = false, onConfirm, onClose }) { return <div className="account-confirm-modal" role="dialog" aria-modal="true" aria-label={title}><button className="account-delete-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={loading} /><section className="account-confirm-sheet"><div className="account-delete-handle" /><h2>{title}</h2><p>{text}</p><button type="button" className={danger ? 'account-delete-confirm' : 'account-confirm-primary'} disabled={loading} onClick={onConfirm}>{loading ? 'Подождите…' : confirmLabel}</button><button type="button" className="account-delete-cancel" disabled={loading} onClick={onClose}>Отмена</button></section></div>; }
 
-export function AccountScreen({ user, profile, loading, onBack, onSignOut, onAccountDeleted, onProfileUpdated, onOpenSettings }) {
+export function AccountScreen({ user, profile, loading, onBack, onSignOut, onAccountDeleted, onProfileUpdated, onOpenSettings, refreshKey = 0 }) {
   const [subscreen, setSubscreen] = useState('main');
   const [confirmMode, setConfirmMode] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -62,7 +62,7 @@ export function AccountScreen({ user, profile, loading, onBack, onSignOut, onAcc
     }
     resolveAvatar();
     return () => { active = false; };
-  }, [profile?.avatar_url, user?.user_metadata?.avatar_url, user?.user_metadata?.picture]);
+  }, [profile?.avatar_url, user?.user_metadata?.avatar_url, user?.user_metadata?.picture, refreshKey]);
 
   const avatar = useMemo(() => avatarPreview ? <img src={avatarPreview} alt="Фото профиля" /> : <span>{initial}</span>, [avatarPreview, initial]);
 

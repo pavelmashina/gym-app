@@ -186,7 +186,7 @@ async function loadWorkoutCard(dateKey) {
   };
 }
 
-export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, workoutDates = [], todaysWorkout = null, nutritionPlan = null }) {
+export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, workoutDates = [], todaysWorkout = null, nutritionPlan = null, refreshKey = 0 }) {
   const today = useDeviceDate();
   const todayKey = toDateKey(today);
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
@@ -232,7 +232,7 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
       setCalendarStatus('success');
     });
     return () => { alive = false; };
-  }, [reloadKey]);
+  }, [reloadKey, refreshKey]);
 
   useEffect(() => {
     let alive = true;
@@ -250,7 +250,7 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
       setWorkoutStatus('error');
     });
     return () => { alive = false; };
-  }, [selectedDateKey, reloadKey]);
+  }, [selectedDateKey, reloadKey, refreshKey]);
 
   const selectedDate = useMemo(() => dateFromKey(selectedDateKey), [selectedDateKey]);
   const isTodaySelected = selectedDateKey === todayKey;

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
+import { nutritionImageSrc } from '../lib/nutritionImages.js';
 import { calculateNutrition } from '../lib/nutritionCalculator.js';
 import { supabase } from '../lib/supabase.js';
 import '../nutrition-screen.css';
@@ -67,10 +68,19 @@ function FavoriteButton({ active, onClick, label }) {
   return <button type="button" className={`catalog-card-favorite${active ? ' active' : ''}`} aria-label={active ? `Убрать из избранного: ${label}` : `Добавить в избранное: ${label}`} aria-pressed={active} onClick={onClick}><HeartIcon filled={active} /></button>;
 }
 
+function NutritionPhoto({ url, alt = '', loading = 'lazy' }) {
+  const resolved = nutritionImageSrc(url);
+  const [source, setSource] = useState(resolved);
+  useEffect(() => setSource(resolved), [resolved]);
+  return source
+    ? <img src={source} alt={alt} loading={loading} decoding="async" onError={() => setSource(null)} />
+    : <span className="recipe-image-placeholder" aria-hidden="true" />;
+}
+
 function RecipeCard({ recipe, onOpen, favorite, onToggleFavorite }) {
   return <div className="recipe-card-shell">
     <button type="button" className="recipe-card" onClick={() => onOpen(recipe)}>
-      <span className="recipe-card-image">{recipe.image_url ? <img src={recipe.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
+      <span className="recipe-card-image"><NutritionPhoto url={recipe.image_url} /></span>
       <span className="recipe-card-copy"><strong>{recipe.title}</strong><span className="recipe-tags"><b>{recipe.meal_type}</b><b>{recipe.goal}</b><b>{recipe.calories} ккал</b></span><small>Б {Number(recipe.protein_g)} · Ж {Number(recipe.fat_g)} · У {Number(recipe.carbs_g)}</small></span>
       <span className="recipe-card-arrow" aria-hidden="true">›</span>
     </button>
@@ -84,7 +94,7 @@ function RecipeDetails({ recipe, onBack }) {
   return <div className="nutrition-screen recipe-detail-screen">
     <header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack} aria-label="Назад к рецептам"><BackIcon /></button><strong>Рецепт</strong><span /></header>
     <main className="recipe-detail-content">
-      <div className="recipe-hero-image">{recipe.image_url ? <img src={recipe.image_url} alt={recipe.title} /> : <span className="recipe-image-placeholder" />}</div>
+      <div className="recipe-hero-image"><NutritionPhoto url={recipe.image_url} alt={recipe.title} loading="eager" /></div>
       <div className="recipe-detail-title"><span>{recipe.meal_type} · {recipe.prep_minutes ? `${recipe.prep_minutes} мин` : 'быстрый рецепт'}</span><h1>{recipe.title}</h1></div>
       <section className="recipe-macros"><div><strong>{recipe.calories}</strong><span>ккал</span></div><div><strong>{Number(recipe.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(recipe.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(recipe.carbs_g)} г</strong><span>Углеводы</span></div></section>
       <section className="nutrition-card recipe-section"><h2>Ингредиенты</h2><ul>{ingredients.map((item, index) => <li key={`${index}-${item}`}>{item}</li>)}</ul></section>
@@ -96,7 +106,7 @@ function RecipeDetails({ recipe, onBack }) {
 function MealPlanCard({ plan, onOpen, favorite, onToggleFavorite }) {
   return <div className="meal-plan-card-shell">
     <button type="button" className="meal-plan-card" onClick={() => onOpen(plan)}>
-      <span className="meal-plan-card-image">{plan.image_url ? <img src={plan.image_url} alt="" loading="lazy" /> : <span className="recipe-image-placeholder" />}</span>
+      <span className="meal-plan-card-image"><NutritionPhoto url={plan.image_url} /></span>
       <span className="meal-plan-card-copy"><strong>{plan.title}</strong><span className="meal-plan-tags"><b>{plan.goal}</b><b>{plan.calories_per_day} ккал / день</b></span><small>{plan.short_description}</small></span>
       <span className="meal-plan-card-arrow" aria-hidden="true">›</span>
     </button>
@@ -115,7 +125,7 @@ function MealPlanDetails({ plan, meals, onBack }) {
     <header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack} aria-label="Назад к рационам"><BackIcon /></button><strong>{plan.title}</strong><span /></header>
     <main className="meal-plan-detail-content">
       <div className="meal-plan-progress"><span>Приём пищи {index + 1} из {meals.length}</span><div><i style={{ width: `${((index + 1) / meals.length) * 100}%` }} /></div></div>
-      <div className="recipe-hero-image">{meal.image_url ? <img src={meal.image_url} alt={meal.title} /> : <span className="recipe-image-placeholder" />}</div>
+      <div className="recipe-hero-image"><NutritionPhoto url={meal.image_url} alt={meal.title} loading="eager" /></div>
       <div className="recipe-detail-title"><span>{meal.meal_type}</span><h1>{meal.title}</h1></div>
       <section className="recipe-macros"><div><strong>{meal.calories}</strong><span>ккал</span></div><div><strong>{Number(meal.protein_g)} г</strong><span>Белки</span></div><div><strong>{Number(meal.fat_g)} г</strong><span>Жиры</span></div><div><strong>{Number(meal.carbs_g)} г</strong><span>Углеводы</span></div></section>
       <section className="nutrition-card recipe-section"><h2>Ингредиенты</h2><ul>{ingredients.map((item, ingredientIndex) => <li key={`${ingredientIndex}-${item}`}>{item}</li>)}</ul></section>
@@ -150,7 +160,7 @@ function MealPlanFilters({ value, onChange, goals, onReset }) {
   </section>;
 }
 
-export function NutritionScreen({ user, profile }) {
+export function NutritionScreen({ user, profile, refreshKey = 0 }) {
   const [tab, setTab] = useState('calculator');
   const [form, setForm] = useState({ sex: '', height: '', weight: '', activity: '', goal: '', age: '', adjustmentPercent: '0', proteinPercent: '25', fatPercent: '25', carbsPercent: '50' });
   const [result, setResult] = useState(null);
@@ -188,29 +198,68 @@ export function NutritionScreen({ user, profile }) {
       else setFavorites(new Set((data || []).map((row) => `${row.entity_type}:${row.entity_id}`)));
     });
     return () => { active = false; };
-  }, [user?.id]);
+  }, [user?.id, refreshKey]);
 
   useEffect(() => {
-    if (tab !== 'recipes' || recipes.length > 0) return undefined;
-    let active = true; setRecipesLoading(true); setRecipesError('');
+    if (tab !== 'recipes') return undefined;
+    let active = true;
+    if (!recipes.length) setRecipesLoading(true);
+    setRecipesError('');
     supabase.from('recipes').select('id,slug,title,image_url,meal_type,goal,calories,protein_g,fat_g,carbs_g,prep_minutes,ingredients,steps,sort_order').eq('is_active', true).order('sort_order', { ascending: true }).then(({ data, error }) => {
       if (!active) return;
-      if (error) { console.error('Unable to load recipes:', error); setRecipesError('Не удалось загрузить рецепты.'); } else setRecipes(data || []);
+      if (error) {
+        console.error('Unable to load recipes:', error);
+        setRecipesError('Не удалось загрузить рецепты.');
+      } else {
+        setRecipes(data || []);
+        setSelectedRecipe(current => current ? (data || []).find(row => row.id === current.id) || current : null);
+      }
       setRecipesLoading(false);
+      if (refreshKey > 0) window.dispatchEvent(new CustomEvent('gym-nutrition-refresh-complete', { detail: { refreshKey } }));
     });
     return () => { active = false; };
-  }, [tab, recipes.length]);
+  }, [tab, refreshKey]);
 
   useEffect(() => {
-    if (tab !== 'plans' || mealPlans.length > 0) return undefined;
-    let active = true; setMealPlansLoading(true); setMealPlansError('');
+    if (tab !== 'plans') return undefined;
+    let active = true;
+    if (!mealPlans.length) setMealPlansLoading(true);
+    setMealPlansError('');
     supabase.from('meal_plans').select('id,slug,title,image_url,goal,calories_per_day,short_description,sort_order').eq('is_active', true).order('sort_order', { ascending: true }).then(({ data, error }) => {
       if (!active) return;
-      if (error) { console.error('Unable to load meal plans:', error); setMealPlansError('Не удалось загрузить готовые рационы.'); } else setMealPlans(data || []);
+      if (error) {
+        console.error('Unable to load meal plans:', error);
+        setMealPlansError('Не удалось загрузить готовые рационы.');
+      } else {
+        setMealPlans(data || []);
+        setSelectedMealPlan(current => current ? (data || []).find(row => row.id === current.id) || current : null);
+      }
       setMealPlansLoading(false);
+      if (refreshKey > 0) window.dispatchEvent(new CustomEvent('gym-nutrition-refresh-complete', { detail: { refreshKey } }));
     });
     return () => { active = false; };
-  }, [tab, mealPlans.length]);
+  }, [tab, refreshKey]);
+
+  useEffect(() => {
+    if (tab === 'calculator' && refreshKey > 0) {
+      window.dispatchEvent(new CustomEvent('gym-nutrition-refresh-complete', { detail: { refreshKey } }));
+    }
+  }, [tab, refreshKey]);
+
+  // An open meal-plan detail remains mounted while its meal data is refreshed.
+  useEffect(() => {
+    if (!selectedMealPlan?.id || refreshKey === 0) return undefined;
+    let active = true;
+    supabase.from('meal_plan_meals')
+      .select('id,meal_order,meal_type,title,image_url,calories,protein_g,fat_g,carbs_g,ingredients,steps')
+      .eq('meal_plan_id', selectedMealPlan.id).order('meal_order', { ascending: true })
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error('Unable to refresh meal plan meals:', error);
+        else setSelectedMealPlanMeals(data || []);
+      });
+    return () => { active = false; };
+  }, [refreshKey]);
 
   const macroShareTotal = Number(form.proteinPercent) + Number(form.fatPercent) + Number(form.carbsPercent);
   const calculationPreview = useMemo(() => {

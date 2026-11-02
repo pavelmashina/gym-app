@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
+import { nutritionImageSrc, MIRRORED_NUTRITION_PHOTOS } from '../src/lib/nutritionImages.js';
+const read=path=>readFileSync(path,'utf8');
+const ui=read('src/components/NutritionScreen.jsx');
+const app=read('src/App.jsx');
+const stats=read('src/components/StatisticsScreenV3.jsx');
+const exercises=read('src/components/ExercisesScreen.jsx');
+assert.equal(MIRRORED_NUTRITION_PHOTOS.size,16);
+for(const id of MIRRORED_NUTRITION_PHOTOS){
+  const path=`public/assets/nutrition/photos/photo-${id}.jpg`;
+  assert.ok(existsSync(path),`Missing bundled image: ${path}`);
+  const data=readFileSync(path);
+  assert.ok(data.length>1200 && data[0]===0xff && data[1]===0xd8,`Invalid JPG: ${id}`);
+  assert.equal(nutritionImageSrc(`https://images.unsplash.com/photo-${id}?auto=format`,'/gym-app/'),`/gym-app/assets/nutrition/photos/photo-${id}.jpg`);
+}
+assert.equal(nutritionImageSrc('https://cdn.example.com/other.jpg','/gym-app/'),'https://cdn.example.com/other.jpg');
+assert.equal(nutritionImageSrc('', '/'), null);
+assert.match(ui,/function NutritionPhoto/);
+assert.ok((ui.match(/<NutritionPhoto url=/g)||[]).length===4);
+assert.match(ui,/\[tab, refreshKey\]/);
+assert.match(ui,/gym-nutrition-refresh-complete/);
+assert.match(ui,/selectedMealPlanMeals/);
+assert.match(app,/<NutritionScreen refreshKey=\{pullRefreshKey\}/);
+assert.match(app,/<StatisticsScreen refreshKey=\{pullRefreshKey\}/);
+assert.match(app,/<ExercisesScreen initialTab=\{trainingInitialTab\} refreshKey=\{trainingRefreshKey \+ pullRefreshKey\}/);
+assert.match(stats,/\[reloadKey, refreshKey\]/);
+assert.match(exercises,/\[activeTab, refreshKey, programsReloadKey\]/);
+assert.doesNotMatch(app,/key=\{pullRefreshKey\}/);
+console.log('16 local JPGs, four nutrition photo surfaces and state-preserving refresh verified');

@@ -122,3 +122,15 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - The first content block begins **8px below the shared header boundary** via `--space-2`, enforced by `.root-section-header + .nutrition-content` and `.root-section-header + .sportpit-content`.
 - The Nutrition visual-tabs strip has **0px top padding**; its first icon tiles align vertically with the top of the SportPit disclaimer card. Bottom padding of the tabs remains **8px**.
 - The calculator begins immediately with the “Ваши данные” card under the navigation strip; it has no duplicate “Калькулятор КБЖУ” heading in the content area.
+
+## November 2026 — Refresh without losing the open page
+- A pull-to-refresh **never remounts root views** using `key={pullRefreshKey}`. Instead, the current component receives `refreshKey` and re-fetches data inside effects. Active tabs, filters, selected date, open recipe and meal-plan detail, workout program detail, and ongoing local form state remain intact.
+- On Nutrition: recipe and meal-plan list effects respond to `refreshKey` without clearing already visible entries. Nutrition sends `gym-nutrition-refresh-complete` when the relevant tab's query ends. An open plan's meal details reload in place.
+- Training programs, Statistics, Home calendar, Settings and Account avatar reload using `refreshKey` without replacing the current component.
+- SportPit retains its existing non-remounting refresh behavior.
+
+## November 2026 — Local photography for Recipes and Meal Plans
+- All **16 distinct existing Unsplash photo IDs** in the active `recipes`, `meal_plans`, and `meal_plan_meals` tables have been saved as JPEG files in `public/assets/nutrition/photos/`. The same images are served by GitHub Pages for all users, avoiding cross-network access to Unsplash on client devices.
+- The unreachable URL `photo-1571212515416-fca77afa66ee` returned 404; its local file is a matching cottage-cheese photograph (the successful `photo-1490645935967-10de6ba17061` source).
+- `nutritionImageSrc` resolves known Unsplash references to GitHub Pages assets; unknown image sources preserve their original URL and failed image loads show a neutral image placeholder instead of a broken icon.
+- `scripts/mirror-nutrition-images.mjs` records and verifies the upstream sources; workflow exists for reproducible downloads. It does **not** re-download during routine app builds.

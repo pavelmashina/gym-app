@@ -9,7 +9,7 @@ function Switch({checked,onChange}){return <button type="button" className={`set
 
 const DEFAULTS={workout_push:true,workout_email:false,promos_push:false,promos_email:false,weight_unit:'kg',theme:'light',language:'ru',region:'RU',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Moscow'};
 
-export function SettingsScreen({user,planCode,onBack,onOpenPlan}){
+export function SettingsScreen({user,planCode,onBack,onOpenPlan,refreshKey=0}){
   const [settings,setSettings]=useState(DEFAULTS);
   const [methods,setMethods]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -30,7 +30,7 @@ export function SettingsScreen({user,planCode,onBack,onOpenPlan}){
     const next=s?{...DEFAULTS,...s}:DEFAULTS;
     setSettings(next); setMethods(p||[]); setLoading(false);
     applyLocalSettings(next);
-  })();return()=>{active=false}},[user.id]);
+  })();return()=>{active=false}},[user.id,refreshKey]);
 
   function applyLocalSettings(next){
     document.documentElement.dataset.theme=next.theme;

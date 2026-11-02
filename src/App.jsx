@@ -300,25 +300,28 @@ export default function App() {
   function refreshActiveScreen() {
     // A real data-completion event keeps SportPit held until Supabase responds;
     // other screens use a short minimum hold while their views reload.
-    if (activeScreen !== 'sportpit') {
+    if (activeScreen !== 'sportpit' && activeScreen !== 'nutrition') {
       setPullRefreshKey(value => value + 1);
       return new Promise(resolve => window.setTimeout(resolve, 800));
     }
     const expectedKey = pullRefreshKey + 1;
+    const completionEvent = activeScreen === 'sportpit'
+      ? 'gym-sportpit-refresh-complete'
+      : 'gym-nutrition-refresh-complete';
     return new Promise(resolve => {
       let finished = false;
       const earliest = new Promise(done => window.setTimeout(done, 650));
       const finish = () => {
         if (finished) return;
         finished = true;
-        window.removeEventListener('gym-sportpit-refresh-complete', handleComplete);
+        window.removeEventListener(completionEvent, handleComplete);
         window.clearTimeout(timeout);
         earliest.then(resolve);
       };
       const handleComplete = event => {
         if (event.detail?.refreshKey === expectedKey) finish();
       };
-      window.addEventListener('gym-sportpit-refresh-complete', handleComplete);
+      window.addEventListener(completionEvent, handleComplete);
       const timeout = window.setTimeout(finish, 12000);
       setPullRefreshKey(value => value + 1);
     });
@@ -326,14 +329,14 @@ export default function App() {
 
   function renderActiveScreen() {
     if (activeScreen === 'settings') {
-      return <SettingsScreen key={pullRefreshKey} user={user} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
+      return <SettingsScreen refreshKey={pullRefreshKey} user={user} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeSettingsScreen} onOpenPlan={openPlanFromSettings} />;
     }
-    if (activeScreen === 'plan') return <PlanScreen key={pullRefreshKey} subscription={subscription} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
-    if (activeScreen === 'privacy') return <PrivacyPolicyScreen key={pullRefreshKey} onBack={closeUtilityScreen} />;
-    if (activeScreen === 'support') return <SupportScreen key={pullRefreshKey} user={user} onBack={closeUtilityScreen} />;
-    if (activeScreen === 'faq') return <FaqScreen key={pullRefreshKey} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'plan') return <PlanScreen subscription={subscription} planCode={subscription?.planCode || profile?.plan_code || 'free'} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'privacy') return <PrivacyPolicyScreen onBack={closeUtilityScreen} />;
+    if (activeScreen === 'support') return <SupportScreen user={user} onBack={closeUtilityScreen} />;
+    if (activeScreen === 'faq') return <FaqScreen onBack={closeUtilityScreen} />;
     if (activeScreen === 'account') {
-      return <AccountScreen key={pullRefreshKey} user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={openSettingsFromAccount} />;
+      return <AccountScreen refreshKey={pullRefreshKey} user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={openSettingsFromAccount} />;
     }
     if (activeScreen === 'workout-session' && workoutScheduledId) {
       return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} />;
@@ -342,12 +345,12 @@ export default function App() {
       return <CreateProgramScreen key={`${userId}:${launchingProgramId ?? editingProgramId ?? 'new'}`} userId={userId} programId={launchingProgramId ?? editingProgramId} launchOnly={Boolean(launchingProgramId)} onBack={() => { setEditingProgramId(null); setLaunchingProgramId(null); setActiveScreen('training'); }} onCreated={finishProgramSave} />;
     }
     if (activeScreen === 'training') {
-      return <ExercisesScreen key={pullRefreshKey} initialTab={trainingInitialTab} refreshKey={trainingRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
+      return <ExercisesScreen initialTab={trainingInitialTab} refreshKey={trainingRefreshKey + pullRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
     }
-    if (activeScreen === 'statistics') return <StatisticsScreen key={pullRefreshKey} />;
-    if (activeScreen === 'nutrition') return <NutritionScreen key={pullRefreshKey} user={user} profile={profile} />;
+    if (activeScreen === 'statistics') return <StatisticsScreen refreshKey={pullRefreshKey} />;
+    if (activeScreen === 'nutrition') return <NutritionScreen refreshKey={pullRefreshKey} user={user} profile={profile} />;
     if (activeScreen === 'sportpit') return <SportPitScreen refreshKey={pullRefreshKey} />;
-    return <HomeScreen key={pullRefreshKey} menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} nutritionPlan={nutritionPlan} />;
+    return <HomeScreen refreshKey={pullRefreshKey} menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} onOpenWorkout={openWorkout} nutritionPlan={nutritionPlan} />;
   }
 
   if (authConfigError) return <main className="auth-shell"><section className="auth-card"><div className="auth-brand">GYM</div><h1>Ошибка конфигурации</h1><p className="auth-subtitle">{authConfigError}</p></section></main>;
