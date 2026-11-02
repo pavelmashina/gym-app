@@ -155,7 +155,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
       {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length > 0 && <section className="my-programs-list">{filteredPrograms.map((program) => <ProgramCard key={`${activeTab}-${program.id}`} program={program} onOpen={setSelectedProgramId} />)}</section>}
       {isProgramsTab && !programsLoading && !programsError && filteredPrograms.length === 0 && (query || hasProgramFilters ? <div className="my-programs-state">По выбранным условиям программы не найдены.<button type="button" onClick={() => { setQuery(''); setProgramFilters(EMPTY_PROGRAM_FILTERS); }}>Сбросить поиск и фильтры</button></div> : <EmptyPrograms tabId={activeTab} />)}
-      {!isProgramsTab && !isCatalogTab && <EmptyPrograms tabId={activeTab} />}
+      {activeTab === 'recommendations' && <EmptyPrograms tabId={activeTab} />}
     </main>
     
   </div>;

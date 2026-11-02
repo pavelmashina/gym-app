@@ -31,6 +31,8 @@ assert.match(icons,/data-training-tab="received"\]\.active::before/);
 assert.doesNotMatch(catalog,/className="catalog-results-head"/);
 assert.doesNotMatch(receive,/<h2>Принять программу<\/h2>/);
 assert.match(app,/readProgramDraft\(localStorage, key\)/);
+assert.match(app,/hasProgramDraftProgress\(existing\)/);
+assert.doesNotMatch(training,/!isProgramsTab && !isCatalogTab && <EmptyPrograms/);
 assert.match(app,/clearProgramDraft\(localStorage, programDraftKey\(userId\)\)/);
 assert.match(app,/Продолжить создание/);
 assert.match(app,/Начать заново/);

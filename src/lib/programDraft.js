@@ -26,3 +26,15 @@ export function writeProgramDraft(storage, key, draft) {
 export function clearProgramDraft(storage, key) {
   if (key) storage.removeItem(key);
 }
+
+/** An untouched, autosaved blank form is not meaningful saved progress. */
+export function hasProgramDraftProgress(draft) {
+  if (!draft) return false;
+  return draft.step > 1 ||
+    Boolean(draft.name?.trim() || draft.description?.trim() || draft.place?.trim() ||
+      draft.equipment?.trim() || draft.level?.trim() || draft.startDate ||
+      draft.hasCover || draft.editingWorkoutId ||
+      (Array.isArray(draft.categories) && draft.categories.length) ||
+      draft.cycleRepeatCount > 1 ||
+      draft.programWeeks?.some(week => week.workouts?.length > 0));
+}

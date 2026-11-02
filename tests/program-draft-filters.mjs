@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../src/lib/programDraft.js';
+import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft, hasProgramDraftProgress } from '../src/lib/programDraft.js';
 import { matchesProgramFilters, programFilterOptions, EMPTY_PROGRAM_FILTERS } from '../src/lib/programFilters.js';
 
 const values = new Map();
@@ -12,6 +12,11 @@ const draft = { step: 2, name: 'Сила', description: '', categories: ['Сил
     exercises: [{ id: 'exercise', name: 'Жим', sets: [{ id: 'set', reps: '12' }] }] }] }] };
 writeProgramDraft(storage, key, draft);
 assert.deepEqual(readProgramDraft(storage, key), { ...draft, version: 1 });
+assert.equal(hasProgramDraftProgress(readProgramDraft(storage, key)), true);
+assert.equal(hasProgramDraftProgress(null), false);
+assert.equal(hasProgramDraftProgress({ step: 1, name: '', description: '', categories: [], place: '', equipment: '', level: '', cycleRepeatCount: 1, programWeeks: [{ workouts: [] }] }), false);
+assert.equal(hasProgramDraftProgress({ step: 1, name: 'Начал заполнять', programWeeks: [{ workouts: [] }] }), true);
+assert.equal(hasProgramDraftProgress({ step: 2, name: '', programWeeks: [{ workouts: [] }] }), true);
 assert.equal(readProgramDraft(storage, programDraftKey('athlete-b')), null, 'Accounts must not share drafts');
 assert.equal(programDraftKey(null), null);
 clearProgramDraft(storage, key);

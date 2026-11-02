@@ -16,7 +16,7 @@ import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
 import { incomingProgramShareCode } from './lib/programSharing.js';
-import { programDraftKey, readProgramDraft, clearProgramDraft } from './lib/programDraft.js';
+import { programDraftKey, readProgramDraft, clearProgramDraft, hasProgramDraftProgress } from './lib/programDraft.js';
 import './program-create-choice.css';
 
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
@@ -301,10 +301,11 @@ export default function App() {
       // Read and validate before offering restoration. Existing data remains
       // untouched until the user explicitly chooses "Начать заново".
       const existing = readProgramDraft(localStorage, key);
-      setDraftChoiceValid(Boolean(existing));
+      const hasProgress = hasProgramDraftProgress(existing);
+      setDraftChoiceValid(hasProgress);
       setDraftChoiceError('');
-      setDraftChoiceOpen(Boolean(existing));
-      if (!existing) enterCreateProgram();
+      setDraftChoiceOpen(hasProgress);
+      if (!hasProgress) enterCreateProgram();
     } catch {
       setDraftChoiceValid(false);
       setDraftChoiceError('Черновик не удалось прочитать. Можно удалить его и начать новую программу.');
