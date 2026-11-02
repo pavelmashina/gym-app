@@ -24,7 +24,7 @@ export const MIRRORED_NUTRITION_PHOTOS = new Set([
 
 export function nutritionImageSrc(url, base = import.meta.env?.BASE_URL || '/') {
   if (!url || typeof url !== 'string') return null;
-  const match = url.match(/^https:\/\/images\.unsplash\.com\/photo-(\d{13}-[a-f0-9]{12})(?:[?#]|$)/i);
+  const match = url.match(/^https:\/\/images\.unsplash\.com\/photo-(\d{10,13}-[a-f0-9]{12})(?:[?#]|$)/i);
   if (!match || !MIRRORED_NUTRITION_PHOTOS.has(match[1])) return url;
   const prefix = base.endsWith('/') ? base : `${base}/`;
   return `${prefix}assets/nutrition/photos/photo-${match[1]}.jpg`;
