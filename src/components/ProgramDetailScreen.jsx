@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getProgram } from '../lib/programs.js';
+import { getProgram, archiveUserProgram } from '../lib/programs.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
 import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
@@ -50,7 +50,7 @@ async function attachScheduledSnapshot(program) {
   return { ...program, scheduledWorkouts: program.scheduledWorkouts.map((item) => ({ ...item, exercises: byWorkout.get(item.id) ?? [] })) };
 }
 
-export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
+export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDeleted }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,6 +70,9 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const [workoutActionId, setWorkoutActionId] = useState(null);
   const [workoutActionError, setWorkoutActionError] = useState(null);
   const [detailTab, setDetailTab] = useState('description');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   async function reloadProgram() {
     const hydrated = await attachScheduledSnapshot(await getProgram(programId));
@@ -95,6 +98,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const isPaused = participation?.status === 'paused';
   const liveParticipation = Boolean(isActive || isPaused);
   const canStart = !participation || ['completed', 'cancelled'].includes(participation.status);
+  const isUserCreated = !program.sourceCatalogProgramId;
   const canEditProgram = !(liveParticipation && !isCycle);
   const canEditStartDate = Boolean(isActive && program.scheduledWorkouts.length && program.scheduledWorkouts.every((item) => item.status === 'scheduled'));
   const totalTemplateWorkouts = templateWorkouts.length;
@@ -195,19 +199,39 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
     }
   }
 
+  async function handleDelete() {
+    if (!isUserCreated || deletePending) return;
+    setDeletePending(true); setDeleteError('');
+    try {
+      await archiveUserProgram(program.id);
+      setDeleteOpen(false);
+      onDeleted?.(program.id);
+    } catch (error) {
+      setDeleteError(error?.message || 'Не удалось удалить программу.');
+    } finally {
+      setDeletePending(false);
+    }
+  }
+
   const preview = participation ? program.scheduledWorkouts : templateWorkouts.map((item, index) => ({ id: item.workout.id, sequenceNumber: index + 1, cycleNumber: isCycle ? 1 : null, weekNumber: item.sourceGroup, workoutName: item.workout.name, scheduledDate: null, exercises: item.workout.exercises }));
 
   return <div className="phone program-detail-phone">
-    <header className="program-detail-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Моя программа</strong><span /></header>
-    <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="owned" />
+    <header className="program-detail-header program-detail-header-tabs"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="owned" /><span aria-hidden="true" /></header>
     <main className="program-detail-content">
       {detailTab === 'description' && <div id="owned-description-panel" role="tabpanel" aria-labelledby="owned-description-tab">
       <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
-      <ShareProgramButton programId={program.id} />
 
-      <section className={`program-detail-start-state${canStart ? ' not-started' : ' joined'}`}><span className="program-detail-status-badge">{participationLabel(participation)}</span>
-        {canStart ? <><strong>Начните, когда будете готовы</strong><p>{isCycle ? `В цикле ${totalTemplateWorkouts} тренировок · повторений цикла: ${program.cycleRepeatCount}.` : 'Программа создана в старом формате и сохраняет исходную последовательность тренировок.'}</p></> : isPaused ? <><strong>Программа на паузе</strong><p>Будущие тренировки временно скрыты из календаря. История и сохранённый состав тренировок не изменяются.</p></> : <><strong>Вы присоединились к программе</strong><p>Первая тренировка запланирована на {formatDate(participation.startDate)}.</p>{canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}{canEditStartDate && editingStartDate && <div className="program-detail-date-editor"><label><span>Новая дата первой тренировки</span><input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{startDateError && <small className="error">{startDateError}</small>}<div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div></div>}</>}
+      <ProgramOverviewMeta program={program} />
+      <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />
 
+      {(liveParticipation || canEditStartDate || participationError || !canEditProgram) && <section className="program-detail-management" aria-label="Управление программой">
+        {canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}
+        {canEditStartDate && editingStartDate && <div className="program-detail-date-editor">
+          <label><span>Новая дата первой тренировки</span><input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} /></label>
+          {startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}
+          {startDateError && <small className="error">{startDateError}</small>}
+          <div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div>
+        </div>}
         {liveParticipation && <div className={`program-participation-controls${isPaused ? ' two' : ''}`}>
           {isActive && <button className="program-participation-action secondary" type="button" disabled={Boolean(participationAction)} onClick={handlePause}>{participationAction === 'pause' ? 'Ставим на паузу…' : 'Поставить на паузу'}</button>}
           {isPaused && <button className="program-participation-action primary" type="button" disabled={Boolean(participationAction)} onClick={() => { setResumeDate(localToday()); setResumeError(''); setResumeOpen(true); setCompleteConfirmOpen(false); }}>Возобновить</button>}
@@ -220,10 +244,12 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
         {participationError && <div className="program-participation-message" role="alert">{participationError}</div>}
         {!canEditProgram && <div className="program-detail-compat-note">Редактирование структуры станет доступно после завершения или остановки текущего запуска. История и расписание сохраняются.</div>}
-      </section>
 
-      <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />
-      <ProgramOverviewMeta program={program} />
+      </section>}
+      {isUserCreated && <div className="program-detail-end-actions">
+        <button type="button" className="program-detail-delete-trigger" onClick={() => { setDeleteError(''); setDeleteOpen(true); }}>Удалить программу</button>
+        <ShareProgramButton programId={program.id} />
+      </div>}
       </div>}
       {detailTab === 'workouts' && <div id="owned-workouts-panel" role="tabpanel" aria-labelledby="owned-workouts-tab">
       <section className="program-detail-section"><div className="program-detail-section-head"><span>{participation ? 'Календарь' : (isCycle ? 'Повторение цикла' : 'Последовательность')}</span><h2>{participation ? 'Запланированные тренировки' : (isCycle ? `${program.cycleRepeatCount} × цикл` : 'Старая структура программы')}</h2></div><div className="program-detail-schedule">{preview.map((item) => {
@@ -246,5 +272,18 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       </div>}
     </main>
     <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>{canStart && <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}><CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span></button>}<button className="program-detail-edit-button" type="button" onClick={() => canEditProgram && onEdit?.(program.id)} disabled={!canEditProgram}><PencilIcon /><span>{canEditProgram ? 'Редактировать программу' : 'Редактирование недоступно'}</span></button></footer>
+    {deleteOpen && <div className="program-detail-delete-overlay" role="presentation">
+      <button type="button" className="program-detail-delete-scrim" aria-label="Закрыть подтверждение" disabled={deletePending} onClick={() => setDeleteOpen(false)} />
+      <section className="program-detail-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="program-delete-title">
+        <h2 id="program-delete-title">Удалить программу?</h2>
+        <p>«{program.name}» исчезнет из «Моих программ». История выполненных тренировок сохранится.</p>
+        {liveParticipation && <p className="program-detail-delete-error" role="alert">Сначала завершите активную или приостановленную программу.</p>}
+        {deleteError && <p className="program-detail-delete-error" role="alert">{deleteError}</p>}
+        <div className="program-detail-delete-buttons">
+          <button type="button" disabled={deletePending} onClick={() => setDeleteOpen(false)}>Отмена</button>
+          <button type="button" className="danger" disabled={deletePending || liveParticipation} onClick={handleDelete}>{deletePending ? 'Удаляем…' : 'Удалить'}</button>
+        </div>
+      </section>
+    </div>}
   </div>;
 }

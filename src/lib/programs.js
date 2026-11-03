@@ -255,6 +255,28 @@ export async function updateProgram({ programId, coverFile = null, existingCover
   return { id: updatedProgramId, coverPath };
 }
 
+/** Hide a user-created program while preserving completed workouts and referential history. */
+export async function archiveUserProgram(programId) {
+  const user = await requireCurrentUser();
+  const { data: program, error: lookupError } = await supabase.from('programs')
+    .select('id,status,source_catalog_program_id')
+    .eq('id', programId).eq('owner_id', user.id).single();
+  if (lookupError || !program) throw new Error('Программа не найдена или недоступна для удаления.');
+  if (program.source_catalog_program_id) throw new Error('Программы из каталога нельзя удалить таким способом.');
+  if (program.status === 'archived') return;
+  const { data: live, error: liveError } = await supabase.from('user_programs')
+    .select('id').eq('program_id', programId).in('status', ['active','paused']).limit(1);
+  if (liveError) throw new Error('Не удалось проверить расписание программы.');
+  if (live?.length) throw new Error('Сначала завершите активную программу.');
+  const { data: archived, error } = await supabase.from('programs')
+    .update({ status: 'archived' })
+    .eq('id', programId).eq('owner_id', user.id)
+    .is('source_catalog_program_id', null)
+    .neq('status', 'archived')
+    .select('id').maybeSingle();
+  if (error || !archived) throw new Error('Не удалось удалить программу. Попробуйте снова.');
+}
+
 export async function listPrograms() {
   const { data, error } = await supabase
     .from('programs')

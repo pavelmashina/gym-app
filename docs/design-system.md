@@ -153,3 +153,10 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Both catalogue and user-created program pages share a two-option top switcher: **Описание** / **Тренировки**, reusing `ProgramDetailTabs`.
 - The Description section shows program cover/name/categories, statistics and characteristics, plus sharing/participation status for personal programs. The Workouts section shows the training cycle with exercises, or the personal program's schedule and workout structure.
 - The catalog-only introductory status box “Программа из каталога” / “Присоединитесь, когда будете готовы” is removed. The **Присоединиться к программе** action stays in the fixed bottom footer.
+
+## Program detail header and deletion — November 2026
+- The shared Description/Workouts tabs sit **inside** the top detail bar, replacing the title “Моя программа” or “Программа”; there is no extra row.
+- After the photo show name, optional description, then larger category and creation-fact chips (place, equipment, level), then metrics.
+- Remove the large “Активна” status card while keeping pause/resume/complete and start-date editing as unframed management controls.
+- At the bottom of a user-created program’s Description content, show **Удалить программу** followed by **Поделиться программой**. Never show these actions for catalog-adopted programs.
+- Deleting requires confirmation and archives a user-owned program, preserving historic sessions and honoring existing foreign keys. An active or paused program must be completed first. Refresh the list after successful archival.

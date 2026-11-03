@@ -84,20 +84,19 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
 
   return <div className="catalog-detail-layer" role="dialog" aria-modal="true" aria-label="Программа из каталога">
     <div className="catalog-detail-phone program-detail-phone">
-      <header className="program-detail-header"><button type="button" aria-label="Назад к каталогу" onClick={onBack}><BackIcon /></button><strong>Программа</strong><span /></header>
+      <header className="program-detail-header program-detail-header-tabs"><button type="button" aria-label="Назад к каталогу" onClick={onBack}><BackIcon /></button>{!loading && program ? <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="catalog" /> : <span /> }<span aria-hidden="true" /></header>
       {loading && <div className="program-detail-state"><div className="exercise-list-spinner" /><span>Загружаем программу…</span></div>}
       {!loading && error && <div className="program-detail-state error">{error}</div>}
       {!loading && program && <>
-        <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="catalog" />
         <main className="program-detail-content catalog-unified-detail">
           {detailTab === 'description' && <div id="catalog-description-panel" role="tabpanel" aria-labelledby="catalog-description-tab">
             <ProgramOverviewIntro program={program} />
+          <ProgramOverviewMeta program={program} />
           <ProgramOverviewStats items={[
             { label: 'Цикл', value: 1 },
             { label: 'В цикле', value: program.workoutCount || workouts.length },
             { label: 'Повторов', value: 'На выбор' },
           ]} />
-          <ProgramOverviewMeta program={program} />
           </div>}
           {detailTab === 'workouts' && <div id="catalog-workouts-panel" role="tabpanel" aria-labelledby="catalog-workouts-tab">
           <section className="program-detail-section catalog-training-section">

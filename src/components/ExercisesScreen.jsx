@@ -132,7 +132,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     setActiveTab(tabId);
   }
 
-  if (selectedProgramId) return <ProgramDetailScreen programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onEdit={(programId) => onEditProgram?.(programId)} onStart={(programId) => onStartProgram?.(programId)} />;
+  if (selectedProgramId) return <ProgramDetailScreen programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onEdit={(programId) => onEditProgram?.(programId)} onStart={(programId) => onStartProgram?.(programId)} onDeleted={() => { setSelectedProgramId(null); setProgramsReloadKey(value => value + 1); }} />;
 
   return <div className="phone exercise-phone">
     <RootSectionHeader title="Тренировки" />

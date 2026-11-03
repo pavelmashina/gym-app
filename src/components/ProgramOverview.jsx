@@ -9,7 +9,6 @@ export function ProgramOverviewIntro({ program, coverUrl = null }) {
       {coverUrl ? <img src={coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}
     </div>
     <section className="program-detail-hero">
-      <span>Тренировочная программа</span>
       <h1>{program.name}</h1>
       {program.description && <p>{program.description}</p>}
       {categories.length > 0 && <div className="program-detail-tags">{categories.map(category => <span key={category}>{category}</span>)}</div>}
@@ -24,10 +23,13 @@ export function ProgramOverviewStats({ items }) {
 }
 
 export function ProgramOverviewMeta({ program }) {
-  return <section className="program-detail-meta-card">
-    <div><span>Место</span><strong>{program.trainingPlace || 'Нет данных'}</strong></div>
-    <div><span>Оборудование</span><strong>{program.equipment || 'Нет данных'}</strong></div>
-    <div><span>Уровень</span><strong>{program.level || 'Нет данных'}</strong></div>
+  const items = [
+    { label: 'Место', value: program.trainingPlace },
+    { label: 'Оборудование', value: program.equipment },
+    { label: 'Уровень', value: program.level },
+  ].filter(item => item.value);
+  return items.length > 0 && <section className="program-detail-meta-card" aria-label="Параметры программы">
+    {items.map(item => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}
   </section>;
 }
 

@@ -86,3 +86,84 @@
 .program-detail-content [role="tabpanel"]{min-width:0}
 .program-detail-content [role="tabpanel"] > .program-detail-section:first-child{margin-top:0}
 .catalog-training-section{margin-top:0}
+
+/* Tabs take the place of the old detail screen title (no extra nav row). */
+.program-detail-header.program-detail-header-tabs{gap:var(--space-2)!important}
+.program-detail-header .program-detail-tabs{
+  position:static;top:auto;z-index:auto;display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  width:100%;min-width:0;gap:6px;padding:0;border:0;
+  background:transparent;backdrop-filter:none;
+}
+.program-detail-header .program-detail-tabs button{
+  width:100%!important;height:40px!important;min-height:40px!important;
+  padding:0 4px!important;border:1px solid var(--line)!important;
+  border-radius:12px!important;box-shadow:none!important;
+  background:var(--surface)!important;color:var(--muted)!important;
+  font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;
+  font-weight:var(--weight-semibold)!important;white-space:nowrap;
+}
+.program-detail-header .program-detail-tabs button.active{
+  background:var(--ink)!important;color:var(--surface)!important;border-color:var(--ink)!important;
+}
+.program-detail-header .program-detail-tabs button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+/* Photo, title, description, and slightly enlarged creation facts. */
+.program-detail-hero h1{margin:0 0 var(--space-2)!important;font-size:var(--text-h1)!important;line-height:var(--lh-h1)!important}
+.program-detail-hero p{font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
+.program-detail-tags{margin-top:var(--space-3)!important;gap:var(--space-2)!important}
+.program-detail-tags span{
+  display:inline-flex;align-items:center;min-height:34px;
+  padding:var(--space-2) var(--space-3)!important;
+  border-radius:var(--radius-md)!important;
+  font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;
+}
+.program-detail-meta-card{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:var(--space-2);padding:0;border:0;
+  border-radius:0;background:transparent;margin:var(--space-3) 0 0!important;
+}
+.program-detail-meta-card > div{
+  min-width:0;min-height:78px;padding:var(--space-3) var(--space-2);
+  border:1px solid var(--line)!important;border-radius:var(--radius-md);
+  background:var(--surface);display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;gap:var(--space-2);
+}
+.program-detail-meta-card span{font-size:var(--text-micro)!important;line-height:var(--lh-micro)!important}
+.program-detail-meta-card strong{
+  max-width:100%!important;text-align:left!important;
+  font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;
+  overflow-wrap:anywhere;
+}
+.program-detail-stats{margin-top:var(--space-3)!important}
+.program-detail-stats > div{min-height:78px}
+.program-detail-stats span{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important}
+.program-detail-stats strong{font-size:var(--text-h2)!important;line-height:var(--lh-h2)!important}
+/* Retain lifecycle controls but without the “Активна” status card. */
+.program-detail-management{margin-top:var(--space-4);display:grid;gap:var(--space-3)}
+.program-detail-end-actions{margin-top:var(--space-6);display:grid;gap:var(--space-3)}
+.program-detail-end-actions .program-share-trigger{min-height:var(--control-h);font-size:var(--text-body);border-radius:var(--radius-md)}
+.program-detail-delete-trigger{
+  justify-self:start;min-height:42px;padding:var(--space-2) var(--space-3);
+  border:0;border-radius:var(--radius-sm);background:transparent;
+  color:#a44b45;font:inherit;font-size:var(--text-caption);
+  font-weight:var(--weight-semibold);cursor:pointer;
+}
+.program-detail-delete-overlay{position:fixed;inset:0;z-index:2147483050;display:grid;place-items:center;padding:var(--page-x)}
+.program-detail-delete-scrim{position:absolute;inset:0;width:100%;border:0;background:rgba(0,0,0,.45)}
+.program-detail-delete-dialog{
+  position:relative;z-index:1;width:min(100%,390px);
+  padding:var(--space-5);border-radius:var(--radius-lg);
+  background:var(--surface);color:var(--ink);box-shadow:0 18px 45px rgba(0,0,0,.2);
+}
+.program-detail-delete-dialog h2{margin:0 0 var(--space-3);font-size:var(--text-h2)}
+.program-detail-delete-dialog p{margin:0 0 var(--space-3);color:var(--muted);font-size:var(--text-body);line-height:var(--lh-body)}
+.program-detail-delete-dialog .program-detail-delete-error{color:#a63232}
+.program-detail-delete-buttons{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+.program-detail-delete-buttons button{
+  min-height:var(--control-h);border:1px solid var(--line);
+  border-radius:var(--radius-md);background:var(--surface);color:var(--ink);
+  font:inherit;font-size:var(--text-body);font-weight:var(--weight-semibold);cursor:pointer;
+}
+.program-detail-delete-buttons button.danger{border-color:#a63232;background:#a63232;color:#fff}
+.program-detail-delete-buttons button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:360px){.program-detail-header .program-detail-tabs button{font-size:11px!important}.program-detail-meta-card{grid-template-columns:repeat(2,minmax(0,1fr))}}
