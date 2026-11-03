@@ -30,3 +30,20 @@ export function ProgramOverviewMeta({ program }) {
     <div><span>Уровень</span><strong>{program.level || 'Нет данных'}</strong></div>
   </section>;
 }
+
+/** Common tab switcher for catalog and personal program details. */
+export function ProgramDetailTabs({ value, onChange, scope }) {
+  const options = [{ id: 'description', label: 'Описание' }, { id: 'workouts', label: 'Тренировки' }];
+  return <nav className="program-detail-tabs" role="tablist" aria-label="Разделы программы">
+    {options.map(option => <button
+      key={option.id}
+      type="button"
+      id={`${scope}-${option.id}-tab`}
+      role="tab"
+      aria-controls={`${scope}-${option.id}-panel`}
+      aria-selected={value === option.id}
+      className={value === option.id ? 'active' : ''}
+      onClick={() => onChange(option.id)}
+    >{option.label}</button>)}
+  </nav>;
+}

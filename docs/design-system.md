@@ -148,3 +148,8 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Both catalog and personal program detail pages reuse `ProgramOverviewIntro`, `ProgramOverviewStats`, and `ProgramOverviewMeta`, with the same order: cover → name/description/categories → state/action → metrics → metadata → workouts. Personal pages retain their live scheduling, editing and sharing. Catalog programs show their cycle and a join action, but no share button.
 - The Receive Program tab has no duplicate Create Program button. Training tab symbols are 40×40 CSS background images and share a single pixel size across all six tab tiles.
 - The GitHub Pages workflow embeds `VITE_APP_BUILD_ID=github.sha` in the Vite bundle and writes `dist/version.json` with that SHA only after a successful build. The active app checks the deployed manifest every 90 seconds and on focus/visibility; when it differs, a discreet **Обновить** button offers an explicit hard-navigation to the new build, preserving URL/share parameters. Never prompt on local `dev` builds or when offline.
+
+## Program description and workouts sections
+- Both catalogue and user-created program pages share a two-option top switcher: **Описание** / **Тренировки**, reusing `ProgramDetailTabs`.
+- The Description section shows program cover/name/categories, statistics and characteristics, plus sharing/participation status for personal programs. The Workouts section shows the training cycle with exercises, or the personal program's schedule and workout structure.
+- The catalog-only introductory status box “Программа из каталога” / “Присоединитесь, когда будете готовы” is removed. The **Присоединиться к программе** action stays in the fixed bottom footer.

@@ -18,7 +18,21 @@ for(const part of ['ProgramOverviewIntro','ProgramOverviewStats','ProgramOvervie
 }
 assert.match(user,/<ShareProgramButton programId=\{program.id\}/);
 assert.doesNotMatch(catalog,/ShareProgramButton/);
-assert.doesNotMatch(catalog,/catalog-detail-tabs/);
+assert.match(shared,/export function ProgramDetailTabs/);
+assert.match(shared,/label: 'Описание'/);
+assert.match(shared,/label: 'Тренировки'/);
+assert.match(shared,/role="tablist"/);
+assert.match(shared,/aria-selected=\{value === option.id\}/);
+assert.match(catalog,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="catalog" \/>/);
+assert.match(user,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="owned" \/>/);
+assert.match(catalog,/detailTab === 'description'/);
+assert.match(catalog,/detailTab === 'workouts'/);
+assert.match(user,/detailTab === 'description'/);
+assert.match(user,/detailTab === 'workouts'/);
+assert.doesNotMatch(catalog,/Программа из каталога<\/span>/);
+assert.doesNotMatch(catalog,/Присоединитесь, когда будете готовы/);
+assert.match(catalog,/joining \? 'Добавляем программу…' : 'Присоединиться к программе'/);
+assert.match(styles,/\.program-detail-tabs/);
 assert.match(catalog,/program-detail-header/);
 assert.match(catalog,/program-detail-content catalog-unified-detail/);
 assert.match(styles,/grid-template-columns:104px minmax\(0,1fr\) 18px/);

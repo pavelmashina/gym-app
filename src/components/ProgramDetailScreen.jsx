@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram } from '../lib/programs.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
-import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta } from './ProgramOverview.jsx';
+import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { rescheduleScheduledWorkout, skipScheduledWorkout } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -69,6 +69,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
   const [skipConfirmId, setSkipConfirmId] = useState(null);
   const [workoutActionId, setWorkoutActionId] = useState(null);
   const [workoutActionError, setWorkoutActionError] = useState(null);
+  const [detailTab, setDetailTab] = useState('description');
 
   async function reloadProgram() {
     const hydrated = await attachScheduledSnapshot(await getProgram(programId));
@@ -198,7 +199,9 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
   return <div className="phone program-detail-phone">
     <header className="program-detail-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Моя программа</strong><span /></header>
+    <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="owned" />
     <main className="program-detail-content">
+      {detailTab === 'description' && <div id="owned-description-panel" role="tabpanel" aria-labelledby="owned-description-tab">
       <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
       <ShareProgramButton programId={program.id} />
 
@@ -221,7 +224,8 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
 
       <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />
       <ProgramOverviewMeta program={program} />
-
+      </div>}
+      {detailTab === 'workouts' && <div id="owned-workouts-panel" role="tabpanel" aria-labelledby="owned-workouts-tab">
       <section className="program-detail-section"><div className="program-detail-section-head"><span>{participation ? 'Календарь' : (isCycle ? 'Повторение цикла' : 'Последовательность')}</span><h2>{participation ? 'Запланированные тренировки' : (isCycle ? `${program.cycleRepeatCount} × цикл` : 'Старая структура программы')}</h2></div><div className="program-detail-schedule">{preview.map((item) => {
         const overdue = Boolean(participation && item.status === 'scheduled' && item.scheduledDate < localToday());
         const controllable = Boolean(isActive && item.status === 'scheduled');
@@ -239,6 +243,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart }) {
       })}</div></section>
 
       <section className="program-detail-section"><div className="program-detail-section-head"><span>Структура</span><h2>{isCycle ? 'Один цикл тренировок' : 'Старая структура программы'}</h2></div><div className="program-detail-weeks">{isCycle ? <section><header><strong>Цикл</strong><span>{formatRussianCount(totalTemplateWorkouts, ['тренировка','тренировки','тренировок'])}</span></header>{templateWorkouts.map(({ workout }, index) => <div className="program-detail-week-workout" key={workout.id}><strong>{index + 1}. {workout.name}</strong><span>{workout.exercises.map((exercise) => exercise.name).join(' · ')}</span></div>)}</section> : program.programWeeks.map((group) => <section key={group.id}><header><strong>Этап {group.number}</strong><span>{formatRussianCount(group.workouts.length, ['тренировка','тренировки','тренировок'])}</span></header>{group.workouts.map((workout) => <div className="program-detail-week-workout" key={workout.id}><strong>{workout.name}</strong><span>{workout.exercises.map((exercise) => exercise.name).join(' · ')}</span></div>)}</section>)}</div></section>
+      </div>}
     </main>
     <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>{canStart && <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}><CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span></button>}<button className="program-detail-edit-button" type="button" onClick={() => canEditProgram && onEdit?.(program.id)} disabled={!canEditProgram}><PencilIcon /><span>{canEditProgram ? 'Редактировать программу' : 'Редактирование недоступно'}</span></button></footer>
   </div>;

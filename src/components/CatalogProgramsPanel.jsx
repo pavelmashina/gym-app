@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
 import '../catalog-programs.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
-import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta } from './ProgramOverview.jsx';
+import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs } from './ProgramOverview.jsx';
 
 const ALL = 'Все';
 const NO_DATA = 'Нет данных';
@@ -59,10 +59,11 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
   const [error, setError] = useState('');
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
+  const [detailTab, setDetailTab] = useState('description');
 
   useEffect(() => {
     let active = true;
-    setLoading(true); setError('');
+    setLoading(true); setError(''); setDetailTab('description');
     getCatalogProgram(programId).then((result) => { if (active) setProgram(result); }).catch((requestError) => { if (active) setError(requestError.message); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [programId]);
@@ -87,26 +88,26 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
       {loading && <div className="program-detail-state"><div className="exercise-list-spinner" /><span>Загружаем программу…</span></div>}
       {!loading && error && <div className="program-detail-state error">{error}</div>}
       {!loading && program && <>
+        <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="catalog" />
         <main className="program-detail-content catalog-unified-detail">
-          <ProgramOverviewIntro program={program} />
-          <section className="program-detail-start-state not-started">
-            <span className="program-detail-status-badge">Программа из каталога</span>
-            <strong>Присоединитесь, когда будете готовы</strong>
-            <p>При добавлении можно выбрать количество повторений цикла и расписание тренировок.</p>
-          </section>
+          {detailTab === 'description' && <div id="catalog-description-panel" role="tabpanel" aria-labelledby="catalog-description-tab">
+            <ProgramOverviewIntro program={program} />
           <ProgramOverviewStats items={[
             { label: 'Цикл', value: 1 },
             { label: 'В цикле', value: program.workoutCount || workouts.length },
             { label: 'Повторов', value: 'На выбор' },
           ]} />
           <ProgramOverviewMeta program={program} />
-          <section className="program-detail-section">
+          </div>}
+          {detailTab === 'workouts' && <div id="catalog-workouts-panel" role="tabpanel" aria-labelledby="catalog-workouts-tab">
+          <section className="program-detail-section catalog-training-section">
             <div className="program-detail-section-head"><span>Структура</span><h2>Один цикл тренировок</h2></div>
             {workouts.length > 0
               ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div>
               : <div className="catalog-detail-empty-card">Нет данных</div>}
             <div className="catalog-source-note">Исходные упражнения, подходы и повторения сохранены из каталога. После присоединения программа появится в «Моих программах».</div>
           </section>
+          </div>}
           {joinError && <div className="catalog-join-error" role="alert">{joinError}</div>}
         </main>
         <footer className="program-detail-footer catalog-unified-footer"><button className="program-detail-start-button" type="button" onClick={handleJoin} disabled={joining}>{joining ? 'Добавляем программу…' : 'Присоединиться к программе'}</button></footer>
