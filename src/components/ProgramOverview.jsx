@@ -23,13 +23,10 @@ export function ProgramOverviewStats({ items }) {
 }
 
 export function ProgramOverviewMeta({ program }) {
-  const items = [
-    { label: 'Место', value: program.trainingPlace },
-    { label: 'Оборудование', value: program.equipment },
-    { label: 'Уровень', value: program.level },
-  ].filter(item => item.value);
-  return items.length > 0 && <section className="program-detail-meta-card" aria-label="Параметры программы">
-    {items.map(item => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}
+  return <section className="program-detail-meta-card" aria-label="Параметры программы">
+    <div><span>Место</span><strong>{program.trainingPlace || 'Нет данных'}</strong></div>
+    <div><span>Оборудование</span><strong>{program.equipment || 'Нет данных'}</strong></div>
+    <div><span>Уровень</span><strong>{program.level || 'Нет данных'}</strong></div>
   </section>;
 }
 

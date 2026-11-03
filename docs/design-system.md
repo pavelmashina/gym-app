@@ -160,3 +160,8 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Remove the large “Активна” status card while keeping pause/resume/complete and start-date editing as unframed management controls.
 - At the bottom of a user-created program’s Description content, show **Удалить программу** followed by **Поделиться программой**. Never show these actions for catalog-adopted programs.
 - Deleting requires confirmation and archives a user-owned program, preserving historic sessions and honoring existing foreign keys. An active or paused program must be completed first. Refresh the list after successful archival.
+
+## Restore compact program fact cards and hide main navigation
+- The program-detail stats (“Этапы”, “Тренировок”, “Упражнений”, “Циклов”, etc.) again use their original compact 3-column card geometry from `src/program-detail.css` (67px minimum height).
+- “Место”, “Оборудование” and “Уровень” again appear in the original single metadata card with horizontal rows (52px minimum height), including “Нет данных” fallback where applicable.
+- Do not show the common 5-item bottom app navigation on either personal or catalog program detail (`body:has(.program-detail-phone) .app-bottom-nav`). The dedicated program action footer remains accessible.
