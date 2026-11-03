@@ -33,7 +33,6 @@ const lib=read('src/lib/programs.js');
 assert.match(lib,/export async function archiveUserProgram/);
 assert.match(lib,/\.update\(\{ status: 'archived' \}\)/);
 assert.match(lib,/\.in\('status', \['active','paused'\]\)/);
-const exercises=read('src/components/ExercisesScreen.jsx');
 assert.match(exercises,/onDeleted=\{\(\) =>/);
 assert.match(styles,/\.program-detail-header \.program-detail-tabs/);
 assert.match(shared,/label: 'Описание'/);
