@@ -25,6 +25,7 @@ function ExerciseInfoModal({ exercise, onClose, onEdit }) {
     <button className="exercise-library-info-scrim" type="button" aria-label="Закрыть" onClick={onClose} />
     <section className="exercise-library-info-card">
       <header><div><span>Упражнение</span><h3>{exercise.name}</h3></div><button type="button" onClick={onClose}>×</button></header>
+      {exercise.resolvedPhotoUrl && <div className="exercise-library-info-photo"><img src={exercise.resolvedPhotoUrl} alt={exercise.name} loading="lazy" /></div>}
       {video && <div className="exercise-library-info-video">
         {isDirectVideo(video) ? <video controls playsInline preload="metadata" src={video} /> : <a href={video} target="_blank" rel="noreferrer"><span>▶</span><strong>Открыть видео</strong><small>Видео откроется в новой вкладке</small></a>}
       </div>}
@@ -40,6 +41,7 @@ function LibraryRow({ exercise, selected, onClick, onInfo, multi }) {
   return <div className={`exercise-library-row-wrap${selected ? ' selected' : ''}`}>
     <button className="exercise-library-row" type="button" onClick={onClick} aria-pressed={multi ? selected : undefined}>
       {multi && <span className="exercise-library-check">{selected ? '✓' : ''}</span>}
+      {exercise.resolvedPhotoUrl && <span className="exercise-library-row-photo"><img src={exercise.resolvedPhotoUrl} alt="" loading="lazy" /></span>}
       <span className="exercise-library-row-copy"><strong>{exercise.name}</strong><small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small></span>
       {!multi && <span className="exercise-library-row-chevron">›</span>}
     </button>
@@ -58,7 +60,7 @@ function LibrarySection({ title, items, selectedIds, multi, onPick, onInfo }) {
   </section>;
 }
 
-const EMPTY_DRAFT = { name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '', videoUrl: '', videoFile: null };
+const EMPTY_DRAFT = { name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '', videoUrl: '', videoFile: null, photoFile: null, existingPhotoUrl: null, removePhoto: false };
 
 export function ExerciseLibraryPicker({ selectedIds = [], multi = false, excludeId = null, onChange, onSelect, searchPlaceholder = 'Название упражнения' }) {
   const [library, setLibrary] = useState({ all: [], mine: [], recent: [] });
@@ -73,10 +75,18 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [infoExercise, setInfoExercise] = useState(null);
   const [editingId,setEditingId] = useState(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
+  useEffect(() => {
+    if (!draft.photoFile) { setPhotoPreviewUrl(null); return undefined; }
+    const url = URL.createObjectURL(draft.photoFile);
+    setPhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [draft.photoFile]);
+  const currentPhotoUrl = photoPreviewUrl || (draft.removePhoto ? null : draft.existingPhotoUrl);
 
   function editExercise(exercise) {
     setEditingId(exercise.id);setInfoExercise(null);setCreateError('');
-    setDraft({...EMPTY_DRAFT,name:exercise.name,muscleGroup:exercise.display_muscle_group,equipment:exercise.equipment,description:exercise.description||''});
+    setDraft({...EMPTY_DRAFT,name:exercise.name,muscleGroup:exercise.display_muscle_group,equipment:exercise.equipment,description:exercise.description||'',existingPhotoUrl:exercise.resolvedPhotoUrl||null});
     setCreateOpen(true);
   }
 
@@ -149,6 +159,17 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
         <label><span>Оборудование *</span><select required value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
       <label><span>Описание · необязательно</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>
+      <div className="exercise-library-photo-fields">
+        <label className="exercise-library-photo-upload"><span>Фото упражнения · необязательно</span>
+          <input key={draft.photoFile ? 'selected' : 'empty'} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setDraft(current => ({ ...current, photoFile: event.target.files?.[0] || null, removePhoto: false }))} />
+          <small>JPEG, PNG или WebP · до 8 МБ</small>
+        </label>
+        {currentPhotoUrl && <div className="exercise-library-photo-preview"><img src={currentPhotoUrl} alt="Фото упражнения" /></div>}
+        {(draft.photoFile || (draft.existingPhotoUrl && !draft.removePhoto)) &&
+          <button className="exercise-library-photo-clear" type="button" onClick={() => setDraft(current => ({ ...current, photoFile: null, removePhoto: Boolean(current.existingPhotoUrl) }))}>Убрать фото</button>}
+        {draft.removePhoto && draft.existingPhotoUrl && !draft.photoFile &&
+          <button className="exercise-library-photo-restore" type="button" onClick={() => setDraft(current => ({ ...current, removePhoto: false }))}>Вернуть фото</button>}
+      </div>
       {!editingId && <div className="exercise-library-video-fields">
         <label><span>Ссылка на видео · необязательно</span><input type="url" value={draft.videoUrl} disabled={Boolean(draft.videoFile)} onChange={(event) => setDraft({ ...draft, videoUrl: event.target.value })} placeholder="https://youtube.com/…" /></label>
         <div className="exercise-library-video-divider"><span>или</span></div>
