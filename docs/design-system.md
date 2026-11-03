@@ -165,3 +165,10 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - The program-detail stats (“Этапы”, “Тренировок”, “Упражнений”, “Циклов”, etc.) again use their original compact 3-column card geometry from `src/program-detail.css` (67px minimum height).
 - “Место”, “Оборудование” and “Уровень” again appear in the original single metadata card with horizontal rows (52px minimum height), including “Нет данных” fallback where applicable.
 - Do not show the common 5-item bottom app navigation on either personal or catalog program detail (`body:has(.program-detail-phone) .app-bottom-nav`). The dedicated program action footer remains accessible.
+
+## Program detail typography and custom exercise photos — November 2026
+- The Description/Workouts detail header switcher has only labels, no border or filled pill. The active label is black with a 2px underline, inactive labels muted.
+- Program details reuse standard typography: 12/16 for metadata labels, 14/20 for values and body, 20/24 for heading/metric values, 16px main section rhythm. Place/Equipment/Level remain rows inside the original unified metadata card rather than independent tiles.
+- Users can add a photo to a newly created private exercise or upload, replace, remove an image while editing it. JPEG, PNG, WebP up to 8 MB. Photo preview and thumbnail appear within the exercise library and detail sheet.
+- The database stores a `photo_path` string in `public.exercises`; images are stored in the **private** Supabase `exercise-photos` bucket, with RLS permissions restricted to an authenticated user's folder. The existing v2 catalog view is not modified; owner-specific photo paths are loaded separately from `public.exercises`.
+- New photo uploads are kept only after successful exercise row update. Replacing/removing a photo cleans up the old object; an error leaves the existing photo intact. Existing exercise video behavior is preserved.

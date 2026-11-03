@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read = path => readFileSync(path,'utf8');
+const lib = read('src/lib/exerciseLibrary.js');
+const picker = read('src/components/ExerciseLibraryPicker.jsx');
+const pickerStyles = read('src/exercise-library-picker.css');
+const programStyles = read('src/training-program-polish.css');
+const schema = read('supabase/schema/exercise-photo-storage.sql');
+for (const name of ['EXERCISE_PHOTOS_BUCKET','validatePhotoFile','uploadExercisePhoto','signedPhotoUrl','resolvedPhotoUrl']) {
+  assert.ok(lib.includes(name), name);
+}
+assert.match(lib,/const MAX_PHOTO_SIZE = 8 \* 1024 \* 1024/);
+assert.match(lib,/const PHOTO_EXTENSIONS/);
+assert.match(lib,/\.from\('exercises'\)\.select\('id,photo_path'\)\.eq\('owner_id', user.id\)/);
+assert.match(lib,/photo_path: photoPaths\.get\(row\.id\)/);
+assert.match(lib,/photoPath = await uploadExercisePhoto/);
+assert.match(lib,/const photoPath = uploadedPath \|\| \(removePhoto \? null : previous\.photo_path\)/);
+assert.match(lib,/previous\.photo_path && previous\.photo_path !== photoPath/);
+assert.match(lib,/\.eq\('owner_id',user.id\)/);
+assert.match(picker,/accept="image\/jpeg,image\/png,image\/webp"/);
+assert.match(picker,/URL\.createObjectURL\(draft.photoFile\)/);
+assert.match(picker,/URL\.revokeObjectURL\(url\)/);
+assert.match(picker,/currentPhotoUrl/);
+assert.match(picker,/exercise\.resolvedPhotoUrl/);
+assert.match(picker,/onEdit=\{editExercise\}/);
+assert.match(picker,/removePhoto/);
+assert.match(pickerStyles,/\.exercise-library-info-photo img/);
+assert.match(pickerStyles,/object-fit:cover/);
+for (const p of ['select','insert','delete']) assert.match(schema,new RegExp('create policy "exercise_photos_'+p+'_own"'));
+assert.match(schema,/storage\.foldername\(name\)/);
+assert.match(programStyles,/\.program-detail-header \.program-detail-tabs button::after/);
+assert.match(programStyles,/\.program-detail-header \.program-detail-tabs button\.active::after/);
+assert.match(programStyles,/\.program-detail-phone \.program-detail-meta-card span/);
+assert.match(programStyles,/\.program-detail-phone \.program-detail-meta-card strong/);
+assert.match(programStyles,/font-size:var\(--text-body\)!important/);
+console.log('Private exercise photos, preview, replacement, RLS and program typography contracts passed.');
