@@ -96,7 +96,7 @@ input,select,textarea{border-radius:var(--radius-md)!important}
 .training-tabs button{font-size:11px!important;line-height:14px!important;font-weight:var(--weight-semibold)!important;gap:8px!important}
 .exercise-catalog-content .training-tabs{--training-icon-block-width:72px;--training-tab-width:96px;--icon-x:18px;--text-x:18px}
 .exercise-catalog-content .training-tabs button{min-height:112px!important}
-.exercise-catalog-content .training-tabs button::before{width:72px!important;height:72px!important;border-radius:22px!important;background-size:43px 43px!important;box-shadow:var(--shadow-card)!important}
+.exercise-catalog-content .training-tabs button::before{width:72px!important;height:72px!important;border-radius:22px!important;background-size:40px 40px!important;box-shadow:var(--shadow-card)!important}
 
 /* Segmented controls */
 .statistics-tabs,.statistics-range,.statistics-period-type,.auth-tabs,.nutrition-segment{padding:4px!important;gap:4px!important;border-radius:14px!important;background:var(--surface-2)!important}
