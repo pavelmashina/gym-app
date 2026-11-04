@@ -197,7 +197,8 @@ export async function loadWorkoutSession(sessionId) {
     workout: {
       id: workout.id,
       name: workout.workout_name,
-      scheduledDate: mode === 'completed' ? (localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : workout.scheduled_date,
+      scheduledDate: workout.scheduled_date,
+      completedDate: mode === 'completed' ? (localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : null,
       standalone: Boolean(workout.standalone_owner_id),
       originalScheduledDate: workout.scheduled_date,
       status: workout.status,

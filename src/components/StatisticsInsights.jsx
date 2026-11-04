@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import '../statistics-insights.css';
+import { dateTicks } from '../lib/statisticsDateTicks.js';
 
 function dateFromKey(value) {
   if (!value) return null;
@@ -68,18 +69,6 @@ function changeCopy(current, previous, formatter = (value) => String(value)) {
   return { tone: change > 0 ? 'up' : 'down', text: `${change > 0 ? '+' : '−'}${rounded}%` };
 }
 
-function dateTicks(firstKey, lastKey, count = 8) {
-  const first = dateFromKey(firstKey);
-  const last = dateFromKey(lastKey);
-  if (!first || !last) return [];
-  const start = first.getTime();
-  const end = last.getTime();
-  if (start === end) return [dateKey(first)];
-  return Array.from({ length: count }, (_, index) => {
-    const ratio = count === 1 ? 0 : index / (count - 1);
-    return dateKey(new Date(start + (end - start) * ratio));
-  });
-}
 
 function numericScale(values, count = 5) {
   const clean = values.map(Number).filter(Number.isFinite);

@@ -19,7 +19,7 @@ function CatalogCard({ program, onOpen }) {
         <span className="catalog-program-category">{category}</span>
         <strong>{program.name}</strong>
         <span className="catalog-program-card-meta">
-          <span>{program.workoutCount} трен. в цикле</span>
+          <span>{formatRussianCount(program.workoutCount, ['тренировка', 'тренировки', 'тренировок'])} в цикле</span>
           {program.trainingPlace && <span>{program.trainingPlace}</span>}
           {program.level && <span>{program.level}</span>}
         </span>

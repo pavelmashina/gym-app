@@ -220,6 +220,11 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
     <main className="program-detail-content">
       {detailTab === 'description' && <div id="owned-description-panel" role="tabpanel" aria-labelledby="owned-description-tab">
       <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
+      <p className="program-detail-status-text" aria-label="Состояние программы">
+        <strong>{participationLabel(participation)}</strong>
+        {participation?.startDate && <span> · Дата старта: {formatDate(participation.startDate)}</span>}
+        {participation && preview.find(item => item.status === 'scheduled') && <span> · Следующая тренировка: {formatDate(preview.find(item => item.status === 'scheduled').scheduledDate)}</span>}
+      </p>
 
       <ProgramOverviewMeta program={program} />
       <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />

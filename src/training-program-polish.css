@@ -243,3 +243,21 @@ body:has(.program-detail-phone) .app-bottom-nav {
   font-size:var(--text-body)!important;line-height:var(--lh-body)!important;
   font-weight:var(--weight-semibold)!important;
 }
+
+/* Compact status text (no “Активна” card, in line with the user's layout request). */
+.program-detail-status-text{
+  margin:var(--space-3) 0 0;
+  padding:0;
+  border:0;
+  background:transparent;
+  font-size:var(--text-caption);
+  line-height:var(--lh-caption);
+  color:var(--muted);
+}
+.program-detail-status-text strong{color:var(--ink);font-weight:var(--weight-semibold)}
+.workout-exercise-prescription{
+  margin:0 0 var(--space-2);
+  font-size:var(--text-caption);
+  line-height:var(--lh-caption);
+  color:var(--muted);
+}
