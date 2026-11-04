@@ -172,3 +172,9 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Users can add a photo to a newly created private exercise or upload, replace, remove an image while editing it. JPEG, PNG, WebP up to 8 MB. Photo preview and thumbnail appear within the exercise library and detail sheet.
 - The database stores a `photo_path` string in `public.exercises`; images are stored in the **private** Supabase `exercise-photos` bucket, with RLS permissions restricted to an authenticated user's folder. The existing v2 catalog view is not modified; owner-specific photo paths are loaded separately from `public.exercises`.
 - New photo uploads are kept only after successful exercise row update. Replacing/removing a photo cleans up the old object; an error leaves the existing photo intact. Existing exercise video behavior is preserved.
+
+## Multi-photo galleries for custom exercises
+- Up to **10 photos per exercise** (JPEG, PNG, WebP; max 8 MB each), selected together or appended later. Editing supports individual removal, with changes committed only when the form is saved.
+- `photo_paths text[]` contains ordered file paths. Earlier `photo_path` entries are backfilled as the first photo; `photo_path` continues to store the first/cover image for compatibility.
+- Custom exercise cards show swipeable photos with arrows and pagination. Tap an image to open a full-screen viewer with swipes, arrows, keyboard navigation and Escape to close.
+- Files remain private in `exercise-photos` Storage; old objects are deleted only after successful database update. Other users cannot fetch the photos.
