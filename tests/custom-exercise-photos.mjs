@@ -22,7 +22,7 @@ assert.match(lib,/photo_paths: nextPaths/);
 assert.match(lib,/const keptPaths = previousPaths\.filter/);
 assert.match(lib,/const obsoletePaths = previousPaths\.filter/);
 assert.match(lib,/validatePhotoGallery\(selectedPhotos, keptPaths\.length\)/);
-assert.match(lib,/\.eq\('owner_id',user.id\)/);
+assert.match(lib,/\.eq\('owner_id',\s*user.id\)/);
 
 assert.match(picker,/type="file" multiple accept="image\/jpeg,image\/png,image\/webp"/);
 assert.match(picker,/URL\.createObjectURL\(file\)/);
