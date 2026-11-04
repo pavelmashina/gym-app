@@ -9,6 +9,7 @@ import {
 } from '../lib/exerciseLibrary.js';
 import '../exercise-library-picker.css';
 import ExerciseTechnique from './ExerciseTechnique.jsx';
+import { ExercisePhotoGallery } from './ExercisePhotoGallery.jsx';
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
@@ -21,11 +22,14 @@ function isDirectVideo(url) {
 
 function ExerciseInfoModal({ exercise, onClose, onEdit }) {
   const video = exercise.resolvedVideoUrl || exercise.video_url || null;
+  const photos = exercise.resolvedPhotoUrls?.length
+    ? exercise.resolvedPhotoUrls
+    : (exercise.resolvedPhotoUrl ? [exercise.resolvedPhotoUrl] : []);
   return <div className="exercise-library-info-shell" role="dialog" aria-modal="true" aria-label={`Информация: ${exercise.name}`}>
     <button className="exercise-library-info-scrim" type="button" aria-label="Закрыть" onClick={onClose} />
     <section className="exercise-library-info-card">
       <header><div><span>Упражнение</span><h3>{exercise.name}</h3></div><button type="button" onClick={onClose}>×</button></header>
-      {exercise.resolvedPhotoUrl && <div className="exercise-library-info-photo"><img src={exercise.resolvedPhotoUrl} alt={exercise.name} loading="lazy" /></div>}
+      {photos.length > 0 && <ExercisePhotoGallery photos={photos} alt={exercise.name} />}
       {video && <div className="exercise-library-info-video">
         {isDirectVideo(video) ? <video controls playsInline preload="metadata" src={video} /> : <a href={video} target="_blank" rel="noreferrer"><span>▶</span><strong>Открыть видео</strong><small>Видео откроется в новой вкладке</small></a>}
       </div>}
@@ -60,7 +64,11 @@ function LibrarySection({ title, items, selectedIds, multi, onPick, onInfo }) {
   </section>;
 }
 
-const EMPTY_DRAFT = { name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '', videoUrl: '', videoFile: null, photoFile: null, existingPhotoUrl: null, removePhoto: false };
+const EMPTY_DRAFT = {
+  name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '',
+  videoUrl: '', videoFile: null,
+  photoFiles: [], existingPhotos: [], removedPhotoPaths: [],
+};
 
 export function ExerciseLibraryPicker({ selectedIds = [], multi = false, excludeId = null, onChange, onSelect, searchPlaceholder = 'Название упражнения' }) {
   const [library, setLibrary] = useState({ all: [], mine: [], recent: [] });
@@ -75,18 +83,48 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [infoExercise, setInfoExercise] = useState(null);
   const [editingId,setEditingId] = useState(null);
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
+  const [photoPreviews, setPhotoPreviews] = useState([]);
   useEffect(() => {
-    if (!draft.photoFile) { setPhotoPreviewUrl(null); return undefined; }
-    const url = URL.createObjectURL(draft.photoFile);
-    setPhotoPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [draft.photoFile]);
-  const currentPhotoUrl = photoPreviewUrl || (draft.removePhoto ? null : draft.existingPhotoUrl);
+    const previews = draft.photoFiles.map(file => ({ file, url: URL.createObjectURL(file) }));
+    setPhotoPreviews(previews);
+    return () => previews.forEach(preview => URL.revokeObjectURL(preview.url));
+  }, [draft.photoFiles]);
+  const visibleExistingPhotos = draft.existingPhotos.filter(photo => !draft.removedPhotoPaths.includes(photo.path));
+  const previewGallery = [
+    ...visibleExistingPhotos.map(photo => photo.url).filter(Boolean),
+    ...photoPreviews.map(preview => preview.url),
+  ];
+
+  function selectPhotoFiles(event) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (!files.length) return;
+    if (files.some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) {
+      setCreateError('Фото должны быть в формате JPEG, PNG или WebP.');
+      return;
+    }
+    if (files.some(file => file.size > 8 * 1024 * 1024)) {
+      setCreateError('Размер каждого фото не должен превышать 8 МБ.');
+      return;
+    }
+    if (visibleExistingPhotos.length + draft.photoFiles.length + files.length > 10) {
+      setCreateError('Можно добавить до 10 фотографий одного упражнения.');
+      return;
+    }
+    setCreateError('');
+    setDraft(current => ({ ...current, photoFiles: [...current.photoFiles, ...files] }));
+  }
 
   function editExercise(exercise) {
     setEditingId(exercise.id);setInfoExercise(null);setCreateError('');
-    setDraft({...EMPTY_DRAFT,name:exercise.name,muscleGroup:exercise.display_muscle_group,equipment:exercise.equipment,description:exercise.description||'',existingPhotoUrl:exercise.resolvedPhotoUrl||null});
+    setDraft({
+      ...EMPTY_DRAFT,
+      name: exercise.name,
+      muscleGroup: exercise.display_muscle_group,
+      equipment: exercise.equipment,
+      description: exercise.description || '',
+      existingPhotos: exercise.resolvedPhotos || [],
+    });
     setCreateOpen(true);
   }
 
@@ -160,15 +198,30 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
       </div>
       <label><span>Описание · необязательно</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>
       <div className="exercise-library-photo-fields">
-        <label className="exercise-library-photo-upload"><span>Фото упражнения · необязательно</span>
-          <input key={draft.photoFile ? 'selected' : 'empty'} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setDraft(current => ({ ...current, photoFile: event.target.files?.[0] || null, removePhoto: false }))} />
-          <small>JPEG, PNG или WebP · до 8 МБ</small>
+        <label className="exercise-library-photo-upload">
+          <span>Фотографии упражнения · необязательно</span>
+          <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={selectPhotoFiles} />
+          <small>Выберите несколько фото или добавляйте по одному. До 10 изображений, каждое до 8 МБ (JPEG, PNG, WebP).</small>
         </label>
-        {currentPhotoUrl && <div className="exercise-library-photo-preview"><img src={currentPhotoUrl} alt="Фото упражнения" /></div>}
-        {(draft.photoFile || (draft.existingPhotoUrl && !draft.removePhoto)) &&
-          <button className="exercise-library-photo-clear" type="button" onClick={() => setDraft(current => ({ ...current, photoFile: null, removePhoto: Boolean(current.existingPhotoUrl) }))}>Убрать фото</button>}
-        {draft.removePhoto && draft.existingPhotoUrl && !draft.photoFile &&
-          <button className="exercise-library-photo-restore" type="button" onClick={() => setDraft(current => ({ ...current, removePhoto: false }))}>Вернуть фото</button>}
+        {previewGallery.length > 0 && <ExercisePhotoGallery photos={previewGallery} alt={draft.name || 'Упражнение'} />}
+        {(visibleExistingPhotos.length > 0 || photoPreviews.length > 0) && <div className="exercise-library-photo-thumbnails">
+          {visibleExistingPhotos.map((photo, number) => <div className="exercise-library-photo-thumb" key={photo.path}>
+            {photo.url ? <img src={photo.url} alt={`Сохранённое фото ${number + 1}`} /> : <span>Фото</span>}
+            <button type="button" aria-label={`Убрать сохранённое фото ${number + 1}`}
+              onClick={() => setDraft(current => ({
+                ...current, removedPhotoPaths: [...current.removedPhotoPaths, photo.path],
+              }))}>×</button>
+          </div>)}
+          {photoPreviews.map((preview, number) => <div className="exercise-library-photo-thumb" key={preview.url}>
+            <img src={preview.url} alt={`Новое фото ${number + 1}`} />
+            <button type="button" aria-label={`Убрать новое фото ${number + 1}`}
+              onClick={() => setDraft(current => ({
+                ...current, photoFiles: current.photoFiles.filter((_, index) => index !== number),
+              }))}>×</button>
+          </div>)}
+        </div>}
+        {draft.removedPhotoPaths.length > 0 && <button className="exercise-library-photo-restore" type="button"
+          onClick={() => setDraft(current => ({ ...current, removedPhotoPaths: [] }))}>Вернуть удалённые фото</button>}
       </div>
       {!editingId && <div className="exercise-library-video-fields">
         <label><span>Ссылка на видео · необязательно</span><input type="url" value={draft.videoUrl} disabled={Boolean(draft.videoFile)} onChange={(event) => setDraft({ ...draft, videoUrl: event.target.value })} placeholder="https://youtube.com/…" /></label>
