@@ -193,3 +193,6 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Dropdowns for other optional characteristics: Goal, Duration, Frequency, Training time, Schedule, Recovery, Progression, Warm-up and After training. Choices persist in the private user's `public.programs.details` JSONB field.
 - Numeric cards for stages, workouts and exercises derive from the structure and are not manually selected.
 - Workout views no longer display the word Структура; counts use body typography. Expanded workout exercises show only sets/reps/rest and never freeform technique notes.
+
+- Catalog adoption now copies any selected attributes from `catalog_programs.source_payload.details` into the newly created user's `programs.details` in the same transaction, using an invoker trigger. This keeps the catalog and joined personal-program detail cards consistent.
+- Existing published demonstration catalog program is normalized to four selectable category tags: `Всё тело`, `Силовые`, `Набор мышечной массы`, `3 раза в неделю`, with `Полный зал` equipment and selected options for all nine extra fields.
