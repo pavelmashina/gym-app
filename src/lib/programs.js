@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { normalizeProgramDetails } from './programOptions.js';
 
 const PROGRAM_COVERS_BUCKET = 'program-covers';
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
@@ -136,6 +137,7 @@ function mapProgramRow(row) {
     trainingPlace: row.training_place ?? '',
     equipment: row.equipment ?? '',
     level: row.level ?? '',
+    details: row.details ?? {},
     scheduleMode: row.schedule_mode ?? 'custom',
     coverPath: row.cover_path ?? null,
     sourceCatalogProgramId: row.source_catalog_program_id ?? null,
@@ -213,7 +215,14 @@ export async function startProgram(programId, startDate) {
   return { id: userProgramId, programId, startDate, status: 'active' };
 }
 
-export async function createProgram({ coverFile = null, startDate = null, ...program }) {
+async function saveProgramDetails(programId,userId,details) {
+  const { data,error } = await supabase.from('programs')
+    .update({details:normalizeProgramDetails(details)})
+    .eq('id',programId).eq('owner_id',userId).select('id').maybeSingle();
+  if(error || !data) throw new Error('Не удалось сохранить выбранные характеристики программы.');
+}
+
+export async function createProgram({ coverFile = null, startDate = null, details = {}, ...program }) {
   validateCover(coverFile);
   if (startDate) validateStartDate(startDate);
   const user = await requireCurrentUser();
@@ -223,6 +232,7 @@ export async function createProgram({ coverFile = null, startDate = null, ...pro
   let coverPath = null;
   try {
     coverPath = await saveCover({ coverFile, programId, userId: user.id });
+    await saveProgramDetails(programId,user.id,details);
     const participation = startDate ? await startProgram(programId, startDate) : null;
     return { id: programId, coverPath, participation };
   } catch (error) {
@@ -232,7 +242,7 @@ export async function createProgram({ coverFile = null, startDate = null, ...pro
   }
 }
 
-export async function updateProgram({ programId, coverFile = null, existingCoverPath = null, ...program }) {
+export async function updateProgram({ programId, coverFile = null, existingCoverPath = null, details = {}, ...program }) {
   validateCover(coverFile);
   const user = await requireCurrentUser();
   const payload = buildProgramPayload(program);
@@ -246,6 +256,7 @@ export async function updateProgram({ programId, coverFile = null, existingCover
     }
     throw new Error('Не удалось сохранить изменения программы. Попробуйте ещё раз.');
   }
+  await saveProgramDetails(programId,user.id,details);
   let coverPath = existingCoverPath;
   if (coverFile) {
     const previousCoverPath = existingCoverPath;
@@ -280,7 +291,7 @@ export async function archiveUserProgram(programId) {
 export async function listPrograms() {
   const { data, error } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
+    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, details, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .neq('status', 'archived')
     .order('updated_at', { ascending: false });
   if (error) throw new Error('Не удалось загрузить ваши программы.');
@@ -308,7 +319,7 @@ export async function listPrograms() {
 export async function getProgram(programId) {
   const { data: programRow, error: programError } = await supabase
     .from('programs')
-    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
+    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, details, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
     .eq('id', programId)
     .single();
   if (programError || !programRow) throw new Error('Не удалось открыть программу.');

@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
 import { createProgram, getProgram, startProgram, updateProgram } from '../lib/programs.js';
+import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
 import '../create-program.css';
 import '../program-persistence.css';
 
-const CATEGORY_OPTIONS = ['Кардио', 'С собственным весом', 'Растяжка', 'Функциональный тренинг', 'Силовой тренинг'];
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function ImageIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="3" /><circle cx="9" cy="9" r="1.7" /><path d="m5.5 17 4.2-4.2 3 2.8 2.4-2.2 3.4 3.6" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>; }
 
 function SelectRow({ label, value, onChange, options, placeholder }) {
-  return <label className="program-select-row"><span>{label}</span><div className="program-select-control"><select value={value} onChange={(event) => onChange(event.target.value)}><option value="">{placeholder}</option>{options.map((option) => <option value={option} key={option}>{option}</option>)}</select><ChevronIcon /></div></label>;
+  return <label className="program-select-row"><span>{label}</span><div className="program-select-control"><select value={value} onChange={(event) => onChange(event.target.value)}>{value && !options.includes(value) && <option value={value}>{value} (ранее сохранено)</option>}<option value="">{placeholder}</option>{options.map((option) => <option value={option} key={option}>{option}</option>)}</select><ChevronIcon /></div></label>;
 }
 
 function resizeTextArea(element) {
@@ -48,6 +48,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [place, setPlace] = useState(restored?.place ?? '');
   const [equipment, setEquipment] = useState(restored?.equipment ?? '');
   const [level, setLevel] = useState(restored?.level ?? '');
+  const [details, setDetails] = useState(restored?.details ?? {});
   const [scheduleMode, setScheduleMode] = useState(restored?.scheduleMode ?? 'custom');
   const [cycleRepeatCount, setCycleRepeatCount] = useState(restored?.cycleRepeatCount ?? 1);
   const [programWeeks, setProgramWeeks] = useState(() => restored?.programWeeks ?? [createCycle()]);
@@ -65,18 +66,18 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   useEffect(() => {
     if (!draftKey || draftFinished.current || draftBlocked) return;
     try {
-      writeProgramDraft(localStorage, draftKey, { step, name, description, categories, place, equipment, level,
+      writeProgramDraft(localStorage, draftKey, { step, name, description, categories, place, equipment, level, details,
         scheduleMode, cycleRepeatCount, programWeeks, editingWorkoutId, startDate, hasCover: Boolean(coverFile) || coverNeedsSelection });
       setDraftError('');
     } catch { setDraftError('Не удалось сохранить черновик на устройстве. Не закрывайте страницу до сохранения программы.'); }
-  }, [draftKey, step, name, description, categories, place, equipment, level, scheduleMode, cycleRepeatCount,
+  }, [draftKey, step, name, description, categories, place, equipment, level, details, scheduleMode, cycleRepeatCount,
     programWeeks, editingWorkoutId, startDate, coverFile, coverNeedsSelection, draftBlocked]);
 
   function discardDraft() {
     if (!window.confirm('Удалить черновик на этом устройстве и начать новую программу?')) return;
     try { clearProgramDraft(localStorage, draftKey); }
     catch { setDraftError('Не удалось удалить черновик. Попробуйте ещё раз.'); return; }
-    setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel('');
+    setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel(''); setDetails({});
     setScheduleMode('custom'); setCycleRepeatCount(1); setProgramWeeks([createCycle()]);
     setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverNeedsSelection(false);
     setDraftBlocked(false); setDraftError('');
@@ -103,6 +104,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
         setPlace(program.trainingPlace);
         setEquipment(program.equipment);
         setLevel(program.level);
+        setDetails(program.details ?? {});
         setScheduleMode(program.scheduleMode ?? 'custom');
         setCycleRepeatCount(program.cycleRepeatCount ?? 1);
         setProgramWeeks(normalizeIntoOneCycle(program.programWeeks));
@@ -137,6 +139,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       trainingPlace: place,
       equipment,
       level,
+      details,
       scheduleMode,
       programWeeks: normalizeIntoOneCycle(programWeeks),
       coverFile,
@@ -212,7 +215,13 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       <section className="create-program-intro"><span>Шаг 1</span><h1>{isEditing ? 'Основная информация' : 'Новая программа'}</h1><p>Заполните информацию о программе. На следующем шаге вы соберёте один цикл тренировок, а затем зададите ритм и количество повторений.</p></section>
       <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea className="program-auto-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
       <section className="create-program-section"><div className="create-program-section-head"><div><span>Обложка</span><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Тип тренировок</span><h2>Категории</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={['Тренажёрный зал','Дом','Улица','Неважно']} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={['Полный зал','Свободные веса','Тренажёры','Минимум оборудования','Без оборудования']} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={['Начальный','Средний','Продвинутый']} /></div></section>
+      <section className="create-program-section"><div className="create-program-section-head"><div><span>Тип тренировок</span><h2>Категории</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={PLACE_OPTIONS} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={EQUIPMENT_OPTIONS} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={LEVEL_OPTIONS} /></div></section>
+      <section className="create-program-section"><div className="create-program-section-head"><div><span>Дополнительно</span><h2>Характеристики программы</h2></div></div>
+        <div className="program-select-card">{PROGRAM_DETAIL_FIELDS.map(field =>
+          <SelectRow key={field.key} label={field.label} value={details[field.key] ?? ''} placeholder="Выбрать" options={field.options}
+            onChange={value => setDetails(current => ({ ...current,[field.key]:value }))} />)}
+        </div>
+      </section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" disabled={!canContinue} onClick={() => goToStep(2)}>Далее</button></footer>
   </div>;

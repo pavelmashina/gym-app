@@ -32,7 +32,8 @@ export function hasProgramDraftProgress(draft) {
   if (!draft) return false;
   return draft.step > 1 ||
     Boolean(draft.name?.trim() || draft.description?.trim() || draft.place?.trim() ||
-      draft.equipment?.trim() || draft.level?.trim() || draft.startDate ||
+      draft.equipment?.trim() || draft.level?.trim() ||
+      Object.values(draft.details || {}).some(value => typeof value === 'string' && value.trim()) || draft.startDate ||
       draft.hasCover || draft.editingWorkoutId ||
       (Array.isArray(draft.categories) && draft.categories.length) ||
       draft.cycleRepeatCount > 1 ||
