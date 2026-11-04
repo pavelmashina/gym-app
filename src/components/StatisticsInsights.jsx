@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import '../statistics-insights.css';
 import { dateTicks } from '../lib/statisticsDateTicks.js';
+import { formatRussianCount } from '../lib/formatRussianCount.js';
 
 function dateFromKey(value) {
   if (!value) return null;
@@ -178,7 +179,7 @@ export function ActivityCalendar({ sessions }) {
           {weeks.map((week, weekIndex) => (
             <div className="statistics-activity-week" key={weekIndex}>
               {week.map((day) => (
-                <span key={day.key} className={`statistics-activity-day level-${Math.min(day.count, 3)}${day.future ? ' future' : ''}`} title={day.future ? '' : `${formatShortDate(day.key)}: ${day.count} тренировок`} aria-label={day.future ? undefined : `${formatShortDate(day.key)}: ${day.count} тренировок`} />
+                <span key={day.key} className={`statistics-activity-day level-${Math.min(day.count, 3)}${day.future ? ' future' : ''}`} title={day.future ? '' : `${formatShortDate(day.key)}: ${formatRussianCount(day.count, ['тренировка','тренировки','тренировок'])}`} aria-label={day.future ? undefined : `${formatShortDate(day.key)}: ${formatRussianCount(day.count, ['тренировка','тренировки','тренировок'])}`} />
               ))}
             </div>
           ))}

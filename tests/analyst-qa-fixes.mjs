@@ -21,5 +21,15 @@ assert.match(report,/exercise\.prescription && <p className="workout-exercise-pr
 assert.match(detail,/className="program-detail-status-text"/);
 assert.doesNotMatch(detail,/className="program-detail-start-state"/);
 assert.match(catalog,/formatRussianCount\(program\.workoutCount/);
+const receive=read('src/components/ReceiveProgramPanel.jsx');
+const insights=read('src/components/StatisticsInsights.jsx');
+assert.match(receive,/formatRussianCount\(preview\.workout_count/);
+assert.match(receive,/formatRussianCount\(preview\.cycle_repeat_count/);
+assert.match(receive,/formatRussianCount\(preview\.week_count/);
+assert.match(insights,/formatRussianCount\(day\.count/);
+const { formatRussianCount } = await import('../src/lib/formatRussianCount.js');
+assert.equal(formatRussianCount(1,['упражнение','упражнения','упражнений']),'1 упражнение');
+assert.equal(formatRussianCount(3,['тренировка','тренировки','тренировок']),'3 тренировки');
+assert.equal(formatRussianCount(42,['программа','программы','программ']),'42 программы');
 assert.match(chart,/import \{ dateTicks \} from '\.\.\/lib\/statisticsDateTicks\.js'/);
 console.log('Prescription, completion date, unique chart ticks, count grammar and compact program state passed.');

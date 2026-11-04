@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { acceptProgramShare, extractProgramShareCode, incomingProgramShareCode, previewProgramShare } from '../lib/programSharing.js';
 import '../program-sharing.css';
+import { formatRussianCount } from '../lib/formatRussianCount.js';
 
 export function ReceiveProgramPanel({onAccepted}) {
   const [input,setInput]=useState(()=>incomingProgramShareCode());
@@ -50,7 +51,7 @@ export function ReceiveProgramPanel({onAccepted}) {
       <h3>{preview.name}</h3>
       <p>Отправитель: {preview.sender_name}</p>
       {preview.description&&<p>{preview.description}</p>}
-      <div className="received-program-details"><span>{preview.workout_count} тренировок</span><span>{preview.structure_mode==='cycle'?preview.cycle_repeat_count+' циклов':preview.week_count+' недель'}</span></div>
+      <div className="received-program-details"><span>{formatRussianCount(preview.workout_count, ['тренировка','тренировки','тренировок'])}</span><span>{preview.structure_mode === 'cycle' ? formatRussianCount(preview.cycle_repeat_count, ['цикл','цикла','циклов']) : formatRussianCount(preview.week_count, ['неделя','недели','недель'])}</span></div>
       {preview.own_program?<p>Это ваша собственная программа — приглашение предназначено другому пользователю.</p>:
         acceptedProgramId||preview.already_accepted?
         <p className="program-share-status">Программа уже добавлена в вашу библиотеку.</p>:
