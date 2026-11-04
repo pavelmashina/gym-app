@@ -45,6 +45,13 @@ assert.match(shared,/<span>Место<\/span><strong>\{program.trainingPlace \|\
 assert.match(shared,/<span>Оборудование<\/span><strong>\{program.equipment \|\| 'Нет данных'\}<\/strong>/);
 assert.match(shared,/<span>Уровень<\/span><strong>\{program.level \|\| 'Нет данных'\}<\/strong>/);
 assert.match(shared,/label: 'Описание'/);
+assert.ok(shared.indexOf('program-detail-tags') < shared.indexOf('program.description && <p>'),'Tags must precede description');
+assert.doesNotMatch(catalog,/<span>Структура<\/span>/);
+assert.doesNotMatch(user,/<span>Структура<\/span>/);
+assert.match(catalog,/catalog-workout-exercise-count/);
+assert.match(catalog,/formatProgramExerciseSummary\(exercise\)/);
+assert.match(user,/formatProgramExerciseSummary\(exercise\)/);
+assert.match(user,/program-detail-workout-accordion/);
 assert.match(shared,/label: 'Тренировки'/);
 assert.match(shared,/role="tablist"/);
 assert.match(shared,/aria-selected=\{value === option.id\}/);

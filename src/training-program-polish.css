@@ -261,3 +261,35 @@ body:has(.program-detail-phone) .app-bottom-nav {
   line-height:var(--lh-caption);
   color:var(--muted);
 }
+
+/* User-owned program workouts use the same concise detail behavior as catalog. */
+.program-detail-workout-accordion{display:block!important}
+.program-detail-workout-accordion > summary{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--space-2);
+  cursor:pointer;
+  list-style:none;
+}
+.program-detail-workout-accordion > summary::-webkit-details-marker{display:none}
+.program-detail-workout-accordion > summary > span{
+  font-size:var(--text-body)!important;
+  line-height:var(--lh-body)!important;
+  color:var(--muted);
+}
+.program-workout-exercise-summaries{
+  display:grid;gap:0;margin-top:var(--space-3);
+  border-top:1px solid var(--line);
+}
+.program-workout-exercise-summaries > div{
+  display:grid;gap:var(--space-2);
+  padding:var(--space-3) 0;
+  border-bottom:1px solid var(--line);
+}
+.program-workout-exercise-summaries > div:last-child{border-bottom:0}
+.program-workout-exercise-summaries strong{font-size:var(--text-body);line-height:var(--lh-body)}
+.program-workout-exercise-summaries span{
+  font-size:var(--text-caption);line-height:var(--lh-caption);color:var(--muted);
+}

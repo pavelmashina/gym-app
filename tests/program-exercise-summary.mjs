@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { formatProgramExerciseSummary } from '../src/lib/programExerciseSummary.js';
+assert.equal(formatProgramExerciseSummary({prescription:'3×12. Отдых 120 секунд; следите за техникой'}),'3 подхода по 12 раз · отдых 2 мин');
+assert.equal(formatProgramExerciseSummary({prescription:'3×10 на каждую ногу. Отдых 90 секунд; держите корпус ровно'}),'3 подхода по 10 раз на каждую сторону · отдых 1 мин 30 сек');
+assert.equal(formatProgramExerciseSummary({prescription:'3×12. Отдых 60–90 секунд; локти прижаты'}),'3 подхода по 12 раз · отдых 60–90 сек');
+assert.equal(formatProgramExerciseSummary({sets:[{reps:10},{reps:10},{reps:10}]}),'3 подхода по 10 раз');
+assert.equal(formatProgramExerciseSummary({sets:[{reps:8},{reps:10}]}),'2 подхода по 8–10 раз');
+assert.equal(formatProgramExerciseSummary({prescription:'следите за техникой'}),'Подходы и повторения не указаны');
+assert.doesNotMatch(formatProgramExerciseSummary({prescription:'2×8. Отдых 90 секунд; шея прямая'}),/шея|прямая/);
+console.log('Concise workout prescriptions and rest formatting verified');

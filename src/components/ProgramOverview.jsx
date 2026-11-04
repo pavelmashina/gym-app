@@ -10,8 +10,8 @@ export function ProgramOverviewIntro({ program, coverUrl = null }) {
     </div>
     <section className="program-detail-hero">
       <h1>{program.name}</h1>
-      {program.description && <p>{program.description}</p>}
       {categories.length > 0 && <div className="program-detail-tags">{categories.map(category => <span key={category}>{category}</span>)}</div>}
+      {program.description && <p>{program.description}</p>}
     </section>
   </>;
 }

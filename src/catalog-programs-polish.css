@@ -281,3 +281,16 @@
   font-size:var(--text-body);line-height:var(--lh-body);
 }
 .catalog-program-facts-tips strong{color:var(--ink)}
+
+/* Workout metadata: one typography level larger than the previous small caption. */
+.program-detail-phone .catalog-workout-exercise-count{
+  font-size:var(--text-body)!important;
+  line-height:var(--lh-body)!important;
+  font-weight:var(--weight-semibold)!important;
+  text-transform:none!important;
+}
+.program-detail-phone .catalog-exercise-copy > span{
+  font-size:var(--text-caption)!important;
+  line-height:var(--lh-caption)!important;
+  color:var(--muted);
+}

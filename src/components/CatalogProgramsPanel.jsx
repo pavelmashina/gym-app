@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
 import '../catalog-programs.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
+import { formatProgramExerciseSummary } from '../lib/programExerciseSummary.js';
 import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs } from './ProgramOverview.jsx';
 
 const ALL = 'Все';
@@ -43,10 +44,10 @@ function WorkoutBlock({ workout, index }) {
     <article className={`catalog-workout-card${open ? ' open' : ''}`}>
       <button className="catalog-workout-head" type="button" onClick={() => setOpen((value) => !value)}>
         <span className="catalog-workout-index">{index + 1}</span>
-        <span className="catalog-workout-title"><small>Тренировка цикла</small><strong>{workout.name || `Тренировка ${index + 1}`}</strong><span>{formatRussianCount(exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span></span>
+        <span className="catalog-workout-title"><small>Тренировка цикла</small><strong>{workout.name || `Тренировка ${index + 1}`}</strong><span className="catalog-workout-exercise-count">{formatRussianCount(exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span></span>
         <span className="catalog-workout-chevron"><ChevronIcon /></span>
       </button>
-      {open && <div className="catalog-workout-exercises">{exercises.length === 0 ? <div className="catalog-no-data-row">{NO_DATA}</div> : exercises.map((exercise, exerciseIndex) => <div className="catalog-workout-exercise" key={`${exercise.name}-${exerciseIndex}`}><span className="catalog-exercise-number">{exerciseIndex + 1}</span><span className="catalog-exercise-copy"><strong>{exercise.name || NO_DATA}</strong><span>{exercise.prescription || NO_DATA}</span></span></div>)}</div>}
+      {open && <div className="catalog-workout-exercises">{exercises.length === 0 ? <div className="catalog-no-data-row">{NO_DATA}</div> : exercises.map((exercise, exerciseIndex) => <div className="catalog-workout-exercise" key={`${exercise.name}-${exerciseIndex}`}><span className="catalog-exercise-number">{exerciseIndex + 1}</span><span className="catalog-exercise-copy"><strong>{exercise.name || NO_DATA}</strong><span>{formatProgramExerciseSummary(exercise)}</span></span></div>)}</div>}
     </article>
   );
 }
@@ -129,7 +130,7 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
           </div>}
           {detailTab === 'workouts' && <div id="catalog-workouts-panel" role="tabpanel" aria-labelledby="catalog-workouts-tab">
           <section className="program-detail-section catalog-training-section">
-            <div className="program-detail-section-head"><span>Структура</span><h2>Один цикл тренировок</h2></div>
+            <div className="program-detail-section-head"><h2>Один цикл тренировок</h2></div>
             {workouts.length > 0
               ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div>
               : <div className="catalog-detail-empty-card">Нет данных</div>}
