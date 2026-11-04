@@ -6,6 +6,7 @@ const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
 const EXERCISE_VIDEOS_BUCKET = 'exercise-videos';
 const EXERCISE_PHOTOS_BUCKET = 'exercise-photos';
 const MAX_PHOTO_SIZE = 8 * 1024 * 1024;
+export const MAX_EXERCISE_PHOTOS = 10;
 const PHOTO_EXTENSIONS = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp' };
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 const VIDEO_EXTENSIONS = {
@@ -55,20 +56,36 @@ async function signedVideoUrl(videoPath) {
   return error ? null : (data?.signedUrl ?? null);
 }
 
+export function exercisePhotoPaths(row) {
+  const ordered = Array.isArray(row?.photo_paths) ? row.photo_paths.filter(Boolean) : [];
+  return ordered.length ? ordered : (row?.photo_path ? [row.photo_path] : []);
+}
+
 async function signedPhotoUrl(photoPath) {
   if (!photoPath) return null;
   const { data, error } = await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).createSignedUrl(photoPath, 60 * 60);
   return error ? null : (data?.signedUrl ?? null);
 }
 
-function mapExercise(row, userId, resolvedVideoUrl = null, resolvedPhotoUrl = null) {
+async function signedPhotoUrls(paths) {
+  return Promise.all(paths.map(signedPhotoUrl));
+}
+
+function mapExercise(row, userId, resolvedVideoUrl = null, photoUrls = []) {
+  const photoPaths = exercisePhotoPaths(row);
+  const resolvedPhotos = photoPaths.map((path, index) => ({ path, url: photoUrls[index] || null }));
+  const accessibleUrls = resolvedPhotos.map(photo => photo.url).filter(Boolean);
   return {
     ...row,
+    photo_path: photoPaths[0] || null,
+    photo_paths: photoPaths,
     display_muscle_group: normalizeExerciseMuscleGroup(row.primary_group_name_ru || row.muscle_group),
     equipment: normalizeExerciseEquipment(row),
     isMine: Boolean(row.owner_id && row.owner_id === userId),
     resolvedVideoUrl: resolvedVideoUrl || row.video_url || null,
-    resolvedPhotoUrl: resolvedPhotoUrl || null,
+    resolvedPhotos,
+    resolvedPhotoUrls: accessibleUrls,
+    resolvedPhotoUrl: accessibleUrls[0] || null,
   };
 }
 
@@ -80,8 +97,11 @@ async function currentUser() {
 
 async function mapExercises(rows, userId) {
   return Promise.all((rows || []).map(async row => {
-    const [video, photo] = await Promise.all([signedVideoUrl(row.video_path), signedPhotoUrl(row.photo_path)]);
-    return mapExercise(row, userId, video, photo);
+    const [video, photos] = await Promise.all([
+      signedVideoUrl(row.video_path),
+      signedPhotoUrls(exercisePhotoPaths(row)),
+    ]);
+    return mapExercise(row, userId, video, photos);
   }));
 }
 
@@ -107,15 +127,15 @@ export async function listExerciseLibrary() {
       .order('last_used_at', { ascending: false })
       .limit(5),
     // Catalog v2 is an existing view without photo_path; get owned paths separately.
-    supabase.from('exercises').select('id,photo_path').eq('owner_id', user.id),
+    supabase.from('exercises').select('id,photo_path,photo_paths').eq('owner_id', user.id),
   ]);
   if (photoResult.error) throw new Error('Не удалось загрузить фотографии ваших упражнений.');
   if (exerciseResult.error) throw new Error('Не удалось загрузить базу упражнений.');
   if (recentResult.error) throw new Error('Не удалось загрузить недавние упражнения.');
 
-  const photoPaths = new Map((photoResult.data || []).map(item => [item.id, item.photo_path]));
+  const photoFields = new Map((photoResult.data || []).map(item => [item.id, item]));
   const all = await mapExercises((exerciseResult.data || []).map(row =>
-    row.owner_id === user.id ? { ...row, photo_path: photoPaths.get(row.id) ?? null } : row
+    row.owner_id === user.id ? { ...row, ...photoFields.get(row.id) } : row
   ), user.id);
   const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
   // Old history references keep their original IDs; they are not silently remapped.
@@ -138,6 +158,17 @@ function validatePhotoFile(photoFile) {
   if (!photoFile) return;
   if (!PHOTO_EXTENSIONS[photoFile.type]) throw new Error('Фото должно быть в формате JPEG, PNG или WebP.');
   if (photoFile.size > MAX_PHOTO_SIZE) throw new Error('Размер фото не должен превышать 8 МБ.');
+}
+
+function requestedPhotoFiles(photoFiles, photoFile = null) {
+  return Array.isArray(photoFiles) && photoFiles.length ? photoFiles : (photoFile ? [photoFile] : []);
+}
+
+function validatePhotoGallery(files, existingCount = 0) {
+  if (files.length + existingCount > MAX_EXERCISE_PHOTOS) {
+    throw new Error(`Для одного упражнения можно добавить до ${MAX_EXERCISE_PHOTOS} фото.`);
+  }
+  files.forEach(validatePhotoFile);
 }
 async function uploadExercisePhoto(userId, exerciseId, photoFile) {
   const path = `${userId}/${exerciseId}/${crypto.randomUUID()}.${PHOTO_EXTENSIONS[photoFile.type]}`;
@@ -166,7 +197,7 @@ function normalizeOptionalUrl(value) {
   }
 }
 
-export async function createCustomExercise({ name, muscleGroup, equipment, description = '', videoUrl = '', videoFile = null, photoFile = null }) {
+export async function createCustomExercise({ name, muscleGroup, equipment, description = '', videoUrl = '', videoFile = null, photoFile = null, photoFiles = [] }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   const cleanDescription = String(description || '').trim();
@@ -174,7 +205,8 @@ export async function createCustomExercise({ name, muscleGroup, equipment, descr
   if (!EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) || muscleGroup === 'Все') throw new Error('Выберите группу мышц.');
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
   validateVideoFile(videoFile);
-  validatePhotoFile(photoFile);
+  const selectedPhotos = requestedPhotoFiles(photoFiles, photoFile);
+  validatePhotoGallery(selectedPhotos);
   if (videoFile && String(videoUrl || '').trim()) throw new Error('Добавьте либо видеофайл, либо ссылку на видео.');
   const cleanVideoUrl = normalizeOptionalUrl(videoUrl);
 
@@ -191,7 +223,7 @@ export async function createCustomExercise({ name, muscleGroup, equipment, descr
       description: cleanDescription || null,
       video_url: cleanVideoUrl,
     })
-    .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, photo_path, equipment, owner_id, created_at')
+    .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, photo_path, photo_paths, equipment, owner_id, created_at')
     .single();
   if (error || !data) {
     console.error('Unable to save custom exercise:', error);
@@ -199,34 +231,42 @@ export async function createCustomExercise({ name, muscleGroup, equipment, descr
   }
 
   let videoPath = null;
-  let photoPath = null;
+  const uploadedPhotos = [];
   try {
     if (videoFile) {
       const ext = VIDEO_EXTENSIONS[videoFile.type];
       videoPath = `${user.id}/${data.id}/${crypto.randomUUID()}.${ext}`;
       const { error: uploadError } = await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).upload(videoPath, videoFile, {
-        cacheControl:'3600',contentType:videoFile.type,upsert:false,
+        cacheControl:'3600', contentType:videoFile.type, upsert:false,
       });
       if (uploadError) throw new Error('Не удалось загрузить видео упражнения.');
     }
-    if (photoFile) photoPath = await uploadExercisePhoto(user.id, data.id, photoFile);
-    if (videoPath || photoPath) {
+    for (const file of selectedPhotos) {
+      uploadedPhotos.push(await uploadExercisePhoto(user.id, data.id, file));
+    }
+    if (videoPath || uploadedPhotos.length) {
       const { error: attachError } = await supabase.from('exercises').update({
-        ...(videoPath ? { video_path:videoPath } : {}),
-        ...(photoPath ? { photo_path:photoPath } : {}),
-      }).eq('id',data.id).eq('owner_id',user.id);
+        ...(videoPath ? { video_path: videoPath } : {}),
+        photo_path: uploadedPhotos[0] || null,
+        photo_paths: uploadedPhotos,
+      }).eq('id', data.id).eq('owner_id', user.id);
       if (attachError) throw new Error('Не удалось привязать медиафайлы к упражнению.');
     }
   } catch (error) {
     await Promise.all([
       videoPath ? supabase.storage.from(EXERCISE_VIDEOS_BUCKET).remove([videoPath]) : Promise.resolve(),
-      photoPath ? supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove([photoPath]) : Promise.resolve(),
+      uploadedPhotos.length ? supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove(uploadedPhotos) : Promise.resolve(),
     ]);
-    await supabase.from('exercises').delete().eq('id',data.id).eq('owner_id',user.id);
+    await supabase.from('exercises').delete().eq('id', data.id).eq('owner_id', user.id);
     throw error;
   }
-  const [signedVideo,signedPhoto] = await Promise.all([signedVideoUrl(videoPath),signedPhotoUrl(photoPath)]);
-  return mapExercise({ ...data, video_path:videoPath, photo_path:photoPath },user.id,signedVideo,signedPhoto);
+  const [signedVideo, signedPhotos] = await Promise.all([
+    signedVideoUrl(videoPath),
+    signedPhotoUrls(uploadedPhotos),
+  ]);
+  return mapExercise({
+    ...data, video_path: videoPath, photo_path: uploadedPhotos[0] || null, photo_paths: uploadedPhotos,
+  }, user.id, signedVideo, signedPhotos);
 }
 
 export async function markExerciseRecent(exerciseId) {
@@ -241,34 +281,54 @@ export async function markExerciseRecent(exerciseId) {
 }
 
 export async function updateCustomExercise(exerciseId, {
-  name, muscleGroup, equipment, description = '', photoFile = null, removePhoto = false,
+  name, muscleGroup, equipment, description = '',
+  photoFile = null, photoFiles = [], removePhoto = false, removedPhotoPaths = [],
 }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   if (!cleanName || cleanName.length > 100) throw new Error('Введите название длиной до 100 символов.');
   if (!EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) || muscleGroup === 'Все') throw new Error('Выберите группу мышц.');
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
-  validatePhotoFile(photoFile);
+  const selectedPhotos = requestedPhotoFiles(photoFiles, photoFile);
   const { data: previous, error: lookupError } = await supabase.from('exercises')
-    .select('id,photo_path').eq('id',exerciseId).eq('owner_id',user.id).single();
+    .select('id,photo_path,photo_paths').eq('id', exerciseId).eq('owner_id', user.id).single();
   if (lookupError || !previous) throw new Error('Своё упражнение не найдено.');
-  let uploadedPath = null;
+  const previousPaths = exercisePhotoPaths(previous);
+  const removed = new Set(removePhoto ? previousPaths : removedPhotoPaths);
+  const keptPaths = previousPaths.filter(path => !removed.has(path));
+  validatePhotoGallery(selectedPhotos, keptPaths.length);
+  const uploadedPaths = [];
   try {
-    if (photoFile) uploadedPath = await uploadExercisePhoto(user.id,exerciseId,photoFile);
-    const photoPath = uploadedPath || (removePhoto ? null : previous.photo_path);
-    const { data, error } = await supabase.from('exercises').update({
-      name:cleanName,muscle_group:muscleGroup,equipment,
-      description:String(description).trim() || null,photo_path:photoPath,
-    }).eq('id',exerciseId).eq('owner_id',user.id).select('*').single();
-    if (error || !data) throw new Error('Не удалось обновить своё упражнение.');
-    if (previous.photo_path && previous.photo_path !== photoPath) {
-      const {error: cleanupError} = await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove([previous.photo_path]);
-      if (cleanupError) console.warn('Unable to remove previous exercise photo:',cleanupError);
+    for (const file of selectedPhotos) {
+      uploadedPaths.push(await uploadExercisePhoto(user.id, exerciseId, file));
     }
-    const [video,photo] = await Promise.all([signedVideoUrl(data.video_path),signedPhotoUrl(photoPath)]);
-    return mapExercise(data,user.id,video,photo);
-  } catch(error) {
-    if (uploadedPath) await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove([uploadedPath]);
+    const nextPaths = [...keptPaths, ...uploadedPaths];
+    const { data, error } = await supabase.from('exercises').update({
+      name: cleanName,
+      muscle_group: muscleGroup,
+      equipment,
+      description: String(description).trim() || null,
+      photo_path: nextPaths[0] || null,
+      photo_paths: nextPaths,
+    }).eq('id', exerciseId).eq('owner_id', user.id).select('*').single();
+    if (error || !data) throw new Error('Не удалось обновить своё упражнение.');
+
+    const obsoletePaths = previousPaths.filter(path => !nextPaths.includes(path));
+    if (obsoletePaths.length) {
+      const { error: cleanupError } = await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove(obsoletePaths);
+      if (cleanupError) console.warn('Unable to remove old exercise photos:', cleanupError);
+    }
+    const [video, photos] = await Promise.all([
+      signedVideoUrl(data.video_path),
+      signedPhotoUrls(nextPaths),
+    ]);
+    return mapExercise({
+      ...data, photo_path: nextPaths[0] || null, photo_paths: nextPaths,
+    }, user.id, video, photos);
+  } catch (error) {
+    if (uploadedPaths.length) {
+      await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove(uploadedPaths);
+    }
     throw error;
   }
 }
