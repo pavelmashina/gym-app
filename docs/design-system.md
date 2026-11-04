@@ -186,3 +186,10 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - The source payload additionally includes `cover_image=fitness-club-banner.webp`, and `details` with duration, goal, frequency, schedule, rest, progression and cooldown. Both the catalog list cover and the shared detail hero reuse the existing image hosted under `assets/fitness-club-banner.webp` and resolve it through Vite `BASE_URL`.
 - `CatalogProgramFacts` renders optional extended attributes within the **Описание** tab, without introducing a new card section or affecting user-owned detail pages.
 - The public catalog UI must continue to filter `published=true` in both list and individual lookup, never surface unpublished rows through search.
+
+## Program tags and selectable characteristics — 2026-11-04
+- Mini-tags are directly below the program title and above the description. `CATEGORY_OPTIONS` is the only source for newly selected category tags.
+- `PLACE_OPTIONS`: Тренажёрный зал, Дом, Улица, Неважно. `EQUIPMENT_OPTIONS`: Полный зал, Свободные веса, Тренажёры, Минимум оборудования, Без оборудования. `LEVEL_OPTIONS`: Начальный, Средний, Продвинутый.
+- Dropdowns for other optional characteristics: Goal, Duration, Frequency, Training time, Schedule, Recovery, Progression, Warm-up and After training. Choices persist in the private user's `public.programs.details` JSONB field.
+- Numeric cards for stages, workouts and exercises derive from the structure and are not manually selected.
+- Workout views no longer display the word Структура; counts use body typography. Expanded workout exercises show only sets/reps/rest and never freeform technique notes.

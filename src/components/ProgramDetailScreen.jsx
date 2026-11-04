@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram, archiveUserProgram } from '../lib/programs.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
-import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs } from './ProgramOverview.jsx';
+import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewFacts } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { rescheduleScheduledWorkout, skipScheduledWorkout } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -229,6 +229,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
 
       <ProgramOverviewMeta program={program} />
       <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />
+      <ProgramOverviewFacts details={program.details} />
 
       {(liveParticipation || canEditStartDate || participationError || !canEditProgram) && <section className="program-detail-management" aria-label="Управление программой">
         {canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}

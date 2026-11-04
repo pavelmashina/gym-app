@@ -45,6 +45,8 @@ assert.match(shared,/<span>Место<\/span><strong>\{program.trainingPlace \|\
 assert.match(shared,/<span>Оборудование<\/span><strong>\{program.equipment \|\| 'Нет данных'\}<\/strong>/);
 assert.match(shared,/<span>Уровень<\/span><strong>\{program.level \|\| 'Нет данных'\}<\/strong>/);
 assert.match(shared,/label: 'Описание'/);
+assert.match(shared,/export function ProgramOverviewFacts/);
+assert.match(user,/<ProgramOverviewFacts details=\{program\.details\} \/>/);
 assert.ok(shared.indexOf('program-detail-tags') < shared.indexOf('program.description && <p>'),'Tags must precede description');
 assert.doesNotMatch(catalog,/<span>Структура<\/span>/);
 assert.doesNotMatch(user,/<span>Структура<\/span>/);
