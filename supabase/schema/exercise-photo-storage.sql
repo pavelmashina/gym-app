@@ -23,3 +23,9 @@ drop policy if exists "exercise_photos_delete_own" on storage.objects;
 create policy "exercise_photos_delete_own" on storage.objects
 for delete to authenticated
 using (bucket_id = 'exercise-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- Ordered gallery; preserve previous single-photo assets as the first slide.
+alter table public.exercises
+  add column if not exists photo_paths text[] not null default array[]::text[];
+update public.exercises set photo_paths=array[photo_path]
+  where photo_path is not null and cardinality(photo_paths)=0;
