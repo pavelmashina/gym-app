@@ -231,3 +231,53 @@
   font-size: 9px;
   line-height: 1.4;
 }
+
+/* Illustration supplied by the app's existing locally hosted fitness-club banner. */
+.catalog-program-cover.catalog-program-cover-image{
+  display:block;
+  padding:0;
+  background:var(--surface);
+}
+.catalog-program-cover-image img{
+  width:100%;height:100%;display:block;
+  object-fit:cover;object-position:center;
+}
+/* Complete showcase metadata follows shared 12/16, 14/20 and 16px rhythm. */
+.catalog-program-facts{
+  margin-top:var(--space-4);
+  display:grid;
+  gap:var(--space-3);
+}
+.catalog-program-facts-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:var(--space-2);
+}
+.catalog-program-facts-grid > div{
+  display:grid;align-content:center;gap:var(--space-2);
+  min-width:0;min-height:82px;
+  padding:var(--space-3);
+  border:1px solid var(--line);
+  border-radius:var(--radius-md);
+  background:var(--surface);
+}
+.catalog-program-facts-grid span{
+  color:var(--muted);
+  font-size:var(--text-caption);line-height:var(--lh-caption);
+}
+.catalog-program-facts-grid strong{
+  color:var(--ink);
+  font-size:var(--text-body);line-height:var(--lh-body);
+  overflow-wrap:anywhere;
+}
+.catalog-program-facts-tips{
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:var(--space-3) var(--space-4);
+  background:var(--surface);
+  display:grid;gap:var(--space-2);
+}
+.catalog-program-facts-tips p{
+  margin:0;color:var(--muted);
+  font-size:var(--text-body);line-height:var(--lh-body);
+}
+.catalog-program-facts-tips strong{color:var(--ink)}

@@ -14,7 +14,9 @@ function CatalogCard({ program, onOpen }) {
   const category = program.categories[0] || 'Готовая программа';
   return (
     <button className="catalog-program-card" type="button" onClick={() => onOpen(program.id)}>
-      <span className="catalog-program-cover catalog-program-placeholder" aria-hidden="true"><span className="catalog-placeholder-icon" /></span>
+      <span className={`catalog-program-cover${program.coverUrl ? ' catalog-program-cover-image' : ' catalog-program-placeholder'}`} aria-hidden="true">
+        {program.coverUrl ? <img src={program.coverUrl} alt="" loading="lazy" /> : <span className="catalog-placeholder-icon" />}
+      </span>
       <span className="catalog-program-card-copy">
         <span className="catalog-program-category">{category}</span>
         <strong>{program.name}</strong>
@@ -47,6 +49,32 @@ function WorkoutBlock({ workout, index }) {
       {open && <div className="catalog-workout-exercises">{exercises.length === 0 ? <div className="catalog-no-data-row">{NO_DATA}</div> : exercises.map((exercise, exerciseIndex) => <div className="catalog-workout-exercise" key={`${exercise.name}-${exerciseIndex}`}><span className="catalog-exercise-number">{exerciseIndex + 1}</span><span className="catalog-exercise-copy"><strong>{exercise.name || NO_DATA}</strong><span>{exercise.prescription || NO_DATA}</span></span></div>)}</div>}
     </article>
   );
+}
+
+function CatalogProgramFacts({ details }) {
+  if (!details || typeof details !== 'object') return null;
+  const facts = [
+    ['Цель', details.goal],
+    ['Продолжительность', details.duration],
+    ['Частота', details.frequency],
+    ['Время тренировки', details.estimated_time],
+    ['Расписание', details.schedule],
+    ['Восстановление', details.rest],
+  ].filter(([, value]) => typeof value === 'string' && value.trim());
+  const tips = [
+    ['Прогрессия', details.progression],
+    ['Разминка', details.warmup],
+    ['После тренировки', details.cooldown],
+  ].filter(([, value]) => typeof value === 'string' && value.trim());
+  if (!facts.length && !tips.length) return null;
+  return <section className="catalog-program-facts" aria-label="Дополнительная информация о программе">
+    {facts.length > 0 && <div className="catalog-program-facts-grid">
+      {facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
+    </div>}
+    {tips.length > 0 && <div className="catalog-program-facts-tips">
+      {tips.map(([label, value]) => <p key={label}><strong>{label}.</strong> {value}</p>)}
+    </div>}
+  </section>;
 }
 
 function InfoRow({ label, value }) {
@@ -90,13 +118,14 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
       {!loading && program && <>
         <main className="program-detail-content catalog-unified-detail">
           {detailTab === 'description' && <div id="catalog-description-panel" role="tabpanel" aria-labelledby="catalog-description-tab">
-            <ProgramOverviewIntro program={program} />
+            <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
           <ProgramOverviewMeta program={program} />
           <ProgramOverviewStats items={[
             { label: 'Цикл', value: 1 },
             { label: 'В цикле', value: program.workoutCount || workouts.length },
             { label: 'Повторов', value: 'На выбор' },
           ]} />
+          <CatalogProgramFacts details={program.sourcePayload?.details} />
           </div>}
           {detailTab === 'workouts' && <div id="catalog-workouts-panel" role="tabpanel" aria-labelledby="catalog-workouts-tab">
           <section className="program-detail-section catalog-training-section">

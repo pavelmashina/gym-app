@@ -1,6 +1,11 @@
 import { supabase } from './supabase.js';
 
 function mapCatalogProgram(row) {
+  const sourcePayload = row.source_payload ?? { cycle: { workouts: [] } };
+  const coverImage = sourcePayload.cover_image;
+  const coverUrl = typeof coverImage === 'string' && /^[a-z0-9][a-z0-9._-]*\.(?:webp|png|jpg)$/i.test(coverImage)
+    ? `${import.meta.env.BASE_URL}assets/${coverImage}`
+    : null;
   return {
     id: row.id,
     name: row.name,
@@ -10,7 +15,8 @@ function mapCatalogProgram(row) {
     equipment: row.equipment ?? '',
     level: row.level ?? '',
     workoutCount: row.workout_count ?? 0,
-    sourcePayload: row.source_payload ?? { cycle: { workouts: [] } },
+    sourcePayload,
+    coverUrl,
   };
 }
 

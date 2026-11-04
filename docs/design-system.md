@@ -178,3 +178,11 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - `photo_paths text[]` contains ordered file paths. Earlier `photo_path` entries are backfilled as the first photo; `photo_path` continues to store the first/cover image for compatibility.
 - Custom exercise cards show swipeable photos with arrows and pagination. Tap an image to open a full-screen viewer with swipes, arrows, keyboard navigation and Escape to close.
 - Files remain private in `exercise-photos` Storage; old objects are deleted only after successful database update. Other users cannot fetch the photos.
+
+## 2026-11-04 — Showcase catalog only, preserving personal programs
+- The shared catalog (`public.catalog_programs`) temporarily contains **one published demonstration program**: **«Полное тело · 3 тренировки в неделю»** (`source_key=gym-complete-fullbody-3day-demo-v1`).
+- The original 42 imported catalog programs are **unpublished**, not physically deleted. This is deliberately reversible: their content and any existing references from user-owned program copies remain intact. Do not modify `public.programs`, enrollment, schedules or workout history for this cleanup.
+- New showcase: full description, four tags, training location, equipment, level, three complete workouts (18 exercise slots, 16 unique canonical exercise names), numeric approach/repetition prescriptions, an 8-week recommended schedule, progression and warm-up advice.
+- The source payload additionally includes `cover_image=fitness-club-banner.webp`, and `details` with duration, goal, frequency, schedule, rest, progression and cooldown. Both the catalog list cover and the shared detail hero reuse the existing image hosted under `assets/fitness-club-banner.webp` and resolve it through Vite `BASE_URL`.
+- `CatalogProgramFacts` renders optional extended attributes within the **Описание** tab, without introducing a new card section or affecting user-owned detail pages.
+- The public catalog UI must continue to filter `published=true` in both list and individual lookup, never surface unpublished rows through search.
