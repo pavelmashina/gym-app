@@ -18,7 +18,7 @@ assert.match(report,/entry\.workout\.completedDate \|\| entry\.workout\.schedule
 assert.match(report,/По плану: \{originallyScheduled\}/);
 assert.match(report,/plannedSetLabel\(set, exercise\.prescription\)/);
 assert.match(report,/exercise\.prescription && <p className="workout-exercise-prescription"/);
-assert.match(detail,/className="program-detail-status-text"/);
+assert.match(detail,/statusText=\{participationLabel\(participation\)\}/);
 assert.doesNotMatch(detail,/className="program-detail-start-state"/);
 assert.match(catalog,/formatRussianCount\(program\.workoutCount/);
 const receive=read('src/components/ReceiveProgramPanel.jsx');
