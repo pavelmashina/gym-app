@@ -20,15 +20,16 @@ export function ProgramListCard({ program, onOpen, status = null }) {
       </span>
       <span className="catalog-program-card-meta program-list-tag-scroll" role="region" tabIndex={0} aria-label={`Теги программы «${program.name}». Прокрутите по горизонтали`}>
         <span className="catalog-program-tag program-list-tag-key">{place || 'Место не указано'}</span>
-        <span className="catalog-program-tag program-list-tag-key">{duration || 'Продолжительность не указана'}</span>
         {categories.map(category => <span className="catalog-program-tag" key={category}>{category}</span>)}
       </span>
-      {(difficulty > 0 || program.level) && <span className="program-list-difficulty-row">
+      <span className="program-list-difficulty-row">
+        <span className="catalog-program-tag program-list-tag-key">{duration || 'Продолжительность не указана'}</span>
+        {(difficulty > 0 || program.level) && (
         {difficulty
           ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
             {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
           </span>
-          : <span className="catalog-program-tag">{program.level}</span>}
+          : <span className="catalog-program-tag">{program.level}</span>)}
       </span>}
     </span>
   </article>;
