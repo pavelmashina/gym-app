@@ -22,12 +22,14 @@ export function ProgramListCard({ program, onOpen, status = null }) {
         <span className="catalog-program-tag program-list-tag-key">{place || 'Место не указано'}</span>
         <span className="catalog-program-tag program-list-tag-key">{duration || 'Продолжительность не указана'}</span>
         {categories.map(category => <span className="catalog-program-tag" key={category}>{category}</span>)}
+      </span>
+      {(difficulty > 0 || program.level) && <span className="program-list-difficulty-row">
         {difficulty
           ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
             {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
           </span>
-          : program.level && <span className="catalog-program-tag">{program.level}</span>}
-      </span>
+          : <span className="catalog-program-tag">{program.level}</span>}
+      </span>}
     </span>
   </article>;
 }
