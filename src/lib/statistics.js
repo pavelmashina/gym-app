@@ -22,7 +22,7 @@ function dateKey(value) {
 export async function loadStatistics() {
   const { data: sessions, error: sessionError } = await supabase
     .from('workout_sessions')
-    .select('id, scheduled_workout_id, started_at, ended_at, active_duration_seconds')
+    .select('id, scheduled_workout_id, started_at, ended_at, completed_on, active_duration_seconds')
     .eq('status', 'completed')
     .order('ended_at', { ascending: true });
   if (sessionError) throw new Error('Не удалось загрузить историю тренировок.');
@@ -75,7 +75,7 @@ export async function loadStatistics() {
     return {
       id: row.id,
       workoutName: workout?.workout_name || 'Тренировка',
-      date: dateKey(row.ended_at || workout?.scheduled_date || row.started_at),
+      date: row.completed_on || dateKey(row.ended_at || workout?.scheduled_date || row.started_at),
       endedAt: row.ended_at,
       durationSeconds: Number(row.active_duration_seconds || 0),
     };
@@ -91,7 +91,7 @@ export async function loadStatistics() {
       name: catalog?.name || row.exercise_name_snapshot || 'Упражнение',
       muscleGroup: catalog?.muscle_group || '',
       position: Number(row.position || 0),
-      date: dateKey(session?.ended_at || session?.started_at),
+      date: session?.completed_on || dateKey(session?.ended_at || session?.started_at),
     };
   });
 
@@ -116,7 +116,7 @@ export async function loadStatistics() {
       reps,
       volume: row.set_type === 'working' ? weight * reps : 0,
       estimatedOneRepMax: row.set_type === 'working' ? e1rm(weight, reps) : 0,
-      date: dateKey(session?.ended_at || session?.started_at),
+      date: session?.completed_on || dateKey(session?.ended_at || session?.started_at),
     };
   });
 

@@ -148,7 +148,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
 export async function loadWorkoutSession(sessionId) {
   const { data: session, error: sessionError } = await supabase
     .from('workout_sessions')
-    .select('id, scheduled_workout_id, status, started_at, ended_at, active_duration_seconds')
+    .select('id, scheduled_workout_id, status, started_at, ended_at, completed_on, auto_completed, active_duration_seconds')
     .eq('id', sessionId)
     .single();
   if (sessionError || !session) throw new Error('Не удалось загрузить тренировку.');
@@ -193,12 +193,13 @@ export async function loadWorkoutSession(sessionId) {
       startedAt: session.started_at,
       endedAt: session.ended_at,
       activeDurationSeconds: session.active_duration_seconds ?? 0,
+      autoCompleted: Boolean(session.auto_completed),
     },
     workout: {
       id: workout.id,
       name: workout.workout_name,
       scheduledDate: workout.scheduled_date,
-      completedDate: mode === 'completed' ? (localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : null,
+      completedDate: mode === 'completed' ? (session.completed_on || localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : null,
       standalone: Boolean(workout.standalone_owner_id),
       originalScheduledDate: workout.scheduled_date,
       status: workout.status,
@@ -421,5 +422,20 @@ export async function completeWorkout(sessionId) {
 export async function abandonWorkout(sessionId) {
   const { data, error } = await supabase.rpc('abandon_workout', { p_workout_session_id: sessionId });
   if (error || !data) throw new Error('Не удалось прервать тренировку.');
+  return loadWorkoutSession(data);
+}
+
+export async function markScheduledWorkoutCompleted(scheduledWorkoutId,date) {
+  const {data,error}=await supabase.rpc('mark_scheduled_workout_completed',{
+    p_scheduled_workout_id:scheduledWorkoutId,p_completed_on:date
+  });
+  if(error||!data) throw new Error(error?.message||'Не удалось отметить тренировку выполненной.');
+  return loadWorkoutSession(data);
+}
+export async function changeCompletedWorkoutDate(sessionId,date) {
+  const {data,error}=await supabase.rpc('change_completed_workout_date',{
+    p_session_id:sessionId,p_new_date:date
+  });
+  if(error||!data)throw new Error(error?.message||'Не удалось изменить дату выполнения.');
   return loadWorkoutSession(data);
 }
