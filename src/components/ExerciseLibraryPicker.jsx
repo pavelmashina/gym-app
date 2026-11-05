@@ -53,14 +53,14 @@ function LibraryRow({ exercise, selected, onClick, onInfo, multi }) {
   </div>;
 }
 
-function LibrarySection({ title, items, selectedIds, multi, onPick, onInfo }) {
+function LibrarySection({ title, items, selectedIds, multi, onPick, onInfo, hideHeading = false }) {
   const [open, setOpen] = useState(true);
-  return <section className="exercise-library-section">
-    <button className="exercise-library-section-head" type="button" onClick={() => setOpen((value) => !value)}>
+  return <section className="exercise-library-section" aria-label={title}>
+    {!hideHeading && <button className="exercise-library-section-head" type="button" onClick={() => setOpen((value) => !value)}>
       <span className="exercise-library-section-title"><strong>{title}</strong><small>{items.length}</small></span>
       <ChevronIcon open={open} />
-    </button>
-    {open && <div className="exercise-library-section-list">{items.length ? items.map((exercise) => <LibraryRow key={exercise.id} exercise={exercise} selected={selectedIds.includes(exercise.id)} multi={multi} onClick={() => onPick(exercise)} onInfo={onInfo} />) : <div className="exercise-library-empty">Пока здесь ничего нет</div>}</div>}
+    </button>}
+    {(hideHeading || open) && <div className="exercise-library-section-list">{items.length ? items.map((exercise) => <LibraryRow key={exercise.id} exercise={exercise} selected={selectedIds.includes(exercise.id)} multi={multi} onClick={() => onPick(exercise)} onInfo={onInfo} />) : <div className="exercise-library-empty">Пока здесь ничего нет</div>}</div>}
   </section>;
 }
 
@@ -176,7 +176,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
 
   return <div className="exercise-library-shell">
     <section className="exercise-library-top">
-      <div className="exercise-library-heading"><span>База упражнений</span><h2>{browseOnly ? 'Все упражнения' : 'Выберите упражнение'}</h2></div>
+      {!browseOnly && <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>}
       <label className="exercise-library-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <div className="exercise-library-filter-row">
         <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{EXERCISE_MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
@@ -239,7 +239,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
     {!loading && !error && <div className="exercise-library-sections">
       {!browseOnly && <LibrarySection title="Недавние упражнения" items={visible.recent} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />}
       {!browseOnly && <LibrarySection title="Мои упражнения" items={visible.mine} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />}
-      <LibrarySection title="Все упражнения" items={visible.all} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
+      <LibrarySection title="Все упражнения" items={visible.all} selectedIds={selectedIds} multi={multi} hideHeading={browseOnly} onPick={pick} onInfo={setInfoExercise} />
     </div>}
     {infoExercise && <ExerciseInfoModal exercise={infoExercise} onClose={() => setInfoExercise(null)} onEdit={editExercise} />}
   </div>;
