@@ -24,7 +24,8 @@ assert.match(program,/level: nullableText\(normalizeProgramLevel\(level\)\)/);
 assert.match(catalog,/normalizeProgramCategories\(row\.categories\)/);
 assert.match(catalog,/normalizeProgramLevel\(row\.level\)/);
 assert.match(overview,/normalizeProgramCategories\(program\.categories\)/);
-assert.match(catalogUI,/programLevelIndex\(program\.level\)/);
+assert.match(catalogUI,/programLevelIndex\(a\.level\)/);
+assert.match(catalogUI,/programLevelIndex\(b\.level\)/);
 assert.doesNotMatch(catalogUI,/const DIFFICULTY_POINTS/);
 
 assert.match(training,/id: 'exercises', label: 'Упражнения'/);
