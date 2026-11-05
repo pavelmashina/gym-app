@@ -81,6 +81,7 @@ jobs:
           VITE_APP_BUILD_ID: ${{ github.sha }}
           VITE_EXERCISE_CATALOG_V2: 'true'
           VITE_EXERCISE_RESULTS_V2: 'true'
+          VITE_VAPID_PUBLIC_KEY: 'BD8wn0J1hg1k7rZK1uVhHOAzbwHrh9g2Ozp_wuK5TyGox3xi-Fip62DnccgpMFebDof-bZmY2s4rrjwGSh8oSow'
         run: pnpm run build
 
       - name: Write deployed version manifest
