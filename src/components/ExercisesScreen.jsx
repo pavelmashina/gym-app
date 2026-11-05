@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { listPrograms, listRecentCompletedPrograms } from '../lib/programs.js';
 import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
+import { ExerciseLibraryPicker } from './ExerciseLibraryPicker.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
 import { ReceiveProgramPanel } from './ReceiveProgramPanel.jsx';
 import { EMPTY_PROGRAM_FILTERS, matchesProgramFilters, programFilterOptions } from '../lib/programFilters.js';
@@ -11,6 +12,7 @@ import '../program-list.css';
 const TRAINING_TABS = [
   { id: 'recommendations', label: 'Рекомендации' },
   { id: 'catalog', label: 'Каталог' },
+  { id: 'exercises', label: 'Упражнения' },
   { id: 'your-programs', label: 'Мои программы' },
   { id: 'received', label: 'Получить' },
   { id: 'completed', label: 'Пройденные' },
@@ -147,7 +149,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
   return <div className="phone exercise-phone">
     <RootSectionHeader title="Тренировки" />
     <main className="exercise-catalog-content">
-      <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
+      {activeTab !== 'exercises' && <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>}
       <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button data-training-tab={tab.id} className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
       {activeTab === 'your-programs' && <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
           <button type="button" role="tab" id="my-programs-active-tab" aria-controls="my-programs-active-panel" aria-selected={myProgramsView === 'active'} className={myProgramsView === 'active' ? 'active' : ''} onClick={() => setMyProgramsView('active')}>Активные</button>
@@ -171,6 +173,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
 
       {activeTab === 'received' && <ReceiveProgramPanel onAccepted={(programId) => { setProgramsReloadKey((value) => value + 1); setSelectedProgramId(programId); }} />}
       {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} onJoin={(programId) => onStartProgram?.(programId)} />}
+      {activeTab === 'exercises' && <section className="training-exercise-browser" aria-label="Полная база упражнений"><ExerciseLibraryPicker browseOnly searchPlaceholder="Найти упражнение" /></section>}
       {isProgramsTab && programsLoading && <div className="my-programs-state"><div className="exercise-list-spinner" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>}
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
       {activeTab === 'your-programs' && !programsLoading && !programsError && <section className="my-programs-section">
