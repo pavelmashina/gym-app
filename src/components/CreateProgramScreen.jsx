@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
 import { createProgram, getProgram, startProgram, updateProgram } from '../lib/programs.js';
-import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS } from '../lib/programOptions.js';
+import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
 import '../create-program.css';
@@ -44,10 +44,10 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [coverUrl, setCoverUrl] = useState('');
   const [coverFile, setCoverFile] = useState(null);
   const [existingCoverPath, setExistingCoverPath] = useState(null);
-  const [categories, setCategories] = useState(restored?.categories ?? []);
+  const [categories, setCategories] = useState(() => normalizeProgramCategories(restored?.categories));
   const [place, setPlace] = useState(restored?.place ?? '');
   const [equipment, setEquipment] = useState(restored?.equipment ?? '');
-  const [level, setLevel] = useState(restored?.level ?? '');
+  const [level, setLevel] = useState(() => normalizeProgramLevel(restored?.level));
   const [details, setDetails] = useState(restored?.details ?? {});
   const [scheduleMode, setScheduleMode] = useState(restored?.scheduleMode ?? 'custom');
   const [cycleRepeatCount, setCycleRepeatCount] = useState(restored?.cycleRepeatCount ?? 1);
@@ -100,10 +100,10 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
         if (!active) return;
         setName(program.name);
         setDescription(program.description);
-        setCategories(program.categories);
+        setCategories(normalizeProgramCategories(program.categories));
         setPlace(program.trainingPlace);
         setEquipment(program.equipment);
-        setLevel(program.level);
+        setLevel(normalizeProgramLevel(program.level));
         setDetails(program.details ?? {});
         setScheduleMode(program.scheduleMode ?? 'custom');
         setCycleRepeatCount(program.cycleRepeatCount ?? 1);
