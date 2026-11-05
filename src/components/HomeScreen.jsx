@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { StandaloneWorkoutLauncher } from './StandaloneWorkoutLauncher.jsx';
 import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
+import { markScheduledWorkoutCompleted } from '../lib/workoutSessions.js';
 import '../home-dynamic.css';
 import '../home-schedule-edit.css';
 import { formatExerciseCount } from '../lib/formatRussianCount.js';
@@ -107,14 +108,38 @@ function EditIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="curren
 
 function DailySummary({ date, isToday, workout, workoutStatus, nutritionPlan, onOpenWorkout, onRetry, onEditWorkout }) {
   const editable = workoutStatus === 'success' && Boolean(workout?.editable);
-  return <section className="date-card"><div className="date-row"><div className="date-title">{formatFullDate(date)}</div><button className="home-edit-day" type="button" aria-label={editable ? 'Перенести тренировку' : 'Редактирование тренировки недоступно'} title={editable ? 'Перенести тренировку' : 'Редактирование недоступно'} disabled={!editable} onClick={onEditWorkout}><EditIcon /></button></div><div className="summary"><WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} onEditWorkout={onEditWorkout} /><NutritionSummary nutritionPlan={nutritionPlan} /></div></section>;
+  return <section className="date-card"><div className="date-row"><div className="date-title">{formatFullDate(date)}</div><button className="home-edit-day" type="button" aria-label={editable ? 'Редактировать тренировку' : 'Редактирование тренировки недоступно'} title={editable ? 'Редактировать тренировку' : 'Редактирование недоступно'} disabled={!editable} onClick={onEditWorkout}><EditIcon /></button></div><div className="summary"><WorkoutSummary workout={workout} status={workoutStatus} isToday={isToday} onOpenWorkout={onOpenWorkout} onRetry={onRetry} onEditWorkout={onEditWorkout} /><NutritionSummary nutritionPlan={nutritionPlan} /></div></section>;
 }
 
-function ScheduleEditModal({ workout, currentDateKey, todayKey, newDate, step, saving, error, onDateChange, onNext, onChooseScope, onBack, onClose }) {
+function ScheduleEditModal({ workout, currentDateKey, todayKey, newDate, completionDate, step, saving, error, onDateChange, onCompletionDateChange, onBeginCompletion, onConfirmCompletion, onNext, onChooseScope, onBack, onClose }) {
   const missed = currentDateKey < todayKey;
   const skipped = workout.status === 'skipped';
   const tailAvailable = workout.canShiftTail !== false;
-  return <div className="home-schedule-modal" role="dialog" aria-modal="true" aria-label="Перенести тренировку"><button className="home-schedule-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving} /><section className="home-schedule-card"><div className="home-schedule-handle" /><div className="home-schedule-head"><div><span>{step === 'date' ? 'Раскладка дня' : 'Изменение расписания'}</span><h2>{step === 'date' ? 'Перенести тренировку' : 'Что именно подвинуть?'}</h2></div><button className="home-schedule-close" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving}>×</button></div><div className="home-schedule-workout"><span>{formatFullDate(dateFromKey(currentDateKey))}</span><strong>{workout.title}</strong></div>{step === 'date' ? <>{(missed || skipped) && <div className="home-schedule-missed">{skipped ? 'Тренировка была отмечена как пропущенная. После переноса она снова станет запланированной.' : 'Вы пропустили запланированный день. Выберите новую дату — тренировку не нужно помечать пропущенной.'}</div>}<label className="home-schedule-date-field"><span>Новая дата</span><input type="date" min={todayKey} value={newDate} onChange={(event) => onDateChange(event.target.value)} /></label><div className="home-schedule-quick"><button type="button" onClick={() => onDateChange(todayKey)}>Сегодня</button><button type="button" onClick={() => onDateChange(addDaysKey(todayKey, 1))}>Завтра</button></div>{error && <div className="home-schedule-error" role="alert">{error}</div>}<button className="home-schedule-primary" type="button" disabled={!newDate || newDate < todayKey || newDate === currentDateKey} onClick={onNext}>Продолжить</button></> : <><p className="home-schedule-scope-intro">Новая дата: <strong>{formatFullDate(dateFromKey(newDate))}</strong>. Выберите, как изменить программу.</p>{!tailAvailable && <div className="home-schedule-missed">После этой тренировки уже есть выполненная тренировка. Поэтому можно перенести только пропущенную тренировку — завершённая история останется без изменений.</div>}{error && <div className="home-schedule-error" role="alert">{error}</div>}<div className="home-schedule-options"><button className="home-schedule-option" type="button" disabled={saving} onClick={() => onChooseScope('single')}><strong>Только эту тренировку</strong><span>{skipped && !tailAvailable ? 'Вернуть пропущенную тренировку в расписание на выбранную дату.' : 'Остальные тренировки останутся на своих датах. Удобно, если пропущен только один день.'}</span><b>›</b></button>{tailAvailable && <button className="home-schedule-option primary" type="button" disabled={saving} onClick={() => onChooseScope('tail')}><strong>Эту и все оставшиеся</strong><span>Расписание дальше перестроится автоматически с сохранением ритма программы.</span><b>›</b></button>}</div><button className="home-schedule-back" type="button" disabled={saving} onClick={onBack}>{saving ? 'Сохраняем…' : '← Изменить дату'}</button></>}</section></div>;
+  if (step === 'complete') {
+    return <div className="home-schedule-modal" role="dialog" aria-modal="true" aria-label="Отметить тренировку выполненной">
+      <button className="home-schedule-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving} />
+      <section className="home-schedule-card">
+        <div className="home-schedule-handle" />
+        <div className="home-schedule-head">
+          <div><span>История тренировок</span><h2>Отметить выполненной?</h2></div>
+          <button className="home-schedule-close" type="button" aria-label="Закрыть" disabled={saving} onClick={onClose}>×</button>
+        </div>
+        <div className="home-schedule-workout">
+          <span>Запланирована на {formatFullDate(dateFromKey(currentDateKey))}</span>
+          <strong>{workout.title}</strong>
+        </div>
+        <p className="home-schedule-scope-intro">Веса и повторы будут взяты из предыдущей тренировки, если они есть. После сохранения результаты можно отредактировать.</p>
+        <label className="home-schedule-date-field">
+          <span>Дата выполнения</span>
+          <input type="date" value={completionDate} max={todayKey} disabled={saving} onChange={event => onCompletionDateChange(event.target.value)} />
+        </label>
+        {error && <div className="home-schedule-error" role="alert">{error}</div>}
+        <button className="home-schedule-primary" type="button" disabled={saving || !completionDate || completionDate > todayKey} onClick={onConfirmCompletion}>{saving ? 'Сохраняем…' : 'Отметить выполненной'}</button>
+        <button className="home-schedule-back" type="button" disabled={saving} onClick={onBack}>← Назад к редактированию</button>
+      </section>
+    </div>;
+  }
+  return <div className="home-schedule-modal" role="dialog" aria-modal="true" aria-label="Перенести тренировку"><button className="home-schedule-scrim" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving} /><section className="home-schedule-card"><div className="home-schedule-handle" /><div className="home-schedule-head"><div><span>{step === 'date' ? 'Раскладка дня' : 'Изменение расписания'}</span><h2>{step === 'date' ? 'Перенести тренировку' : 'Что именно подвинуть?'}</h2></div><button className="home-schedule-close" type="button" aria-label="Закрыть" onClick={onClose} disabled={saving}>×</button></div><div className="home-schedule-workout"><span>{formatFullDate(dateFromKey(currentDateKey))}</span><strong>{workout.title}</strong></div>{step === 'date' ? <>{(missed || skipped) && <div className="home-schedule-missed">{skipped ? 'Тренировка была отмечена как пропущенная. После переноса она снова станет запланированной.' : 'Вы пропустили запланированный день. Выберите новую дату — тренировку не нужно помечать пропущенной.'}</div>}<label className="home-schedule-date-field"><span>Новая дата</span><input type="date" min={todayKey} value={newDate} onChange={(event) => onDateChange(event.target.value)} /></label><div className="home-schedule-quick"><button type="button" onClick={() => onDateChange(todayKey)}>Сегодня</button><button type="button" onClick={() => onDateChange(addDaysKey(todayKey, 1))}>Завтра</button></div>{error && <div className="home-schedule-error" role="alert">{error}</div>}<button className="home-schedule-primary" type="button" disabled={!newDate || newDate < todayKey || newDate === currentDateKey} onClick={onNext}>Продолжить</button>{workout.status === 'scheduled' && <button className="home-schedule-complete-action" type="button" onClick={onBeginCompletion}>Отметить выполненной</button>}</> : <><p className="home-schedule-scope-intro">Новая дата: <strong>{formatFullDate(dateFromKey(newDate))}</strong>. Выберите, как изменить программу.</p>{!tailAvailable && <div className="home-schedule-missed">После этой тренировки уже есть выполненная тренировка. Поэтому можно перенести только пропущенную тренировку — завершённая история останется без изменений.</div>}{error && <div className="home-schedule-error" role="alert">{error}</div>}<div className="home-schedule-options"><button className="home-schedule-option" type="button" disabled={saving} onClick={() => onChooseScope('single')}><strong>Только эту тренировку</strong><span>{skipped && !tailAvailable ? 'Вернуть пропущенную тренировку в расписание на выбранную дату.' : 'Остальные тренировки останутся на своих датах. Удобно, если пропущен только один день.'}</span><b>›</b></button>{tailAvailable && <button className="home-schedule-option primary" type="button" disabled={saving} onClick={() => onChooseScope('tail')}><strong>Эту и все оставшиеся</strong><span>Расписание дальше перестроится автоматически с сохранением ритма программы.</span><b>›</b></button>}</div><button className="home-schedule-back" type="button" disabled={saving} onClick={onBack}>{saving ? 'Сохраняем…' : '← Изменить дату'}</button></>}</section></div>;
 }
 
 function Drawer({ onCloseMenu }) {
@@ -170,7 +195,7 @@ async function loadWorkoutCard(dateKey) {
   if (error) throw error;
   const skipped = workoutRow.status === 'skipped';
   const scheduled = workoutRow.status === 'scheduled';
-  const editable = !active && (skipped || (scheduled && !hasLaterCompleted));
+  const editable = !active && (skipped || scheduled);
   return {
     id: workoutRow.id,
     title: workoutRow.workout_name,
@@ -201,6 +226,7 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
   const [scheduleEditor, setScheduleEditor] = useState(null);
   const [scheduleStep, setScheduleStep] = useState('date');
   const [scheduleDate, setScheduleDate] = useState(todayKey);
+  const [completionDate, setCompletionDate] = useState(todayKey);
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleError, setScheduleError] = useState('');
   const workoutCacheRef = useRef(new Map());
@@ -269,6 +295,7 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
     setScheduleEditor({ workout: effectiveWorkout, originalDate });
     setScheduleStep('date');
     setScheduleDate(originalDate < todayKey ? todayKey : originalDate);
+    setCompletionDate(originalDate <= todayKey ? originalDate : todayKey);
     setScheduleError('');
   }
   function closeScheduleEditor() { if (scheduleSaving) return; setScheduleEditor(null); setScheduleError(''); setScheduleStep('date'); }
@@ -284,5 +311,29 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
     } finally { setScheduleSaving(false); }
   }
 
-  return <div className={`phone${menuOpen ? ' menu-open' : ''}`}><Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} /><main className="content"><PromoBanner />{hasRefreshError && <section className="home-data-alert" role="alert"><div><strong>Не удалось обновить данные</strong><span>Проверьте соединение. Ниже показана последняя успешная версия данных для выбранной даты.</span></div><button type="button" onClick={retryHomeData}>Повторить</button></section>}<CalendarCard today={today} selectedDateKey={selectedDateKey} workoutDates={effectiveWorkoutDates} onSelectDate={selectDate} /><StandaloneWorkoutLauncher onOpenWorkout={onOpenWorkout} /><DailySummary date={selectedDate} isToday={isTodaySelected} workout={effectiveWorkout} workoutStatus={effectiveWorkoutStatus} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} onRetry={retryHomeData} onEditWorkout={openScheduleEditor} /></main><Drawer onCloseMenu={onCloseMenu} />{scheduleEditor && <ScheduleEditModal workout={scheduleEditor.workout} currentDateKey={scheduleEditor.originalDate} todayKey={todayKey} newDate={scheduleDate} step={scheduleStep} saving={scheduleSaving} error={scheduleError} onDateChange={(value) => { setScheduleDate(value); setScheduleError(''); }} onNext={() => { setScheduleError(''); setScheduleStep('scope'); }} onChooseScope={applyScheduleScope} onBack={() => { setScheduleError(''); setScheduleStep('date'); }} onClose={closeScheduleEditor} />}</div>;
+  async function completeFromHome() {
+    if (!scheduleEditor || scheduleSaving || scheduleEditor.workout.status !== 'scheduled') return;
+    if (!completionDate || completionDate > todayKey) {
+      setScheduleError('Выберите дату выполнения не позднее сегодняшнего дня.');
+      return;
+    }
+    setScheduleSaving(true);
+    setScheduleError('');
+    try {
+      const finished = await markScheduledWorkoutCompleted(scheduleEditor.workout.id, completionDate);
+      workoutCacheRef.current.clear();
+      setScheduleEditor(null);
+      setScheduleStep('date');
+      setSelectionPinned(completionDate !== todayKey);
+      setSelectedDateKey(completionDate);
+      setReloadKey(value => value + 1);
+      if (finished?.workout?.id) onOpenWorkout?.(finished.workout.id);
+    } catch (error) {
+      setScheduleError(error?.message || 'Не удалось отметить тренировку выполненной.');
+    } finally {
+      setScheduleSaving(false);
+    }
+  }
+
+  return <div className={`phone${menuOpen ? ' menu-open' : ''}`}><Header menuOpen={menuOpen} onOpenMenu={onOpenMenu} /><main className="content"><PromoBanner />{hasRefreshError && <section className="home-data-alert" role="alert"><div><strong>Не удалось обновить данные</strong><span>Проверьте соединение. Ниже показана последняя успешная версия данных для выбранной даты.</span></div><button type="button" onClick={retryHomeData}>Повторить</button></section>}<CalendarCard today={today} selectedDateKey={selectedDateKey} workoutDates={effectiveWorkoutDates} onSelectDate={selectDate} /><StandaloneWorkoutLauncher onOpenWorkout={onOpenWorkout} /><DailySummary date={selectedDate} isToday={isTodaySelected} workout={effectiveWorkout} workoutStatus={effectiveWorkoutStatus} nutritionPlan={nutritionPlan} onOpenWorkout={onOpenWorkout} onRetry={retryHomeData} onEditWorkout={openScheduleEditor} /></main><Drawer onCloseMenu={onCloseMenu} />{scheduleEditor && <ScheduleEditModal workout={scheduleEditor.workout} currentDateKey={scheduleEditor.originalDate} todayKey={todayKey} newDate={scheduleDate} completionDate={completionDate} step={scheduleStep} saving={scheduleSaving} error={scheduleError} onDateChange={(value) => { setScheduleDate(value); setScheduleError(''); }} onCompletionDateChange={(value) => { setCompletionDate(value); setScheduleError(''); }} onBeginCompletion={() => { setScheduleStep('complete'); setScheduleError(''); }} onConfirmCompletion={completeFromHome} onNext={() => { setScheduleError(''); setScheduleStep('scope'); }} onChooseScope={applyScheduleScope} onBack={() => { setScheduleError(''); setScheduleStep('date'); }} onClose={closeScheduleEditor} />}</div>;
 }
