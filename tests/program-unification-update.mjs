@@ -59,7 +59,7 @@ assert.match(user,/program-detail-workout-accordion/);
 assert.match(shared,/label: 'Тренировки'/);
 assert.match(shared,/role="tablist"/);
 assert.match(shared,/aria-selected=\{value === option.id\}/);
-assert.match(catalog,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="catalog" \/>/);
+assert.match(catalog,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="catalog"/);
 assert.match(user,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="owned" showSchedule=\{isActive\} \/>/);
 assert.match(catalog,/detailTab === 'description'/);
 assert.match(catalog,/detailTab === 'workouts'/);

@@ -19,9 +19,9 @@ assert.match(css,/padding-bottom:76px!important/);
 assert.match(css,/padding-bottom:64px!important/);
 assert.match(training,/data-training-tab=\{tab.id\}/);
 assert.doesNotMatch(training,/className="training-section-head"/);
-assert.match(training,/create-program-wide/);
+assert.match(training,/training-create-compact/);
 assert.match(training,/training-toolbar-row/);
-assert.ok(training.indexOf('create-program-wide') < training.indexOf('training-toolbar-row'),'My Programs creates before filters');
+assert.ok(training.indexOf('training-toolbar-row') < training.indexOf('training-create-compact'),'Compact create follows tool buttons');
 for(const id of ['recommendations','catalog','your-programs','received','completed','create']){
   assert.match(icons,new RegExp('data-training-tab="'+id+'"'));
 }
