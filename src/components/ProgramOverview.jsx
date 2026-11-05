@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { normalizeProgramCategories } from '../lib/programOptions.js';
 /**
  * Shared structure for catalog templates and user-owned programs.
  * Only owned programs render the Share action; data and actions can differ.
  */
 export function ProgramOverviewIntro({ program, coverUrl = null }) {
-  const categories = Array.isArray(program.categories) ? program.categories : [];
+  const categories = normalizeProgramCategories(program.categories);
   return <>
     <div className={`program-detail-cover${coverUrl ? '' : ' program-detail-cover-empty'}`}>
       {coverUrl ? <img src={coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}
