@@ -10,7 +10,7 @@ import '../program-detail.css';
 import '../program-participation-controls.css';
 import '../scheduled-workout-controls.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
-import { formatProgramExerciseSummary } from '../lib/programExerciseSummary.js';
+import { ProgramWorkoutBlock } from './ProgramWorkoutBlock.jsx';
 
 const WEEKLY_DAYS = { weekly_mwf: [1, 3, 5], weekly_tts: [2, 4, 6] };
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 5-7 7 7 7" /></svg>; }
@@ -20,7 +20,7 @@ function formatDate(value) { return value ? new Intl.DateTimeFormat('ru-RU', { d
 function localToday() { const date = new Date(); return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10); }
 function isAllowedStartDate(value, mode) { if (!value) return false; const allowed = WEEKLY_DAYS[mode]; return !allowed || allowed.includes(new Date(`${value}T12:00:00`).getDay()); }
 function startDateHint(mode) { if (mode === 'weekly_mwf') return 'Выберите понедельник, среду или пятницу.'; if (mode === 'weekly_tts') return 'Выберите вторник, четверг или субботу.'; return ''; }
-function participationLabel(participation) { if (!participation) return 'Не начата'; if (participation.status === 'paused') return 'На паузе'; if (participation.status === 'completed') return 'Завершена'; if (participation.status === 'cancelled') return 'Отменена'; if (participation.startDate > localToday()) return `Старт ${formatDate(participation.startDate)}`; return 'Активна'; }
+function participationLabel(participation) { if (!participation) return 'Не начата'; if (participation.status === 'paused') return 'На паузе'; if (participation.status === 'completed') return 'Завершена'; if (participation.status === 'cancelled') return 'Отменена'; if (participation.startDate > localToday()) return 'Запланирована'; return 'Активна'; }
 function workoutStatusLabel(item) {
   if (item.status === 'completed') return 'Выполнена';
   if (item.status === 'skipped') return 'Пропущена';
@@ -243,12 +243,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
     </header>
     <main className="program-detail-content">
       {detailTab === 'description' && <div id="owned-description-panel" role="tabpanel" aria-labelledby="owned-description-tab">
-      <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
-      <p className="program-detail-status-text" aria-label="Состояние программы">
-        <strong>{participationLabel(participation)}</strong>
-        {participation?.startDate && <span> · Дата старта: {formatDate(participation.startDate)}</span>}
-        {participation && preview.find(item => item.status === 'scheduled') && <span> · Следующая тренировка: {formatDate(preview.find(item => item.status === 'scheduled').scheduledDate)}</span>}
-      </p>
+      <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} statusText={participationLabel(participation)} />
 
       <ProgramOverviewMeta program={program} />
       <ProgramOverviewDescription description={program.description} />
@@ -272,7 +267,6 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
         {liveParticipation && completeConfirmOpen && <div className="program-complete-confirm"><strong>Завершить программу?</strong><span>Выполненная история сохранится. Все оставшиеся невыполненные тренировки будут убраны из календаря.</span><div className="program-complete-actions"><button type="button" disabled={Boolean(participationAction)} onClick={() => setCompleteConfirmOpen(false)}>Отмена</button><button type="button" disabled={Boolean(participationAction)} onClick={handleComplete}>{participationAction === 'complete' ? 'Завершаем…' : 'Да, завершить'}</button></div></div>}
 
         {participationError && <div className="program-participation-message" role="alert">{participationError}</div>}
-        {!canEditProgram && <div className="program-detail-compat-note">Редактирование структуры станет доступно после завершения или остановки текущего запуска. История и расписание сохраняются.</div>}
 
       </section>}
       {isUserCreated && <div className="program-detail-end-actions">
@@ -281,13 +275,13 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
       </div>}
       </div>}
       {detailTab === 'workouts' && <div id="owned-workouts-panel" role="tabpanel" aria-labelledby="owned-workouts-tab">
-      <section className="program-detail-section"><div className="program-detail-section-head"><h2>{isCycle ? 'Один цикл тренировок' : 'Тренировки программы'}</h2></div><div className="program-detail-weeks">{isCycle ? <section><header><strong>Цикл</strong><span>{formatRussianCount(totalTemplateWorkouts, ['тренировка','тренировки','тренировок'])}</span></header>{templateWorkouts.map(({ workout }, index) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{index + 1}. {workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section> : program.programWeeks.map((group) => <section key={group.id}><header><strong>Этап {group.number}</strong><span>{formatRussianCount(group.workouts.length, ['тренировка','тренировки','тренировок'])}</span></header>{group.workouts.map((workout) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section>)}</div></section>
-        {preview.some(item=>item.status==='completed') && <section className="program-detail-completed-links">
-          <h2>Выполненные тренировки</h2>
-          {preview.filter(item=>item.status==='completed').map(item=><button type="button" key={item.id}
-            onClick={()=>onOpenWorkout?.(item.id)}><span>{item.workoutName}</span>
-            <small>Посмотреть и изменить веса</small></button>)}
-        </section>}
+        <section className="program-detail-section">
+          <div className="program-detail-section-head"><h2>Один цикл тренировок</h2></div>
+          <div className="catalog-workout-list">
+            {templateWorkouts.map(({ workout }, index) =>
+              <ProgramWorkoutBlock key={workout.id || index} workout={workout} index={index} />)}
+          </div>
+        </section>
       </div>}
       {detailTab === 'schedule' && isActive && <div id="owned-schedule-panel" role="tabpanel" aria-labelledby="owned-schedule-tab">
         <div className="program-schedule-summary">
@@ -321,7 +315,10 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
       })}</div></section>
       </div>}
     </main>
-    <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>{canStart && <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}><CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span></button>}<button className="program-detail-edit-button" type="button" onClick={() => canEditProgram && onEdit?.(program.id)} disabled={!canEditProgram}><PencilIcon /><span>{canEditProgram ? 'Редактировать программу' : 'Редактирование недоступно'}</span></button></footer>
+    {(canStart || canEditProgram) && <footer className={`program-detail-footer${canStart && canEditProgram ? ' two-actions' : ''}`}>
+      {canStart && <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}><CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span></button>}
+      {canEditProgram && <button className="program-detail-edit-button" type="button" onClick={() => onEdit?.(program.id)}><PencilIcon /><span>Редактировать программу</span></button>}
+    </footer>}
     {manualWorkoutId && <div className="program-detail-delete-overlay" role="presentation">
       <button type="button" className="program-detail-delete-scrim" aria-label="Закрыть" onClick={()=>setManualWorkoutId(null)} disabled={manualWorkoutBusy}/>
       <section className="program-detail-delete-dialog" role="dialog" aria-modal="true" aria-label="Отметить выполненной">
