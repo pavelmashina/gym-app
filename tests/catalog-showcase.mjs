@@ -10,7 +10,7 @@ assert.match(catalog,/sourcePayload = row\.source_payload/);
 assert.match(catalog,/import\.meta\.env\.BASE_URL/);
 assert.match(catalog,/coverUrl,/);
 assert.match(ui,/catalog-program-cover-image/);
-assert.match(ui,/<ProgramOverviewIntro program=\{program\} coverUrl=\{program\.coverUrl\} \/>/);
+assert.match(ui,/<ProgramOverviewIntro program=\{program\} coverUrl=\{program\.coverDetailUrl \|\| program\.coverUrl\} \/>/);
 assert.match(ui,/function CatalogProgramFacts/);
 assert.match(ui,/<CatalogProgramFacts details=\{program\.sourcePayload\?\.details\} \/>/);
 assert.match(ui,/['"]Время тренировки['"]/);
