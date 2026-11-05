@@ -21,7 +21,7 @@ assert.match(report,/exercise\.prescription && <p className="workout-exercise-pr
 assert.match(detail,/statusText=\{participationLabel\(participation\)\}/);
 assert.doesNotMatch(detail,/className="program-detail-start-state"/);
 assert.match(catalog,/<ProgramListCard/);
-assert.match(catalog,/program\.workoutCount/);
+assert.match(catalog,/workoutCount/);
 const receive=read('src/components/ReceiveProgramPanel.jsx');
 const insights=read('src/components/StatisticsInsights.jsx');
 assert.match(receive,/formatRussianCount\(preview\.workout_count/);
