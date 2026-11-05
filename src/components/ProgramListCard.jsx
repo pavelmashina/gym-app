@@ -24,13 +24,12 @@ export function ProgramListCard({ program, onOpen, status = null }) {
       </span>
       <span className="program-list-difficulty-row">
         <span className="catalog-program-tag program-list-tag-key">{duration || 'Продолжительность не указана'}</span>
-        {(difficulty > 0 || program.level) && (
-        {difficulty
+        {(difficulty > 0 || program.level) && (difficulty
           ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
             {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
           </span>
           : <span className="catalog-program-tag">{program.level}</span>)}
-      </span>}
+      </span>
     </span>
   </article>;
 }
