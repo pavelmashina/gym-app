@@ -149,6 +149,10 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     <main className="exercise-catalog-content">
       <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button data-training-tab={tab.id} className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
+      {activeTab === 'your-programs' && <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
+          <button type="button" role="tab" id="my-programs-active-tab" aria-controls="my-programs-active-panel" aria-selected={myProgramsView === 'active'} className={myProgramsView === 'active' ? 'active' : ''} onClick={() => setMyProgramsView('active')}>Активные</button>
+          <button type="button" role="tab" id="my-programs-created-tab" aria-controls="my-programs-created-panel" aria-selected={myProgramsView === 'created'} className={myProgramsView === 'created' ? 'active' : ''} onClick={() => setMyProgramsView('created')}>Мои</button>
+        </div>}
       
 
       {['recommendations','catalog','your-programs'].includes(activeTab) && <div className="training-toolbar-row compact-training-toolbar">
@@ -170,10 +174,6 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       {isProgramsTab && programsLoading && <div className="my-programs-state"><div className="exercise-list-spinner" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>}
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
       {activeTab === 'your-programs' && !programsLoading && !programsError && <section className="my-programs-section">
-        <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
-          <button type="button" role="tab" id="my-programs-active-tab" aria-controls="my-programs-active-panel" aria-selected={myProgramsView === 'active'} className={myProgramsView === 'active' ? 'active' : ''} onClick={() => setMyProgramsView('active')}>Активные</button>
-          <button type="button" role="tab" id="my-programs-created-tab" aria-controls="my-programs-created-panel" aria-selected={myProgramsView === 'created'} className={myProgramsView === 'created' ? 'active' : ''} onClick={() => setMyProgramsView('created')}>Мои</button>
-        </div>
         {myProgramsView === 'active' ? <div role="tabpanel" id="my-programs-active-panel" aria-labelledby="my-programs-active-tab">
           {activePrograms.length ? <div className="my-programs-list">{activePrograms.map(program => <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}</div>
             : <p className="my-programs-segment-empty">Нет программ, которые вы сейчас выполняете.</p>}
