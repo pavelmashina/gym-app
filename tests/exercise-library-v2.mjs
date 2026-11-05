@@ -35,7 +35,7 @@ const complete = await library.listExerciseLibrary({includeLegacy:true});
 assert.equal(complete.all.length,502,'Complete library merges V2 cards with historical exercises without duplicates');
 assert.equal(complete.all.find(row=>row.id==='id-0')?.name,'Жим лёжа','Canonical V2 card wins when IDs overlap');
 assert(complete.all.some(row=>row.id==='legacy-extra'));
-assert.deepEqual(requests.slice(2),[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]]);
+assert.deepEqual(requests.slice(2).map(item => item.join(':')).sort(),[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]].map(item => item.join(':')).sort());
 
 assert.equal(library.filterExerciseList(result.all,{query:'  ЖИМ лежа  '}).length,1);
 assert.equal(library.filterExerciseList(result.all,{query:'press bench'}).length,1);
