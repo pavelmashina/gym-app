@@ -3,14 +3,13 @@ import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../
 import '../catalog-programs.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
 import { programLevelIndex } from '../lib/programOptions.js';
-import { formatProgramExerciseSummary } from '../lib/programExerciseSummary.js';
+import { ProgramWorkoutBlock } from './ProgramWorkoutBlock.jsx';
 import { ProgramOverviewIntro, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewDescription } from './ProgramOverview.jsx';
 
 const ALL = 'Все';
 const NO_DATA = 'Нет данных';
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
-function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>; }
 
 function CatalogCard({ program, onOpen }) {
   const category = program.categories[0] || null;
@@ -38,21 +37,6 @@ function CatalogCard({ program, onOpen }) {
 function FilterGroup({ title, values, selected, onSelect }) {
   if (values.length <= 1) return null;
   return <div className="catalog-filter-group"><span>{title}</span><div className="catalog-filter-pills">{values.map((value) => <button className={value === selected ? 'active' : ''} key={value} type="button" onClick={() => onSelect(value)}>{value}</button>)}</div></div>;
-}
-
-function WorkoutBlock({ workout, index }) {
-  const [open, setOpen] = useState(index === 0);
-  const exercises = workout.exercises ?? [];
-  return (
-    <article className={`catalog-workout-card${open ? ' open' : ''}`}>
-      <button className="catalog-workout-head" type="button" onClick={() => setOpen((value) => !value)}>
-        <span className="catalog-workout-index">{index + 1}</span>
-        <span className="catalog-workout-title"><small>Тренировка цикла</small><strong>{workout.name || `Тренировка ${index + 1}`}</strong><span className="catalog-workout-exercise-count">{formatRussianCount(exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</span></span>
-        <span className="catalog-workout-chevron"><ChevronIcon /></span>
-      </button>
-      {open && <div className="catalog-workout-exercises">{exercises.length === 0 ? <div className="catalog-no-data-row">{NO_DATA}</div> : exercises.map((exercise, exerciseIndex) => <div className="catalog-workout-exercise" key={`${exercise.name}-${exerciseIndex}`}><span className="catalog-exercise-number">{exerciseIndex + 1}</span><span className="catalog-exercise-copy"><strong>{exercise.name || NO_DATA}</strong><span>{formatProgramExerciseSummary(exercise)}</span></span></div>)}</div>}
-    </article>
-  );
 }
 
 function InfoRow({ label, value }) {
@@ -107,7 +91,7 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
           <section className="program-detail-section catalog-training-section">
             <div className="program-detail-section-head"><h2>Один цикл тренировок</h2></div>
             {workouts.length > 0
-              ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div>
+              ? <div className="catalog-workout-list">{workouts.map((workout, index) => <ProgramWorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div>
               : <div className="catalog-detail-empty-card">Нет данных</div>}
           </section>
           </div>}
