@@ -70,7 +70,7 @@ const EMPTY_DRAFT = {
   photoFiles: [], existingPhotos: [], removedPhotoPaths: [],
 };
 
-export function ExerciseLibraryPicker({ selectedIds = [], multi = false, excludeId = null, onChange, onSelect, searchPlaceholder = 'Название упражнения' }) {
+export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseOnly = false, excludeId = null, onChange, onSelect, searchPlaceholder = 'Название упражнения' }) {
   const [library, setLibrary] = useState({ all: [], mine: [], recent: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -131,10 +131,10 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
   function reload() {
     setLoading(true);
     setError('');
-    listExerciseLibrary().then(setLibrary).catch((requestError) => setError(requestError?.message || 'Не удалось загрузить базу упражнений.')).finally(() => setLoading(false));
+    listExerciseLibrary({ includeLegacy: browseOnly }).then(setLibrary).catch((requestError) => setError(requestError?.message || 'Не удалось загрузить базу упражнений.')).finally(() => setLoading(false));
   }
 
-  useEffect(reload, []);
+  useEffect(reload, [browseOnly]);
 
   const filterConfig = useMemo(() => ({ query, muscleGroup, equipment }), [query, muscleGroup, equipment]);
   const visible = useMemo(() => {
@@ -143,6 +143,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
   }, [library, filterConfig, excludeId]);
 
   function pick(exercise) {
+    if (browseOnly) { setInfoExercise(exercise); return; }
     if (multi) {
       const next = selectedIds.includes(exercise.id) ? selectedIds.filter((id) => id !== exercise.id) : [...selectedIds, exercise.id];
       onChange?.(next, library.all.some(item=>item.id===exercise.id)?library.all:[...library.all,exercise]);
@@ -175,7 +176,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
 
   return <div className="exercise-library-shell">
     <section className="exercise-library-top">
-      <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>
+      <div className="exercise-library-heading"><span>База упражнений</span><h2>{browseOnly ? 'Все упражнения' : 'Выберите упражнение'}</h2></div>
       <label className="exercise-library-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <div className="exercise-library-filter-row">
         <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{EXERCISE_MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
@@ -236,8 +237,8 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, exclude
     {loading && <div className="exercise-library-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
     {!loading && error && <div className="exercise-library-state error"><span>{error}</span><button type="button" onClick={reload}>Повторить</button></div>}
     {!loading && !error && <div className="exercise-library-sections">
-      <LibrarySection title="Недавние упражнения" items={visible.recent} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
-      <LibrarySection title="Мои упражнения" items={visible.mine} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
+      {!browseOnly && <LibrarySection title="Недавние упражнения" items={visible.recent} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />}
+      {!browseOnly && <LibrarySection title="Мои упражнения" items={visible.mine} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />}
       <LibrarySection title="Все упражнения" items={visible.all} selectedIds={selectedIds} multi={multi} onPick={pick} onInfo={setInfoExercise} />
     </div>}
     {infoExercise && <ExerciseInfoModal exercise={infoExercise} onClose={() => setInfoExercise(null)} onEdit={editExercise} />}
