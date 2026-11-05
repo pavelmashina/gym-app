@@ -769,3 +769,19 @@
   white-space: nowrap;
   scroll-snap-align: start;
 }
+
+/* Difficulty belongs on its own second row; the top tag strip stays swipeable. */
+.exercise-catalog-content .program-list-difficulty-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 22px;
+  margin-top: 1px;
+  pointer-events: none;
+}
+.exercise-catalog-content .program-list-difficulty-row .catalog-program-difficulty {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  flex: 0 0 auto;
+}
