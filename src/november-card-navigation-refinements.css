@@ -1,0 +1,283 @@
+/* November 2026: shared program, nutrition, supplement and navigation refinements.
+   Loaded last so the visual contracts remain identical across the mobile sections. */
+
+/* Training categories have the same 78px square icon blocks as Nutrition. */
+.exercise-catalog-content .training-tabs {
+  gap: 12px !important;
+  margin: 10px calc(-1 * var(--page-x)) 0 !important;
+  padding: 0 var(--page-x) 8px !important;
+  scroll-padding-inline: var(--page-x);
+  border: 0 !important;
+}
+.exercise-catalog-content .training-tabs button {
+  flex: 0 0 92px !important;
+  width: 92px !important;
+  min-width: 92px !important;
+  max-width: 92px !important;
+  min-height: 112px !important;
+  gap: 8px !important;
+  transform: none !important;
+  font-size: 11px !important;
+  line-height: 14px !important;
+  white-space: nowrap !important;
+}
+.exercise-catalog-content .training-tabs button::before {
+  width: 78px !important;
+  height: 78px !important;
+  border-radius: 22px !important;
+  background-size: 38px 38px !important;
+  transform: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+.exercise-catalog-content .training-tabs button:active::before { transform: scale(.97) !important; }
+
+/* Filter + two-direction sort buttons stay grouped at the left. */
+.exercise-catalog-content .compact-training-toolbar { justify-content: space-between !important; }
+.exercise-catalog-content .compact-training-toolbar .training-tools {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+.exercise-catalog-content .compact-training-toolbar .training-tools button {
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px;
+}
+.exercise-catalog-content .compact-training-toolbar .training-tools button.active {
+  border-color: var(--ink) !important;
+}
+.exercise-catalog-content .compact-training-toolbar .training-tools button svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* The small subsection switcher matches text-only tabs inside a program. */
+.my-programs-section { margin-top: 12px; }
+.my-programs-switcher {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.my-programs-switcher button {
+  position: relative;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 8px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.my-programs-switcher button.active { color: var(--ink); }
+.my-programs-switcher button::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+.my-programs-switcher button.active::after { background: var(--ink); }
+.my-programs-section .my-programs-list { margin-top: 0; }
+
+/* Program names start on the top edge of the photo, not vertically centered. */
+.exercise-catalog-content .catalog-program-card,
+.exercise-catalog-content .my-program-card { align-items: start !important; }
+.exercise-catalog-content .catalog-program-cover,
+.exercise-catalog-content .my-program-cover { align-self: start !important; }
+.exercise-catalog-content .catalog-program-card-copy,
+.exercise-catalog-content .my-program-copy {
+  align-self: start !important;
+  justify-content: flex-start !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+.exercise-catalog-content .catalog-program-card-copy { gap: 8px !important; }
+.exercise-catalog-content .catalog-program-card-copy > strong { margin: 0 !important; }
+.exercise-catalog-content .my-program-status-corner svg { width: 17px; height: 17px; }
+.exercise-catalog-content .my-program-status-corner {
+  top: 9px;
+  right: 9px;
+  min-width: 29px;
+  width: 29px;
+  height: 29px;
+  padding: 5px;
+}
+.exercise-catalog-content .catalog-program-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.exercise-catalog-content .catalog-program-tag {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  max-width: 100%;
+  width: fit-content;
+  padding: var(--space-1) var(--space-2) !important;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted) !important;
+  font-size: var(--text-micro) !important;
+  line-height: var(--lh-micro) !important;
+  font-weight: var(--weight-semibold) !important;
+  letter-spacing: normal;
+  text-transform: none !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exercise-catalog-content .catalog-program-workouts {
+  background: var(--ink);
+  color: var(--surface) !important;
+}
+.exercise-catalog-content .catalog-program-difficulty {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 21px;
+  padding: 5px 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+.exercise-catalog-content .catalog-program-difficulty i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.exercise-catalog-content .catalog-program-difficulty i.filled { background: var(--ink); }
+
+/* Only non-Home destinations get an inset, understated gradient in the bottom dock. */
+.app-nav-item.active:not(.home) { background: transparent !important; }
+.app-nav-item.active:not(.home)::before {
+  content: "" !important;
+  position: absolute;
+  inset: 7px 5px 6px;
+  z-index: 0;
+  border-radius: 15px;
+  pointer-events: none;
+  background: linear-gradient(135deg,
+    color-mix(in srgb,var(--accent-soft) 94%,transparent),
+    color-mix(in srgb,var(--surface-2) 62%,transparent) 70%,
+    transparent) !important;
+}
+.app-nav-item.active:not(.home) .app-nav-icon,
+.app-nav-item.active:not(.home) .app-nav-label { position: relative; z-index: 1; }
+.app-nav-item.home,
+.app-nav-item.home.active { background: transparent !important; }
+.app-nav-item.home::before,
+.app-nav-item.home.active::before { content: none !important; }
+
+/* SportPit search matches the 42px Training search, including text size. */
+.sportpit-content .sportpit-search {
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  border-radius: 13px !important;
+  gap: 8px;
+}
+.sportpit-content .sportpit-search input {
+  min-width: 0;
+  height: 100%;
+  padding: 8px 0 !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.sportpit-content .sportpit-search svg { width: 20px; height: 20px; }
+
+/* Recipe/meal-plan tags use a full-width, non-wrapping row underneath the photo/title. */
+.nutrition-screen .recipe-card-shell .recipe-card,
+.nutrition-screen .meal-plan-card-shell .meal-plan-card {
+  grid-template-columns: 104px minmax(0,1fr) !important;
+  grid-template-rows: auto auto;
+  align-items: start !important;
+  column-gap: var(--space-3) !important;
+  row-gap: var(--space-2) !important;
+  padding: var(--space-3) !important;
+}
+.nutrition-screen .recipe-card-image,
+.nutrition-screen .meal-plan-card-image {
+  grid-column: 1;
+  grid-row: 1;
+}
+.nutrition-screen .recipe-card-copy,
+.nutrition-screen .meal-plan-card-copy {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  min-width: 0;
+  padding-right: 28px;
+}
+.nutrition-screen .recipe-tags,
+.nutrition-screen .meal-plan-tags {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap !important;
+  gap: var(--space-1);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.nutrition-screen .recipe-tags::-webkit-scrollbar,
+.nutrition-screen .meal-plan-tags::-webkit-scrollbar { display: none; }
+.nutrition-screen .recipe-tags b,
+.nutrition-screen .meal-plan-tags b {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Catalog controls match the Training outline icon-button family, flush left. */
+.nutrition-screen .catalog-toolbar {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center;
+  gap: 8px !important;
+}
+.nutrition-screen .catalog-tool-button {
+  flex: 0 0 40px;
+  width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 !important;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  box-shadow: none;
+}
+.nutrition-screen .catalog-tool-button.active { border-color: var(--ink) !important; }
+.nutrition-screen .catalog-tool-button svg { width: 22px !important; height: 22px !important; }
+
+@media (max-width: 370px) {
+  .exercise-catalog-content .training-tabs button {
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+  }
+  .nutrition-screen .recipe-card-shell .recipe-card,
+  .nutrition-screen .meal-plan-card-shell .meal-plan-card {
+    grid-template-columns: 88px minmax(0,1fr) !important;
+  }
+}
