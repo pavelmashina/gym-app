@@ -105,10 +105,10 @@ async function mapExercises(rows, userId) {
   }));
 }
 
-async function loadCatalogRows() {
+async function loadCatalogRows({ canonical = CATALOG_V2_ENABLED } = {}) {
   const rows = [];
   for (let offset = 0; ; offset += 500) {
-    const result = await supabase.from(CATALOG_V2_ENABLED ? 'exercise_catalog_v2' : 'exercises')
+    const result = await supabase.from(canonical ? 'exercise_catalog_v2' : 'exercises')
       .select('*').order('name', { ascending: true }).order('id', { ascending: true }).range(offset, offset + 499);
     if (result.error) return result;
     rows.push(...(result.data || []));
@@ -116,9 +116,9 @@ async function loadCatalogRows() {
   }
 }
 
-export async function listExerciseLibrary() {
+export async function listExerciseLibrary({ includeLegacy = false } = {}) {
   const user = await currentUser();
-  const [exerciseResult, recentResult, photoResult] = await Promise.all([
+  const [exerciseResult, recentResult, photoResult, legacyResult] = await Promise.all([
     loadCatalogRows(),
     supabase
       .from('user_recent_exercises')
@@ -128,13 +128,21 @@ export async function listExerciseLibrary() {
       .limit(5),
     // Catalog v2 is an existing view without photo_path; get owned paths separately.
     supabase.from('exercises').select('id,photo_path,photo_paths').eq('owner_id', user.id),
+    includeLegacy && CATALOG_V2_ENABLED ? loadCatalogRows({ canonical: false }) : Promise.resolve({ data: [], error: null }),
   ]);
+  if (legacyResult.error) throw new Error('Не удалось загрузить полную базу упражнений.');
   if (photoResult.error) throw new Error('Не удалось загрузить фотографии ваших упражнений.');
   if (exerciseResult.error) throw new Error('Не удалось загрузить базу упражнений.');
   if (recentResult.error) throw new Error('Не удалось загрузить недавние упражнения.');
 
   const photoFields = new Map((photoResult.data || []).map(item => [item.id, item]));
-  const all = await mapExercises((exerciseResult.data || []).map(row =>
+  // In browse-only mode merge the complete legacy table with the richer V2 cards.
+  // Preserve the V2 record on matching IDs; do not duplicate exercises.
+  const canonicalRows = exerciseResult.data || [];
+  const knownIds = new Set(canonicalRows.map(row => row.id));
+  const fullRows = includeLegacy ? [...canonicalRows, ...(legacyResult.data || []).filter(row => !knownIds.has(row.id))] : canonicalRows;
+  fullRows.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const all = await mapExercises(fullRows.map(row =>
     row.owner_id === user.id ? { ...row, ...photoFields.get(row.id) } : row
   ), user.id);
   const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
