@@ -479,14 +479,11 @@
 .exercise-catalog-content .my-programs-create-row .training-create-compact {
   flex: 0 0 auto;
   min-height: 40px;
+  /* Use the same compact outlined button style as the main Training toolbar. */
 }
-.exercise-catalog-content .my-program-inline-status {
-  font: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-  line-height: inherit;
-  color: var(--ink);
-  white-space: normal;
+/* The personal program card uses its activity icon, not inline status text. */
+.exercise-catalog-content .my-program-status-corner {
+  pointer-events: none;
 }
 .program-detail-phone .program-detail-title-status {
   font: inherit;
