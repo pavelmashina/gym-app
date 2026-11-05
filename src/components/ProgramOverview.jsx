@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { PROGRAM_DETAIL_FIELDS } from '../lib/programOptions.js';
 /**
  * Shared structure for catalog templates and user-owned programs.
  * Only owned programs render the Share action; data and actions can differ.
@@ -58,17 +57,15 @@ export function ProgramOverviewMeta({ program }) {
 /** Selected extra program characteristics, displayed identically to catalog facts. */
 export function ProgramOverviewFacts({ details }) {
   if (!details || typeof details !== 'object') return null;
-  const fields = PROGRAM_DETAIL_FIELDS.filter(field => typeof details[field.key] === 'string' && details[field.key].trim());
-  if (!fields.length) return null;
-  const short = fields.filter(field => !['progression','warmup','cooldown'].includes(field.key));
-  const tips = fields.filter(field => ['progression','warmup','cooldown'].includes(field.key));
-  return <section className="catalog-program-facts" aria-label="Характеристики программы">
-    {short.length > 0 && <div className="catalog-program-facts-grid">
-      {short.map(field => <div key={field.key}><span>{field.label}</span><strong>{details[field.key]}</strong></div>)}
-    </div>}
-    {tips.length > 0 && <div className="catalog-program-facts-tips">
-      {tips.map(field => <p key={field.key}><strong>{field.label}.</strong> {details[field.key]}</p>)}
-    </div>}
+  const facts = [
+    ['Продолжительность', details.duration],
+    ['Частота', details.frequency],
+  ].filter(([, value]) => typeof value === 'string' && value.trim());
+  if (!facts.length) return null;
+  return <section className="catalog-program-facts" aria-label="Продолжительность и частота программы">
+    <div className="catalog-program-facts-grid">
+      {facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
+    </div>
   </section>;
 }
 
