@@ -52,7 +52,7 @@ function programState(program) {
   if (participation.status === 'abandoned') return { label: 'Остановлена', tone: 'abandoned' };
   const now = new Date();
   const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
-  if (participation.startDate > localToday) return { label: `Старт ${formatShortDate(participation.startDate)}`, tone: 'scheduled' };
+  if (participation.startDate > localToday) return { label: 'Запланирована', tone: 'scheduled' };
   return { label: 'Активна', tone: 'active' };
 }
 
@@ -61,16 +61,14 @@ function ProgramCard({ program, onOpen }) {
   const isCycle = program.structureMode === 'cycle';
   return <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
     <span className="my-program-cover">{program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}</span>
-    <span className="my-program-copy"><strong>{program.name}</strong>
+    <span className="my-program-copy"><strong>{program.name} <span className="my-program-inline-status">{state.label}</span></strong>
       <span className="my-program-meta">
         {isCycle ? <><span>{program.templateWorkoutCount} в цикле</span><span>{program.cycleRepeatCount} цик.</span><span>{program.totalPlannedWorkoutCount} всего</span></> : <><span>{program.templateWorkoutCount} трен.</span><span>Старая структура</span></>}
         {program.level && <span>{program.level}</span>}
       </span>
-      {program.categories.length > 0 && <span className="my-program-tags">{program.categories.slice(0, 2).map((category) => <span key={category}>{category}</span>)}</span>}
+      {program.categories.length > 0 && <span className="my-program-tags">{program.categories.map((category) => <span key={category}>{category}</span>)}</span>}
     </span>
-    <span className={`my-program-status-corner ${state.tone}`} title={state.label} aria-label={state.label}>
-      {state.tone === 'completed' ? <CheckIcon /> : <PlayIcon />}
-    </span><span className="my-program-arrow" aria-hidden="true">›</span>
+    <span className="my-program-arrow" aria-hidden="true">›</span>
   </button>;
 }
 
@@ -151,13 +149,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     <main className="exercise-catalog-content">
       <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button data-training-tab={tab.id} className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
       {!['exercises','received'].includes(activeTab) && <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>}
-      {activeTab === 'your-programs' && <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
-          <button type="button" role="tab" id="my-programs-active-tab" aria-controls="my-programs-active-panel" aria-selected={myProgramsView === 'active'} className={myProgramsView === 'active' ? 'active' : ''} onClick={() => setMyProgramsView('active')}>Активные</button>
-          <button type="button" role="tab" id="my-programs-created-tab" aria-controls="my-programs-created-panel" aria-selected={myProgramsView === 'created'} className={myProgramsView === 'created' ? 'active' : ''} onClick={() => setMyProgramsView('created')}>Мои</button>
-        </div>}
-      
-
-      {['recommendations','catalog','your-programs'].includes(activeTab) && <div className="training-toolbar-row compact-training-toolbar">
+      {['recommendations','catalog'].includes(activeTab) && <div className="training-toolbar-row compact-training-toolbar">
         <div className="training-tools" role="group" aria-label="Настройка списка программ">
           {['recommendations','catalog'].includes(activeTab) && <>
             <button className={filtersOpen ? 'active' : ''} type="button" title="Фильтры" aria-label="Фильтры" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(v => !v)}><FilterIcon /></button>
@@ -166,6 +158,15 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
         </div>
         <button className="training-create-compact" type="button" onClick={openCreateProgram}><PlusIcon /><span>Создать</span></button>
       </div>}
+      {activeTab === 'your-programs' && <div className="my-programs-create-row">
+        <button className="training-create-compact" type="button" onClick={openCreateProgram}><PlusIcon /><span>Создать</span></button>
+      </div>}
+      {activeTab === 'your-programs' && <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
+          <button type="button" role="tab" id="my-programs-active-tab" aria-controls="my-programs-active-panel" aria-selected={myProgramsView === 'active'} className={myProgramsView === 'active' ? 'active' : ''} onClick={() => setMyProgramsView('active')}>Активные</button>
+          <button type="button" role="tab" id="my-programs-created-tab" aria-controls="my-programs-created-panel" aria-selected={myProgramsView === 'created'} className={myProgramsView === 'created' ? 'active' : ''} onClick={() => setMyProgramsView('created')}>Мои</button>
+        </div>}
+      
+
       {sortOpen && ['recommendations','catalog'].includes(activeTab) && <section className="training-sort-picker" aria-label="Сортировка программ">
         {[['asc','Название А–Я'],['desc','Название Я–А'],['newest','Сначала новые'],['workouts','По числу тренировок'],['level','По уровню']].map(([id,label]) =>
           <button key={id} className={sortDirection === id ? 'active' : ''} type="button" onClick={() => {setSortDirection(id);setSortOpen(false);}}>{label}</button>)}
