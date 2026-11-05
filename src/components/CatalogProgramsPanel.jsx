@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
 import '../catalog-programs.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
+import { programLevelIndex } from '../lib/programOptions.js';
 import { formatProgramExerciseSummary } from '../lib/programExerciseSummary.js';
 import { ProgramOverviewIntro, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewDescription } from './ProgramOverview.jsx';
 
@@ -11,11 +12,9 @@ const NO_DATA = 'Нет данных';
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>; }
 
-const DIFFICULTY_POINTS = { 'Начальный': 1, 'Новичок': 1, 'Лёгкий': 1, 'Легкий': 1, 'Базовый': 2, 'Ниже среднего': 2, 'Средний': 3, 'Выше среднего': 4, 'Продвинутый': 5, 'Профессиональный': 5 };
-
 function CatalogCard({ program, onOpen }) {
-  const category = program.categories[0] || 'Готовая программа';
-  const difficulty = DIFFICULTY_POINTS[program.level];
+  const category = program.categories[0] || null;
+  const difficulty = programLevelIndex(program.level);
   return (
     <button className="catalog-program-card" type="button" onClick={() => onOpen(program.id)}>
       <span className={`catalog-program-cover${program.coverUrl ? ' catalog-program-cover-image' : ' catalog-program-placeholder'}`} aria-hidden="true">
@@ -24,7 +23,7 @@ function CatalogCard({ program, onOpen }) {
       <span className="catalog-program-card-copy">
         <strong>{program.name}</strong>
         <span className="catalog-program-card-meta">
-          <span className="catalog-program-category catalog-program-tag">{category}</span>
+{category && <span className="catalog-program-category catalog-program-tag">{category}</span>}
           {program.trainingPlace && <span className="catalog-program-tag">{program.trainingPlace}</span>}
           <span className="catalog-program-tag catalog-program-workouts">{formatRussianCount(program.workoutCount, ['тренировка', 'тренировки', 'тренировок'])}</span>
           {difficulty ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
@@ -171,8 +170,7 @@ export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filter
       if(sortDirection === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       if(sortDirection === 'workouts') return (b.workoutCount || 0) - (a.workoutCount || 0);
       if(sortDirection === 'level') {
-        const rank={'Начальный':1,'Средний':2,'Продвинутый':3};
-        return (rank[a.level] || 99) - (rank[b.level] || 99);
+        return (programLevelIndex(a.level) || 99) - (programLevelIndex(b.level) || 99);
       }
       const comparison=a.name.localeCompare(b.name,'ru');
       return sortDirection === 'desc' ? -comparison : comparison;
