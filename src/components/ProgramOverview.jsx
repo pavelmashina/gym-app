@@ -48,25 +48,16 @@ export function ProgramOverviewDescription({ description }) {
 }
 
 export function ProgramOverviewMeta({ program }) {
+  const details = program.details ?? program.sourcePayload?.details ?? {};
+  const extra = [
+    ['Продолжительность', details.duration],
+    ['Частота', details.frequency],
+  ].filter(([, value]) => typeof value === 'string' && value.trim());
   return <section className="program-detail-meta-card" aria-label="Параметры программы">
     <div><span>Место</span><strong>{program.trainingPlace || 'Нет данных'}</strong></div>
     <div><span>Оборудование</span><strong>{program.equipment || 'Нет данных'}</strong></div>
     <div><span>Уровень</span><strong>{program.level || 'Нет данных'}</strong></div>
-  </section>;
-}
-
-/** Selected extra program characteristics, displayed identically to catalog facts. */
-export function ProgramOverviewFacts({ details }) {
-  if (!details || typeof details !== 'object') return null;
-  const facts = [
-    ['Продолжительность', details.duration],
-    ['Частота', details.frequency],
-  ].filter(([, value]) => typeof value === 'string' && value.trim());
-  if (!facts.length) return null;
-  return <section className="catalog-program-facts" aria-label="Продолжительность и частота программы">
-    <div className="catalog-program-facts-grid">
-      {facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
-    </div>
+    {extra.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
   </section>;
 }
 
