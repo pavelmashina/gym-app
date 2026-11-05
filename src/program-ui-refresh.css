@@ -109,3 +109,18 @@
 .catalog-program-card-copy>strong{font-size:var(--text-body)!important;line-height:var(--lh-body)!important}
 .catalog-program-category{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;font-weight:var(--weight-semibold)!important;padding:8px!important;text-transform:none!important}
 .catalog-program-card-meta>span{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important}
+
+/* Completed workout history: editable date and recorded exercise results */
+.completed-results-editor{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.completed-results-edit-button,.completed-results-save-button{min-height:42px;width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:var(--text-body);font-weight:var(--weight-semibold)}
+.completed-results-save-button{background:var(--ink);color:var(--surface)}
+.completed-results-edit-fields{display:grid;gap:14px;margin-top:14px}
+.completed-results-date{display:grid;gap:6px;font-size:var(--text-caption)}
+.completed-results-date input,.completed-editor-set input{min-height:42px;min-width:0;width:100%;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:var(--text-body)}
+.completed-editor-exercise{display:grid;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
+.completed-editor-exercise>strong{font-size:var(--text-body)}
+.completed-editor-set{display:grid;grid-template-columns:58px repeat(2,minmax(0,1fr));gap:7px;align-items:end}
+.completed-editor-set>span{font-size:var(--text-caption)}
+.completed-editor-set label{min-width:0;display:grid;gap:5px;font-size:var(--text-caption);color:var(--muted)}
+.completed-editor-notice{font-size:var(--text-caption);color:var(--muted)}
+.completed-editor-error{font-size:var(--text-caption);color:#9a3434}
