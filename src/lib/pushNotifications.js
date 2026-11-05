@@ -13,6 +13,14 @@ export function pushCapability() {
   return { supported, configured, permission: supported ? Notification.permission : 'unsupported' };
 }
 
+/** A preference stored on the account is not a device subscription. Check both. */
+export async function hasPushSubscription() {
+  const capability = pushCapability();
+  if (!capability.supported || !capability.configured || Notification.permission !== 'granted') return false;
+  const registration = await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL);
+  return Boolean(await registration?.pushManager?.getSubscription());
+}
+
 export async function enablePushForUser(userId) {
   const capability = pushCapability();
   if (!capability.supported) throw new Error('Этот браузер не поддерживает push-уведомления.');
