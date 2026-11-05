@@ -16,7 +16,7 @@ for(const part of ['ProgramOverviewIntro','ProgramOverviewMeta']) {
   assert.match(user,new RegExp('<'+part));
   assert.match(catalog,new RegExp('<'+part));
 }
-assert.match(user,/<ProgramOverviewStats/);
+assert.doesNotMatch(user,/<ProgramOverviewStats/); // Redundant cycle counters removed by design.
 assert.match(user,/<ShareProgramButton programId=\{program.id\}/);
 assert.doesNotMatch(catalog,/ShareProgramButton/);
 assert.match(shared,/export function ProgramDetailTabs/);
