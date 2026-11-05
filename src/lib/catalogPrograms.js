@@ -3,9 +3,10 @@ import { supabase } from './supabase.js';
 function mapCatalogProgram(row) {
   const sourcePayload = row.source_payload ?? { cycle: { workouts: [] } };
   const coverImage = sourcePayload.cover_image;
-  const coverUrl = typeof coverImage === 'string' && /^[a-z0-9][a-z0-9._-]*\.(?:webp|png|jpg)$/i.test(coverImage)
-    ? `${import.meta.env.BASE_URL}assets/${coverImage}`
-    : null;
+  const validImageName = (name) => typeof name === 'string' && /^[a-z0-9][a-z0-9._-]*\.(?:webp|png|jpg)$/i.test(name);
+  const coverUrl = validImageName(coverImage) ? `${import.meta.env.BASE_URL}assets/${coverImage}` : null;
+  const coverDetailImage = sourcePayload.cover_image_detail;
+  const coverDetailUrl = validImageName(coverDetailImage) ? `${import.meta.env.BASE_URL}assets/${coverDetailImage}` : coverUrl;
   return {
     id: row.id,
     name: row.name,
@@ -18,6 +19,7 @@ function mapCatalogProgram(row) {
     createdAt: row.created_at || null,
     sourcePayload,
     coverUrl,
+    coverDetailUrl,
   };
 }
 
