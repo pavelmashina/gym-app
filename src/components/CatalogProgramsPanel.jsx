@@ -11,7 +11,7 @@ const NO_DATA = 'Нет данных';
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>; }
 
-const DIFFICULTY_POINTS = { 'Начальный': 1, 'Новичок': 1, 'Лёгкий': 2, 'Легкий': 2, 'Средний': 3, 'Выше среднего': 4, 'Продвинутый': 5, 'Профессиональный': 5 };
+const DIFFICULTY_POINTS = { 'Начальный': 1, 'Новичок': 1, 'Лёгкий': 1, 'Легкий': 1, 'Базовый': 2, 'Ниже среднего': 2, 'Средний': 3, 'Выше среднего': 4, 'Продвинутый': 5, 'Профессиональный': 5 };
 
 function CatalogCard({ program, onOpen }) {
   const category = program.categories[0] || 'Готовая программа';
@@ -27,12 +27,11 @@ function CatalogCard({ program, onOpen }) {
           <span className="catalog-program-category catalog-program-tag">{category}</span>
           {program.trainingPlace && <span className="catalog-program-tag">{program.trainingPlace}</span>}
           <span className="catalog-program-tag catalog-program-workouts">{formatRussianCount(program.workoutCount, ['тренировка', 'тренировки', 'тренировок'])}</span>
-          {difficulty ? <span className="catalog-program-difficulty" title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
+          {difficulty ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
             {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
           </span> : program.level && <span className="catalog-program-tag">{program.level}</span>}
         </span>
       </span>
-      <span className="catalog-program-card-arrow"><ChevronIcon /></span>
     </button>
   );
 }
@@ -60,26 +59,14 @@ function WorkoutBlock({ workout, index }) {
 function CatalogProgramFacts({ details }) {
   if (!details || typeof details !== 'object') return null;
   const facts = [
-    ['Цель', details.goal],
     ['Продолжительность', details.duration],
     ['Частота', details.frequency],
-    ['Время тренировки', details.estimated_time],
-    ['Расписание', details.schedule],
-    ['Восстановление', details.rest],
   ].filter(([, value]) => typeof value === 'string' && value.trim());
-  const tips = [
-    ['Прогрессия', details.progression],
-    ['Разминка', details.warmup],
-    ['После тренировки', details.cooldown],
-  ].filter(([, value]) => typeof value === 'string' && value.trim());
-  if (!facts.length && !tips.length) return null;
-  return <section className="catalog-program-facts" aria-label="Дополнительная информация о программе">
-    {facts.length > 0 && <div className="catalog-program-facts-grid">
+  if (!facts.length) return null;
+  return <section className="catalog-program-facts" aria-label="Продолжительность и частота программы">
+    <div className="catalog-program-facts-grid">
       {facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
-    </div>}
-    {tips.length > 0 && <div className="catalog-program-facts-tips">
-      {tips.map(([label, value]) => <p key={label}><strong>{label}.</strong> {value}</p>)}
-    </div>}
+    </div>
   </section>;
 }
 
