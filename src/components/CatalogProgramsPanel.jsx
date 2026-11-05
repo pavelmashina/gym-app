@@ -1,38 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../lib/catalogPrograms.js';
 import '../catalog-programs.css';
-import { formatRussianCount } from '../lib/formatRussianCount.js';
 import { programLevelIndex } from '../lib/programOptions.js';
 import { ProgramWorkoutBlock } from './ProgramWorkoutBlock.jsx';
+import { ProgramListCard } from './ProgramListCard.jsx';
 import { ProgramOverviewIntro, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewDescription } from './ProgramOverview.jsx';
 
 const ALL = 'Все';
 const NO_DATA = 'Нет данных';
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
-
-function CatalogCard({ program, onOpen }) {
-  const category = program.categories[0] || null;
-  const difficulty = programLevelIndex(program.level);
-  return (
-    <button className="catalog-program-card" type="button" onClick={() => onOpen(program.id)}>
-      <span className={`catalog-program-cover${program.coverUrl ? ' catalog-program-cover-image' : ' catalog-program-placeholder'}`} aria-hidden="true">
-        {program.coverUrl ? <img src={program.coverUrl} alt="" loading="lazy" /> : <span className="catalog-placeholder-icon" />}
-      </span>
-      <span className="catalog-program-card-copy">
-        <strong>{program.name}</strong>
-        <span className="catalog-program-card-meta">
-{category && <span className="catalog-program-category catalog-program-tag">{category}</span>}
-          {program.trainingPlace && <span className="catalog-program-tag">{program.trainingPlace}</span>}
-          <span className="catalog-program-tag catalog-program-workouts">{formatRussianCount(program.workoutCount, ['тренировка', 'тренировки', 'тренировок'])}</span>
-          {difficulty ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
-            {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
-          </span> : program.level && <span className="catalog-program-tag">{program.level}</span>}
-        </span>
-      </span>
-    </button>
-  );
-}
 
 function FilterGroup({ title, values, selected, onSelect }) {
   if (values.length <= 1) return null;
@@ -153,7 +130,7 @@ export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filter
     {loading && <div className="my-programs-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем каталог программ…</span></div>}
     {!loading && error && <div className="my-programs-state error"><span>{error}</span><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></div>}
     {!loading && !error && filteredPrograms.length === 0 && <div className="catalog-empty"><strong>Программы не найдены</strong><span>Попробуйте изменить поиск или фильтры.</span></div>}
-    {!loading && !error && filteredPrograms.length > 0 && <section className="catalog-program-list">{filteredPrograms.map((program) => <CatalogCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}</section>}
+    {!loading && !error && filteredPrograms.length > 0 && <section className="catalog-program-list">{filteredPrograms.map((program) => <ProgramListCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}</section>}
     {selectedProgramId && <CatalogProgramDetail programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onJoin={onJoin} />}
   </>;
 }
