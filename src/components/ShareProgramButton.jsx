@@ -50,7 +50,7 @@ export function ShareProgramButton({programId}) {
     }catch(e){setError(e.message)}finally{setBusy('')}
   }
   return <>
-    <button className="program-share-trigger" type="button" onClick={()=>setOpen(true)}><ShareIcon/> Поделиться программой</button>
+    <button className="program-share-trigger" type="button" aria-label="Поделиться программой" title="Поделиться программой" onClick={()=>setOpen(true)}><ShareIcon /></button>
     {open&&<div className="program-share-overlay" role="dialog" aria-modal="true" aria-label="Поделиться программой">
       <button className="program-share-scrim" type="button" aria-label="Закрыть" onClick={()=>!busy&&setOpen(false)}/>
       <section className="program-share-sheet">
