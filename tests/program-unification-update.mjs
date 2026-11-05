@@ -75,7 +75,7 @@ assert.match(styles,/grid-template-columns:104px minmax\(0,1fr\) 18px/);
 assert.match(styles,/object-fit:cover!important/);
 assert.match(styles,/max-height:104px!important/);
 assert.match(exercises,/training-create-compact/);
-assert.match(exercises,/Активные программы/);
+assert.match(exercises,/my-programs-active-tab/);
 assert.match(exercises,/listRecentCompletedPrograms/);
 assert.match(tabs,/background-size: 40px 40px/);
 assert.match(design,/background-size:40px 40px!important/);
