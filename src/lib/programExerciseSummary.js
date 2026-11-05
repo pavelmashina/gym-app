@@ -26,17 +26,30 @@ export function formatProgramExerciseSummary(exercise) {
   if (!main) main = 'Подходы и повторения не указаны';
   const sides = /на каждую (?:ногу|руку|сторону)|на кажд[оые] (?:ноги|руки|стороны)/i.test(raw);
   if (sides && !main.includes('на каждую')) main += ' на каждую сторону';
-  const rest = raw.match(/отдых\s*[:—-]?\s*(\d+)(?:\s*[-–]\s*(\d+))?\s*(секунд\w*|сек\.?|минут\w*|мин\.?)/i);
+  const rest = raw.match(/отдых\s*[:—-]?\s*(\d+(?::\d{1,2})?(?:[.,]\d+)?)(?:\s*[-–—]\s*(\d+(?::\d{1,2})?(?:[.,]\d+)?))?\s*(секунд\w*|сек\.?|минут\w*|мин\.?)/i);
   if (rest) {
-    const convert = v => {
-      const num = Number(v);
-      if (/мин/.test(rest[3])) return `${num} мин`;
-      if (num >= 60) return `${Math.floor(num / 60)} мин${num % 60 ? ` ${num % 60} сек` : ''}`;
-      return `${num} сек`;
+    const unitMinutes = /мин/i.test(rest[3]);
+    const toSeconds = value => {
+      if (value.includes(':')) {
+        const [minutes, seconds] = value.split(':').map(Number);
+        return minutes * 60 + seconds;
+      }
+      return Math.round(Number(value.replace(',', '.')) * (unitMinutes ? 60 : 1));
     };
-    const readable = rest[2]
-      ? (/мин/.test(rest[3]) ? `${rest[1]}–${rest[2]} мин` : `${rest[1]}–${rest[2]} сек`)
-      : convert(rest[1]);
+    const clock = seconds => {
+      const minutes = Math.floor(seconds / 60);
+      const remainder = seconds % 60;
+      return remainder ? `${minutes}:${String(remainder).padStart(2, '0')}` : String(minutes);
+    };
+    const duration = seconds => seconds < 60 ? `${seconds} сек` : `${clock(seconds)} мин`;
+    const first = toSeconds(rest[1]);
+    const second = rest[2] ? toSeconds(rest[2]) : null;
+    let readable = duration(first);
+    if (second !== null) {
+      readable = first >= 60 && second >= 60 ? `${clock(first)}–${clock(second)} мин`
+        : first < 60 && second < 60 ? `${first}–${second} сек`
+        : `${duration(first)} – ${duration(second)}`;
+    }
     main += ` · отдых ${readable}`;
   }
   return main;
