@@ -40,4 +40,12 @@ assert.doesNotMatch(push,/gym_vapid_private_key.{0,10}[A-Za-z0-9_-]{40}/);
 assert.match(server,/gym_pending_idle_reminders/);
 assert.match(server,/gym_verify_push_cron_token/);
 assert.match(workflow,/VITE_VAPID_PUBLIC_KEY/);
+// Editors must include V2 results rather than silently hiding the modern exercise format.
+assert.match(editor,/resultFieldsV2/);
+assert.match(editor,/assistance_weight/);
+assert.doesNotMatch(programs,/<ProgramOverviewStats items=/);
+const pushClient=read('src/lib/pushNotifications.js');
+const settings=read('src/components/SettingsScreen.jsx');
+assert.match(pushClient,/hasPushSubscription\(userId\)/);
+assert.match(settings,/workout_push&&devicePushReady/);
 console.log('Program schedule, retrospective workout editing and secured Web Push/cron contracts passed.');
