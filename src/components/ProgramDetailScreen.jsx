@@ -107,6 +107,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
 
   const isCycle = program.structureMode === 'cycle';
   const participation = program.participation;
+  const participationTone = participation?.status === 'completed' ? 'completed' : participation?.status === 'paused' ? 'paused' : participation?.status === 'active' ? 'active' : 'not-started';
   const isActive = participation?.status === 'active';
   const isPaused = participation?.status === 'paused';
   const liveParticipation = Boolean(isActive || isPaused);
@@ -247,12 +248,24 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
     </header>
     <main className="program-detail-content">
       {detailTab === 'description' && <div id="owned-description-panel" role="tabpanel" aria-labelledby="owned-description-tab">
-      <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} statusText={participationLabel(participation)} />
+      <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} statusText={participationLabel(participation)} statusTone={participationTone} />
 
       <ProgramOverviewMeta program={program} />
       <ProgramOverviewDescription description={program.description} />
 
-      {(liveParticipation || canEditStartDate || participationError || !canEditProgram) && <section className="program-detail-management" aria-label="Управление программой">
+      {(liveParticipation || isUserCreated) && <div className="program-detail-actions-row" role="group" aria-label="Действия с программой">
+        {liveParticipation && <div className={`program-participation-controls${isPaused ? ' two' : ''}`}>
+          {isActive && <button className="program-participation-action secondary" type="button" aria-label="Поставить программу на паузу" title="Пауза" disabled={Boolean(participationAction)} onClick={handlePause}><PauseIcon /></button>}
+          {isPaused && <button className="program-participation-action primary" type="button" aria-label="Продолжить программу" title="Продолжить" disabled={Boolean(participationAction)} onClick={() => { setResumeDate(localToday()); setResumeError(''); setResumeOpen(true); setCompleteConfirmOpen(false); }}><ResumeIcon /></button>}
+          <button className="program-participation-action danger" type="button" aria-label="Завершить программу" title="Завершить программу" disabled={Boolean(participationAction)} onClick={() => { setCompleteConfirmOpen(true); setResumeOpen(false); }}><CloseProgramIcon /></button>
+        </div>}
+        {isUserCreated && <div className="program-detail-end-actions">
+        <button type="button" className="program-detail-delete-trigger" aria-label="Удалить программу" title="Удалить программу" onClick={() => { setDeleteError(''); setDeleteOpen(true); }}><TrashIcon /></button>
+        <ShareProgramButton programId={program.id} />
+      </div>}
+      </div>}
+
+      {(canEditStartDate || participationError || (isPaused && resumeOpen) || (liveParticipation && completeConfirmOpen)) && <section className="program-detail-management" aria-label="Управление программой">
         {canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}
         {canEditStartDate && editingStartDate && <div className="program-detail-date-editor">
           <label><span>Новая дата первой тренировки</span><input type="date" min={localToday()} value={startDateDraft} onChange={(event) => { setStartDateDraft(event.target.value); setStartDateError(''); }} /></label>
@@ -260,12 +273,6 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
           {startDateError && <small className="error">{startDateError}</small>}
           <div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div>
         </div>}
-        {liveParticipation && <div className={`program-participation-controls${isPaused ? ' two' : ''}`}>
-          {isActive && <button className="program-participation-action secondary" type="button" aria-label="Поставить программу на паузу" title="Пауза" disabled={Boolean(participationAction)} onClick={handlePause}><PauseIcon /></button>}
-          {isPaused && <button className="program-participation-action primary" type="button" aria-label="Продолжить программу" title="Продолжить" disabled={Boolean(participationAction)} onClick={() => { setResumeDate(localToday()); setResumeError(''); setResumeOpen(true); setCompleteConfirmOpen(false); }}><ResumeIcon /></button>}
-          <button className="program-participation-action danger" type="button" aria-label="Завершить программу" title="Завершить программу" disabled={Boolean(participationAction)} onClick={() => { setCompleteConfirmOpen(true); setResumeOpen(false); }}><CloseProgramIcon /></button>
-        </div>}
-
         {isPaused && resumeOpen && <div className="program-resume-editor"><label><span>Дата следующей тренировки</span><input type="date" min={localToday()} value={resumeDate} onChange={(event) => { setResumeDate(event.target.value); setResumeError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{resumeError && <small className="error">{resumeError}</small>}<div className="program-resume-actions"><button type="button" disabled={Boolean(participationAction)} onClick={() => setResumeOpen(false)}>Отмена</button><button type="button" disabled={Boolean(participationAction) || !resumeDate || !resumeDateAllowed} onClick={handleResume}>{participationAction === 'resume' ? 'Возобновляем…' : 'Возобновить'}</button></div></div>}
 
         {liveParticipation && completeConfirmOpen && <div className="program-complete-confirm"><strong>Завершить программу?</strong><span>Выполненная история сохранится. Все оставшиеся невыполненные тренировки будут убраны из календаря.</span><div className="program-complete-actions"><button type="button" disabled={Boolean(participationAction)} onClick={() => setCompleteConfirmOpen(false)}>Отмена</button><button type="button" disabled={Boolean(participationAction)} onClick={handleComplete}>{participationAction === 'complete' ? 'Завершаем…' : 'Да, завершить'}</button></div></div>}
@@ -273,10 +280,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
         {participationError && <div className="program-participation-message" role="alert">{participationError}</div>}
 
       </section>}
-      {isUserCreated && <div className="program-detail-end-actions">
-        <button type="button" className="program-detail-delete-trigger" aria-label="Удалить программу" title="Удалить программу" onClick={() => { setDeleteError(''); setDeleteOpen(true); }}><TrashIcon /></button>
-        <ShareProgramButton programId={program.id} />
-      </div>}
+
       </div>}
       {detailTab === 'workouts' && <div id="owned-workouts-panel" role="tabpanel" aria-labelledby="owned-workouts-tab">
         <section className="program-detail-section">
