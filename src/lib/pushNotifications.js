@@ -14,11 +14,17 @@ export function pushCapability() {
 }
 
 /** A preference stored on the account is not a device subscription. Check both. */
-export async function hasPushSubscription() {
+export async function hasPushSubscription(userId) {
   const capability = pushCapability();
-  if (!capability.supported || !capability.configured || Notification.permission !== 'granted') return false;
+  if (!userId || !capability.supported || !capability.configured || Notification.permission !== 'granted') return false;
   const registration = await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL);
-  return Boolean(await registration?.pushManager?.getSubscription());
+  const subscription = await registration?.pushManager?.getSubscription();
+  if (!subscription) return false;
+  const { data, error } = await supabase.from('push_subscriptions')
+    .select('id').eq('user_id', userId).eq('endpoint', subscription.endpoint)
+    .eq('is_active', true).maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
 }
 
 export async function enablePushForUser(userId) {
