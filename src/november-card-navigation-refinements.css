@@ -57,12 +57,12 @@
 }
 
 /* The small subsection switcher matches text-only tabs inside a program. */
-.my-programs-section { margin-top: 12px; }
+.my-programs-section { margin-top: 4px; }
 .my-programs-switcher {
   display: grid;
   grid-template-columns: repeat(2,minmax(0,1fr));
   gap: 16px;
-  margin: 0 0 16px;
+  margin: 12px 0 0;
 }
 .my-programs-switcher button {
   position: relative;
