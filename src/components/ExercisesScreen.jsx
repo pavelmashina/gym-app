@@ -27,7 +27,9 @@ const EMPTY_COPY = {
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
 function FilterIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>; }
-function SortIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M8 6h9M8 12h6M8 18h3" /><path d="m4 5 2 2 2-2M6 7v11" /></svg>; }
+function SortIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 20V4m-4 4 4-4 4 4M17 4v16m-4-4 4 4 4-4" /></svg>; }
+function PlayIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" /></svg>; }
+function CheckIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
 
 function EmptyPrograms({ tabId }) {
@@ -65,13 +67,14 @@ function ProgramCard({ program, onOpen }) {
       {program.categories.length > 0 && <span className="my-program-tags">{program.categories.slice(0, 2).map((category) => <span key={category}>{category}</span>)}</span>}
     </span>
     <span className={`my-program-status-corner ${state.tone}`} title={state.label} aria-label={state.label}>
-      {state.tone === 'completed' ? '✓' : state.tone === 'active' ? '●' : state.tone === 'paused' ? 'Ⅱ' : state.tone === 'scheduled' ? '◷' : '○'}
+      {state.tone === 'completed' ? <CheckIcon /> : <PlayIcon />}
     </span><span className="my-program-arrow" aria-hidden="true">›</span>
   </button>;
 }
 
 export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0, onCreateProgram, onEditProgram, onStartProgram, onOpenWorkout }) {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [myProgramsView, setMyProgramsView] = useState('active');
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   const [programsError, setProgramsError] = useState('');
@@ -98,6 +101,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
   }, [activeTab, refreshKey, programsReloadKey]);
 
   useEffect(() => { setQuery(''); setFiltersOpen(false); setSortOpen(false); setProgramFilters(EMPTY_PROGRAM_FILTERS); }, [activeTab]);
+  useEffect(() => { if (activeTab === 'your-programs') setMyProgramsView('active'); }, [activeTab]);
 
   const filteredPrograms = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ru');
@@ -165,18 +169,19 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
       {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} onJoin={(programId) => onStartProgram?.(programId)} />}
       {isProgramsTab && programsLoading && <div className="my-programs-state"><div className="exercise-list-spinner" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>}
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
-      {activeTab === 'your-programs' && !programsLoading && !programsError && <>
-        <section className="my-programs-segment" aria-label="Активные программы">
-          <h2>Активные программы</h2>
+      {activeTab === 'your-programs' && !programsLoading && !programsError && <section className="my-programs-section">
+        <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
+          <button type="button" role="tab" id="my-programs-active-tab" aria-controls="my-programs-active-panel" aria-selected={myProgramsView === 'active'} className={myProgramsView === 'active' ? 'active' : ''} onClick={() => setMyProgramsView('active')}>Активные</button>
+          <button type="button" role="tab" id="my-programs-created-tab" aria-controls="my-programs-created-panel" aria-selected={myProgramsView === 'created'} className={myProgramsView === 'created' ? 'active' : ''} onClick={() => setMyProgramsView('created')}>Мои</button>
+        </div>
+        {myProgramsView === 'active' ? <div role="tabpanel" id="my-programs-active-panel" aria-labelledby="my-programs-active-tab">
           {activePrograms.length ? <div className="my-programs-list">{activePrograms.map(program => <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}</div>
             : <p className="my-programs-segment-empty">Нет программ, которые вы сейчас выполняете.</p>}
-        </section>
-        <section className="my-programs-segment" aria-label="Мои программы">
-          <h2>Мои программы</h2>
+        </div> : <div role="tabpanel" id="my-programs-created-panel" aria-labelledby="my-programs-created-tab">
           {personalPrograms.length ? <div className="my-programs-list">{personalPrograms.map(program => <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}</div>
             : <p className="my-programs-segment-empty">Пока нет созданных вами программ.</p>}
-        </section>
-      </>}
+        </div>}
+      </section>
       {isCompletedTab && !programsLoading && !programsError && (filteredPrograms.length
         ? <section className="my-programs-list">{filteredPrograms.map(program =>
             <ProgramCard key={program.participation?.id || program.id} program={program} onOpen={setSelectedProgramId} />)}</section>
