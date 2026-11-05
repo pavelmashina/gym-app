@@ -136,3 +136,13 @@
 .program-schedule-open-result,.program-schedule-mark-complete{margin-top:8px;text-align:center;display:block}
 .manual-workout-date-label{display:grid;gap:8px;margin:12px 0;color:var(--ink);font-size:var(--text-body)}
 .manual-workout-date-label input{min-height:42px;padding:8px;border:1px solid var(--line);border-radius:12px;font:inherit}
+
+/* Compact tabs remain one line without overlapping adjacent labels. */
+.exercise-catalog-content .training-tabs button{
+  flex:0 0 auto!important;min-width:76px!important;
+  width:max-content!important;padding-inline:8px!important;
+  white-space:nowrap!important;
+}
+/* The active root item uses an actual pale surface (not a negative z-index layer). */
+.app-nav-item.active:not(.home){background:var(--accent-soft)!important;border-radius:15px}
+.app-nav-item.active:not(.home)::before{content:none!important}

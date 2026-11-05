@@ -298,7 +298,7 @@ export async function listRecentCompletedPrograms() {
   const programIds=[...new Set(history.map(item=>item.program_id))];
   const { data: rows,error } = await supabase.from('programs')
     .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, details, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
-    .in('id',programIds).neq('status','archived');
+    .in('id',programIds);
   if(error) throw new Error('Не удалось загрузить завершённые программы.');
   const byId=new Map((rows || []).map(row=>[row.id,row]));
   const workoutCounts=await loadTemplateWorkoutCounts(programIds);
