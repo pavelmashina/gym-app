@@ -714,3 +714,58 @@
   flex: 0 0 44px !important;
   margin: 0 !important;
 }
+
+/* A program card is no longer a button containing its own scroll area.
+   The accessible full-card button stays below the independent swipeable tag rail. */
+.exercise-catalog-content .program-list-unified-card {
+  position: relative !important;
+  isolation: isolate;
+}
+.exercise-catalog-content .program-list-unified-card .program-list-card-open {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.exercise-catalog-content .program-list-unified-card .program-list-card-open:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+}
+.exercise-catalog-content .program-list-unified-card .catalog-program-cover,
+.exercise-catalog-content .program-list-unified-card .catalog-program-card-copy {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+.exercise-catalog-content .program-list-unified-card .program-list-tag-scroll {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+.exercise-catalog-content .program-list-unified-card .program-list-tag-scroll:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+}
+.exercise-catalog-content .program-list-tag-key {
+  background: var(--ink) !important;
+  color: var(--surface) !important;
+  border: 1px solid var(--ink);
+}
+.exercise-catalog-content .program-list-unified-card .catalog-program-difficulty {
+  min-width: fit-content;
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
