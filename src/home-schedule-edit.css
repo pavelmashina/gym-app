@@ -177,3 +177,24 @@
   font-weight:700;
   cursor:pointer;
 }
+
+/* Home edit sheet: retrospective completion is a distinct, non-destructive action. */
+.home-schedule-complete-action {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--line, #e4e4df);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+  color: var(--ink, #171717);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.home-schedule-complete-action:focus-visible {
+  outline: 2px solid var(--ink, #171717);
+  outline-offset: 2px;
+}
+.home-schedule-card .home-schedule-back:disabled { opacity: .5; cursor: not-allowed; }
