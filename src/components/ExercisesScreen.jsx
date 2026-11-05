@@ -70,7 +70,7 @@ function ProgramCard({ program, onOpen }) {
   </button>;
 }
 
-export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0, onCreateProgram, onEditProgram, onStartProgram }) {
+export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0, onCreateProgram, onEditProgram, onStartProgram, onOpenWorkout }) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(false);
@@ -138,7 +138,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     setActiveTab(tabId);
   }
 
-  if (selectedProgramId) return <ProgramDetailScreen programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onEdit={(programId) => onEditProgram?.(programId)} onStart={(programId) => onStartProgram?.(programId)} onDeleted={() => { setSelectedProgramId(null); setProgramsReloadKey(value => value + 1); }} />;
+  if (selectedProgramId) return <ProgramDetailScreen programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onEdit={(programId) => onEditProgram?.(programId)} onStart={(programId) => onStartProgram?.(programId)} onOpenWorkout={onOpenWorkout} onDeleted={() => { setSelectedProgramId(null); setProgramsReloadKey(value => value + 1); }} />;
 
   return <div className="phone exercise-phone">
     <RootSectionHeader title="Тренировки" />

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram, archiveUserProgram } from '../lib/programs.js';
+import { markScheduledWorkoutCompleted } from '../lib/workoutSessions.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
 import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewFacts, ProgramOverviewDescription } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
@@ -51,7 +52,7 @@ async function attachScheduledSnapshot(program) {
   return { ...program, scheduledWorkouts: program.scheduledWorkouts.map((item) => ({ ...item, exercises: byWorkout.get(item.id) ?? [] })) };
 }
 
-export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDeleted }) {
+export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDeleted, onOpenWorkout }) {
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -77,6 +78,10 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [manualWorkoutId,setManualWorkoutId] = useState(null);
+  const [manualWorkoutDate,setManualWorkoutDate] = useState(localToday());
+  const [manualWorkoutBusy,setManualWorkoutBusy] = useState(false);
+  const [manualWorkoutError,setManualWorkoutError] = useState('');
 
   async function reloadProgram() {
     const hydrated = await attachScheduledSnapshot(await getProgram(programId));
@@ -217,6 +222,18 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
     }
   }
 
+  async function completeManually(scheduledId) {
+    if(manualWorkoutBusy)return;
+    setManualWorkoutBusy(true);setManualWorkoutError('');
+    try{
+      const finished=await markScheduledWorkoutCompleted(scheduledId,manualWorkoutDate);
+      setManualWorkoutId(null);
+      await reloadProgram();
+      onOpenWorkout?.(finished.workout.id);
+    }catch(e){setManualWorkoutError(e?.message||'Не удалось отметить тренировку.');}
+    finally{setManualWorkoutBusy(false);}
+  }
+
   const preview = participation ? program.scheduledWorkouts : templateWorkouts.map((item, index) => ({ id: item.workout.id, sequenceNumber: index + 1, cycleNumber: isCycle ? 1 : null, weekNumber: item.sourceGroup, workoutName: item.workout.name, scheduledDate: null, exercises: item.workout.exercises }));
 
   return <div className="phone program-detail-phone">
@@ -267,6 +284,12 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
       </div>}
       {detailTab === 'workouts' && <div id="owned-workouts-panel" role="tabpanel" aria-labelledby="owned-workouts-tab">
       <section className="program-detail-section"><div className="program-detail-section-head"><h2>{isCycle ? 'Один цикл тренировок' : 'Тренировки программы'}</h2></div><div className="program-detail-weeks">{isCycle ? <section><header><strong>Цикл</strong><span>{formatRussianCount(totalTemplateWorkouts, ['тренировка','тренировки','тренировок'])}</span></header>{templateWorkouts.map(({ workout }, index) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{index + 1}. {workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section> : program.programWeeks.map((group) => <section key={group.id}><header><strong>Этап {group.number}</strong><span>{formatRussianCount(group.workouts.length, ['тренировка','тренировки','тренировок'])}</span></header>{group.workouts.map((workout) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section>)}</div></section>
+        {preview.some(item=>item.status==='completed') && <section className="program-detail-completed-links">
+          <h2>Выполненные тренировки</h2>
+          {preview.filter(item=>item.status==='completed').map(item=><button type="button" key={item.id}
+            onClick={()=>onOpenWorkout?.(item.id)}><span>{item.workoutName}</span>
+            <small>Посмотреть и изменить веса</small></button>)}
+        </section>}
       </div>}
       {detailTab === 'schedule' && isActive && <div id="owned-schedule-panel" role="tabpanel" aria-labelledby="owned-schedule-tab">
         <div className="program-schedule-summary">
@@ -288,6 +311,10 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
         const skipOpen = skipConfirmId === item.id;
         return <article className={`scheduled-workout-card status-${item.status ?? 'template'}${overdue ? ' overdue' : ''}`} key={item.id}>
           <div className="scheduled-workout-main"><div className="program-detail-day">{item.scheduledDate ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${item.scheduledDate}T12:00:00`)) : `#${item.sequenceNumber}`}</div><div className="program-detail-workout-copy"><small>{isCycle ? `Цикл ${item.cycleNumber ?? 1}` : `Этап ${item.weekNumber}`}</small><strong>{item.workoutName}</strong><span>{formatRussianCount((item.exercises ?? []).length, ['упражнение','упражнения','упражнений'])}</span></div>{participation && <span className={`scheduled-workout-badge${overdue ? ' overdue' : ''}`}>{workoutStatusLabel(item)}</span>}</div>
+          {item.status === 'completed' && <button type="button" className="program-schedule-open-result"
+            onClick={()=>onOpenWorkout?.(item.id)}>Посмотреть / изменить веса</button>}
+          {controllable && <button type="button" className="program-schedule-mark-complete"
+            onClick={()=>{setManualWorkoutId(item.id);setManualWorkoutDate(localToday());setManualWorkoutError('');}}>Отметить выполненной</button>}
           {controllable && !rescheduleOpen && !skipOpen && <><div className={`scheduled-workout-actions${canRescheduleWorkout ? '' : ' single'}`}>{canRescheduleWorkout && <button type="button" disabled={Boolean(workoutActionId)} onClick={() => { setRescheduleDate(item.scheduledDate < localToday() ? localToday() : item.scheduledDate); setRescheduleWorkoutId(item.id); setSkipConfirmId(null); setWorkoutActionError(null); }}>Перенести</button>}<button className="danger" type="button" disabled={Boolean(workoutActionId)} onClick={() => { setSkipConfirmId(item.id); setRescheduleWorkoutId(null); setWorkoutActionError(null); }}>Пропустить</button></div>{hasLaterHistory && <div className="scheduled-workout-history-note">Перенос недоступен: после этой тренировки уже сохранён результат. Её можно только пропустить.</div>}</>}
           {canRescheduleWorkout && rescheduleOpen && <div className="scheduled-workout-editor"><label><span>Новая дата</span><input type="date" min={localToday()} value={rescheduleDate} onChange={(event) => { setRescheduleDate(event.target.value); setWorkoutActionError(null); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}<p>Эта и все следующие невыполненные тренировки будут пересчитаны по ритму программы.</p><div><button type="button" disabled={Boolean(workoutActionId)} onClick={() => setRescheduleWorkoutId(null)}>Отмена</button><button className="primary" type="button" disabled={Boolean(workoutActionId) || !rescheduleDate || !isAllowedStartDate(rescheduleDate, program.scheduleMode)} onClick={() => handleReschedule(item)}>{workoutActionId === item.id ? 'Переносим…' : 'Сохранить'}</button></div></div>}
           {controllable && skipOpen && <div className="scheduled-workout-skip-confirm"><strong>Пропустить тренировку?</strong><span>Она останется в истории со статусом «Пропущена». Остальные даты не изменятся.</span><div><button type="button" disabled={Boolean(workoutActionId)} onClick={() => setSkipConfirmId(null)}>Отмена</button><button className="danger" type="button" disabled={Boolean(workoutActionId)} onClick={() => handleSkip(item)}>{workoutActionId === item.id ? 'Пропускаем…' : 'Да, пропустить'}</button></div></div>}
@@ -297,6 +324,22 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
       </div>}
     </main>
     <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>{canStart && <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}><CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span></button>}<button className="program-detail-edit-button" type="button" onClick={() => canEditProgram && onEdit?.(program.id)} disabled={!canEditProgram}><PencilIcon /><span>{canEditProgram ? 'Редактировать программу' : 'Редактирование недоступно'}</span></button></footer>
+    {manualWorkoutId && <div className="program-detail-delete-overlay" role="presentation">
+      <button type="button" className="program-detail-delete-scrim" aria-label="Закрыть" onClick={()=>setManualWorkoutId(null)} disabled={manualWorkoutBusy}/>
+      <section className="program-detail-delete-dialog" role="dialog" aria-modal="true" aria-label="Отметить выполненной">
+        <h2>Отметить выполненной?</h2>
+        <p>Веса и повторы по возможности возьмём из предыдущей тренировки. После сохранения их можно изменить.</p>
+        <label className="manual-workout-date-label">Дата выполнения
+          <input type="date" value={manualWorkoutDate} max={localToday()} onChange={event=>setManualWorkoutDate(event.target.value)}/>
+        </label>
+        {manualWorkoutError && <p className="completed-editor-error" role="alert">{manualWorkoutError}</p>}
+        <div className="program-detail-delete-buttons">
+          <button type="button" onClick={()=>setManualWorkoutId(null)} disabled={manualWorkoutBusy}>Отмена</button>
+          <button type="button" disabled={manualWorkoutBusy || !manualWorkoutDate || manualWorkoutDate > localToday()}
+            onClick={()=>completeManually(manualWorkoutId)}>{manualWorkoutBusy?'Сохраняем…':'Отметить выполненной'}</button>
+        </div>
+      </section>
+    </div>}
     {deleteOpen && <div className="program-detail-delete-overlay" role="presentation">
       <button type="button" className="program-detail-delete-scrim" aria-label="Закрыть подтверждение" disabled={deletePending} onClick={() => setDeleteOpen(false)} />
       <section className="program-detail-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="program-delete-title">

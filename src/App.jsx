@@ -388,7 +388,7 @@ export default function App() {
       return <CreateProgramScreen key={`${userId}:${launchingProgramId ?? editingProgramId ?? 'new'}`} userId={userId} programId={launchingProgramId ?? editingProgramId} launchOnly={Boolean(launchingProgramId)} onBack={() => { setEditingProgramId(null); setLaunchingProgramId(null); setActiveScreen('training'); }} onCreated={finishProgramSave} />;
     }
     if (activeScreen === 'training') {
-      return <ExercisesScreen initialTab={trainingInitialTab} refreshKey={trainingRefreshKey + pullRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} />;
+      return <ExercisesScreen initialTab={trainingInitialTab} refreshKey={trainingRefreshKey + pullRefreshKey} onCreateProgram={openCreateProgram} onEditProgram={openProgramEditor} onStartProgram={openProgramLauncher} onOpenWorkout={openWorkout} />;
     }
     if (activeScreen === 'statistics') return <StatisticsScreen refreshKey={pullRefreshKey} />;
     if (activeScreen === 'nutrition') return <NutritionScreen refreshKey={pullRefreshKey} user={user} profile={profile} />;

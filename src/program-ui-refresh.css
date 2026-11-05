@@ -124,3 +124,15 @@
 .completed-editor-set label{min-width:0;display:grid;gap:5px;font-size:var(--text-caption);color:var(--muted)}
 .completed-editor-notice{font-size:var(--text-caption);color:var(--muted)}
 .completed-editor-error{font-size:var(--text-caption);color:#9a3434}
+
+/* Completed workouts can always be revisited; pending workouts can be marked done. */
+.program-detail-completed-links{margin-top:18px;display:grid;gap:9px}
+.program-detail-completed-links h2{margin:0;font-size:var(--text-h2)}
+.program-detail-completed-links button,.program-schedule-open-result,.program-schedule-mark-complete{
+  display:grid;gap:4px;padding:12px;border:1px solid var(--line);border-radius:12px;
+  background:var(--surface);color:var(--ink);text-align:left;font:inherit;font-size:var(--text-caption);cursor:pointer
+}
+.program-detail-completed-links small{color:var(--muted);font-size:var(--text-caption)}
+.program-schedule-open-result,.program-schedule-mark-complete{margin-top:8px;text-align:center;display:block}
+.manual-workout-date-label{display:grid;gap:8px;margin:12px 0;color:var(--ink);font-size:var(--text-body)}
+.manual-workout-date-label input{min-height:42px;padding:8px;border:1px solid var(--line);border-radius:12px;font:inherit}
