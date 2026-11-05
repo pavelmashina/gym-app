@@ -177,7 +177,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
   return <div className="exercise-library-shell">
     <section className="exercise-library-top">
       {!browseOnly && <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>}
-      <label className="exercise-library-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
+      <label className={`exercise-library-search${browseOnly ? ' exercise-search training-search' : ''}`}><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <div className="exercise-library-filter-row">
         <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{EXERCISE_MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
         <label className="exercise-library-filter"><span>Оборудование</span><select value={equipment} onChange={(event) => setEquipment(event.target.value)}>{EXERCISE_EQUIPMENT.map((value) => <option key={value}>{value}</option>)}</select></label>
