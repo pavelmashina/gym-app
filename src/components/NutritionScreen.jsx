@@ -81,8 +81,8 @@ function RecipeCard({ recipe, onOpen, favorite, onToggleFavorite }) {
   return <div className="recipe-card-shell">
     <button type="button" className="recipe-card" onClick={() => onOpen(recipe)}>
       <span className="recipe-card-image"><NutritionPhoto url={recipe.image_url} /></span>
-      <span className="recipe-card-copy"><strong>{recipe.title}</strong><span className="recipe-tags"><b>{recipe.meal_type}</b><b>{recipe.goal}</b><b>{recipe.calories} ккал</b></span><small>Б {Number(recipe.protein_g)} · Ж {Number(recipe.fat_g)} · У {Number(recipe.carbs_g)}</small></span>
-      <span className="recipe-card-arrow" aria-hidden="true">›</span>
+      <span className="recipe-card-copy"><strong>{recipe.title}</strong><small>Б {Number(recipe.protein_g)} · Ж {Number(recipe.fat_g)} · У {Number(recipe.carbs_g)}</small></span>
+      <span className="recipe-tags"><b>{recipe.meal_type}</b><b>{recipe.goal}</b><b>{recipe.calories} ккал</b></span>
     </button>
     <FavoriteButton active={favorite} label={recipe.title} onClick={() => onToggleFavorite('recipe', recipe.id)} />
   </div>;
@@ -107,8 +107,8 @@ function MealPlanCard({ plan, onOpen, favorite, onToggleFavorite }) {
   return <div className="meal-plan-card-shell">
     <button type="button" className="meal-plan-card" onClick={() => onOpen(plan)}>
       <span className="meal-plan-card-image"><NutritionPhoto url={plan.image_url} /></span>
-      <span className="meal-plan-card-copy"><strong>{plan.title}</strong><span className="meal-plan-tags"><b>{plan.goal}</b><b>{plan.calories_per_day} ккал / день</b></span><small>{plan.short_description}</small></span>
-      <span className="meal-plan-card-arrow" aria-hidden="true">›</span>
+      <span className="meal-plan-card-copy"><strong>{plan.title}</strong></span>
+      <span className="meal-plan-tags"><b>{plan.goal}</b><b>{plan.calories_per_day} ккал / день</b></span>
     </button>
     <FavoriteButton active={favorite} label={plan.title} onClick={() => onToggleFavorite('meal_plan', plan.id)} />
   </div>;
@@ -161,8 +161,8 @@ function MealPlanDetails({ plan, meals, onBack }) {
 
 function CatalogToolbar({ filterOpen, setFilterOpen, favoritesOnly, setFavoritesOnly, activeFilterCount }) {
   return <div className="catalog-toolbar">
-    <button type="button" className={`catalog-tool-button${filterOpen || activeFilterCount ? ' active' : ''}`} onClick={() => setFilterOpen((value) => !value)} aria-expanded={filterOpen}><FilterIcon /><span>Фильтр{activeFilterCount ? ` · ${activeFilterCount}` : ''}</span></button>
-    <button type="button" className={`catalog-tool-button${favoritesOnly ? ' active' : ''}`} onClick={() => setFavoritesOnly((value) => !value)} aria-pressed={favoritesOnly}><HeartIcon filled={favoritesOnly} /><span>Избранное</span></button>
+    <button type="button" className={`catalog-tool-button${filterOpen || activeFilterCount ? ' active' : ''}`} title="Фильтры" aria-label={`Фильтры${activeFilterCount ? `, применено: ${activeFilterCount}` : ''}`} onClick={() => setFilterOpen((value) => !value)} aria-expanded={filterOpen}><FilterIcon /></button>
+    <button type="button" className={`catalog-tool-button${favoritesOnly ? ' active' : ''}`} title="Избранное" aria-label="Только избранное" onClick={() => setFavoritesOnly((value) => !value)} aria-pressed={favoritesOnly}><HeartIcon filled={favoritesOnly} /></button>
   </div>;
 }
 
