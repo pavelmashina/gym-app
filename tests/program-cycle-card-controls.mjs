@@ -33,7 +33,7 @@ assert.doesNotMatch(owned, /Дата старта:/);
 assert.match(intro, /className="program-detail-title-status"/);
 assert.match(share, /aria-label="Поделиться программой"/);
 assert.doesNotMatch(share, /<ShareIcon\s*\/> Поделиться программой/);
-assert.match(programs, /className="my-programs-create-row"/);
+assert.match(programs, /className="training-toolbar-row compact-training-toolbar my-programs-create-row"/);
 assert.ok(programs.indexOf('className="my-programs-create-row"') < programs.indexOf('className="my-programs-switcher"'));
 assert.match(programs, /className={`my-program-status-corner \$\{state.tone\}`}/);
 assert.match(programs, /<CheckIcon \/> : <PlayIcon \/>/);
