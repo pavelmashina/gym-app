@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getProgram, archiveUserProgram } from '../lib/programs.js';
 import { markScheduledWorkoutCompleted } from '../lib/workoutSessions.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
-import { ProgramOverviewIntro, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewFacts, ProgramOverviewDescription } from './ProgramOverview.jsx';
+import { ProgramOverviewIntro, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewDescription } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { rescheduleScheduledWorkout, skipScheduledWorkout } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -252,7 +252,6 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
 
       <ProgramOverviewMeta program={program} />
       <ProgramOverviewDescription description={program.description} />
-      <ProgramOverviewFacts details={program.details} />
 
       {(liveParticipation || canEditStartDate || participationError || !canEditProgram) && <section className="program-detail-management" aria-label="Управление программой">
         {canEditStartDate && !editingStartDate && <button type="button" className="program-detail-inline-action" onClick={() => { setStartDateDraft(participation.startDate); setStartDateError(''); setEditingStartDate(true); }}>Изменить дату начала</button>}
