@@ -21,5 +21,7 @@ assert.equal(program.match(/await saveProgramDetails\(/g).length,2);
 assert.equal(program.match(/level, details, schedule_mode/g).length,3);
 assert.match(draft,/draft\.details/);
 assert.match(detail,/<ProgramOverviewFacts details=\{program\.details\} \/>/);
-assert.match(shared,/PROGRAM_DETAIL_FIELDS/);
+assert.match(shared,/details\.duration/);
+assert.match(shared,/details\.frequency/);
+assert.doesNotMatch(shared,/details\.goal/);
 console.log('Canonical selectable program details, persistence and draft restoration verified.');
