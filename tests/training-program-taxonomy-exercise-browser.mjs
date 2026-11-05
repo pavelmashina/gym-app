@@ -29,13 +29,18 @@ assert.doesNotMatch(catalogUI,/const DIFFICULTY_POINTS/);
 
 assert.match(training,/id: 'exercises', label: 'Упражнения'/);
 assert.match(training,/<ExerciseLibraryPicker browseOnly/);
+assert.ok(training.indexOf('<nav className="training-tabs"') < training.indexOf('className="exercise-search training-search"'),'Training navigation precedes its search input');
 assert.match(picker,/browseOnly = false/);
+assert.match(picker,/!browseOnly && <div className="exercise-library-heading"/);
+assert.match(picker,/hideHeading=\{browseOnly\}/);
 assert.match(picker,/includeLegacy: browseOnly/);
 assert.match(picker,/if \(browseOnly\) \{ setInfoExercise\(exercise\); return; \}/);
 assert.match(library,/includeLegacy && CATALOG_V2_ENABLED/);
 assert.match(library,/knownIds\.has\(row\.id\)/);
 assert.match(css,/data-training-tab="exercises"/);
 assert.match(css,/training-exercise-browser/);
+assert.match(css,/\.training-exercise-browser \.exercise-library-search input/);
+assert.match(css,/text-decoration: underline/);
 
 assert.match(supplement,/item\.description \|\| item\.short_description/);
 assert.doesNotMatch(supplement,/className="sportpit-card-arrow"/);
