@@ -11,11 +11,12 @@ const exercises=read('src/components/ExercisesScreen.jsx');
 const app=read('src/App.jsx');
 const workflow=read('.github/workflows/pages.yml');
 const update=read('src/components/AppUpdateNotice.jsx');
-for(const part of ['ProgramOverviewIntro','ProgramOverviewStats','ProgramOverviewMeta']) {
+for(const part of ['ProgramOverviewIntro','ProgramOverviewMeta']) {
   assert.match(shared,new RegExp('export function '+part));
   assert.match(user,new RegExp('<'+part));
   assert.match(catalog,new RegExp('<'+part));
 }
+assert.match(user,/<ProgramOverviewStats/);
 assert.match(user,/<ShareProgramButton programId=\{program.id\}/);
 assert.doesNotMatch(catalog,/ShareProgramButton/);
 assert.match(shared,/export function ProgramDetailTabs/);
@@ -47,7 +48,8 @@ assert.match(shared,/<span>Уровень<\/span><strong>\{program.level \|\| '�
 assert.match(shared,/label: 'Описание'/);
 assert.match(shared,/export function ProgramOverviewFacts/);
 assert.match(user,/<ProgramOverviewFacts details=\{program\.details\} \/>/);
-assert.ok(shared.indexOf('program-detail-tags') < shared.indexOf('program.description && <p>'),'Tags must precede description');
+assert.match(shared,/export function ProgramOverviewDescription/);
+assert.match(shared,/program-detail-tags/);
 assert.doesNotMatch(catalog,/<span>Структура<\/span>/);
 assert.doesNotMatch(user,/<span>Структура<\/span>/);
 assert.match(catalog,/catalog-workout-exercise-count/);
@@ -58,7 +60,7 @@ assert.match(shared,/label: 'Тренировки'/);
 assert.match(shared,/role="tablist"/);
 assert.match(shared,/aria-selected=\{value === option.id\}/);
 assert.match(catalog,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="catalog" \/>/);
-assert.match(user,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="owned" \/>/);
+assert.match(user,/<ProgramDetailTabs value=\{detailTab\} onChange=\{setDetailTab\} scope="owned" showSchedule=\{isActive\} \/>/);
 assert.match(catalog,/detailTab === 'description'/);
 assert.match(catalog,/detailTab === 'workouts'/);
 assert.match(user,/detailTab === 'description'/);
@@ -72,7 +74,9 @@ assert.match(catalog,/program-detail-content catalog-unified-detail/);
 assert.match(styles,/grid-template-columns:104px minmax\(0,1fr\) 18px/);
 assert.match(styles,/object-fit:cover!important/);
 assert.match(styles,/max-height:104px!important/);
-assert.match(exercises,/activeTab !== 'received' && <button className="create-program-wide"/);
+assert.match(exercises,/training-create-compact/);
+assert.match(exercises,/Активные программы/);
+assert.match(exercises,/listRecentCompletedPrograms/);
 assert.match(tabs,/background-size: 40px 40px/);
 assert.match(design,/background-size:40px 40px!important/);
 assert.match(workflow,/VITE_APP_BUILD_ID:/);

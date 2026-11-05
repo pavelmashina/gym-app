@@ -288,6 +288,29 @@ export async function archiveUserProgram(programId) {
   if (error || !archived) throw new Error('Не удалось удалить программу. Попробуйте снова.');
 }
 
+export async function listRecentCompletedPrograms() {
+  await requireCurrentUser();
+  const { data: history,error: historyError } = await supabase.from('user_programs')
+    .select('id,program_id,status,start_date,joined_at,paused_at,completed_at,updated_at')
+    .eq('status','completed').order('completed_at',{ascending:false}).limit(10);
+  if(historyError) throw new Error('Не удалось загрузить пройденные программы.');
+  if(!history?.length) return [];
+  const programIds=[...new Set(history.map(item=>item.program_id))];
+  const { data: rows,error } = await supabase.from('programs')
+    .select('id, name, description, week_count, structure_mode, cycle_repeat_count, categories, training_place, equipment, level, details, schedule_mode, cover_path, source_catalog_program_id, status, created_at, updated_at')
+    .in('id',programIds).neq('status','archived');
+  if(error) throw new Error('Не удалось загрузить завершённые программы.');
+  const byId=new Map((rows || []).map(row=>[row.id,row]));
+  const workoutCounts=await loadTemplateWorkoutCounts(programIds);
+  return Promise.all(history.filter(item=>byId.has(item.program_id)).map(async item=>{
+    const row=byId.get(item.program_id);
+    const count=workoutCounts.get(row.id)||0;
+    return {...mapProgramRow(row),templateWorkoutCount:count,
+      totalPlannedWorkoutCount: count*(row.cycle_repeat_count || 1),
+      participation:mapParticipationRow(item),coverUrl:await getSignedCoverUrl(row.cover_path)};
+  }));
+}
+
 export async function listPrograms() {
   const { data, error } = await supabase
     .from('programs')

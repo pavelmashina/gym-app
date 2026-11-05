@@ -175,7 +175,16 @@ export function CatalogProgramsPanel({ query = '', sortDirection = 'asc', filter
       const exerciseNames = (program.sourcePayload?.cycle?.workouts ?? []).flatMap((workout) => workout.exercises ?? []).map((exercise) => exercise.name);
       return [program.name, program.description, program.trainingPlace, program.equipment, program.level, ...program.categories, ...exerciseNames].filter(Boolean).some((value) => value.toLocaleLowerCase('ru').includes(normalizedQuery));
     });
-    return result.sort((a, b) => { const comparison = a.name.localeCompare(b.name, 'ru'); return sortDirection === 'asc' ? comparison : -comparison; });
+    return result.sort((a,b) => {
+      if(sortDirection === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      if(sortDirection === 'workouts') return (b.workoutCount || 0) - (a.workoutCount || 0);
+      if(sortDirection === 'level') {
+        const rank={'Начальный':1,'Средний':2,'Продвинутый':3};
+        return (rank[a.level] || 99) - (rank[b.level] || 99);
+      }
+      const comparison=a.name.localeCompare(b.name,'ru');
+      return sortDirection === 'desc' ? -comparison : comparison;
+    });
   }, [programs, query, sortDirection, place, category, level]);
 
   const hasFilters = place !== ALL || category !== ALL || level !== ALL;

@@ -15,6 +15,7 @@ function mapCatalogProgram(row) {
     equipment: row.equipment ?? '',
     level: row.level ?? '',
     workoutCount: row.workout_count ?? 0,
+    createdAt: row.created_at || null,
     sourcePayload,
     coverUrl,
   };
@@ -23,7 +24,7 @@ function mapCatalogProgram(row) {
 export async function listCatalogPrograms() {
   const { data, error } = await supabase
     .from('catalog_programs')
-    .select('id, name, description, categories, training_place, equipment, level, workout_count, source_payload')
+    .select('id, name, description, categories, training_place, equipment, level, workout_count, source_payload, created_at')
     .eq('published', true)
     .order('name', { ascending: true });
 
@@ -38,7 +39,7 @@ export async function listCatalogPrograms() {
 export async function getCatalogProgram(programId) {
   const { data, error } = await supabase
     .from('catalog_programs')
-    .select('id, name, description, categories, training_place, equipment, level, workout_count, source_payload')
+    .select('id, name, description, categories, training_place, equipment, level, workout_count, source_payload, created_at')
     .eq('id', programId)
     .eq('published', true)
     .single();
