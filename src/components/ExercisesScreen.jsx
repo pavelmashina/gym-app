@@ -61,14 +61,16 @@ function ProgramCard({ program, onOpen }) {
   const isCycle = program.structureMode === 'cycle';
   return <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
     <span className="my-program-cover">{program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}</span>
-    <span className="my-program-copy"><strong>{program.name} <span className="my-program-inline-status">{state.label}</span></strong>
+    <span className="my-program-copy"><strong>{program.name}</strong>
       <span className="my-program-meta">
         {isCycle ? <><span>{program.templateWorkoutCount} в цикле</span><span>{program.cycleRepeatCount} цик.</span><span>{program.totalPlannedWorkoutCount} всего</span></> : <><span>{program.templateWorkoutCount} трен.</span><span>Старая структура</span></>}
         {program.level && <span>{program.level}</span>}
       </span>
       {program.categories.length > 0 && <span className="my-program-tags">{program.categories.map((category) => <span key={category}>{category}</span>)}</span>}
     </span>
-    <span className="my-program-arrow" aria-hidden="true">›</span>
+    <span className={`my-program-status-corner ${state.tone}`} title={state.label} aria-label={state.label}>
+      {state.tone === 'completed' ? <CheckIcon /> : <PlayIcon />}
+    </span>
   </button>;
 }
 
@@ -158,7 +160,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
         </div>
         <button className="training-create-compact" type="button" onClick={openCreateProgram}><PlusIcon /><span>Создать</span></button>
       </div>}
-      {activeTab === 'your-programs' && <div className="my-programs-create-row">
+      {activeTab === 'your-programs' && <div className="training-toolbar-row compact-training-toolbar my-programs-create-row">
         <button className="training-create-compact" type="button" onClick={openCreateProgram}><PlusIcon /><span>Создать</span></button>
       </div>}
       {activeTab === 'your-programs' && <div className="my-programs-switcher" role="tablist" aria-label="Мои программы">
