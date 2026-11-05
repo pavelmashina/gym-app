@@ -127,7 +127,7 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
       {!loading && program && <>
         <main className="program-detail-content catalog-unified-detail">
           {detailTab === 'description' && <div id="catalog-description-panel" role="tabpanel" aria-labelledby="catalog-description-tab">
-            <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
+            <ProgramOverviewIntro program={program} coverUrl={program.coverDetailUrl || program.coverUrl} />
           <ProgramOverviewMeta program={program} />
           <ProgramOverviewDescription description={program.description} />
           <CatalogProgramFacts details={program.sourcePayload?.details} />
