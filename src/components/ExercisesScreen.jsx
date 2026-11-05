@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { listPrograms, listRecentCompletedPrograms } from '../lib/programs.js';
 import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
+import { ProgramListCard } from './ProgramListCard.jsx';
 import { ExerciseLibraryPicker } from './ExerciseLibraryPicker.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
 import { ReceiveProgramPanel } from './ReceiveProgramPanel.jsx';
@@ -30,18 +31,11 @@ const EMPTY_COPY = {
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
 function FilterIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>; }
 function SortIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 20V4m-4 4 4-4 4 4M17 4v16m-4-4 4 4 4-4" /></svg>; }
-function PlayIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" /></svg>; }
-function CheckIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
 
 function EmptyPrograms({ tabId }) {
   const copy = EMPTY_COPY[tabId];
   return <section className="training-empty-programs"><div className="training-empty-mark" aria-hidden="true">—</div><strong>Пока пусто</strong><span>{copy?.text}</span></section>;
-}
-
-function formatShortDate(dateString) {
-  if (!dateString) return '';
-  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(`${dateString}T12:00:00`));
 }
 
 function programState(program) {
@@ -57,21 +51,7 @@ function programState(program) {
 }
 
 function ProgramCard({ program, onOpen }) {
-  const state = programState(program);
-  const isCycle = program.structureMode === 'cycle';
-  return <button className="my-program-card" type="button" onClick={() => onOpen(program.id)}>
-    <span className="my-program-cover">{program.coverUrl ? <img src={program.coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}</span>
-    <span className="my-program-copy"><strong>{program.name}</strong>
-      <span className="my-program-meta">
-        {isCycle ? <><span>{program.templateWorkoutCount} в цикле</span><span>{program.cycleRepeatCount} цик.</span><span>{program.totalPlannedWorkoutCount} всего</span></> : <><span>{program.templateWorkoutCount} трен.</span><span>Старая структура</span></>}
-        {program.level && <span>{program.level}</span>}
-      </span>
-      {program.categories.length > 0 && <span className="my-program-tags">{program.categories.map((category) => <span key={category}>{category}</span>)}</span>}
-    </span>
-    <span className={`my-program-status-corner ${state.tone}`} title={state.label} aria-label={state.label}>
-      {state.tone === 'completed' ? <CheckIcon /> : <PlayIcon />}
-    </span>
-  </button>;
+  return <ProgramListCard program={program} onOpen={onOpen} status={programState(program)} />;
 }
 
 export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0, onCreateProgram, onEditProgram, onStartProgram, onOpenWorkout }) {
