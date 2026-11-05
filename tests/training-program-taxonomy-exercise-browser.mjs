@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { CATEGORY_OPTIONS, LEVEL_OPTIONS, normalizeProgramCategories, normalizeProgramLevel, programLevelIndex } from '../src/lib/programOptions.js';
+
+const read = path => readFileSync(path,'utf8');
+const training = read('src/components/ExercisesScreen.jsx');
+const picker = read('src/components/ExerciseLibraryPicker.jsx');
+const library = read('src/lib/exerciseLibrary.js');
+const program = read('src/lib/programs.js');
+const catalog = read('src/lib/catalogPrograms.js');
+const catalogUI = read('src/components/CatalogProgramsPanel.jsx');
+const overview = read('src/components/ProgramOverview.jsx');
+const supplement = read('src/components/SportPitScreen.jsx');
+const css = read('src/november-card-navigation-refinements.css');
+
+assert.deepEqual(CATEGORY_OPTIONS,['Силовой','Функционал','Растяжка','Кардио','Свой вес']);
+assert.deepEqual(LEVEL_OPTIONS,['Новичок','Средний','Уверенный','Продвинутый','Эксперт']);
+assert.deepEqual(normalizeProgramCategories(['Силовой','Силовые','Набор мышечной массы','С собственным весом']),['Силовой','Свой вес']);
+assert.equal(normalizeProgramLevel('Начинающий'),'Новичок');
+assert.equal(programLevelIndex('Продвинутый'),4);
+assert.equal(programLevelIndex('Эксперт'),5);
+assert.match(program,/categories: normalizeProgramCategories\(categories\)/);
+assert.match(program,/level: nullableText\(normalizeProgramLevel\(level\)\)/);
+assert.match(catalog,/normalizeProgramCategories\(row\.categories\)/);
+assert.match(catalog,/normalizeProgramLevel\(row\.level\)/);
+assert.match(overview,/normalizeProgramCategories\(program\.categories\)/);
+assert.match(catalogUI,/programLevelIndex\(program\.level\)/);
+assert.doesNotMatch(catalogUI,/const DIFFICULTY_POINTS/);
+
+assert.match(training,/id: 'exercises', label: 'Упражнения'/);
+assert.match(training,/<ExerciseLibraryPicker browseOnly/);
+assert.match(picker,/browseOnly = false/);
+assert.match(picker,/includeLegacy: browseOnly/);
+assert.match(picker,/if \(browseOnly\) \{ setInfoExercise\(exercise\); return; \}/);
+assert.match(library,/includeLegacy && CATALOG_V2_ENABLED/);
+assert.match(library,/knownIds\.has\(row\.id\)/);
+assert.match(css,/data-training-tab="exercises"/);
+assert.match(css,/training-exercise-browser/);
+
+assert.match(supplement,/item\.description \|\| item\.short_description/);
+assert.doesNotMatch(supplement,/className="sportpit-card-arrow"/);
+assert.doesNotMatch(supplement,/sportpit-card-copy"><span>\{item\.category\}/);
+assert.match(css,/-webkit-line-clamp: 4/);
+assert.match(css,/\.sportpit-content \.sportpit-card-copy/);
+console.log('Canonical program tags and levels, complete exercise browser and supplement cards verified.');
