@@ -55,20 +55,6 @@ function WorkoutBlock({ workout, index }) {
   );
 }
 
-function CatalogProgramFacts({ details }) {
-  if (!details || typeof details !== 'object') return null;
-  const facts = [
-    ['Продолжительность', details.duration],
-    ['Частота', details.frequency],
-  ].filter(([, value]) => typeof value === 'string' && value.trim());
-  if (!facts.length) return null;
-  return <section className="catalog-program-facts" aria-label="Продолжительность и частота программы">
-    <div className="catalog-program-facts-grid">
-      {facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
-    </div>
-  </section>;
-}
-
 function InfoRow({ label, value }) {
   return <div className="catalog-info-row"><span>{label}</span><strong className={!value ? 'empty' : ''}>{value || NO_DATA}</strong></div>;
 }
@@ -116,7 +102,6 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
             <ProgramOverviewIntro program={program} coverUrl={program.coverDetailUrl || program.coverUrl} />
           <ProgramOverviewMeta program={program} />
           <ProgramOverviewDescription description={program.description} />
-          <CatalogProgramFacts details={program.sourcePayload?.details} />
           </div>}
           {detailTab === 'workouts' && <div id="catalog-workouts-panel" role="tabpanel" aria-labelledby="catalog-workouts-tab">
           <section className="program-detail-section catalog-training-section">
@@ -124,7 +109,6 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
             {workouts.length > 0
               ? <div className="catalog-workout-list">{workouts.map((workout, index) => <WorkoutBlock key={`${workout.name}-${index}`} workout={workout} index={index} />)}</div>
               : <div className="catalog-detail-empty-card">Нет данных</div>}
-            <div className="catalog-source-note">Исходные упражнения, подходы и повторения сохранены из каталога. После присоединения программа появится в «Моих программах».</div>
           </section>
           </div>}
           {joinError && <div className="catalog-join-error" role="alert">{joinError}</div>}
