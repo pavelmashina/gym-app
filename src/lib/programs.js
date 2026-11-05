@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js';
-import { normalizeProgramDetails } from './programOptions.js';
+import { normalizeProgramDetails, normalizeProgramCategories, normalizeProgramLevel } from './programOptions.js';
 
 const PROGRAM_COVERS_BUCKET = 'program-covers';
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
@@ -47,10 +47,10 @@ function buildProgramPayload({
     week_count: structureMode === 'cycle' ? 1 : weekCount,
     structure_mode: structureMode,
     cycle_repeat_count: normalizeRepeatCount(cycleRepeatCount),
-    categories,
+    categories: normalizeProgramCategories(categories),
     training_place: nullableText(trainingPlace),
     equipment: nullableText(equipment),
-    level: nullableText(level),
+    level: nullableText(normalizeProgramLevel(level)), 
     schedule_mode: scheduleMode,
     weeks: programWeeks.map((week) => ({
       workouts: week.workouts.map((workout) => ({
@@ -133,10 +133,10 @@ function mapProgramRow(row) {
     weekCount: row.week_count,
     structureMode: row.structure_mode ?? 'legacy_weeks',
     cycleRepeatCount: row.cycle_repeat_count ?? 1,
-    categories: row.categories ?? [],
+    categories: normalizeProgramCategories(row.categories),
     trainingPlace: row.training_place ?? '',
     equipment: row.equipment ?? '',
-    level: row.level ?? '',
+    level: normalizeProgramLevel(row.level),
     details: row.details ?? {},
     scheduleMode: row.schedule_mode ?? 'custom',
     coverPath: row.cover_path ?? null,
