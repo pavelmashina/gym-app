@@ -181,7 +181,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
           {personalPrograms.length ? <div className="my-programs-list">{personalPrograms.map(program => <ProgramCard key={program.id} program={program} onOpen={setSelectedProgramId} />)}</div>
             : <p className="my-programs-segment-empty">Пока нет созданных вами программ.</p>}
         </div>}
-      </section>
+      </section>}
       {isCompletedTab && !programsLoading && !programsError && (filteredPrograms.length
         ? <section className="my-programs-list">{filteredPrograms.map(program =>
             <ProgramCard key={program.participation?.id || program.id} program={program} onOpen={setSelectedProgramId} />)}</section>
