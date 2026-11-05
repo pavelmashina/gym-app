@@ -19,7 +19,7 @@ assert.match(programs,/manualWorkoutId &&/);
 assert.match(programs,/markScheduledWorkoutCompleted/);
 assert.match(programs,/onOpenWorkout/);
 assert.match(programs,/program-detail-completed-links/);
-assert.match(screen,/Активные программы/);
+assert.match(screen,/my-programs-active-tab/);
 assert.match(screen,/Мои программы/);
 assert.match(screen,/listRecentCompletedPrograms/);
 assert.match(screen,/training-create-compact/);
