@@ -556,3 +556,161 @@
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
+
+/* Nov 05: equal Nutrition/Training icon blocks, shared program cards and action row. */
+/* Nutrition uses 72px icons, or 68px on narrow devices. Keep Training equal. */
+.exercise-catalog-content .training-tabs button {
+  min-height: 100px !important;
+}
+.exercise-catalog-content .training-tabs button::before {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 22px !important;
+  background-size: 34px 34px !important;
+}
+@media (max-width: 370px) {
+  .exercise-catalog-content .training-tabs button {
+    min-height: 96px !important;
+  }
+  .exercise-catalog-content .training-tabs button::before {
+    width: 68px !important;
+    height: 68px !important;
+    border-radius: 22px !important;
+    background-size: 34px 34px !important;
+  }
+}
+
+/* Catalog, Active and My Program cards share one geometry and content layout. */
+.exercise-catalog-content .program-list-unified-card {
+  grid-template-columns: 104px minmax(0,1fr) !important;
+  align-items: start !important;
+  gap: var(--space-3) !important;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+}
+.exercise-catalog-content .program-list-unified-card .catalog-program-cover {
+  width: 104px !important;
+  height: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+  min-height: 104px !important;
+  max-height: 104px !important;
+}
+.exercise-catalog-content .program-list-unified-card .catalog-program-card-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start !important;
+  align-self: start !important;
+  min-width: 0;
+  width: 100%;
+  gap: 9px !important;
+  padding: 0 !important;
+}
+.exercise-catalog-content .program-list-card-heading {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.exercise-catalog-content .program-list-card-heading > strong {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  overflow-wrap: anywhere;
+}
+.exercise-catalog-content .program-list-tag-scroll {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  padding: 0 0 2px;
+  box-sizing: border-box;
+}
+.exercise-catalog-content .program-list-tag-scroll::-webkit-scrollbar { display: none; }
+.exercise-catalog-content .program-list-tag-scroll .catalog-program-tag {
+  max-width: none !important;
+  min-width: 0;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  scroll-snap-align: start;
+  text-overflow: clip;
+}
+
+/* Unified icon: same state marker on cards and beside the program title. */
+.program-status-icon {
+  flex: 0 0 29px;
+  width: 29px;
+  height: 29px;
+  min-width: 29px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--ink);
+  box-sizing: border-box;
+  vertical-align: middle;
+  line-height: 1;
+}
+.program-status-icon.completed { background: var(--ink); color: var(--surface); }
+.program-status-icon.paused { background: var(--accent-soft); color: var(--ink); }
+.program-status-icon svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+.program-detail-phone .program-detail-title-status {
+  display: inline-grid !important;
+  margin-left: 9px;
+  font-size: inherit;
+  vertical-align: middle;
+}
+@media (max-width: 370px) {
+  .exercise-catalog-content .program-list-unified-card {
+    grid-template-columns: 88px minmax(0,1fr) !important;
+  }
+  .exercise-catalog-content .program-list-unified-card .catalog-program-cover {
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+  }
+}
+
+/* Flatten the two logical action groups into one even-spaced icon row. */
+.program-detail-phone .program-detail-actions-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.program-detail-phone .program-detail-actions-row > .program-participation-controls,
+.program-detail-phone .program-detail-actions-row > .program-detail-end-actions {
+  display: contents !important;
+}
+.program-detail-phone .program-detail-actions-row .program-participation-action,
+.program-detail-phone .program-detail-actions-row .program-detail-delete-trigger,
+.program-detail-phone .program-detail-actions-row .program-share-trigger {
+  flex: 0 0 44px !important;
+  margin: 0 !important;
+}
