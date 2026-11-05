@@ -18,7 +18,7 @@ assert.match(form,/setDetails\(program\.details \?\? \{\}\)/);
 assert.match(program,/saveProgramDetails/);
 assert.match(program,/\.update\(\{details:normalizeProgramDetails\(details\)\}\)/);
 assert.equal(program.match(/await saveProgramDetails\(/g).length,2);
-assert.equal(program.match(/level, details, schedule_mode/g).length,2);
+assert.equal(program.match(/level, details, schedule_mode/g).length,3);
 assert.match(draft,/draft\.details/);
 assert.match(detail,/<ProgramOverviewFacts details=\{program\.details\} \/>/);
 assert.match(shared,/PROGRAM_DETAIL_FIELDS/);
