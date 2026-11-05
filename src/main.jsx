@@ -15,6 +15,7 @@ import './bottom-navigation.css';
 import './ui-layout-audit.css';
 import './nutrition-standard.css';
 import './training-program-polish.css';
+import './program-ui-refresh.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

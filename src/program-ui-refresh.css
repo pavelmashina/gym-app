@@ -1,0 +1,78 @@
+/* November 2026: program detail, tabs and description */
+.program-detail-phone{
+  height:100dvh!important;min-height:0;
+  display:flex;flex-direction:column;
+  overflow:hidden!important;padding-bottom:0!important;
+}
+.program-detail-phone > .program-detail-content{
+  min-height:0;flex:1 1 auto;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  padding-bottom:calc(160px + env(safe-area-inset-bottom))!important;
+}
+.program-detail-phone > .program-detail-header{flex:0 0 auto}
+.program-detail-header.program-detail-header-stacked{
+  display:flex;flex-direction:column;align-items:stretch;
+  gap:0!important;padding:calc(7px + env(safe-area-inset-top)) var(--page-x) 6px!important;
+  min-height:unset!important;
+}
+.program-detail-topline{height:42px;display:flex;align-items:center;justify-content:flex-start}
+.program-detail-header.program-detail-header-stacked .program-detail-tabs{
+  display:flex;width:100%;justify-content:space-around;gap:6px!important;
+}
+.program-detail-header-stacked .program-detail-tabs button{
+  width:auto!important;flex:1 1 0!important;min-width:0;
+  padding:7px 0 10px!important;white-space:nowrap;
+  font-size:var(--text-body)!important;
+}
+.program-detail-meta-card{margin-top:var(--space-3)!important}
+.program-detail-phone .program-detail-meta-card > div{min-height:44px!important;padding:var(--space-2) 0!important}
+.program-description-card{
+  margin-top:var(--space-3);padding:var(--space-4);
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+}
+.program-description-card p{
+  color:var(--ink);font-size:var(--text-body);line-height:var(--lh-body);
+  margin:0;white-space:pre-line;overflow-wrap:anywhere;
+}
+.program-description-card p.clamped{
+  display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:5;line-clamp:5;overflow:hidden;
+}
+.program-description-card button{
+  display:block;margin-top:var(--space-2);padding:4px 0;
+  color:var(--muted);background:transparent;border:0;
+  font:inherit;font-size:var(--text-caption);font-weight:var(--weight-semibold);cursor:pointer;
+}
+.program-detail-hero{display:flex;flex-direction:column}
+.program-detail-hero .program-detail-tags{order:2;margin:var(--space-2) 0 0!important}
+.program-detail-hero h1{order:1;margin:0!important}
+.program-detail-tags span{font-size:var(--text-caption)!important;line-height:var(--lh-caption)!important;
+  padding:var(--space-2) var(--space-3)!important;font-weight:var(--weight-semibold)!important}
+.program-schedule-summary{
+  display:flex;flex-wrap:wrap;gap:var(--space-2);
+  align-items:center;justify-content:space-between;margin:var(--space-3) 0;
+}
+.program-schedule-summary strong{font-size:var(--text-h3)}
+.program-schedule-summary span{font-size:var(--text-caption);color:var(--muted)}
+.program-schedule-timeline{display:grid;gap:var(--space-2);margin-bottom:var(--space-4)}
+.program-schedule-timeline-day{
+  display:grid;grid-template-columns:120px minmax(0,1fr);gap:var(--space-2);
+  padding:var(--space-3);border-radius:var(--radius-md);
+  background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--line);
+}
+.program-schedule-timeline-day.status-completed{border-left-color:var(--ink)}
+.program-schedule-timeline-day.status-skipped{opacity:.6}
+.program-schedule-timeline-day span{font-size:var(--text-caption);color:var(--muted)}
+.program-schedule-timeline-day strong{font-size:var(--text-body);font-weight:var(--weight-semibold)}
+/* Catalog details also use this scrollable, fixed-footer shell. */
+.catalog-detail-layer .program-detail-phone{max-height:100dvh}
+.app-nav-item.active:not(.home)::before{
+  content:"";position:absolute;inset:4px 3px;
+  border-radius:15px;background:var(--accent-soft);z-index:-1;
+}
+.app-nav-item.home.active{background:var(--accent-soft);border-radius:16px}
+.exercise-catalog-content,.statistics-content,.nutrition-content,.sportpit-content{padding-top:var(--space-2)!important}

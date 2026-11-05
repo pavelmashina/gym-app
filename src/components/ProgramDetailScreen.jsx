@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProgram, archiveUserProgram } from '../lib/programs.js';
 import { ShareProgramButton } from './ShareProgramButton.jsx';
-import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewFacts } from './ProgramOverview.jsx';
+import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewFacts, ProgramOverviewDescription } from './ProgramOverview.jsx';
 import { completeProgram, pauseProgram, resumeProgram } from '../lib/programParticipation.js';
 import { rescheduleScheduledWorkout, skipScheduledWorkout } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
@@ -71,6 +71,9 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
   const [workoutActionId, setWorkoutActionId] = useState(null);
   const [workoutActionError, setWorkoutActionError] = useState(null);
   const [detailTab, setDetailTab] = useState('description');
+  useEffect(() => {
+    if (detailTab === 'schedule' && program?.participation?.status !== 'active') setDetailTab('workouts');
+  }, [detailTab, program?.participation?.status]);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -217,7 +220,10 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
   const preview = participation ? program.scheduledWorkouts : templateWorkouts.map((item, index) => ({ id: item.workout.id, sequenceNumber: index + 1, cycleNumber: isCycle ? 1 : null, weekNumber: item.sourceGroup, workoutName: item.workout.name, scheduledDate: null, exercises: item.workout.exercises }));
 
   return <div className="phone program-detail-phone">
-    <header className="program-detail-header program-detail-header-tabs"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="owned" /><span aria-hidden="true" /></header>
+    <header className="program-detail-header program-detail-header-tabs program-detail-header-stacked">
+      <div className="program-detail-topline"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button></div>
+      <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="owned" showSchedule={isActive} />
+    </header>
     <main className="program-detail-content">
       {detailTab === 'description' && <div id="owned-description-panel" role="tabpanel" aria-labelledby="owned-description-tab">
       <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
@@ -228,6 +234,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
       </p>
 
       <ProgramOverviewMeta program={program} />
+      <ProgramOverviewDescription description={program.description} />
       <ProgramOverviewStats items={isCycle ? [{label:'Циклов',value:program.cycleRepeatCount},{label:'В цикле',value:totalTemplateWorkouts},{label:'Всего',value:totalPlannedWorkouts}] : [{label:'Этапов',value:program.programWeeks.length},{label:'Тренировок',value:totalTemplateWorkouts},{label:'Упражнений',value:totalExercises}]} />
       <ProgramOverviewFacts details={program.details} />
 
@@ -259,6 +266,19 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
       </div>}
       </div>}
       {detailTab === 'workouts' && <div id="owned-workouts-panel" role="tabpanel" aria-labelledby="owned-workouts-tab">
+      <section className="program-detail-section"><div className="program-detail-section-head"><h2>{isCycle ? 'Один цикл тренировок' : 'Тренировки программы'}</h2></div><div className="program-detail-weeks">{isCycle ? <section><header><strong>Цикл</strong><span>{formatRussianCount(totalTemplateWorkouts, ['тренировка','тренировки','тренировок'])}</span></header>{templateWorkouts.map(({ workout }, index) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{index + 1}. {workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section> : program.programWeeks.map((group) => <section key={group.id}><header><strong>Этап {group.number}</strong><span>{formatRussianCount(group.workouts.length, ['тренировка','тренировки','тренировок'])}</span></header>{group.workouts.map((workout) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section>)}</div></section>
+      </div>}
+      {detailTab === 'schedule' && isActive && <div id="owned-schedule-panel" role="tabpanel" aria-labelledby="owned-schedule-tab">
+        <div className="program-schedule-summary">
+          <strong>График тренировок</strong>
+          <span>{formatRussianCount(preview.filter(item => item.status === 'completed').length,['тренировка выполнена','тренировки выполнены','тренировок выполнено'])} из {preview.length}</span>
+        </div>
+        <div className="program-schedule-timeline" aria-label="Расписание тренировок">
+          {preview.map(item => <div key={item.id} className={`program-schedule-timeline-day status-${item.status || 'template'}`}>
+            <span>{item.scheduledDate ? formatDate(item.scheduledDate) : `№ ${item.sequenceNumber}`}</span>
+            <strong>{item.workoutName}</strong>
+          </div>)}
+        </div>
       <section className="program-detail-section"><div className="program-detail-section-head"><span>{participation ? 'Календарь' : (isCycle ? 'Повторение цикла' : 'Последовательность')}</span><h2>{participation ? 'Запланированные тренировки' : (isCycle ? `${program.cycleRepeatCount} × цикл` : 'Тренировки программы')}</h2></div><div className="program-detail-schedule">{preview.map((item) => {
         const overdue = Boolean(participation && item.status === 'scheduled' && item.scheduledDate < localToday());
         const controllable = Boolean(isActive && item.status === 'scheduled');
@@ -274,8 +294,6 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
           {workoutActionError?.id === item.id && <div className="scheduled-workout-error" role="alert">{workoutActionError.message}</div>}
         </article>;
       })}</div></section>
-
-      <section className="program-detail-section"><div className="program-detail-section-head"><h2>{isCycle ? 'Один цикл тренировок' : 'Тренировки программы'}</h2></div><div className="program-detail-weeks">{isCycle ? <section><header><strong>Цикл</strong><span>{formatRussianCount(totalTemplateWorkouts, ['тренировка','тренировки','тренировок'])}</span></header>{templateWorkouts.map(({ workout }, index) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{index + 1}. {workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section> : program.programWeeks.map((group) => <section key={group.id}><header><strong>Этап {group.number}</strong><span>{formatRussianCount(group.workouts.length, ['тренировка','тренировки','тренировок'])}</span></header>{group.workouts.map((workout) => <details className="program-detail-week-workout program-detail-workout-accordion" key={workout.id}><summary><strong>{workout.name}</strong><span>{formatRussianCount(workout.exercises.length, ['упражнение','упражнения','упражнений'])}</span></summary><div className="program-workout-exercise-summaries">{workout.exercises.map((exercise, exIndex) => <div key={exercise.id || exIndex}><strong>{exercise.name}</strong><span>{formatProgramExerciseSummary(exercise)}</span></div>)}</div></details>)}</section>)}</div></section>
       </div>}
     </main>
     <footer className={`program-detail-footer${canStart ? ' two-actions' : ''}`}>{canStart && <button className="program-detail-start-button" type="button" onClick={() => onStart?.(program.id)}><CalendarIcon /><span>{participation ? 'Начать программу заново' : 'Начать программу'}</span></button>}<button className="program-detail-edit-button" type="button" onClick={() => canEditProgram && onEdit?.(program.id)} disabled={!canEditProgram}><PencilIcon /><span>{canEditProgram ? 'Редактировать программу' : 'Редактирование недоступно'}</span></button></footer>

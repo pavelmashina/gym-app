@@ -3,7 +3,7 @@ import { adoptCatalogProgram, getCatalogProgram, listCatalogPrograms } from '../
 import '../catalog-programs.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
 import { formatProgramExerciseSummary } from '../lib/programExerciseSummary.js';
-import { ProgramOverviewIntro, ProgramOverviewStats, ProgramOverviewMeta, ProgramDetailTabs } from './ProgramOverview.jsx';
+import { ProgramOverviewIntro, ProgramOverviewMeta, ProgramDetailTabs, ProgramOverviewDescription } from './ProgramOverview.jsx';
 
 const ALL = 'Все';
 const NO_DATA = 'Нет данных';
@@ -113,7 +113,10 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
 
   return <div className="catalog-detail-layer" role="dialog" aria-modal="true" aria-label="Программа из каталога">
     <div className="catalog-detail-phone program-detail-phone">
-      <header className="program-detail-header program-detail-header-tabs"><button type="button" aria-label="Назад к каталогу" onClick={onBack}><BackIcon /></button>{!loading && program ? <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="catalog" /> : <span /> }<span aria-hidden="true" /></header>
+      <header className="program-detail-header program-detail-header-tabs program-detail-header-stacked">
+          <div className="program-detail-topline"><button type="button" aria-label="Назад к каталогу" onClick={onBack}><BackIcon /></button></div>
+          {!loading && program && <ProgramDetailTabs value={detailTab} onChange={setDetailTab} scope="catalog" />}
+        </header>
       {loading && <div className="program-detail-state"><div className="exercise-list-spinner" /><span>Загружаем программу…</span></div>}
       {!loading && error && <div className="program-detail-state error">{error}</div>}
       {!loading && program && <>
@@ -121,11 +124,7 @@ function CatalogProgramDetail({ programId, onBack, onJoin }) {
           {detailTab === 'description' && <div id="catalog-description-panel" role="tabpanel" aria-labelledby="catalog-description-tab">
             <ProgramOverviewIntro program={program} coverUrl={program.coverUrl} />
           <ProgramOverviewMeta program={program} />
-          <ProgramOverviewStats items={[
-            { label: 'Цикл', value: 1 },
-            { label: 'В цикле', value: program.workoutCount || workouts.length },
-            { label: 'Повторов', value: 'На выбор' },
-          ]} />
+          <ProgramOverviewDescription description={program.description} />
           <CatalogProgramFacts details={program.sourcePayload?.details} />
           </div>}
           {detailTab === 'workouts' && <div id="catalog-workouts-panel" role="tabpanel" aria-labelledby="catalog-workouts-tab">
