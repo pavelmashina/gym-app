@@ -11,20 +11,25 @@ const NO_DATA = 'Нет данных';
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>; }
 
+const DIFFICULTY_POINTS = { 'Начальный': 1, 'Новичок': 1, 'Лёгкий': 2, 'Легкий': 2, 'Средний': 3, 'Выше среднего': 4, 'Продвинутый': 5, 'Профессиональный': 5 };
+
 function CatalogCard({ program, onOpen }) {
   const category = program.categories[0] || 'Готовая программа';
+  const difficulty = DIFFICULTY_POINTS[program.level];
   return (
     <button className="catalog-program-card" type="button" onClick={() => onOpen(program.id)}>
       <span className={`catalog-program-cover${program.coverUrl ? ' catalog-program-cover-image' : ' catalog-program-placeholder'}`} aria-hidden="true">
         {program.coverUrl ? <img src={program.coverUrl} alt="" loading="lazy" /> : <span className="catalog-placeholder-icon" />}
       </span>
       <span className="catalog-program-card-copy">
-        <span className="catalog-program-category">{category}</span>
         <strong>{program.name}</strong>
         <span className="catalog-program-card-meta">
-          <span>{formatRussianCount(program.workoutCount, ['тренировка', 'тренировки', 'тренировок'])} в цикле</span>
-          {program.trainingPlace && <span>{program.trainingPlace}</span>}
-          {program.level && <span>{program.level}</span>}
+          <span className="catalog-program-category catalog-program-tag">{category}</span>
+          {program.trainingPlace && <span className="catalog-program-tag">{program.trainingPlace}</span>}
+          <span className="catalog-program-tag catalog-program-workouts">{formatRussianCount(program.workoutCount, ['тренировка', 'тренировки', 'тренировок'])}</span>
+          {difficulty ? <span className="catalog-program-difficulty" title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
+            {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
+          </span> : program.level && <span className="catalog-program-tag">{program.level}</span>}
         </span>
       </span>
       <span className="catalog-program-card-arrow"><ChevronIcon /></span>
