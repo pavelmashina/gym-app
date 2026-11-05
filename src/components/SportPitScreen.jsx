@@ -73,8 +73,7 @@ function ProductVisual({ item, compact = false }) {
 function SupplementCard({ item, onOpen }){
   return <button className="sportpit-card" type="button" onClick={()=>onOpen(item)}>
     <ProductVisual item={item} compact/>
-    <span className="sportpit-card-copy"><span>{item.category}</span><strong>{item.title}</strong><small>{item.short_description}</small></span>
-    <b className="sportpit-card-arrow">›</b>
+    <span className="sportpit-card-copy"><strong>{item.title}</strong><small>{item.description || item.short_description}</small></span>
   </button>;
 }
 
@@ -162,7 +161,7 @@ export function SportPitScreen({ refreshKey = 0 }){
     return()=>{active=false};
   },[refreshKey]);
 
-  const filtered=useMemo(()=>{const normalized=query.trim().toLocaleLowerCase('ru');if(!normalized)return items;return items.filter(item=>[item.title,item.category,item.short_description].filter(Boolean).some(value=>value.toLocaleLowerCase('ru').includes(normalized)));},[items,query]);
+  const filtered=useMemo(()=>{const normalized=query.trim().toLocaleLowerCase('ru');if(!normalized)return items;return items.filter(item=>[item.title,item.category,item.short_description,item.description].filter(Boolean).some(value=>value.toLocaleLowerCase('ru').includes(normalized)));},[items,query]);
 
   return <div className="sportpit-stack">
     <div className="sportpit-screen sportpit-catalog-screen" aria-hidden={Boolean(selected)} inert={Boolean(selected) ? true : undefined}>
