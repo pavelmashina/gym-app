@@ -337,3 +337,72 @@
     grid-template-columns: 88px minmax(0,1fr) !important;
   }
 }
+
+/* Full exercise library tab uses the existing training menu geometry. */
+.exercise-catalog-content .training-tabs button[data-training-tab="exercises"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777772' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8v8M7 6v12M17 6v12M20 8v8M7 12h10'/%3E%3C/svg%3E");
+}
+.exercise-catalog-content .training-tabs button[data-training-tab="exercises"].active::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8v8M7 6v12M17 6v12M20 8v8M7 12h10'/%3E%3C/svg%3E");
+}
+.exercise-catalog-content .training-exercise-browser {
+  min-width: 0;
+  margin-top: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+.training-exercise-browser .exercise-library-shell {
+  min-width: 0;
+}
+.training-exercise-browser .exercise-library-top {
+  gap: var(--space-3);
+}
+.training-exercise-browser .exercise-library-heading h2 {
+  font-size: var(--text-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: -.2px;
+}
+.training-exercise-browser .exercise-library-search {
+  min-height: 42px;
+  border-radius: 13px;
+}
+.training-exercise-browser .exercise-library-search input {
+  padding: 9px 0;
+}
+/* Supplement list cards: image, then top-aligned name and at most four lines
+   of the same description displayed on the details page. */
+.sportpit-content .sportpit-card {
+  grid-template-columns: 96px minmax(0,1fr) !important;
+  align-items: start !important;
+  gap: var(--space-3) !important;
+}
+.sportpit-content .sportpit-product-visual.compact { align-self: start; }
+.sportpit-content .sportpit-card-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: start;
+  gap: 6px;
+  padding-top: 0;
+}
+.sportpit-content .sportpit-card-copy > strong {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--lh-h3);
+}
+.sportpit-content .sportpit-card-copy > small {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--muted);
+  max-height: calc(var(--lh-caption) * 4);
+}
+@media (max-width: 370px) {
+  .sportpit-content .sportpit-card { grid-template-columns: 84px minmax(0,1fr) !important; }
+}
