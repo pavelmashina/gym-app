@@ -6,13 +6,14 @@ const rows = Array.from({length: 501}, (_, i) => ({id: `id-${i}`, name: `Кар�
 rows[0] = {...rows[0], name:'Жим лёжа', aliases:[{alias:'Bench Press',language:'en'}], family_name_ru:'Жимы от груди'};
 rows[1] = {...rows[1], owner_id:'alice'};
 const legacy = {id:'legacy', name:'Старое упражнение', equipment:'Гантели', muscle_group:'Ноги'};
+const fullLegacyRows = [{ ...rows[0], name: 'Предыдущее название упражнения' }, { id:'legacy-extra', name:'Упражнение из полной базы', equipment:'Тренажёр', muscle_group:'Спина' }];
 let failRecent = false;
 const requests = [];
 const client = {
   auth:{getUser:async()=>({data:{user:{id:'alice'}},error:null})},
   from(table) {
     const query = {select(){return this},order(){return this},eq(){return this},
-      async range(start,end){requests.push([table,start,end]);return {data:rows.slice(start,end+1),error:null}},
+      async range(start,end){requests.push([table,start,end]);const source=table==='exercises'?fullLegacyRows:rows;return {data:source.slice(start,end+1),error:null}},
       async limit(){return {data:[{exercise_id:'legacy'},{exercise_id:'id-1'}],error:failRecent?new Error('network'):null}},
       async in(column,ids){assert.equal(table,'exercises');assert.deepEqual(ids,['legacy']);return {data:[legacy],error:null}},
     };
@@ -30,6 +31,12 @@ assert.equal(result.all.length,501);
 assert.equal(result.mine.length,1);
 assert.deepEqual(result.recent.map(x=>x.id),['id-1']);
 assert.deepEqual(requests,[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999]]);
+const complete = await library.listExerciseLibrary({includeLegacy:true});
+assert.equal(complete.all.length,502,'Complete library merges V2 cards with historical exercises without duplicates');
+assert.equal(complete.all.find(row=>row.id==='id-0')?.name,'Жим лёжа','Canonical V2 card wins when IDs overlap');
+assert(complete.all.some(row=>row.id==='legacy-extra'));
+assert.deepEqual(requests.slice(2),[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]]);
+
 assert.equal(library.filterExerciseList(result.all,{query:'  ЖИМ лежа  '}).length,1);
 assert.equal(library.filterExerciseList(result.all,{query:'press bench'}).length,1);
 assert.equal(library.filterExerciseList(result.all,{query:'жимы груди'}).length,1);
