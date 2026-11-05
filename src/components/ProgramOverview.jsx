@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { normalizeProgramCategories } from '../lib/programOptions.js';
+import { ProgramStatusIcon } from './ProgramStatusIcon.jsx';
 /**
  * Shared structure for catalog templates and user-owned programs.
  * Only owned programs render the Share action; data and actions can differ.
  */
-export function ProgramOverviewIntro({ program, coverUrl = null, statusText = '' }) {
+export function ProgramOverviewIntro({ program, coverUrl = null, statusText = '', statusTone = 'active' }) {
   const categories = normalizeProgramCategories(program.categories);
   return <>
     <div className={`program-detail-cover${coverUrl ? '' : ' program-detail-cover-empty'}`}>
       {coverUrl ? <img src={coverUrl} alt="" /> : <span className="program-neutral-placeholder" aria-hidden="true" />}
     </div>
     <section className="program-detail-hero">
-      <h1>{program.name}{statusText && <span className="program-detail-title-status"> · {statusText}</span>}</h1>
+      <h1>{program.name}{statusText && <ProgramStatusIcon className="program-detail-title-status" tone={statusTone} label={statusText} />}</h1>
       {categories.length > 0 && <div className="program-detail-tags">{categories.map(category => <span key={category}>{category}</span>)}</div>}
 
     </section>
