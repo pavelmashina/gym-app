@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { normalizeProgramCategories, normalizeProgramLevel } from './programOptions.js';
 
 function mapCatalogProgram(row) {
   const sourcePayload = row.source_payload ?? { cycle: { workouts: [] } };
@@ -11,10 +12,10 @@ function mapCatalogProgram(row) {
     id: row.id,
     name: row.name,
     description: row.description ?? '',
-    categories: row.categories ?? [],
+    categories: normalizeProgramCategories(row.categories),
     trainingPlace: row.training_place ?? '',
     equipment: row.equipment ?? '',
-    level: row.level ?? '',
+    level: normalizeProgramLevel(row.level),
     workoutCount: row.workout_count ?? 0,
     createdAt: row.created_at || null,
     sourcePayload,
