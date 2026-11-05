@@ -468,3 +468,94 @@
   min-height: 44px !important;
   padding: var(--space-2) 0 !important;
 }
+
+/* Nov 05: compact program actions, consistent statuses and descriptions. */
+.exercise-catalog-content .my-programs-create-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: var(--space-3);
+}
+.exercise-catalog-content .my-programs-create-row .training-create-compact {
+  flex: 0 0 auto;
+  min-height: 40px;
+}
+.exercise-catalog-content .my-program-inline-status {
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  color: var(--ink);
+  white-space: normal;
+}
+.program-detail-phone .program-detail-title-status {
+  font: inherit;
+  font-weight: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+.program-detail-phone .program-description-card p {
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
+}
+.program-detail-phone .program-participation-controls {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  margin-top: 0;
+}
+.program-detail-phone .program-participation-action,
+.program-detail-phone .program-detail-delete-trigger,
+.program-detail-phone .program-share-trigger {
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 !important;
+  border-radius: 13px !important;
+  box-sizing: border-box;
+  flex: 0 0 44px;
+  display: grid !important;
+  place-items: center;
+  cursor: pointer;
+  border: 1px solid var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+}
+.program-detail-phone .program-participation-action.danger,
+.program-detail-phone .program-detail-delete-trigger {
+  color: #a44b45 !important;
+  border-color: color-mix(in srgb, #a44b45 20%, var(--line)) !important;
+}
+.program-detail-phone .program-participation-action svg,
+.program-detail-phone .program-detail-delete-trigger svg,
+.program-detail-phone .program-share-trigger svg {
+  width: 21px !important;
+  height: 21px !important;
+  display: block;
+}
+.program-detail-phone .program-detail-end-actions {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.program-detail-phone .program-participation-action:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+.program-detail-phone .program-participation-action:focus-visible,
+.program-detail-phone .program-detail-delete-trigger:focus-visible,
+.program-detail-phone .program-share-trigger:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
