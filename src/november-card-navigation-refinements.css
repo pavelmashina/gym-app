@@ -406,3 +406,58 @@
 @media (max-width: 370px) {
   .sportpit-content .sportpit-card { grid-template-columns: 84px minmax(0,1fr) !important; }
 }
+
+/* Training: the category scroller comes before its search input. */
+.exercise-catalog-content .training-tabs {
+  margin-top: 0 !important;
+}
+.exercise-catalog-content .training-search {
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Match the supplement search height and typography exactly in the exercise browser. */
+.training-exercise-browser .exercise-library-top {
+  gap: var(--space-3);
+}
+.training-exercise-browser .exercise-library-search {
+  width: 100%;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  padding: 0 12px !important;
+  border-radius: 13px !important;
+  grid-template-columns: 20px minmax(0,1fr) auto;
+  gap: 8px;
+  box-sizing: border-box;
+}
+.training-exercise-browser .exercise-library-search input {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 8px 0 !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.training-exercise-browser .exercise-library-search > svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Keep the description text area unchanged; make Подробнее / Скрыть closer to it. */
+.program-detail-phone .program-description-card button {
+  margin-top: 3px !important;
+  margin-bottom: 0 !important;
+  padding: 1px 0 !important;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+/* A single compact metadata card now includes duration and frequency. */
+.program-detail-phone .program-detail-meta-card > div {
+  min-height: 44px !important;
+  padding: var(--space-2) 0 !important;
+}
