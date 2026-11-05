@@ -41,8 +41,13 @@
   margin-right: auto;
 }
 .exercise-catalog-content .compact-training-toolbar .training-tools button {
-  width: 40px;
-  height: 40px;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  flex: 0 0 40px;
   padding: 0 !important;
   background: var(--surface) !important;
   border: 1px solid var(--line) !important;
@@ -172,10 +177,10 @@
   z-index: 0;
   border-radius: 15px;
   pointer-events: none;
-  background: linear-gradient(135deg,
-    color-mix(in srgb,var(--accent-soft) 94%,transparent),
-    color-mix(in srgb,var(--surface-2) 62%,transparent) 70%,
-    transparent) !important;
+  background: radial-gradient(ellipse 75% 72% at center,
+    color-mix(in srgb, var(--accent-soft) 94%, transparent) 0%,
+    color-mix(in srgb, var(--accent-soft) 52%, transparent) 48%,
+    transparent 100%) !important;
 }
 .app-nav-item.active:not(.home) .app-nav-icon,
 .app-nav-item.active:not(.home) .app-nav-label { position: relative; z-index: 1; }
@@ -201,14 +206,14 @@
 }
 .sportpit-content .sportpit-search svg { width: 20px; height: 20px; }
 
-/* Recipe/meal-plan tags use a full-width, non-wrapping row underneath the photo/title. */
+/* Recipe and meal plan tags stay in a single row to the right of the photo. */
 .nutrition-screen .recipe-card-shell .recipe-card,
 .nutrition-screen .meal-plan-card-shell .meal-plan-card {
-  grid-template-columns: 104px minmax(0,1fr) !important;
-  grid-template-rows: auto auto;
-  align-items: start !important;
+  grid-template-columns: 104px minmax(0, 1fr) !important;
+  grid-template-rows: auto !important;
+  align-items: center !important;
   column-gap: var(--space-3) !important;
-  row-gap: var(--space-2) !important;
+  row-gap: 0 !important;
   padding: var(--space-3) !important;
 }
 .nutrition-screen .recipe-card-image,
@@ -220,23 +225,25 @@
 .nutrition-screen .meal-plan-card-copy {
   grid-column: 2;
   grid-row: 1;
-  align-self: start;
+  align-self: center;
   min-width: 0;
-  padding-right: 28px;
+  width: 100%;
+  padding-right: 24px;
 }
 .nutrition-screen .recipe-tags,
 .nutrition-screen .meal-plan-tags {
-  grid-column: 1 / -1;
-  grid-row: 2;
   display: flex !important;
   align-items: center;
+  justify-content: flex-start;
   flex-wrap: nowrap !important;
-  gap: var(--space-1);
+  gap: 4px !important;
   min-width: 0;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   white-space: nowrap;
+  scroll-snap-type: x proximity;
 }
 .nutrition-screen .recipe-tags::-webkit-scrollbar,
 .nutrition-screen .meal-plan-tags::-webkit-scrollbar { display: none; }
@@ -244,6 +251,55 @@
 .nutrition-screen .meal-plan-tags b {
   flex: 0 0 auto;
   white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+/* Catalog program cards have two columns only and no trailing arrow. */
+.exercise-catalog-content .catalog-program-card {
+  grid-template-columns: 104px minmax(0, 1fr) !important;
+}
+@media (max-width: 370px) {
+  .exercise-catalog-content .catalog-program-card {
+    grid-template-columns: 88px minmax(0, 1fr) !important;
+  }
+}
+
+/* Level backgrounds are soft; filled points use saturated level colors. */
+.exercise-catalog-content .catalog-program-difficulty { border: 1px solid transparent; }
+.exercise-catalog-content .catalog-program-difficulty.level-1 { background: #e6f5e9; color: #219653; }
+.exercise-catalog-content .catalog-program-difficulty.level-2 { background: #fff4d2; color: #d29b09; }
+.exercise-catalog-content .catalog-program-difficulty.level-3 { background: #ffe6d2; color: #e97519; }
+.exercise-catalog-content .catalog-program-difficulty.level-4 { background: #ffe0df; color: #d83f3f; }
+.exercise-catalog-content .catalog-program-difficulty.level-5 { background: #f2dce4; color: #7e1e45; }
+.exercise-catalog-content .catalog-program-difficulty i { background: color-mix(in srgb, currentColor 20%, transparent); }
+.exercise-catalog-content .catalog-program-difficulty i.filled { background: currentColor; }
+
+/* Both the catalog and user program facts use exactly the same two cards. */
+.program-detail-phone .catalog-program-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.program-detail-phone .catalog-program-facts-grid > div {
+  min-height: 76px;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: none;
+}
+.program-detail-phone .catalog-program-facts-grid span {
+  display: block;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--muted);
+  font-weight: var(--weight-semibold);
+}
+.program-detail-phone .catalog-program-facts-grid strong {
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
 }
 
 /* Catalog controls match the Training outline icon-button family, flush left. */
