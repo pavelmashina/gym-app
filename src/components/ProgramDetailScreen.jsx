@@ -15,6 +15,10 @@ import { ProgramWorkoutBlock } from './ProgramWorkoutBlock.jsx';
 const WEEKLY_DAYS = { weekly_mwf: [1, 3, 5], weekly_tts: [2, 4, 6] };
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 5-7 7 7 7" /></svg>; }
 function PencilIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M4.5 19.5 5.8 14 15.9 3.9a2.1 2.1 0 0 1 3 0l1.2 1.2a2.1 2.1 0 0 1 0 3L10 18.2l-5.5 1.3Z" /><path d="m14.7 5.1 4.2 4.2" /></svg>; }
+function TrashIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 7V4h4v3m-8 0 1 13h10l1-13M10 11v6M14 11v6" /></svg>; }
+function PauseIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14" /></svg>; }
+function ResumeIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m8 5 11 7-11 7Z" /></svg>; }
+function CloseProgramIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" /></svg>; }
 function CalendarIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3.5" y="5.5" width="17" height="15" rx="3" /><path d="M8 3.5v4M16 3.5v4M3.5 10h17" /></svg>; }
 function formatDate(value) { return value ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) : ''; }
 function localToday() { const date = new Date(); return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10); }
@@ -257,9 +261,9 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
           <div><button type="button" onClick={() => setEditingStartDate(false)}>Отмена</button><button type="button" onClick={saveStartDate} disabled={startDateSaving || !dateChanged || !dateAllowed}>{startDateSaving ? 'Сохраняем…' : 'Сохранить'}</button></div>
         </div>}
         {liveParticipation && <div className={`program-participation-controls${isPaused ? ' two' : ''}`}>
-          {isActive && <button className="program-participation-action secondary" type="button" disabled={Boolean(participationAction)} onClick={handlePause}>{participationAction === 'pause' ? 'Ставим на паузу…' : 'Поставить на паузу'}</button>}
-          {isPaused && <button className="program-participation-action primary" type="button" disabled={Boolean(participationAction)} onClick={() => { setResumeDate(localToday()); setResumeError(''); setResumeOpen(true); setCompleteConfirmOpen(false); }}>Возобновить</button>}
-          <button className="program-participation-action danger" type="button" disabled={Boolean(participationAction)} onClick={() => { setCompleteConfirmOpen(true); setResumeOpen(false); }}>Завершить программу</button>
+          {isActive && <button className="program-participation-action secondary" type="button" aria-label="Поставить программу на паузу" title="Пауза" disabled={Boolean(participationAction)} onClick={handlePause}><PauseIcon /></button>}
+          {isPaused && <button className="program-participation-action primary" type="button" aria-label="Продолжить программу" title="Продолжить" disabled={Boolean(participationAction)} onClick={() => { setResumeDate(localToday()); setResumeError(''); setResumeOpen(true); setCompleteConfirmOpen(false); }}><ResumeIcon /></button>}
+          <button className="program-participation-action danger" type="button" aria-label="Завершить программу" title="Завершить программу" disabled={Boolean(participationAction)} onClick={() => { setCompleteConfirmOpen(true); setResumeOpen(false); }}><CloseProgramIcon /></button>
         </div>}
 
         {isPaused && resumeOpen && <div className="program-resume-editor"><label><span>Дата следующей тренировки</span><input type="date" min={localToday()} value={resumeDate} onChange={(event) => { setResumeDate(event.target.value); setResumeError(''); }} /></label>{startDateHint(program.scheduleMode) && <small>{startDateHint(program.scheduleMode)}</small>}{resumeError && <small className="error">{resumeError}</small>}<div className="program-resume-actions"><button type="button" disabled={Boolean(participationAction)} onClick={() => setResumeOpen(false)}>Отмена</button><button type="button" disabled={Boolean(participationAction) || !resumeDate || !resumeDateAllowed} onClick={handleResume}>{participationAction === 'resume' ? 'Возобновляем…' : 'Возобновить'}</button></div></div>}
@@ -270,7 +274,7 @@ export function ProgramDetailScreen({ programId, onBack, onEdit, onStart, onDele
 
       </section>}
       {isUserCreated && <div className="program-detail-end-actions">
-        <button type="button" className="program-detail-delete-trigger" onClick={() => { setDeleteError(''); setDeleteOpen(true); }}>Удалить программу</button>
+        <button type="button" className="program-detail-delete-trigger" aria-label="Удалить программу" title="Удалить программу" onClick={() => { setDeleteError(''); setDeleteOpen(true); }}><TrashIcon /></button>
         <ShareProgramButton programId={program.id} />
       </div>}
       </div>}
