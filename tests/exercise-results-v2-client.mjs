@@ -6,10 +6,11 @@ const client={from(table){assert.equal(table,'performed_sets');return {
   update(value){calls++;payload=value;return this},eq(key,value){assert.equal(key,'id');assert.equal(value,'set');return this},select(value){assert.equal(value,'*');return this},
   async single(){return fail?{data:null,error:null}:{data:{id:'set',set_number:1,...payload},error:null}},
 }}};
-globalThis.__resultTest={client,validateResultV2};
+globalThis.__resultTest={client,validateResultV2,resilience:await import('../src/lib/requestResilience.js')};
 const source=readFileSync(new URL('../src/lib/workoutSessions.js',import.meta.url),'utf8')
   .replace("import { supabase } from './supabase.js';",'const supabase=globalThis.__resultTest.client;')
-  .replace("import { validateResultV2 } from './exerciseResultsV2.js';",'const validateResultV2=globalThis.__resultTest.validateResultV2;');
+  .replace("import { validateResultV2 } from './exerciseResultsV2.js';",'const validateResultV2=globalThis.__resultTest.validateResultV2;')
+  .replace(/import \{([^}]*)\} from '\.\/requestResilience\.js';/,'const {$1}=globalThis.__resultTest.resilience;');
 const {updatePerformedSet}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 const result={metric_version:'v2',exercise_id:'exercise',measurement_type:'duration',load_mode:'none',weight_unit:'kg',configuration_key:'standard',laterality:'bilateral',set_type:'working',completed:true,duration_seconds:45};
 const values={setType:'working',completed:true,resultV2:result,completedAt:'2026-10-15T09:00:00.000Z'};

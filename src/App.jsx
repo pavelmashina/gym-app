@@ -382,7 +382,7 @@ export default function App() {
       return <AccountScreen refreshKey={pullRefreshKey} user={user} profile={profile} loading={signOutLoading} onBack={() => setActiveScreen(accountReturnScreen || 'home')} onSignOut={handleSignOut} onAccountDeleted={() => setActiveScreen('home')} onProfileUpdated={setProfile} onOpenSettings={openSettingsFromAccount} />;
     }
     if (activeScreen === 'workout-session' && workoutScheduledId) {
-      return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} />;
+      return <WorkoutSessionScreen scheduledWorkoutId={workoutScheduledId} onBack={closeWorkoutToHome} onCompleted={closeWorkoutToHome} onOpenWorkout={openWorkout} />;
     }
     if (activeScreen === 'create-program') {
       return <CreateProgramScreen key={`${userId}:${launchingProgramId ?? editingProgramId ?? 'new'}`} userId={userId} programId={launchingProgramId ?? editingProgramId} launchOnly={Boolean(launchingProgramId)} onBack={() => { setEditingProgramId(null); setLaunchingProgramId(null); setActiveScreen('training'); }} onCreated={finishProgramSave} />;
