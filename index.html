@@ -12,9 +12,33 @@
   <link rel="icon" href="/gym-app/assets/app-icon.svg" type="image/svg+xml" />
   <meta name="description" content="Gym App — приложение для тренировок и отслеживания прогресса" />
   <title>Gym App</title>
+  <!-- A pending stylesheet holds back the app bundle, so a font host that hangs on some network must not be able to do that: until it answers, text uses the fallback font. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+  <!-- Stays above the bundle tags that the build adds to the end of head: an inline script placed after them would wait for their stylesheet. -->
+  <script>
+    (function () {
+      function showBootError() {
+        var message = document.getElementById('boot-error');
+        if (message) message.hidden = false;
+        else document.addEventListener('DOMContentLoaded', showBootError);
+      }
+      window.addEventListener('error', function (event) {
+        var source = event.target && (event.target.src || event.target.href);
+        if (source && source.indexOf('/assets/') !== -1) showBootError();
+      }, true);
+      window.setTimeout(showBootError, 30000);
+    })();
+  </script>
 </head>
 <body>
-  <div id="root"></div>
+  <!-- React clears #root when it mounts, so this message can only appear while the app has not started. -->
+  <div id="root">
+    <main id="boot-error" role="alert" hidden style="padding:35vh 24px 0;text-align:center;font-family:Arial,sans-serif;color:#171717">
+      <h1 style="margin:0 0 8px;font-size:20px">Не удаётся загрузить приложение</h1>
+      <p style="margin:0 0 20px;font-size:14px">Проверьте интернет и повторите.</p>
+      <button type="button" onclick="location.reload()" style="height:50px;padding:0 28px;border:0;border-radius:15px;background:#171717;color:#fff;font-size:14px;font-weight:700">Повторить</button>
+    </main>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

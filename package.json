@@ -14,7 +14,7 @@
     "test:catalog-release": "node scripts/verify-catalog-release.mjs",
     "test:core": "node tests/mvp-core-contracts.mjs && node tests/nutrition-calculator-excel.mjs",
     "test:qa": "node tests/mvp-product-qa-contracts.mjs",
-    "test:mobile": "node tests/mobile-pwa-contracts.mjs",
+    "test:mobile": "node tests/mobile-pwa-contracts.mjs && node tests/mobile-network-resilience.mjs",
     "test:interface": "node tests/interface-refinement-contracts.mjs",
     "test:workout-ui": "node tests/workout-ui-navigation-contracts.mjs && node tests/workout-scroll-contracts.mjs && node tests/workout-timers.mjs",
     "test:workout-performance": "node tests/workout-performance-ui-contracts.mjs",
