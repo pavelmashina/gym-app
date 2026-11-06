@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(path,'utf8');
 const lib = read('src/lib/exerciseLibrary.js');
-const picker = read('src/components/ExerciseLibraryPicker.jsx');
+const form = read('src/components/CustomExerciseForm.jsx');
+const card = read('src/components/ExerciseInfoModal.jsx');
 const gallery = read('src/components/ExercisePhotoGallery.jsx');
 const galleryCss = read('src/exercise-photo-gallery.css');
 const pickerCss = read('src/exercise-library-picker.css');
@@ -24,14 +25,14 @@ assert.match(lib,/const obsoletePaths = previousPaths\.filter/);
 assert.match(lib,/validatePhotoGallery\(selectedPhotos, keptPaths\.length\)/);
 assert.match(lib,/\.eq\('owner_id',\s*user.id\)/);
 
-assert.match(picker,/type="file" multiple accept="image\/jpeg,image\/png,image\/webp"/);
-assert.match(picker,/URL\.createObjectURL\(file\)/);
-assert.match(picker,/URL\.revokeObjectURL\(preview\.url\)/);
-assert.match(picker,/photoFiles: \[\.\.\.current\.photoFiles, \.\.\.files\]/);
-assert.match(picker,/photoFiles: current\.photoFiles\.filter/);
-assert.match(picker,/removedPhotoPaths: \[\.\.\.current\.removedPhotoPaths, photo\.path\]/);
-assert.match(picker,/<ExercisePhotoGallery photos=\{photos\}/);
-assert.match(picker,/<ExercisePhotoGallery photos=\{previewGallery\}/);
+assert.match(form,/type="file" multiple accept="image\/jpeg,image\/png,image\/webp"/);
+assert.match(form,/URL\.createObjectURL\(file\)/);
+assert.match(form,/URL\.revokeObjectURL\(preview\.url\)/);
+assert.match(form,/photoFiles: \[\.\.\.current\.photoFiles, \.\.\.files\]/);
+assert.match(form,/photoFiles: current\.photoFiles\.filter/);
+assert.match(form,/removedPhotoPaths: \[\.\.\.current\.removedPhotoPaths, photo\.path\]/);
+assert.match(card,/<ExercisePhotoGallery photos=\{photos\}/);
+assert.match(form,/<ExercisePhotoGallery photos=\{previewGallery\}/);
 assert.match(gallery,/aria-label="Предыдущее фото"/);
 assert.match(gallery,/aria-label="Следующее фото"/);
 assert.match(gallery,/onTouchStart=\{beginTouch\}/);
@@ -58,6 +59,7 @@ const stub = `const supabase = {auth:{getUser:async()=>({data:{user:{id:'test-us
 const source = lib
   .replace("import { supabase } from './supabase.js';",stub)
   .replace("import { normalizeCatalogSearch } from './exerciseCatalogV2.js';","const normalizeCatalogSearch = x => x;")
+  .replace("import { programDraftKey } from './programDraft.js';","const programDraftKey = id => id;")
   .replace("import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true'","true");
 const library = await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 assert.deepEqual(library.exercisePhotoPaths({photo_path:'old.jpg',photo_paths:[]}),['old.jpg']);
