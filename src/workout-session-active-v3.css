@@ -1,11 +1,8 @@
 .workout-session-content.active.v3 {
   padding-top: 12px;
   min-width: 0;
-  overflow-x: hidden;
-}
-
-.exercise-navigator {
-  display: none;
+  /* Not hidden: that would turn this block into a second scroll container inside .phone. */
+  overflow-x: clip;
 }
 
 /* The exercise list must never size itself from a long child (for example the rest timer title). */
@@ -120,10 +117,6 @@
 }
 .workout-exercise-card.v3 .previous-result-button:disabled {
   opacity: .55;
-}
-
-.exercise-card-next {
-  display: none;
 }
 
 @media (max-width: 360px) {

@@ -148,22 +148,50 @@ function ReorderExerciseScreen({ exercises, standalone, focusId, saving, onSave,
   const [draggingId, setDraggingId] = useState(null);
   const [confirming, setConfirming] = useState(false);
   useEffect(() => setDraft([...exercises]), [exercises]);
-  function moveOver(targetId) { if (!draggingId || draggingId === targetId) return; setDraft((current) => { const from = current.findIndex((x) => x.id === draggingId); const to = current.findIndex((x) => x.id === targetId); if (from < 0 || to < 0 || from === to) return current; const next = [...current]; const [item] = next.splice(from, 1); next.splice(to, 0, item); return next; }); }
-  function pointerMove(event) { if (!draggingId) return; const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.('[data-reorder-id]'); if (target?.dataset?.reorderId) moveOver(target.dataset.reorderId); }
+  useEffect(() => {
+    if (!draggingId) return undefined;
+    function moveOver(targetId) { if (draggingId === targetId) return; setDraft((current) => { const from = current.findIndex((x) => x.id === draggingId); const to = current.findIndex((x) => x.id === targetId); if (from < 0 || to < 0 || from === to) return current; const next = [...current]; const [item] = next.splice(from, 1); next.splice(to, 0, item); return next; }); }
+    function pointerMove(event) { const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.('[data-reorder-id]'); if (target?.dataset?.reorderId) moveOver(target.dataset.reorderId); }
+    function stop() { setDraggingId(null); }
+    // On the window: the dragged row moves in the DOM mid-gesture and the finger may leave the list.
+    window.addEventListener('pointermove', pointerMove);
+    window.addEventListener('pointerup', stop);
+    window.addEventListener('pointercancel', stop);
+    return () => {
+      window.removeEventListener('pointermove', pointerMove);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+    };
+  }, [draggingId]);
   const changed = draft.some((item, i) => item.id !== exercises[i]?.id);
-  return <div className="exercise-reorder-screen" role="dialog" aria-modal="true"><header><button type="button" data-swipe-back aria-label="Назад" onClick={onClose} disabled={saving}><BackIcon /></button><strong>Порядок упражнений</strong><span /></header><main><div className="exercise-reorder-intro"><span>Зажмите строку и перетащите</span><p>Новый порядок применится после подтверждения.</p></div><div className="exercise-reorder-list">{draft.map((exercise, index) => <div className={`exercise-reorder-row${draggingId === exercise.id ? ' dragging' : ''}${focusId === exercise.id ? ' focused' : ''}`} data-reorder-id={exercise.id} key={exercise.id} onPointerDown={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); setDraggingId(exercise.id); }} onPointerMove={pointerMove} onPointerUp={() => setDraggingId(null)} onPointerCancel={() => setDraggingId(null)}><span className="exercise-reorder-number">{index + 1}</span><strong>{exercise.name}</strong><span className="exercise-reorder-grip"><GripIcon /></span></div>)}</div></main><footer><button type="button" disabled={!changed || saving} onClick={() => setConfirming(true)}>{saving ? 'Сохраняем…' : 'Подтвердить порядок'}</button></footer>{confirming && <div className="reorder-scope-shell"><button className="exercise-actions-scrim" type="button" onClick={() => !saving && setConfirming(false)} /><section className="reorder-scope-card"><span>Где изменить порядок?</span><h3>Применить новый порядок упражнений</h3><p>История завершённых тренировок не изменится.</p><button className="primary" type="button" disabled={saving} onClick={() => onSave(draft.map((x) => x.id), 'session')}>Только в этой тренировке</button>{!standalone && <button type="button" disabled={saving} onClick={() => onSave(draft.map((x) => x.id), 'program')}>Во всех таких же будущих тренировках программы</button>}<button className="cancel" type="button" disabled={saving} onClick={() => setConfirming(false)}>Отмена</button></section></div>}</div>;
+  return <div className="exercise-reorder-screen" role="dialog" aria-modal="true"><header><button type="button" data-swipe-back aria-label="Назад" onClick={onClose} disabled={saving}><BackIcon /></button><strong>Порядок упражнений</strong><span /></header><main><div className="exercise-reorder-intro"><span>Перетащите за значок справа</span><p>Новый порядок применится после подтверждения.</p></div><div className="exercise-reorder-list">{draft.map((exercise, index) => <div className={`exercise-reorder-row${draggingId === exercise.id ? ' dragging' : ''}${focusId === exercise.id ? ' focused' : ''}`} data-reorder-id={exercise.id} key={exercise.id}><span className="exercise-reorder-number">{index + 1}</span><strong>{exercise.name}</strong><span className="exercise-reorder-grip" onPointerDown={() => setDraggingId(exercise.id)}><GripIcon /></span></div>)}</div></main><footer><button type="button" disabled={!changed || saving} onClick={() => setConfirming(true)}>{saving ? 'Сохраняем…' : 'Подтвердить порядок'}</button></footer>{confirming && <div className="reorder-scope-shell"><button className="exercise-actions-scrim" type="button" onClick={() => !saving && setConfirming(false)} /><section className="reorder-scope-card"><span>Где изменить порядок?</span><h3>Применить новый порядок упражнений</h3><p>История завершённых тренировок не изменится.</p><button className="primary" type="button" disabled={saving} onClick={() => onSave(draft.map((x) => x.id), 'session')}>Только в этой тренировке</button>{!standalone && <button type="button" disabled={saving} onClick={() => onSave(draft.map((x) => x.id), 'program')}>Во всех таких же будущих тренировках программы</button>}<button className="cancel" type="button" disabled={saving} onClick={() => setConfirming(false)}>Отмена</button></section></div>}</div>;
 }
 
-function RestCountdown({ timer, now, onSkip, onAdd }) {
-  if (!timer) return null;
+// Ticks stay in these leaf components: re-rendering the whole exercise list every
+// second kept the main thread busy, and a touch scroll has to wait for it to start.
+function useSecondTick() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
+  return now;
+}
+
+function WorkoutElapsedTime({ session }) {
+  const now = useSecondTick();
+  const elapsed = session.activeDurationSeconds + Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000));
+  return <div className="workout-timer">{formatTime(elapsed)}</div>;
+}
+
+function RestCountdown({ timer, onSkip, onAdd }) {
+  const now = useSecondTick();
+  const notifiedTimerId = useRef(null);
+  useEffect(() => {
+    if (now < timer.endsAt || notifiedTimerId.current === timer.id) return;
+    notifiedTimerId.current = timer.id;
+    if (navigator.vibrate) navigator.vibrate([160, 80, 160]);
+  }, [now, timer]);
   const remaining = Math.max(0, Math.ceil((timer.endsAt - now) / 1000));
   const progress = timer.duration > 0 ? Math.max(0, Math.min(1, remaining / timer.duration)) : 0;
   return <section className={`rest-countdown${remaining === 0 ? ' finished' : ''}`} aria-live="polite"><div className="rest-countdown-copy"><span>{remaining === 0 ? 'Отдых закончен' : `Отдых · ${timer.exerciseName}`}</span><strong>{formatRest(remaining)}</strong></div><div className="rest-countdown-track"><span style={{ transform: `scaleX(${progress})` }} /></div><div className="rest-countdown-actions"><button type="button" onClick={() => onAdd(30)}>+30 сек</button><button type="button" onClick={onSkip}>{remaining === 0 ? 'Закрыть' : 'Пропустить'}</button></div></section>;
-}
-
-function ExerciseNavigator({ index, exercises, onSelect }) {
-  if (exercises.length < 2) return null;
-  return <section className="exercise-navigator"><div><span>Упражнение</span><strong>{index + 1} из {exercises.length}</strong></div><div className="exercise-navigator-dots">{exercises.map((exercise, dot) => <button type="button" className={dot === index ? 'active' : ''} aria-label={`Перейти к упражнению ${dot + 1}`} key={exercise.id} onClick={() => onSelect(dot)} />)}</div><div className="exercise-navigator-buttons"><button type="button" disabled={index === 0} onClick={() => onSelect(index - 1)}>←</button><button type="button" disabled={index === exercises.length - 1} onClick={() => onSelect(index + 1)}>→</button></div></section>;
 }
 
 function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
@@ -256,7 +284,6 @@ function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
 
 function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onRequestReplacement, finishing, pausing, error }) {
   const { workout, session } = entry;
-  const [now, setNow] = useState(() => Date.now());
   const [savingSetId, setSavingSetId] = useState(null);
   const [localError, setLocalError] = useState('');
   const [history, setHistory] = useState(null);
@@ -278,18 +305,6 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
     }));
   });
   const [restTimer, setRestTimer] = useState(null);
-  const [activeExerciseIndex, setActiveExerciseIndex] = useState(0);
-  const notifiedTimerId = useRef(null);
-  const cardRefs = useRef(new Map());
-
-  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
-  const elapsed = useMemo(() => session.activeDurationSeconds + Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000)), [now, session.activeDurationSeconds, session.startedAt]);
-
-  useEffect(() => {
-    if (!restTimer || now < restTimer.endsAt || notifiedTimerId.current === restTimer.id) return;
-    notifiedTimerId.current = restTimer.id;
-    if (navigator.vibrate) navigator.vibrate([160, 80, 160]);
-  }, [now, restTimer]);
 
   useEffect(() => {
     const flush = () => { flushPendingSetEdits().catch(() => {}); };
@@ -311,19 +326,6 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
       window.removeEventListener('pagehide', flush);
     };
   }, [session.id]);
-
-  useEffect(() => {
-    const nodes = workout.exercises.map((exercise) => cardRefs.current.get(exercise.id)).filter(Boolean);
-    if (!nodes.length || !window.IntersectionObserver) return undefined;
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter((item) => item.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (!visible) return;
-      const index = Number(visible.target.dataset.exerciseIndex);
-      if (Number.isInteger(index)) setActiveExerciseIndex(index);
-    }, { threshold: [0.25, 0.5, 0.75], rootMargin: '-150px 0px -45% 0px' });
-    nodes.forEach((node) => observer.observe(node));
-    return () => observer.disconnect();
-  }, [workout.exercises]);
 
   function getExecutionSettings(exercise) {
     return executionSettings[exercise.id] || { configuration: parseConfigurationKey('standard'), equipmentInstanceId: null };
@@ -355,7 +357,7 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
       throw e;
     }
   }
-  function startRest(exercise) { const duration = getRestSeconds(exercise); setRestTimer({ id: crypto.randomUUID(), exerciseId: exercise.id, exerciseName: exercise.name, duration, endsAt: Date.now() + duration * 1000 }); notifiedTimerId.current = null; }
+  function startRest(exercise) { const duration = getRestSeconds(exercise); setRestTimer({ id: crypto.randomUUID(), exerciseId: exercise.id, exerciseName: exercise.name, duration, endsAt: Date.now() + duration * 1000 }); }
   async function toggleComplete(exercise, set) {
     if (!set.completed && (!set.reps || Number(set.reps) <= 0)) { setLocalError('Укажите количество повторений перед завершением подхода.'); return false; }
     const next={...set,completed:!set.completed};
@@ -416,10 +418,9 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   }
 
   async function saveReorder(ids, scope) { setReorderSaving(true); try { await reorderSessionExercises(session.id, ids, scope); onEntryChange(await loadWorkoutSession(session.id)); setReorderState(null); } catch (e) { setLocalError(e.message); } finally { setReorderSaving(false); } }
-  function goToExercise(index) { const safe = Math.max(0, Math.min(workout.exercises.length - 1, index)); setActiveExerciseIndex(safe); cardRefs.current.get(workout.exercises[safe]?.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   function focusReps(setId) { document.querySelector(`[data-reps-set-id="${setId}"]`)?.focus(); }
 
-  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><div className="workout-timer">{formatTime(elapsed)}</div></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<ExerciseNavigator index={activeExerciseIndex} exercises={workout.exercises} onSelect={goToExercise} /><section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <Fragment key={exercise.id}>{restTimer?.exerciseId === exercise.id && <RestCountdown timer={restTimer} now={now} onSkip={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current ? { ...current, duration: current.duration + seconds, endsAt: current.endsAt + seconds * 1000 } : current)} />}<article className="workout-exercise-card v2 v3" data-exercise-index={exerciseIndex} ref={(node) => { if (node) cardRefs.current.set(exercise.id, node); else cardRefs.current.delete(exercise.id); }}><div className="workout-exercise-title-row v2"><button className="workout-exercise-title-button" type="button" onClick={() => openInfo(exercise)}><span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="workout-exercise-name-link"><strong>{exercise.name}</strong><ChevronIcon /></span></button><button className="exercise-more-button" type="button" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="performed-set-head five-columns"><span>Подход</span><span>Вес</span><span>Повт.</span><span /><span /></div><div className="performed-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="add-set-actions"><button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>+ Рабочий подход</button><button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминочный</button></div><button className="previous-result-button" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><span className="previous-result-icon"><InfoIcon /></span><span>{historyLoadingId === exercise.id ? 'Загружаем…' : 'Предыдущий результат'}</span><ChevronIcon /></button><label className="exercise-note-field"><span>Заметка к упражнению</span><textarea rows="2" value={exercise.note ?? ''} placeholder="Техника, ощущения, подсказка на следующий раз…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label><div className="exercise-card-next"><span>{exerciseIndex + 1} из {workout.exercises.length}</span>{exerciseIndex < workout.exercises.length - 1 && <button type="button" onClick={() => goToExercise(exerciseIndex + 1)}>Следующее упражнение →</button>}</div></article></Fragment>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
+  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><WorkoutElapsedTime session={session} /></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <Fragment key={exercise.id}>{restTimer?.exerciseId === exercise.id && <RestCountdown timer={restTimer} onSkip={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current ? { ...current, duration: current.duration + seconds, endsAt: current.endsAt + seconds * 1000 } : current)} />}<article className="workout-exercise-card v2 v3"><div className="workout-exercise-title-row v2"><button className="workout-exercise-title-button" type="button" onClick={() => openInfo(exercise)}><span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="workout-exercise-name-link"><strong>{exercise.name}</strong><ChevronIcon /></span></button><button className="exercise-more-button" type="button" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="performed-set-head five-columns"><span>Подход</span><span>Вес</span><span>Повт.</span><span /><span /></div><div className="performed-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="add-set-actions"><button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>+ Рабочий подход</button><button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминочный</button></div><button className="previous-result-button" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><span className="previous-result-icon"><InfoIcon /></span><span>{historyLoadingId === exercise.id ? 'Загружаем…' : 'Предыдущий результат'}</span><ChevronIcon /></button><label className="exercise-note-field"><span>Заметка к упражнению</span><textarea rows="2" value={exercise.note ?? ''} placeholder="Техника, ощущения, подсказка на следующий раз…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label></article></Fragment>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
 }
 
 function CompletedWorkout({ entry, onDone, onReload }) {
