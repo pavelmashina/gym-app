@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 import { normalizeCatalogSearch } from './exerciseCatalogV2.js';
+import { programDraftKey } from './programDraft.js';
 
 const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
 
@@ -14,6 +15,11 @@ const VIDEO_EXTENSIONS = {
   'video/webm': 'webm',
   'video/quicktime': 'mov',
 };
+// ON DELETE RESTRICT reports 23503 before PostgreSQL 18 and 23001 since.
+const REFERENCED_ROW_ERRORS = ['23503', '23001'];
+
+// A retired private row stays readable for programs and history, but is no longer offered.
+const isRemovedCustomExercise = row => Boolean(row?.owner_id) && row.status === 'retired';
 
 export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'Ноги', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гакк', 'Гантели', 'Штанга', 'Смит', 'Турник', 'Свой вес', 'Гравитрон', 'Гири', 'Тренажёр'];
@@ -140,7 +146,8 @@ export async function listExerciseLibrary({ includeLegacy = false } = {}) {
   // Preserve the V2 record on matching IDs; do not duplicate exercises.
   const canonicalRows = exerciseResult.data || [];
   const knownIds = new Set(canonicalRows.map(row => row.id));
-  const fullRows = includeLegacy ? [...canonicalRows, ...(legacyResult.data || []).filter(row => !knownIds.has(row.id))] : canonicalRows;
+  const fullRows = (includeLegacy ? [...canonicalRows, ...(legacyResult.data || []).filter(row => !knownIds.has(row.id))] : canonicalRows)
+    .filter(row => !isRemovedCustomExercise(row));
   fullRows.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
   const all = await mapExercises(fullRows.map(row =>
     row.owner_id === user.id ? { ...row, ...photoFields.get(row.id) } : row
@@ -151,7 +158,7 @@ export async function listExerciseLibrary({ includeLegacy = false } = {}) {
   if (!CATALOG_V2_ENABLED && missingRecent.length) {
     const result = await supabase.from('exercises').select('*').in('id', missingRecent);
     if (result.error) throw new Error('Не удалось загрузить недавние упражнения.');
-    for (const exercise of await mapExercises(result.data, user.id)) {
+    for (const exercise of await mapExercises((result.data || []).filter(row => !isRemovedCustomExercise(row)), user.id)) {
       byId.set(exercise.id, exercise);
       // Historical IDs belong in Recent, not in the canonical All catalogue.
       // pick() includes a selected historical row in its callback explicitly.
@@ -160,6 +167,15 @@ export async function listExerciseLibrary({ includeLegacy = false } = {}) {
   const recent = (recentResult.data || []).map((row) => byId.get(row.exercise_id)).filter(Boolean);
   const mine = all.filter((exercise) => exercise.isMine).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   return { all, mine, recent };
+}
+
+export async function listMyExercises() {
+  const user = await currentUser();
+  const { data, error } = await supabase.from('exercises').select('*')
+    .eq('owner_id', user.id).neq('status', 'retired')
+    .order('created_at', { ascending: false }).order('id', { ascending: true });
+  if (error) throw new Error('Не удалось загрузить ваши упражнения.');
+  return mapExercises(data, user.id);
 }
 
 function validatePhotoFile(photoFile) {
@@ -191,6 +207,15 @@ function validateVideoFile(videoFile) {
   if (!videoFile) return;
   if (!VIDEO_EXTENSIONS[videoFile.type]) throw new Error('Видео должно быть в формате MP4, WEBM или MOV.');
   if (videoFile.size > MAX_VIDEO_SIZE) throw new Error('Размер видео не должен превышать 100 МБ.');
+}
+
+async function uploadExerciseVideo(userId, exerciseId, videoFile) {
+  const path = `${userId}/${exerciseId}/${crypto.randomUUID()}.${VIDEO_EXTENSIONS[videoFile.type]}`;
+  const { error } = await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).upload(path, videoFile, {
+    cacheControl: '3600', contentType: videoFile.type, upsert: false,
+  });
+  if (error) throw new Error('Не удалось загрузить видео упражнения.');
+  return path;
 }
 
 function normalizeOptionalUrl(value) {
@@ -241,14 +266,7 @@ export async function createCustomExercise({ name, muscleGroup, equipment, descr
   let videoPath = null;
   const uploadedPhotos = [];
   try {
-    if (videoFile) {
-      const ext = VIDEO_EXTENSIONS[videoFile.type];
-      videoPath = `${user.id}/${data.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).upload(videoPath, videoFile, {
-        cacheControl:'3600', contentType:videoFile.type, upsert:false,
-      });
-      if (uploadError) throw new Error('Не удалось загрузить видео упражнения.');
-    }
+    if (videoFile) videoPath = await uploadExerciseVideo(user.id, data.id, videoFile);
     for (const file of selectedPhotos) {
       uploadedPhotos.push(await uploadExercisePhoto(user.id, data.id, file));
     }
@@ -291,26 +309,35 @@ export async function markExerciseRecent(exerciseId) {
 export async function updateCustomExercise(exerciseId, {
   name, muscleGroup, equipment, description = '',
   photoFile = null, photoFiles = [], removePhoto = false, removedPhotoPaths = [],
+  videoUrl, videoFile = null, removeVideoFile = false,
 }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   if (!cleanName || cleanName.length > 100) throw new Error('Введите название длиной до 100 символов.');
   if (!EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) || muscleGroup === 'Все') throw new Error('Выберите группу мышц.');
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
+  validateVideoFile(videoFile);
+  if (videoFile && String(videoUrl || '').trim()) throw new Error('Добавьте либо видеофайл, либо ссылку на видео.');
+  // An omitted videoUrl keeps the saved link; an empty one clears it.
+  const cleanVideoUrl = videoUrl === undefined ? undefined : normalizeOptionalUrl(videoUrl);
   const selectedPhotos = requestedPhotoFiles(photoFiles, photoFile);
   const { data: previous, error: lookupError } = await supabase.from('exercises')
-    .select('id,photo_path,photo_paths').eq('id', exerciseId).eq('owner_id', user.id).single();
+    .select('id,photo_path,photo_paths,video_path,video_url').eq('id', exerciseId).eq('owner_id', user.id).single();
   if (lookupError || !previous) throw new Error('Своё упражнение не найдено.');
   const previousPaths = exercisePhotoPaths(previous);
   const removed = new Set(removePhoto ? previousPaths : removedPhotoPaths);
   const keptPaths = previousPaths.filter(path => !removed.has(path));
   validatePhotoGallery(selectedPhotos, keptPaths.length);
   const uploadedPaths = [];
+  let uploadedVideoPath = null;
   try {
     for (const file of selectedPhotos) {
       uploadedPaths.push(await uploadExercisePhoto(user.id, exerciseId, file));
     }
+    if (videoFile) uploadedVideoPath = await uploadExerciseVideo(user.id, exerciseId, videoFile);
     const nextPaths = [...keptPaths, ...uploadedPaths];
+    const nextVideoPath = uploadedVideoPath || ((removeVideoFile || cleanVideoUrl) ? null : previous.video_path);
+    const nextVideoUrl = videoFile ? null : (cleanVideoUrl === undefined ? previous.video_url : cleanVideoUrl);
     const { data, error } = await supabase.from('exercises').update({
       name: cleanName,
       muscle_group: muscleGroup,
@@ -318,6 +345,8 @@ export async function updateCustomExercise(exerciseId, {
       description: String(description).trim() || null,
       photo_path: nextPaths[0] || null,
       photo_paths: nextPaths,
+      video_path: nextVideoPath,
+      video_url: nextVideoUrl,
     }).eq('id', exerciseId).eq('owner_id', user.id).select('*').single();
     if (error || !data) throw new Error('Не удалось обновить своё упражнение.');
 
@@ -325,6 +354,10 @@ export async function updateCustomExercise(exerciseId, {
     if (obsoletePaths.length) {
       const { error: cleanupError } = await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove(obsoletePaths);
       if (cleanupError) console.warn('Unable to remove old exercise photos:', cleanupError);
+    }
+    if (previous.video_path && previous.video_path !== nextVideoPath) {
+      const { error: cleanupError } = await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).remove([previous.video_path]);
+      if (cleanupError) console.warn('Unable to remove old exercise video:', cleanupError);
     }
     const [video, photos] = await Promise.all([
       signedVideoUrl(data.video_path),
@@ -337,8 +370,79 @@ export async function updateCustomExercise(exerciseId, {
     if (uploadedPaths.length) {
       await supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove(uploadedPaths);
     }
+    if (uploadedVideoPath) {
+      await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).remove([uploadedVideoPath]);
+    }
     throw error;
   }
+}
+
+async function countExerciseReferences(table, exerciseId) {
+  const { count, error } = await supabase.from(table)
+    .select('id', { count: 'exact', head: true }).eq('exercise_id', exerciseId);
+  if (error) throw new Error('Не удалось проверить, где используется упражнение.');
+  return count || 0;
+}
+
+export async function getCustomExerciseUsage(exerciseId) {
+  const [programs, scheduled, history] = await Promise.all([
+    countExerciseReferences('program_workout_exercises', exerciseId),
+    countExerciseReferences('scheduled_workout_exercises', exerciseId),
+    countExerciseReferences('workout_session_exercises', exerciseId),
+  ]);
+  return { programs, scheduled, history, total: programs + scheduled + history };
+}
+
+// An unsaved program on this device would otherwise fail to save with a dangling exercise ID.
+function programDraftUsesExercise(userId, exerciseId) {
+  try {
+    return Boolean(globalThis.localStorage?.getItem(programDraftKey(userId))?.includes(exerciseId));
+  } catch {
+    return true;
+  }
+}
+
+async function removeExerciseMedia(exercise) {
+  const photoPaths = exercisePhotoPaths(exercise);
+  const results = await Promise.all([
+    photoPaths.length ? supabase.storage.from(EXERCISE_PHOTOS_BUCKET).remove(photoPaths) : null,
+    exercise.video_path ? supabase.storage.from(EXERCISE_VIDEOS_BUCKET).remove([exercise.video_path]) : null,
+  ]);
+  for (const result of results) {
+    if (result?.error) console.warn('Unable to remove deleted exercise media:', result.error);
+  }
+}
+
+/**
+ * Removes an owned exercise from the user's lists without touching saved results.
+ * Programs and history reference exercises through restricting foreign keys and read
+ * the current name by ID, so a used exercise is retired instead of deleted.
+ */
+export async function deleteCustomExercise(exerciseId) {
+  const user = await currentUser();
+  const { data: exercise, error: lookupError } = await supabase.from('exercises')
+    .select('id,photo_path,photo_paths,video_path').eq('id', exerciseId).eq('owner_id', user.id).single();
+  if (lookupError || !exercise) throw new Error('Своё упражнение не найдено.');
+
+  const usage = await getCustomExerciseUsage(exerciseId);
+  if (usage.total === 0 && !programDraftUsesExercise(user.id, exerciseId)) {
+    const { data, error } = await supabase.from('exercises').delete()
+      .eq('id', exerciseId).eq('owner_id', user.id).select('id');
+    if (!error && data?.length) {
+      await removeExerciseMedia(exercise);
+      return { outcome: 'deleted', usage };
+    }
+    // The foreign key saw a reference the count did not: keep the row and retire it below.
+    if (!REFERENCED_ROW_ERRORS.includes(error?.code)) throw new Error('Не удалось удалить упражнение.');
+  }
+
+  const { data, error } = await supabase.from('exercises').update({ status: 'retired' })
+    .eq('id', exerciseId).eq('owner_id', user.id).select('id').single();
+  if (error || !data) throw new Error('Не удалось удалить упражнение.');
+  const { error: recentError } = await supabase.from('user_recent_exercises').delete()
+    .eq('user_id', user.id).eq('exercise_id', exerciseId);
+  if (recentError) console.warn('Unable to clear deleted exercise from recents:', recentError);
+  return { outcome: 'retired', usage };
 }
 
 export function filterExerciseList(exercises, { query = '', muscleGroup = 'Все', equipment = 'Все' } = {}) {
