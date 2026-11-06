@@ -63,7 +63,8 @@ html:has(.workout-session-phone) {
 .workout-session-header strong { text-align: center; font-size: 13px; }
 
 .workout-session-content { padding: 22px 18px 42px; }
-.workout-session-content.active { padding-bottom: 128px; }
+/* With the 96px of .phone this clears the footer with a running rest timer, its usual tallest. */
+.workout-session-content.active { padding-bottom: calc(128px + env(safe-area-inset-bottom)); }
 
 .workout-session-hero,
 .workout-complete-hero {

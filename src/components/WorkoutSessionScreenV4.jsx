@@ -5,6 +5,7 @@ import { finishActiveWorkout, replaceSessionExercise } from '../lib/workoutSessi
 import { isStaleSessionError, localDateKey, needsWorkoutDateMove } from '../lib/workoutLifecycle.js';
 import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
 import { supabase } from '../lib/supabase.js';
+import { clearRestTimer } from '../lib/workoutTimers.js';
 import { ExerciseLibraryPicker } from './ExerciseLibraryPicker.jsx';
 import { WorkoutSessionScreen as WorkoutSessionScreenV3 } from './WorkoutSessionScreenV3.jsx';
 import '../exercise-library-picker.css';
@@ -70,6 +71,8 @@ export function WorkoutSessionScreen(props) {
     return () => { active = false; };
   }, [props.scheduledWorkoutId, version]);
 
+  // A rest from before the pause means nothing after it, however the pause came about.
+  useEffect(() => { if (lifecycle.paused) clearRestTimer(); }, [lifecycle.paused]);
 
   function openReplacement(exercise) {
     setReplacementError('');
@@ -195,7 +198,7 @@ export function WorkoutSessionScreen(props) {
   const requestPause = () => { setPauseError(''); setPauseFailed(false); setPauseConfirmOpen(true); };
 
   return <div>
-    <WorkoutSessionScreenV3 key={version} {...props} initialEntry={version === 0 ? props.initialEntry : undefined} canRecoverFinish={lifecycle.hasActiveSession} onBack={requestPause} onExit={props.onBack} onPauseRequest={requestPause} pausing={pauseLoading} onRequestReplacement={openReplacement} />
+    <WorkoutSessionScreenV3 key={version} {...props} initialEntry={version === 0 ? props.initialEntry : undefined} canRecoverFinish={lifecycle.hasActiveSession} onBack={requestPause} onExit={props.onBack} onPauseRequest={requestPause} onSessionPaused={() => setVersion((value) => value + 1)} pausing={pauseLoading} onRequestReplacement={openReplacement} />
 
     {pauseConfirmOpen && <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label="Поставить тренировку на паузу">
       <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={() => !pauseLoading && setPauseConfirmOpen(false)} />

@@ -6,7 +6,7 @@ import {assertResultsSaved,flushPendingSetEdits,registerSetFlusher} from '../lib
 import {clearSetDraft,readSetDraft,writeSetDraft} from '../lib/setDraftJournal.js';
 import { formatResultV2 } from '../lib/exerciseResultsV2.js';
 import ExerciseTechnique from './ExerciseTechnique.jsx';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   addPerformedSet,
   completeWorkout,
@@ -15,7 +15,7 @@ import {
   finishActiveWorkout,
   getExerciseHistorySummary,
   getWorkoutEntry,
-  getWorkoutSessionStatus,
+  getWorkoutSessionState,
   loadWorkoutSession,
   startWorkout,
   updateExerciseNote,
@@ -27,6 +27,20 @@ import '../workout-session-active-v2.css';
 import '../workout-session-active-v3.css';
 import { CompletedWorkoutEditor } from './CompletedWorkoutEditor.jsx';
 import { formatExerciseCount } from '../lib/formatRussianCount.js';
+import {
+  clearRestTimer,
+  clockSkewMs,
+  createRestTimer,
+  extendRestTimer,
+  msUntilNextSecond,
+  readRestAutostart,
+  readRestTimer,
+  restRemainingSeconds,
+  shouldAlertRestEnd,
+  workoutElapsedSeconds,
+  writeRestAutostart,
+  writeRestTimer,
+} from '../lib/workoutTimers.js';
 
 const KG_PER_LB = 0.45359237;
 const WEIGHT_UNIT_STORAGE_KEY = 'gym-exercise-weight-units-v2';
@@ -169,29 +183,58 @@ function ReorderExerciseScreen({ exercises, standalone, focusId, saving, onSave,
 
 // Ticks stay in these leaf components: re-rendering the whole exercise list every
 // second kept the main thread busy, and a touch scroll has to wait for it to start.
-function useSecondTick() {
+function useSecondTick(anchorMs) {
   const [now, setNow] = useState(() => Date.now());
-  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
+  useEffect(() => {
+    let timer;
+    const tick = () => {
+      window.clearTimeout(timer);
+      const current = Date.now();
+      setNow(current);
+      // Aligned to the displayed second: a fixed interval drifts onto its boundary,
+      // and the display then stalls for a second and skips the next one.
+      timer = window.setTimeout(tick, msUntilNextSecond(current, anchorMs));
+    };
+    // A suspended page runs no timers, so show the real time as soon as it is back.
+    const refresh = () => { if (document.visibilityState !== 'hidden') tick(); };
+    tick();
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+  }, [anchorMs]);
   return now;
 }
 
 function WorkoutElapsedTime({ session }) {
-  const now = useSecondTick();
-  const elapsed = session.activeDurationSeconds + Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000));
-  return <div className="workout-timer">{formatTime(elapsed)}</div>;
+  const startedAtMs = new Date(session.startedAt).getTime();
+  // A phone clock behind the server would otherwise hold the display until it catches up.
+  const skewMs = useMemo(() => clockSkewMs(startedAtMs, Date.now()), [startedAtMs]);
+  const now = useSecondTick(startedAtMs - skewMs);
+  return <div className="workout-timer" role="timer">{formatTime(workoutElapsedSeconds(session, now, skewMs))}</div>;
 }
 
-function RestCountdown({ timer, onSkip, onAdd }) {
-  const now = useSecondTick();
-  const notifiedTimerId = useRef(null);
+function RestCountdown({ timer, canTurnOff, onStop, onAdd, onTurnOff }) {
+  const now = useSecondTick(timer.endsAt);
+  const notifiedEndsAt = useRef(null);
   useEffect(() => {
-    if (now < timer.endsAt || notifiedTimerId.current === timer.id) return;
-    notifiedTimerId.current = timer.id;
-    if (navigator.vibrate) navigator.vibrate([160, 80, 160]);
+    if (now < timer.endsAt || notifiedEndsAt.current === timer.endsAt) return;
+    notifiedEndsAt.current = timer.endsAt;
+    if (shouldAlertRestEnd(timer, now) && navigator.vibrate) navigator.vibrate([160, 80, 160]);
   }, [now, timer]);
-  const remaining = Math.max(0, Math.ceil((timer.endsAt - now) / 1000));
+  const remaining = restRemainingSeconds(timer, now);
   const progress = timer.duration > 0 ? Math.max(0, Math.min(1, remaining / timer.duration)) : 0;
-  return <section className={`rest-countdown${remaining === 0 ? ' finished' : ''}`} aria-live="polite"><div className="rest-countdown-copy"><span>{remaining === 0 ? 'Отдых закончен' : `Отдых · ${timer.exerciseName}`}</span><strong>{formatRest(remaining)}</strong></div><div className="rest-countdown-track"><span style={{ transform: `scaleX(${progress})` }} /></div><div className="rest-countdown-actions"><button type="button" onClick={() => onAdd(30)}>+30 сек</button><button type="button" onClick={onSkip}>{remaining === 0 ? 'Закрыть' : 'Пропустить'}</button></div></section>;
+  const title = remaining === 0 ? 'Отдых закончен' : `Отдых${timer.exerciseName ? ` · ${timer.exerciseName}` : ''}`;
+  return <section className={`rest-countdown${remaining === 0 ? ' finished' : ''}`} aria-label="Таймер отдыха"><div className="rest-countdown-copy"><span aria-live="polite">{title}</span><strong role="timer">{formatRest(remaining)}</strong></div><div className="rest-countdown-track"><span style={{ transform: `scaleX(${progress})` }} /></div><div className="rest-countdown-actions"><button type="button" onClick={() => onAdd(30)}>+30 сек</button><button type="button" onClick={onStop}>{remaining === 0 ? 'Закрыть' : 'Остановить'}</button>{canTurnOff && <button type="button" onClick={onTurnOff}>Выключить</button>}</div></section>;
+}
+
+// Lives in the footer: visible wherever the list is scrolled, and its appearing does not move the cards under the finger.
+function RestTimerDock({ timer, autostart, idleSeconds, onStart, onStop, onAdd, onAutostartChange }) {
+  if (timer) return <RestCountdown key={timer.id} timer={timer} canTurnOff={autostart} onStop={onStop} onAdd={onAdd} onTurnOff={() => onAutostartChange(false)} />;
+  return <section className="rest-timer-idle" aria-label="Таймер отдыха"><span>{autostart ? `Таймер отдыха · ${formatRest(idleSeconds)}` : 'Таймер отдыха выключен'}</span><div className="rest-timer-idle-actions"><button type="button" onClick={onStart}>Запустить</button><button type="button" onClick={() => onAutostartChange(!autostart)}>{autostart ? 'Выключить' : 'Включить'}</button></div></section>;
 }
 
 function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
@@ -282,7 +325,7 @@ function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
   </div>;
 }
 
-function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onRequestReplacement, finishing, pausing, error }) {
+function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessionPaused, onRequestReplacement, finishing, pausing, error }) {
   const { workout, session } = entry;
   const [savingSetId, setSavingSetId] = useState(null);
   const [localError, setLocalError] = useState('');
@@ -304,17 +347,31 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
       return [exercise.id, persisted || { configuration: parseConfigurationKey(saved?.configuration_key || 'standard'), equipmentInstanceId: saved?.equipment_instance_id || null }];
     }));
   });
-  const [restTimer, setRestTimer] = useState(null);
+  // The only rest timer there is: every start replaces it, and it outlives a remount or reload of this screen.
+  const [restTimer, setRestTimer] = useState(() => readRestTimer(session.id, Date.now()));
+  const [restAutostart, setRestAutostart] = useState(readRestAutostart);
+
+  useEffect(() => {
+    if (restTimer) writeRestTimer(restTimer); else clearRestTimer();
+  }, [restTimer]);
 
   useEffect(() => {
     const flush = () => { flushPendingSetEdits().catch(() => {}); };
     // The session may have been finished while the app was away, e.g. by the 3-hour
     // auto-completion; finish and pause could never succeed from a stale active screen.
+    // A pause or resume from elsewhere, or a pause whose response was lost, moves the clock too.
     const syncWithServer = () => {
       flush();
       if (document.visibilityState === 'hidden') return;
-      getWorkoutSessionStatus(session.id)
-        .then(async (status) => { if (status && status !== 'active') onEntryChange(await loadWorkoutSession(session.id)); })
+      getWorkoutSessionState(session.id)
+        .then(async (state) => {
+          if (!state) return;
+          if (state.status !== 'active') { onEntryChange(await loadWorkoutSession(session.id)); return; }
+          if (state.paused) { onSessionPaused?.(); return; }
+          onEntryChange((current) => current.session.startedAt === state.startedAt && current.session.activeDurationSeconds === state.activeDurationSeconds
+            ? current
+            : { ...current, session: { ...current.session, startedAt: state.startedAt, activeDurationSeconds: state.activeDurationSeconds } });
+        })
         .catch(() => {});
     };
     document.addEventListener('visibilitychange', syncWithServer);
@@ -348,28 +405,37 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
     try { await updatePerformedSet(set.id, set); } catch (e) { setLocalError(e.message); throw e; }
   }
   async function saveV2(exercise, set) {
-    if(set.completed) startRest(exercise);
+    applySetToRest(exercise, set);
     try {
       const saved=await updatePerformedSet(set.id, set);
       patchSet(exercise.id, set.id, saved);
     } catch(e) {
-      if(set.completed)setRestTimer(current=>current?.exerciseId===exercise.id?null:current);
+      if(set.completed)cancelRestOfSet(set.id);
       throw e;
     }
   }
-  function startRest(exercise) { const duration = getRestSeconds(exercise); setRestTimer({ id: crypto.randomUUID(), exerciseId: exercise.id, exerciseName: exercise.name, duration, endsAt: Date.now() + duration * 1000 }); }
+  function cancelRestOfSet(setId) { setRestTimer((current) => current?.setId === setId ? null : current); }
+  function applySetToRest(exercise, set) {
+    if (!set.completed) { cancelRestOfSet(set.id); return; }
+    if (restAutostart) setRestTimer(createRestTimer({ sessionId: session.id, setId: set.id, exerciseName: exercise.name, seconds: getRestSeconds(exercise), now: Date.now() }));
+  }
+  function changeRestAutostart(enabled) {
+    setRestAutostart(enabled);
+    writeRestAutostart(enabled);
+    if (!enabled) setRestTimer(null);
+  }
   async function toggleComplete(exercise, set) {
     if (!set.completed && (!set.reps || Number(set.reps) <= 0)) { setLocalError('Укажите количество повторений перед завершением подхода.'); return false; }
     const next={...set,completed:!set.completed};
     patchSet(exercise.id,set.id,{weight:next.weight,reps:next.reps,completed:next.completed});
-    if(next.completed)startRest(exercise);
+    applySetToRest(exercise,next);
     setSavingSetId(set.id);
     setLocalError('');
     try {
       await updatePerformedSet(set.id,next);
       return true;
     } catch(e) {
-      if(next.completed)setRestTimer(current=>current?.exerciseId===exercise.id?null:current);
+      if(next.completed)cancelRestOfSet(set.id);
       patchSet(exercise.id,set.id,{completed:set.completed});
       setLocalError(e.message);
       return false;
@@ -419,8 +485,11 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
 
   async function saveReorder(ids, scope) { setReorderSaving(true); try { await reorderSessionExercises(session.id, ids, scope); onEntryChange(await loadWorkoutSession(session.id)); setReorderState(null); } catch (e) { setLocalError(e.message); } finally { setReorderSaving(false); } }
   function focusReps(setId) { document.querySelector(`[data-reps-set-id="${setId}"]`)?.focus(); }
+  // A manual start has no set to go by: use the exercise the user has reached.
+  const restExercise = workout.exercises.find((exercise) => exercise.sets.some((set) => !set.completed)) ?? workout.exercises[workout.exercises.length - 1];
+  const idleRestSeconds = restExercise ? getRestSeconds(restExercise) : DEFAULT_REST_SECONDS;
 
-  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><WorkoutElapsedTime session={session} /></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <Fragment key={exercise.id}>{restTimer?.exerciseId === exercise.id && <RestCountdown timer={restTimer} onSkip={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current ? { ...current, duration: current.duration + seconds, endsAt: current.endsAt + seconds * 1000 } : current)} />}<article className="workout-exercise-card v2 v3"><div className="workout-exercise-title-row v2"><button className="workout-exercise-title-button" type="button" onClick={() => openInfo(exercise)}><span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="workout-exercise-name-link"><strong>{exercise.name}</strong><ChevronIcon /></span></button><button className="exercise-more-button" type="button" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="performed-set-head five-columns"><span>Подход</span><span>Вес</span><span>Повт.</span><span /><span /></div><div className="performed-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="add-set-actions"><button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>+ Рабочий подход</button><button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминочный</button></div><button className="previous-result-button" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><span className="previous-result-icon"><InfoIcon /></span><span>{historyLoadingId === exercise.id ? 'Загружаем…' : 'Предыдущий результат'}</span><ChevronIcon /></button><label className="exercise-note-field"><span>Заметка к упражнению</span><textarea rows="2" value={exercise.note ?? ''} placeholder="Техника, ощущения, подсказка на следующий раз…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label></article></Fragment>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
+  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><WorkoutElapsedTime session={session} /></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <article className="workout-exercise-card v2 v3" key={exercise.id}><div className="workout-exercise-title-row v2"><button className="workout-exercise-title-button" type="button" onClick={() => openInfo(exercise)}><span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="workout-exercise-name-link"><strong>{exercise.name}</strong><ChevronIcon /></span></button><button className="exercise-more-button" type="button" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="performed-set-head five-columns"><span>Подход</span><span>Вес</span><span>Повт.</span><span /><span /></div><div className="performed-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="add-set-actions"><button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>+ Рабочий подход</button><button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминочный</button></div><button className="previous-result-button" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><span className="previous-result-icon"><InfoIcon /></span><span>{historyLoadingId === exercise.id ? 'Загружаем…' : 'Предыдущий результат'}</span><ChevronIcon /></button><label className="exercise-note-field"><span>Заметка к упражнению</span><textarea rows="2" value={exercise.note ?? ''} placeholder="Техника, ощущения, подсказка на следующий раз…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label></article>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<RestTimerDock timer={restTimer} autostart={restAutostart} idleSeconds={idleRestSeconds} onStart={() => setRestTimer(createRestTimer({ sessionId: session.id, exerciseName: restExercise?.name ?? '', seconds: idleRestSeconds, now: Date.now() }))} onStop={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current && extendRestTimer(current, seconds, Date.now()))} onAutostartChange={changeRestAutostart} /><button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
 }
 
 function CompletedWorkout({ entry, onDone, onReload }) {
@@ -547,7 +616,7 @@ function AbandonedWorkout({ entry, onDone }) {
   return <><main className="workout-session-content completed"><section className="workout-complete-hero abandoned"><div className="workout-abandoned-mark">×</div><span>Тренировка прервана</span><h1>{entry.workout.name}</h1><p>Она отмечена как пропущенная. Следующая тренировка программы останется в расписании.</p></section><section className="workout-result-grid"><div><span>Время до остановки</span><strong>{formatTime(entry.session.activeDurationSeconds)}</strong></div><div><span>Выполнено подходов</span><strong>{completedSets.length}</strong></div><div><span>Рабочих</span><strong>{workingSets.length}</strong></div><div><span>Статус</span><strong>Пропущена</strong></div></section><div className="workout-abandoned-note">Выполненные подходы сохранены внутри этой сессии, но не используются как завершённый результат для «Предыдущего результата» и личных рекордов.</div></main><footer className="workout-session-footer"><button type="button" onClick={onDone}>На главную</button></footer></>;
 }
 
-export function WorkoutSessionScreen({ scheduledWorkoutId, initialEntry, canRecoverFinish = false, onBack, onExit, onCompleted, onRequestReplacement, onPauseRequest, pausing = false }) {
+export function WorkoutSessionScreen({ scheduledWorkoutId, initialEntry, canRecoverFinish = false, onBack, onExit, onCompleted, onRequestReplacement, onPauseRequest, onSessionPaused, pausing = false }) {
   const [entry, setEntry] = useState(initialEntry ?? null); const [loading, setLoading] = useState(!initialEntry); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [error, setError] = useState(''); const [reloadKey, setReloadKey] = useState(0);
   const skipFirstLoad = useRef(Boolean(initialEntry));
   const finishPending = useRef(false);
@@ -573,5 +642,5 @@ export function WorkoutSessionScreen({ scheduledWorkoutId, initialEntry, canReco
   }
   // Pausing only applies to a running session; every other state must always be able to leave.
   const handleBack = entry?.mode === 'active' ? onBack : (onExit ?? onBack);
-  return <div className={`phone workout-session-phone${entry?.mode === 'completed' ? ' completed-reference-mode' : ''}`}>{entry?.mode !== 'completed' && <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={handleBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>}{loading && <div className="workout-session-loading">Загружаем тренировку…</div>}{!loading && !entry && <div className="workout-session-error standalone" role="alert">{error || 'Тренировка не найдена.'}<div className="workout-session-recovery"><button type="button" onClick={() => setReloadKey((value) => value + 1)} disabled={finishing}>Повторить</button>{canRecoverFinish && <button className="secondary" type="button" onClick={handleRecoveryFinish} disabled={finishing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button>}</div></div>}{!loading && entry?.mode === 'planned' && <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />}{!loading && entry?.mode === 'active' && <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} onPauseRequest={onPauseRequest} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing} error={error} />}{!loading && entry?.mode === 'completed' && <CompletedWorkout entry={entry} onDone={onCompleted} onReload={async()=>setEntry(await loadWorkoutSession(entry.session.id))}/>}{!loading && entry?.mode === 'abandoned' && <AbandonedWorkout entry={entry} onDone={onCompleted} />}</div>;
+  return <div className={`phone workout-session-phone${entry?.mode === 'completed' ? ' completed-reference-mode' : ''}`}>{entry?.mode !== 'completed' && <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={handleBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>}{loading && <div className="workout-session-loading">Загружаем тренировку…</div>}{!loading && !entry && <div className="workout-session-error standalone" role="alert">{error || 'Тренировка не найдена.'}<div className="workout-session-recovery"><button type="button" onClick={() => setReloadKey((value) => value + 1)} disabled={finishing}>Повторить</button>{canRecoverFinish && <button className="secondary" type="button" onClick={handleRecoveryFinish} disabled={finishing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button>}</div></div>}{!loading && entry?.mode === 'planned' && <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />}{!loading && entry?.mode === 'active' && <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} onPauseRequest={onPauseRequest} onSessionPaused={onSessionPaused} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing} error={error} />}{!loading && entry?.mode === 'completed' && <CompletedWorkout entry={entry} onDone={onCompleted} onReload={async()=>setEntry(await loadWorkoutSession(entry.session.id))}/>}{!loading && entry?.mode === 'abandoned' && <AbandonedWorkout entry={entry} onDone={onCompleted} />}</div>;
 }

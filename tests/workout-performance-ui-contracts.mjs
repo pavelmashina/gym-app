@@ -29,7 +29,7 @@ assert.match(workout,/completed:next\.completed/);
 assert.match(lib,/const performedSetWriteQueues = new Map\(\)/);
 assert.match(lib,/previous\.catch\(\(\) => \{\}\)\.then/);
 assert.match(lib,/void markRecentExerciseForSet/);
-assert.match(workout,/setInterval\(\(\) => setNow\(Date\.now\(\)\), 1000\)/);
+assert.match(workout,/setTimeout\(tick, msUntilNextSecond\(current, anchorMs\)\)/);
 
 assert.match(editor,/opened/);
 assert.match(editor,/changeTimerRef/);

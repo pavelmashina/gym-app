@@ -35,18 +35,33 @@ function buildExercise(_, index) {
   };
 }
 
-const entry = {
-  mode: 'active',
-  session: { id: 'fixture-session', status: 'active', activeDurationSeconds: 0, startedAt: new Date().toISOString() },
-  workout: { id: 'fixture-workout', name: 'Проверка прокрутки', standalone: false, scheduledDate: new Date().toLocaleDateString('sv'), exercises: Array.from({ length: exerciseCount }, buildExercise) },
-};
+// The session clock outlives a reload, like the server's: edit this record to imitate another device.
+const CLOCK_KEY = 'workout-fixture-clock';
+function readClock() {
+  const stored = JSON.parse(sessionStorage.getItem(CLOCK_KEY) || 'null');
+  if (stored) return stored;
+  const clock = { startedAt: new Date().toISOString(), activeDurationSeconds: 0, pausedAt: null };
+  sessionStorage.setItem(CLOCK_KEY, JSON.stringify(clock));
+  return clock;
+}
+function writeClock(patch) { sessionStorage.setItem(CLOCK_KEY, JSON.stringify({ ...readClock(), ...patch })); }
+const segmentSeconds = (clock) => Math.max(0, Math.floor((Date.now() - new Date(clock.startedAt).getTime()) / 1000));
 
-export async function getWorkoutEntry() { await pause(); return structuredClone(entry); }
-export async function loadWorkoutSession() { await pause(); return structuredClone(entry); }
-export async function getWorkoutSessionStatus() { return 'active'; }
+const workout = { id: 'fixture-workout', name: 'Проверка прокрутки', standalone: false, scheduledDate: new Date().toLocaleDateString('sv'), exercises: Array.from({ length: exerciseCount }, buildExercise) };
+function buildEntry() {
+  const { startedAt, activeDurationSeconds } = readClock();
+  return { mode: 'active', session: { id: 'fixture-session', status: 'active', activeDurationSeconds, startedAt }, workout: structuredClone(workout) };
+}
+
+export async function getWorkoutEntry() { await pause(); return buildEntry(); }
+export async function loadWorkoutSession() { await pause(); return buildEntry(); }
+export async function getWorkoutSessionState() {
+  const clock = readClock();
+  return { status: 'active', paused: Boolean(clock.pausedAt), startedAt: clock.startedAt, activeDurationSeconds: clock.activeDurationSeconds };
+}
 export async function findActiveWorkoutId() { return null; }
-export async function startWorkout() { return structuredClone(entry); }
-export async function addStandaloneExercise() { return structuredClone(entry); }
+export async function startWorkout() { return buildEntry(); }
+export async function addStandaloneExercise() { return buildEntry(); }
 export async function updatePerformedSet(_, values) { await pause(); return values; }
 export async function addPerformedSet(_, setNumber, setType = 'working') {
   await pause();
@@ -57,8 +72,14 @@ export async function deleteSessionExercise() { await pause(); }
 export async function updateExerciseNote() { await pause(); }
 export async function getExerciseHistorySummary() { await pause(); return { best: null, previous: null }; }
 export async function replaceSessionExercise() { await pause(); }
-export async function completeWorkout() { throw new Error('Не используется на этом стенде'); }
-export async function finishActiveWorkout() { throw new Error('Не используется на этом стенде'); }
+function buildCompletedEntry() {
+  const clock = readClock();
+  const completed = buildEntry();
+  sessionStorage.removeItem(CLOCK_KEY);
+  return { ...completed, mode: 'completed', session: { ...completed.session, status: 'completed', endedAt: new Date().toISOString(), activeDurationSeconds: clock.activeDurationSeconds + (clock.pausedAt ? 0 : segmentSeconds(clock)), autoCompleted: false }, workout: { ...completed.workout, completedDate: workout.scheduledDate } };
+}
+export async function completeWorkout() { await pause(); return buildCompletedEntry(); }
+export async function finishActiveWorkout() { await pause(); return buildCompletedEntry(); }
 export async function changeCompletedWorkoutDate() { throw new Error('Не используется на этом стенде'); }
 
 export async function getExerciseDetails(id) {
@@ -85,12 +106,12 @@ export async function createEquipmentInstance() { throw new Error('Не испо
 export async function updateCustomExercise() { throw new Error('Не используется на этом стенде'); }
 
 const tableResults = {
-  scheduled_workouts: { id: 'fixture-workout', scheduled_date: entry.workout.scheduledDate, status: 'in_progress', sequence_number: 1, user_program_id: 'fixture-program' },
-  workout_sessions: [{ id: 'fixture-session', status: 'active', paused_at: null }],
+  scheduled_workouts: () => ({ id: 'fixture-workout', scheduled_date: workout.scheduledDate, status: 'in_progress', sequence_number: 1, user_program_id: 'fixture-program' }),
+  workout_sessions: () => [{ id: 'fixture-session', status: 'active', paused_at: readClock().pausedAt }],
 };
 
 function queryBuilder(table) {
-  const result = { data: tableResults[table] ?? [], error: null };
+  const result = { data: tableResults[table]?.() ?? [], error: null };
   const builder = {
     select: () => builder,
     eq: () => builder,
@@ -105,6 +126,11 @@ function queryBuilder(table) {
 export const isSupabaseConfigured = true;
 export const supabase = {
   from: queryBuilder,
-  rpc: async () => ({ data: null, error: null }),
+  rpc: async (name) => {
+    const clock = readClock();
+    if (name === 'pause_workout' && !clock.pausedAt) writeClock({ activeDurationSeconds: clock.activeDurationSeconds + segmentSeconds(clock), pausedAt: new Date().toISOString() });
+    if (name === 'resume_workout') writeClock({ startedAt: new Date().toISOString(), pausedAt: null });
+    return { data: null, error: null };
+  },
   auth: { getUser: async () => ({ data: { user: { id: 'fixture-user' } }, error: null }) },
 };

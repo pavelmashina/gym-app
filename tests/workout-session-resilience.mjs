@@ -272,7 +272,7 @@ assert.match(v3,/await flushPendingSetEdits\(\)[\s\S]*completeWorkout\(entry\.se
 assert.match(v3,/Завершить тренировку без этих изменений/,'A rejected value must not make finishing impossible');
 assert.match(v3,/registerSetFlusher\(set\.id/);
 assert.match(v3,/if\(dirtyRef\.current\)return;/,'Unsent input must not be overwritten by older props');
-assert.match(v3,/getWorkoutSessionStatus\(session\.id\)/);
+assert.match(v3,/getWorkoutSessionState\(session\.id\)/);
 assert.match(v3,/addEventListener\('visibilitychange', syncWithServer\)/);
 assert.match(v3,/workout-footer-error/,'Errors stay visible wherever the list is scrolled');
 assert.match(v5,/plannedWorkoutIsInFuture\(result\.workout, localDateKey\(\)\)/);
