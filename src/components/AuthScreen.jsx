@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
+import { NETWORK_FAILURE_HINT, isNetworkError } from '../lib/requestResilience.js';
 import { supabase } from '../lib/supabase.js';
 
 function getErrorMessage(error) {
   if (!error) return '';
+
+  if (isNetworkError(error)) {
+    return NETWORK_FAILURE_HINT;
+  }
 
   if (error.code === 'invalid_credentials') {
     return 'Неверный email или пароль.';

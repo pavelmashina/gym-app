@@ -14,7 +14,8 @@ import { BottomNavigation } from './components/BottomNavigation.jsx';
 import { PullToRefresh } from './components/PullToRefresh.jsx';
 import { AppUpdateNotice } from './components/AppUpdateNotice.jsx';
 import { useSwipeBackNavigation } from './lib/swipeBackNavigation.js';
-import { isSupabaseConfigured, supabase } from './lib/supabase.js';
+import { restoreSession } from './lib/requestResilience.js';
+import { isSupabaseConfigured, isSupabaseReachable, supabase } from './lib/supabase.js';
 import { loadSubscriptionState } from './lib/subscription.js';
 import { incomingProgramShareCode } from './lib/programSharing.js';
 import { programDraftKey, readProgramDraft, clearProgramDraft, hasProgramDraftProgress } from './lib/programDraft.js';
@@ -47,6 +48,10 @@ function LoadingScreen() {
   return <main className="auth-loading" aria-live="polite"><div className="auth-spinner" aria-hidden="true" /><span>Проверяем сессию…</span></main>;
 }
 
+function ConnectionErrorScreen({ retrying, onRetry }) {
+  return <main className="auth-shell"><section className="auth-card" role="alert"><div className="auth-brand">GYM</div><h1>Нет связи с сервером</h1><p className="auth-subtitle">Проверьте интернет и повторите.</p><div className="auth-form"><button className="auth-submit" type="button" disabled={retrying} onClick={onRetry}>{retrying ? 'Проверяем…' : 'Повторить'}</button></div></section></main>;
+}
+
 export default function App() {
   useSwipeBackNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -61,6 +66,8 @@ export default function App() {
   const [nutritionPlan, setNutritionPlan] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
+  const [sessionUnreachable, setSessionUnreachable] = useState(false);
+  const [sessionRetrying, setSessionRetrying] = useState(false);
   const [signOutLoading, setSignOutLoading] = useState(false);
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(isPasswordRecoveryUrl);
   const [editingProgramId, setEditingProgramId] = useState(null);
@@ -87,16 +94,20 @@ export default function App() {
   useEffect(() => {
     if (!isSupabaseConfigured) return undefined;
     let active = true;
-    supabase.auth.getSession().then(({ data, error }) => {
+    restoreSession(supabase.auth.getSession()).then(({ session: restored, unreachable }) => {
       if (!active) return;
-      if (error) console.error('Unable to restore Supabase session:', error);
-      setSession(data.session ?? null);
+      if (unreachable) { setSessionUnreachable(true); return; }
+      setSession(restored);
       setAuthReady(true);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!active) return;
+      // A refresh that failed on the network arrives here as an empty initial
+      // session. restoreSession above decides what that means, this is no sign-out.
+      if (event === 'INITIAL_SESSION' && !nextSession) return;
       if (event === 'PASSWORD_RECOVERY') setPasswordRecoveryActive(true);
       if (event === 'SIGNED_OUT') setPasswordRecoveryActive(false);
+      setSessionUnreachable(false);
       setSession(nextSession ?? null);
       setAuthReady(true);
       if (!nextSession) {
@@ -118,6 +129,21 @@ export default function App() {
     });
     return () => { active = false; subscription.unsubscribe(); };
   }, []);
+
+  async function retrySessionRestore() {
+    setSessionRetrying(true);
+    // auth-js answers with the failed token refresh for a minute without sending a
+    // request, so only a new page really retries. On a dead network that page would
+    // be the browser's own error screen, which is why the server is checked first.
+    if (await isSupabaseReachable()) { window.location.reload(); return; }
+    setSessionRetrying(false);
+  }
+
+  useEffect(() => {
+    if (!sessionUnreachable) return undefined;
+    window.addEventListener('online', retrySessionRestore);
+    return () => window.removeEventListener('online', retrySessionRestore);
+  }, [sessionUnreachable]);
 
   useEffect(() => {
     if (!userId) { setProfile(null); return undefined; }
@@ -397,6 +423,7 @@ export default function App() {
   }
 
   if (authConfigError) return <main className="auth-shell"><section className="auth-card"><div className="auth-brand">GYM</div><h1>Ошибка конфигурации</h1><p className="auth-subtitle">{authConfigError}</p></section></main>;
+  if (sessionUnreachable) return <ConnectionErrorScreen retrying={sessionRetrying} onRetry={retrySessionRestore} />;
   if (!authReady) return <LoadingScreen />;
   if (passwordRecoveryActive && session) return <AuthScreen recoveryMode onRecoveryComplete={() => setPasswordRecoveryActive(false)} />;
   if (!session) return <AuthScreen />;

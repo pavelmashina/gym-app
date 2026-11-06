@@ -84,11 +84,43 @@ export function withDeadline(work, milliseconds, message = NETWORK_FAILURE_HINT)
 
 export function isNetworkError(error) {
   if (!error) return false;
-  return /abort|deadline|failed to fetch|load failed|networkerror|network request failed|timed? ?out/i
+  return /abort|deadline|failed to fetch|load failed|networkerror|network request failed|retryablefetch|timed? ?out/i
     .test(`${error.name ?? ''} ${error.message ?? ''}`);
 }
 
 export function describeRequestError(error, fallback) {
   console.error(fallback, error);
   return isNetworkError(error) ? `${fallback} ${NETWORK_FAILURE_HINT}` : fallback;
+}
+
+// auth-js keeps retrying a token refresh for 30 seconds before it gives up.
+const SESSION_RESTORE_DEADLINE_MS = 20_000;
+const REACHABILITY_TIMEOUT_MS = 8_000;
+
+// When a token refresh fails on the network, auth-js answers "no session" but keeps
+// the session stored. That answer must not reach the login screen as a sign-out.
+export async function restoreSession(request, milliseconds = SESSION_RESTORE_DEADLINE_MS) {
+  try {
+    const { data, error } = await withDeadline(request, milliseconds);
+    if (error && isNetworkError(error)) {
+      console.warn('Session could not be restored without a connection:', error);
+      return { session: null, unreachable: true };
+    }
+    if (error) console.error('Unable to restore Supabase session:', error);
+    return { session: data?.session ?? null, unreachable: false };
+  } catch (error) {
+    console.warn('Session could not be restored:', error);
+    return { session: null, unreachable: true };
+  }
+}
+
+// Any answer counts, so the opaque response of a no-cors request is enough.
+export async function isReachable(url, baseFetch = (...args) => fetch(...args), timeoutMs = REACHABILITY_TIMEOUT_MS) {
+  const probe = createResilientFetch(baseFetch, { readTimeoutMs: timeoutMs, readAttempts: 1 });
+  try {
+    await probe(url, { mode: 'no-cors', cache: 'no-store' });
+    return true;
+  } catch {
+    return false;
+  }
 }

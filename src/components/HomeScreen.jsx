@@ -236,8 +236,8 @@ export function HomeScreen({ menuOpen, onOpenMenu, onCloseMenu, onOpenWorkout, w
   useEffect(() => {
     const refresh = () => { workoutCacheRef.current.clear(); setReloadKey((value) => value + 1); };
     const visible = () => { if (document.visibilityState === 'visible') refresh(); };
-    window.addEventListener('focus', refresh); document.addEventListener('visibilitychange', visible);
-    return () => { window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', visible); };
+    window.addEventListener('focus', refresh); window.addEventListener('online', refresh); document.addEventListener('visibilitychange', visible);
+    return () => { window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh); document.removeEventListener('visibilitychange', visible); };
   }, []);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createResilientFetch } from './requestResilience.js';
+import { createResilientFetch, isReachable } from './requestResilience.js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -22,3 +22,5 @@ export const supabase = isSupabaseConfigured
       },
     })
   : null;
+
+export const isSupabaseReachable = () => isReachable(`${supabaseUrl}/auth/v1/health`);
