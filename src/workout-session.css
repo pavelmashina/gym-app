@@ -4,6 +4,36 @@
   background: var(--bg);
 }
 
+/* .phone is the scroll container of this screen. Instant scrolling keeps the jump to a
+   focused field from racing the keyboard animation; no browser pull-to-refresh mid-workout. */
+.phone.workout-session-phone {
+  scroll-behavior: auto;
+  overscroll-behavior-y: contain;
+}
+html:has(.workout-session-phone) {
+  overscroll-behavior-y: none;
+}
+
+/* The on-screen keyboard covers the screen without shrinking it, so the last fields need
+   extra room to be scrolled above it, and the fixed footer must not lie over them.
+   Both return after a delay: a tap that blurs a field must not move what is under the finger. */
+@media (pointer: coarse) {
+  .phone.workout-session-phone {
+    transition: padding-bottom 0s linear .3s;
+  }
+  .phone.workout-session-phone .workout-session-footer {
+    transition: visibility 0s linear .3s;
+  }
+  .phone.workout-session-phone:has(input:focus, textarea:focus) {
+    padding-bottom: 50dvh;
+    transition-delay: 0s;
+  }
+  .phone.workout-session-phone:has(input:focus, textarea:focus) .workout-session-footer {
+    visibility: hidden;
+    transition-delay: 0s;
+  }
+}
+
 .workout-session-header {
   position: sticky;
   top: 0;
@@ -11,8 +41,7 @@
   min-height: 58px;
   padding: 10px 18px;
   border-bottom: 1px solid var(--line);
-  background: rgba(243, 243, 240, 0.96);
-  backdrop-filter: blur(14px);
+  background: var(--bg);
   display: grid;
   grid-template-columns: 42px 1fr 42px;
   align-items: center;
@@ -275,8 +304,7 @@
   transform: translateX(-50%);
   padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
-  background: rgba(243,243,240,.97);
-  backdrop-filter: blur(14px);
+  background: var(--bg);
 }
 
 .workout-session-footer button {

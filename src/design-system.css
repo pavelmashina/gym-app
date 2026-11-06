@@ -36,6 +36,8 @@ input,select,textarea{border-radius:var(--radius-md)!important}
 
 /* Nested top bars */
 .account-topbar,.settings-topbar,.menu-screen-topbar,.recipe-detail-topbar,.sportpit-detail-topbar,.program-detail-header,.create-program-header,.workout-session-header{min-height:64px!important;grid-template-columns:44px minmax(0,1fr) 44px!important;gap:10px!important;padding:calc(env(safe-area-inset-top) + 10px) var(--page-x) 10px!important;background:color-mix(in srgb,var(--bg) 94%,transparent)!important;backdrop-filter:blur(16px)}
+/* The long workout list scrolls under this bar: re-blurring it every frame is costly on phones. */
+.workout-session-header{background:var(--bg)!important;backdrop-filter:none}
 .account-topbar h1,.settings-topbar h1,.menu-screen-topbar h1,.recipe-detail-topbar>strong,.sportpit-detail-topbar>strong,.program-detail-header>strong,.create-program-header>strong,.workout-session-header>strong{font-size:18px!important;line-height:22px!important;font-weight:var(--weight-bold)!important;letter-spacing:-.2px!important;text-align:center}
 .account-icon-btn,.settings-icon,.menu-screen-back,.recipe-detail-back,.sportpit-detail-topbar button,.program-detail-header button,.create-program-back,.workout-session-header button{width:var(--topbar-control)!important;height:var(--topbar-control)!important;min-height:var(--topbar-control)!important;border-radius:14px!important;background:var(--surface)!important;box-shadow:0 5px 18px rgba(0,0,0,.04)!important}
 

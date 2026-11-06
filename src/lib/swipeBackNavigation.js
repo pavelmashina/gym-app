@@ -32,6 +32,13 @@ export function backSwipeShouldComplete({ dx, width, elapsedMs }) {
   return dx >= width * 0.32 || (dx >= 76 && dx / elapsedMs > 0.65);
 }
 
+// A scroll that starts at the edge often drifts sideways, so only a clearly
+// horizontal drag becomes a swipe; anything else stays with the native scroll.
+export function backSwipeDirection(dx, dy) {
+  if (Math.abs(dx) < 9 && Math.abs(dy) < 9) return null;
+  return dx > 0 && dx > Math.abs(dy) * 2 ? 'back' : 'scroll';
+}
+
 function isVisible(element) {
   if (!element || !element.getClientRects().length) return false;
   const style = window.getComputedStyle(element);
@@ -102,10 +109,7 @@ export function useSwipeBackNavigation() {
       const touch = event.touches[0];
       const dx = touch.clientX - drag.x;
       const dy = touch.clientY - drag.y;
-      if (!drag.direction) {
-        if (Math.abs(dx) < 9 && Math.abs(dy) < 9) return;
-        drag.direction = dx > 0 && dx > Math.abs(dy) * 1.25 ? 'back' : 'scroll';
-      }
+      if (!drag.direction) drag.direction = backSwipeDirection(dx, dy);
       if (drag.direction !== 'back') return;
       if (event.cancelable) event.preventDefault();
       drag.lastX = touch.clientX;

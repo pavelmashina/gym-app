@@ -168,6 +168,7 @@
   border-radius: 24px 24px 0 0;
   background: var(--bg);
   overflow: auto;
+  overscroll-behavior: contain;
   box-shadow: 0 -12px 40px rgba(0,0,0,.13);
 }
 

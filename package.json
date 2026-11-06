@@ -16,7 +16,7 @@
     "test:qa": "node tests/mvp-product-qa-contracts.mjs",
     "test:mobile": "node tests/mobile-pwa-contracts.mjs",
     "test:interface": "node tests/interface-refinement-contracts.mjs",
-    "test:workout-ui": "node tests/workout-ui-navigation-contracts.mjs",
+    "test:workout-ui": "node tests/workout-ui-navigation-contracts.mjs && node tests/workout-scroll-contracts.mjs",
     "test:workout-performance": "node tests/workout-performance-ui-contracts.mjs",
     "test:ui-audit": "node tests/ui-audit-contracts.mjs && node tests/sportpit-navigation-ui.mjs && node tests/sportpit-pull-refresh.mjs && node tests/sportpit-photo-geometry.mjs && node tests/sportpit-photo-assets.mjs && node tests/nutrition-design-standard.mjs && node tests/nutrition-refresh-images.mjs && node tests/training-nutrition-detail-ui.mjs && node tests/program-unification-update.mjs && node tests/custom-exercise-photos.mjs && node tests/analyst-qa-fixes.mjs && node tests/catalog-showcase.mjs && node tests/program-exercise-summary.mjs && node tests/program-option-lists.mjs && node tests/workout-completion-push.mjs && node tests/training-program-taxonomy-exercise-browser.mjs && node tests/program-cycle-card-controls.mjs",
     "test:commercial": "node tests/commercial-foundation-contracts.mjs",
