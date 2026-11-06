@@ -1,5 +1,14 @@
 import { supabase } from './supabase.js';
 import { validateResultV2 } from './exerciseResultsV2.js';
+import { describeRequestError, withDeadline } from './requestResilience.js';
+
+const LOAD_DEADLINE_MS = 30_000;
+const WRITE_DEADLINE_MS = 20_000;
+
+// Resolves to { data, error } even if the request never finishes or rejects.
+function settled(request, milliseconds = WRITE_DEADLINE_MS) {
+  return withDeadline(Promise.resolve(request), milliseconds).catch((error) => ({ data: null, error }));
+}
 
 async function markRecentExerciseForSet(setId) {
   try {
@@ -46,7 +55,11 @@ async function loadExerciseNames(exerciseIds) {
     .from('exercises')
     .select('*')
     .in('id', ids);
-  if (error) throw error;
+  if (error) {
+    // Catalog details are optional here: a session must still open from its own snapshots.
+    console.error('Unable to load exercise details for a workout:', error);
+    return new Map();
+  }
   return new Map((data ?? []).map((row) => [row.id, row]));
 }
 
@@ -79,13 +92,17 @@ function localDateKeyFromTimestamp(value) {
   return `${year}-${month}-${day}`;
 }
 
-export async function getWorkoutEntry(scheduledWorkoutId) {
+export function getWorkoutEntry(scheduledWorkoutId) {
+  return withDeadline(readWorkoutEntry(scheduledWorkoutId), LOAD_DEADLINE_MS, 'Тренировка загружается слишком долго. Проверьте интернет и повторите.');
+}
+
+async function readWorkoutEntry(scheduledWorkoutId) {
   const { data: workout, error: workoutError } = await supabase
     .from('scheduled_workouts')
     .select('id, workout_name, scheduled_date, status, sequence_number, week_number')
     .eq('id', scheduledWorkoutId)
     .single();
-  if (workoutError || !workout) throw new Error('Не удалось открыть тренировку.');
+  if (workoutError || !workout) throw new Error(describeRequestError(workoutError, 'Не удалось открыть тренировку.'));
 
   const { data: sessionRows, error: sessionError } = await supabase
     .from('workout_sessions')
@@ -93,7 +110,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
     .eq('scheduled_workout_id', scheduledWorkoutId)
     .order('started_at', { ascending: false })
     .limit(1);
-  if (sessionError) throw new Error('Не удалось проверить состояние тренировки.');
+  if (sessionError) throw new Error(describeRequestError(sessionError, 'Не удалось проверить состояние тренировки.'));
 
   const latestSession = sessionRows?.[0] ?? null;
   if (['active', 'completed', 'abandoned'].includes(latestSession?.status)) return loadWorkoutSession(latestSession.id);
@@ -103,7 +120,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
     .select('id, exercise_id, exercise_name_snapshot, prescription_snapshot, position')
     .eq('scheduled_workout_id', scheduledWorkoutId)
     .order('position', { ascending: true });
-  if (exercisesError) throw new Error('Не удалось загрузить упражнения тренировки.');
+  if (exercisesError) throw new Error(describeRequestError(exercisesError, 'Не удалось загрузить упражнения тренировки.'));
 
   const ids = (exerciseRows ?? []).map((row) => row.id);
   const exerciseNames = await loadExerciseNames((exerciseRows ?? []).map((row) => row.exercise_id));
@@ -114,7 +131,7 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
       .select('id, scheduled_workout_exercise_id, set_number, planned_reps')
       .in('scheduled_workout_exercise_id', ids)
       .order('set_number', { ascending: true });
-    if (response.error) throw new Error('Не удалось загрузить план подходов.');
+    if (response.error) throw new Error(describeRequestError(response.error, 'Не удалось загрузить план подходов.'));
     setRows = response.data ?? [];
   }
 
@@ -145,27 +162,43 @@ export async function getWorkoutEntry(scheduledWorkoutId) {
   };
 }
 
-export async function loadWorkoutSession(sessionId) {
+export function loadWorkoutSession(sessionId) {
+  return withDeadline(readWorkoutSession(sessionId), LOAD_DEADLINE_MS, 'Тренировка загружается слишком долго. Проверьте интернет и повторите.');
+}
+
+export async function getWorkoutSessionStatus(sessionId) {
+  const { data, error } = await settled(supabase.from('workout_sessions').select('status').eq('id', sessionId).maybeSingle());
+  if (error) throw new Error(describeRequestError(error, 'Не удалось проверить состояние тренировки.'));
+  return data?.status ?? null;
+}
+
+export async function findActiveWorkoutId() {
+  const { data, error } = await settled(supabase.from('workout_sessions').select('scheduled_workout_id').eq('status', 'active').limit(1));
+  if (error) throw new Error(describeRequestError(error, 'Не удалось найти текущую тренировку.'));
+  return data?.[0]?.scheduled_workout_id ?? null;
+}
+
+async function readWorkoutSession(sessionId) {
   const { data: session, error: sessionError } = await supabase
     .from('workout_sessions')
     .select('id, scheduled_workout_id, status, started_at, ended_at, completed_on, auto_completed, active_duration_seconds')
     .eq('id', sessionId)
     .single();
-  if (sessionError || !session) throw new Error('Не удалось загрузить тренировку.');
+  if (sessionError || !session) throw new Error(describeRequestError(sessionError, 'Не удалось загрузить тренировку.'));
 
   const { data: workout, error: workoutError } = await supabase
     .from('scheduled_workouts')
     .select('id, workout_name, scheduled_date, status, standalone_owner_id')
     .eq('id', session.scheduled_workout_id)
     .single();
-  if (workoutError || !workout) throw new Error('Не удалось загрузить тренировку.');
+  if (workoutError || !workout) throw new Error(describeRequestError(workoutError, 'Не удалось загрузить тренировку.'));
 
   const { data: exerciseRows, error: exerciseError } = await supabase
     .from('workout_session_exercises')
     .select('id, exercise_id, exercise_name_snapshot, prescription_snapshot, position, note')
     .eq('workout_session_id', sessionId)
     .order('position', { ascending: true });
-  if (exerciseError) throw new Error('Не удалось загрузить упражнения тренировки.');
+  if (exerciseError) throw new Error(describeRequestError(exerciseError, 'Не удалось загрузить упражнения тренировки.'));
 
   const exerciseNames = await loadExerciseNames((exerciseRows ?? []).map((row) => row.exercise_id));
   const exerciseIds = (exerciseRows ?? []).map((row) => row.id);
@@ -176,7 +209,7 @@ export async function loadWorkoutSession(sessionId) {
       .select('*')
       .in('workout_session_exercise_id', exerciseIds)
       .order('set_number', { ascending: true });
-    if (response.error) throw new Error('Не удалось загрузить подходы тренировки.');
+    if (response.error) throw new Error(describeRequestError(response.error, 'Не удалось загрузить подходы тренировки.'));
     setRows = response.data ?? [];
   }
 
@@ -223,12 +256,12 @@ export async function loadWorkoutSession(sessionId) {
 }
 
 export async function startWorkout(scheduledWorkoutId) {
-  const { data, error } = await supabase.rpc('start_workout', { p_scheduled_workout_id: scheduledWorkoutId });
+  const { data, error } = await settled(supabase.rpc('start_workout', { p_scheduled_workout_id: scheduledWorkoutId }));
   if (error || !data) {
-    if (error?.message?.includes('Another workout is already active')) throw new Error('У вас уже есть другая активная тренировка. Сначала завершите её.');
+    if (error?.message?.includes('Another workout is already active')) throw Object.assign(new Error('У вас уже есть другая активная тренировка. Сначала завершите её.'), { code: 'another-active' });
     if (error?.message?.includes('already completed')) throw new Error('Эта тренировка уже завершена.');
     if (error?.message?.includes('Skipped or cancelled')) throw new Error('Эта тренировка уже пропущена или отменена.');
-    throw new Error('Не удалось начать тренировку.');
+    throw new Error(describeRequestError(error, 'Не удалось начать тренировку.'));
   }
   return loadWorkoutSession(data);
 }
@@ -245,9 +278,9 @@ export async function startStandaloneWorkout() {
 }
 
 export async function addStandaloneExercise(sessionId, exerciseId) {
-  const { data, error } = await supabase.rpc('add_standalone_exercise', {
+  const { data, error } = await settled(supabase.rpc('add_standalone_exercise', {
     p_session_id: sessionId, p_exercise_id: exerciseId,
-  });
+  }));
   if (error || !data) throw new Error('Не удалось добавить упражнение. Проверьте соединение и повторите.');
   return data;
 }
@@ -274,13 +307,14 @@ async function updatePerformedSetNow(setId, values) {
     updated_at: new Date().toISOString(),
   };
   const { error } = await supabase.from('performed_sets').update(payload).eq('id', setId);
-  if (error) throw new Error('Не удалось сохранить подход.');
+  if (error?.code === '23514') throw new Error('Проверьте вес и повторы: значение вне допустимого диапазона.');
+  if (error) throw new Error(describeRequestError(error, 'Не удалось сохранить подход.'));
   if (payload.completed) void markRecentExerciseForSet(setId);
 }
 
 export function updatePerformedSet(setId, values) {
   const previous = performedSetWriteQueues.get(setId) || Promise.resolve();
-  const task = previous.catch(() => {}).then(() => updatePerformedSetNow(setId, values));
+  const task = previous.catch(() => {}).then(() => withDeadline(updatePerformedSetNow(setId, values), WRITE_DEADLINE_MS, 'Не удалось сохранить подход. Проверьте интернет и повторите.'));
   performedSetWriteQueues.set(setId, task);
   void task.then(
     () => { if (performedSetWriteQueues.get(setId) === task) performedSetWriteQueues.delete(setId); },
@@ -290,12 +324,18 @@ export function updatePerformedSet(setId, values) {
 }
 
 export async function addPerformedSet(sessionExerciseId, setNumber, setType = 'working') {
-  const { data, error } = await supabase
+  const { data, error } = await settled(supabase
     .from('performed_sets')
     .insert({ workout_session_exercise_id: sessionExerciseId, set_number: setNumber, set_type: setType })
     .select('*')
-    .single();
-  if (error || !data) throw new Error('Не удалось добавить подход.');
+    .single());
+  if (error?.code === '23505') {
+    // An earlier attempt reached the server but its response was lost: reuse that row.
+    const existing = await settled(supabase.from('performed_sets').select('*')
+      .eq('workout_session_exercise_id', sessionExerciseId).eq('set_number', setNumber).maybeSingle());
+    if (existing.data) return mapSet(existing.data);
+  }
+  if (error || !data) throw new Error(describeRequestError(error, 'Не удалось добавить подход.'));
   return mapSet(data);
 }
 
@@ -406,17 +446,38 @@ export async function listWorkoutExerciseCatalog() {
 }
 
 export async function replaceSessionExercise(sessionExerciseId, exerciseId) {
-  const { error } = await supabase
+  const { error } = await settled(supabase
     .from('workout_session_exercises')
     .update({ exercise_id: exerciseId, exercise_name_snapshot: null, prescription_snapshot: null, note: null })
-    .eq('id', sessionExerciseId);
-  if (error) throw new Error('Не удалось заменить упражнение.');
+    .eq('id', sessionExerciseId));
+  if (error) throw new Error(describeRequestError(error, 'Не удалось заменить упражнение.'));
 }
 
 export async function completeWorkout(sessionId) {
-  const { data, error } = await supabase.rpc('complete_workout', { p_workout_session_id: sessionId });
-  if (error || !data) throw new Error('Не удалось завершить тренировку.');
-  return loadWorkoutSession(data);
+  // A set saved after completion would be missing from the result the user is about to see.
+  await Promise.allSettled([...performedSetWriteQueues.values()]);
+  const { data, error } = await settled(supabase.rpc('complete_workout', { p_workout_session_id: sessionId }));
+  if (data) return loadWorkoutSession(data);
+  // The response may be lost after the server finished the session, or it may have been
+  // auto-completed meanwhile. Retrying could never succeed, so trust the stored state.
+  const current = await loadWorkoutSession(sessionId).catch(() => null);
+  if (current && current.mode !== 'active') return current;
+  throw new Error(describeRequestError(error, 'Не удалось завершить тренировку. Записанные подходы сохранены.'));
+}
+
+// Recovery path for when the regular active screen is unavailable: a paused or unreadable session.
+export async function finishActiveWorkout(scheduledWorkoutId) {
+  const { data, error } = await settled(supabase.from('workout_sessions').select('id, paused_at')
+    .eq('scheduled_workout_id', scheduledWorkoutId).eq('status', 'active').limit(1));
+  if (error) throw new Error(describeRequestError(error, 'Не удалось завершить тренировку.'));
+  const session = data?.[0];
+  if (!session) return getWorkoutEntry(scheduledWorkoutId);
+  if (session.paused_at) {
+    // Resuming first keeps pause time out of the workout duration.
+    const resumed = await settled(supabase.rpc('resume_workout', { p_scheduled_workout_id: scheduledWorkoutId }));
+    if (resumed.error) throw new Error(describeRequestError(resumed.error, 'Не удалось завершить тренировку.'));
+  }
+  return completeWorkout(session.id);
 }
 
 export async function abandonWorkout(sessionId) {

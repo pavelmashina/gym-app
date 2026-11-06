@@ -2,7 +2,8 @@ import ResultSetV2 from './ResultSetV2.jsx';
 import ExerciseConfigurationEditor from './ExerciseConfigurationEditor.jsx';
 import { configurationKey, parseConfigurationKey } from '../lib/exerciseConfiguration.js';
 import { StandaloneExerciseEditor } from './StandaloneExerciseEditor.jsx';
-import {assertResultsSaved} from '../lib/resultDraftGuard.js';
+import {assertResultsSaved,flushPendingSetEdits,registerSetFlusher} from '../lib/resultDraftGuard.js';
+import {clearSetDraft,readSetDraft,writeSetDraft} from '../lib/setDraftJournal.js';
 import { formatResultV2 } from '../lib/exerciseResultsV2.js';
 import ExerciseTechnique from './ExerciseTechnique.jsx';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -11,8 +12,10 @@ import {
   completeWorkout,
   deletePerformedSet,
   deleteSessionExercise,
+  finishActiveWorkout,
   getExerciseHistorySummary,
   getWorkoutEntry,
+  getWorkoutSessionStatus,
   loadWorkoutSession,
   startWorkout,
   updateExerciseNote,
@@ -164,27 +167,74 @@ function ExerciseNavigator({ index, exercises, onSelect }) {
 }
 
 function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
-  const [weight,setWeight]=useState(()=>toDisplayWeight(set.weight,unit));
-  const [reps,setReps]=useState(()=>set.reps??'');
-  const draftRef=useRef({weight:set.weight,reps:set.reps});
+  const [restored]=useState(()=>readSetDraft(set.id));
+  const [weight,setWeight]=useState(()=>toDisplayWeight(restored?restored.weight:set.weight,unit));
+  const [reps,setReps]=useState(()=>(restored?restored.reps:set.reps)??'');
+  const draftRef=useRef(restored??{weight:set.weight,reps:set.reps});
+  const dirtyRef=useRef(Boolean(restored));
+  const inFlightRef=useRef(null);
   const timerRef=useRef(null);
+  const setRef=useRef(set);
+  setRef.current=set;
+  // The row has no server id yet, so anything typed into it could not be saved.
+  const creating=String(set.id).startsWith('temp:');
 
   useEffect(()=>{
+    // Unsent input is newer than anything arriving through props.
+    if(dirtyRef.current)return;
     setWeight(toDisplayWeight(set.weight,unit));
     setReps(set.reps??'');
     draftRef.current={weight:set.weight,reps:set.reps};
-  },[set.id,set.weight,set.reps,unit]);
+  },[set.id,set.weight,set.reps]);
 
-  useEffect(()=>()=>{if(timerRef.current)clearTimeout(timerRef.current);},[]);
+  useEffect(()=>{setWeight(toDisplayWeight(draftRef.current.weight,unit));},[unit]);
 
+  useEffect(()=>{
+    const unregister=registerSetFlusher(set.id,()=>{clearTimer();return onPersistDraft();});
+    if(dirtyRef.current)onPersistDraft().catch(()=>{});
+    return ()=>{unregister();clearTimer();if(dirtyRef.current)onPersistDraft().catch(()=>{});};
+  },[set.id]);
+
+  function clearTimer(){
+    if(timerRef.current){clearTimeout(timerRef.current);timerRef.current=null;}
+  }
+  function markSaved(snapshot){
+    if(draftRef.current!==snapshot)return;
+    dirtyRef.current=false;
+    clearSetDraft(set.id);
+  }
+  function onPersistDraft(){
+    if(!dirtyRef.current)return inFlightRef.current?.promise??Promise.resolve();
+    const snapshot=draftRef.current;
+    if(inFlightRef.current?.snapshot===snapshot)return inFlightRef.current.promise;
+    const promise=onPersist({...setRef.current,...snapshot})
+      .then(()=>markSaved(snapshot))
+      .finally(()=>{if(inFlightRef.current?.snapshot===snapshot)inFlightRef.current=null;});
+    inFlightRef.current={snapshot,promise};
+    return promise;
+  }
   function schedule(next){
     draftRef.current=next;
-    if(timerRef.current)clearTimeout(timerRef.current);
-    timerRef.current=setTimeout(()=>{timerRef.current=null;onPersist({...set,...draftRef.current});},450);
+    dirtyRef.current=true;
+    writeSetDraft(set.id,next);
+    clearTimer();
+    timerRef.current=setTimeout(()=>{timerRef.current=null;onPersistDraft().catch(()=>{});},450);
   }
   function flush(){
-    if(timerRef.current){clearTimeout(timerRef.current);timerRef.current=null;}
-    onPersist({...set,...draftRef.current});
+    clearTimer();
+    onPersistDraft().catch(()=>{});
+  }
+  function toggle(){
+    // A pending autosave carries the old "completed" value and would undo this tap.
+    clearTimer();
+    const snapshot=draftRef.current;
+    onToggle({...setRef.current,...snapshot}).then((saved)=>{if(saved)markSaved(snapshot);else flush();});
+  }
+  function remove(){
+    clearTimer();
+    dirtyRef.current=false;
+    clearSetDraft(set.id);
+    onDelete();
   }
   function changeWeight(value){
     setWeight(value);
@@ -197,10 +247,10 @@ function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
 
   return <div className={`performed-set-row five-columns${set.completed?' done':''}`}>
     <span className={`set-number-label${set.warmup?' warmup':''}`}>{set.displayLabel}</span>
-    <input inputMode="decimal" enterKeyHint="next" placeholder={unit==='lb'?'lb':'кг'} value={weight} onFocus={e=>e.currentTarget.select()} onChange={e=>changeWeight(e.target.value)} onBlur={flush}/>
-    <input data-reps-set-id={set.id} inputMode="numeric" enterKeyHint="done" placeholder={set.plannedReps?String(set.plannedReps):'—'} value={reps} onFocus={e=>e.currentTarget.select()} onChange={e=>changeReps(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur();}} onBlur={flush}/>
-    <button className="set-complete-button" type="button" onClick={()=>onToggle({...set,...draftRef.current})} disabled={saving}><CheckIcon /></button>
-    <button className="set-delete-button" type="button" onClick={onDelete} disabled={saving}><TrashIcon /></button>
+    <input inputMode="decimal" enterKeyHint="next" placeholder={unit==='lb'?'lb':'кг'} value={weight} disabled={creating} onFocus={e=>e.currentTarget.select()} onChange={e=>changeWeight(e.target.value)} onBlur={flush}/>
+    <input data-reps-set-id={set.id} inputMode="numeric" enterKeyHint="done" placeholder={set.plannedReps?String(set.plannedReps):'—'} value={reps} disabled={creating} onFocus={e=>e.currentTarget.select()} onChange={e=>changeReps(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur();}} onBlur={flush}/>
+    <button className="set-complete-button" type="button" onClick={toggle} disabled={saving||creating}><CheckIcon /></button>
+    <button className="set-delete-button" type="button" onClick={remove} disabled={saving||creating}><TrashIcon /></button>
   </div>;
 }
 
@@ -242,6 +292,27 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   }, [now, restTimer]);
 
   useEffect(() => {
+    const flush = () => { flushPendingSetEdits().catch(() => {}); };
+    // The session may have been finished while the app was away, e.g. by the 3-hour
+    // auto-completion; finish and pause could never succeed from a stale active screen.
+    const syncWithServer = () => {
+      flush();
+      if (document.visibilityState === 'hidden') return;
+      getWorkoutSessionStatus(session.id)
+        .then(async (status) => { if (status && status !== 'active') onEntryChange(await loadWorkoutSession(session.id)); })
+        .catch(() => {});
+    };
+    document.addEventListener('visibilitychange', syncWithServer);
+    window.addEventListener('online', syncWithServer);
+    window.addEventListener('pagehide', flush);
+    return () => {
+      document.removeEventListener('visibilitychange', syncWithServer);
+      window.removeEventListener('online', syncWithServer);
+      window.removeEventListener('pagehide', flush);
+    };
+  }, [session.id]);
+
+  useEffect(() => {
     const nodes = workout.exercises.map((exercise) => cardRefs.current.get(exercise.id)).filter(Boolean);
     if (!nodes.length || !window.IntersectionObserver) return undefined;
     const observer = new IntersectionObserver((entries) => {
@@ -272,7 +343,7 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   async function saveSet(set) {
     if(String(set.id).startsWith('temp:')) return;
     setLocalError('');
-    try { await updatePerformedSet(set.id, set); } catch (e) { setLocalError(e.message); }
+    try { await updatePerformedSet(set.id, set); } catch (e) { setLocalError(e.message); throw e; }
   }
   async function saveV2(exercise, set) {
     if(set.completed) startRest(exercise);
@@ -286,17 +357,20 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   }
   function startRest(exercise) { const duration = getRestSeconds(exercise); setRestTimer({ id: crypto.randomUUID(), exerciseId: exercise.id, exerciseName: exercise.name, duration, endsAt: Date.now() + duration * 1000 }); notifiedTimerId.current = null; }
   async function toggleComplete(exercise, set) {
-    if (!set.completed && (!set.reps || Number(set.reps) <= 0)) { setLocalError('Укажите количество повторений перед завершением подхода.'); return; }
+    if (!set.completed && (!set.reps || Number(set.reps) <= 0)) { setLocalError('Укажите количество повторений перед завершением подхода.'); return false; }
     const next={...set,completed:!set.completed};
     patchSet(exercise.id,set.id,{weight:next.weight,reps:next.reps,completed:next.completed});
     if(next.completed)startRest(exercise);
     setSavingSetId(set.id);
+    setLocalError('');
     try {
       await updatePerformedSet(set.id,next);
+      return true;
     } catch(e) {
       if(next.completed)setRestTimer(current=>current?.exerciseId===exercise.id?null:current);
       patchSet(exercise.id,set.id,{completed:set.completed});
       setLocalError(e.message);
+      return false;
     } finally { setSavingSetId(null); }
   }
   async function addSet(exercise,setType) {
@@ -345,7 +419,7 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onReque
   function goToExercise(index) { const safe = Math.max(0, Math.min(workout.exercises.length - 1, index)); setActiveExerciseIndex(safe); cardRefs.current.get(workout.exercises[safe]?.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   function focusReps(setId) { document.querySelector(`[data-reps-set-id="${setId}"]`)?.focus(); }
 
-  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><div className="workout-timer">{formatTime(elapsed)}</div></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<ExerciseNavigator index={activeExerciseIndex} exercises={workout.exercises} onSelect={goToExercise} /><section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <Fragment key={exercise.id}>{restTimer?.exerciseId === exercise.id && <RestCountdown timer={restTimer} now={now} onSkip={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current ? { ...current, duration: current.duration + seconds, endsAt: current.endsAt + seconds * 1000 } : current)} />}<article className="workout-exercise-card v2 v3" data-exercise-index={exerciseIndex} ref={(node) => { if (node) cardRefs.current.set(exercise.id, node); else cardRefs.current.delete(exercise.id); }}><div className="workout-exercise-title-row v2"><button className="workout-exercise-title-button" type="button" onClick={() => openInfo(exercise)}><span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="workout-exercise-name-link"><strong>{exercise.name}</strong><ChevronIcon /></span></button><button className="exercise-more-button" type="button" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="performed-set-head five-columns"><span>Подход</span><span>Вес</span><span>Повт.</span><span /><span /></div><div className="performed-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="add-set-actions"><button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>+ Рабочий подход</button><button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминочный</button></div><button className="previous-result-button" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><span className="previous-result-icon"><InfoIcon /></span><span>{historyLoadingId === exercise.id ? 'Загружаем…' : 'Предыдущий результат'}</span><ChevronIcon /></button><label className="exercise-note-field"><span>Заметка к упражнению</span><textarea rows="2" value={exercise.note ?? ''} placeholder="Техника, ощущения, подсказка на следующий раз…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label><div className="exercise-card-next"><span>{exerciseIndex + 1} из {workout.exercises.length}</span>{exerciseIndex < workout.exercises.length - 1 && <button type="button" onClick={() => goToExercise(exerciseIndex + 1)}>Следующее упражнение →</button>}</div></article></Fragment>; })}</section>{(error || localError) && <div className="workout-session-error">{error || localError}</div>}</main><footer className="workout-session-footer workout-session-footer-dual"><button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
+  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><div className="workout-timer">{formatTime(elapsed)}</div></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<ExerciseNavigator index={activeExerciseIndex} exercises={workout.exercises} onSelect={goToExercise} /><section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <Fragment key={exercise.id}>{restTimer?.exerciseId === exercise.id && <RestCountdown timer={restTimer} now={now} onSkip={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current ? { ...current, duration: current.duration + seconds, endsAt: current.endsAt + seconds * 1000 } : current)} />}<article className="workout-exercise-card v2 v3" data-exercise-index={exerciseIndex} ref={(node) => { if (node) cardRefs.current.set(exercise.id, node); else cardRefs.current.delete(exercise.id); }}><div className="workout-exercise-title-row v2"><button className="workout-exercise-title-button" type="button" onClick={() => openInfo(exercise)}><span>{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="workout-exercise-name-link"><strong>{exercise.name}</strong><ChevronIcon /></span></button><button className="exercise-more-button" type="button" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="performed-set-head five-columns"><span>Подход</span><span>Вес</span><span>Повт.</span><span /><span /></div><div className="performed-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="add-set-actions"><button className="add-set-button" type="button" onClick={() => addSet(exercise, 'working')}>+ Рабочий подход</button><button className="add-set-button warmup" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминочный</button></div><button className="previous-result-button" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><span className="previous-result-icon"><InfoIcon /></span><span>{historyLoadingId === exercise.id ? 'Загружаем…' : 'Предыдущий результат'}</span><ChevronIcon /></button><label className="exercise-note-field"><span>Заметка к упражнению</span><textarea rows="2" value={exercise.note ?? ''} placeholder="Техника, ощущения, подсказка на следующий раз…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label><div className="exercise-card-next"><span>{exerciseIndex + 1} из {workout.exercises.length}</span>{exerciseIndex < workout.exercises.length - 1 && <button type="button" onClick={() => goToExercise(exerciseIndex + 1)}>Следующее упражнение →</button>}</div></article></Fragment>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
 }
 
 function CompletedWorkout({ entry, onDone, onReload }) {
@@ -472,10 +546,31 @@ function AbandonedWorkout({ entry, onDone }) {
   return <><main className="workout-session-content completed"><section className="workout-complete-hero abandoned"><div className="workout-abandoned-mark">×</div><span>Тренировка прервана</span><h1>{entry.workout.name}</h1><p>Она отмечена как пропущенная. Следующая тренировка программы останется в расписании.</p></section><section className="workout-result-grid"><div><span>Время до остановки</span><strong>{formatTime(entry.session.activeDurationSeconds)}</strong></div><div><span>Выполнено подходов</span><strong>{completedSets.length}</strong></div><div><span>Рабочих</span><strong>{workingSets.length}</strong></div><div><span>Статус</span><strong>Пропущена</strong></div></section><div className="workout-abandoned-note">Выполненные подходы сохранены внутри этой сессии, но не используются как завершённый результат для «Предыдущего результата» и личных рекордов.</div></main><footer className="workout-session-footer"><button type="button" onClick={onDone}>На главную</button></footer></>;
 }
 
-export function WorkoutSessionScreen({ scheduledWorkoutId, onBack, onCompleted, onRequestReplacement, onPauseRequest, pausing = false }) {
-  const [entry, setEntry] = useState(null); const [loading, setLoading] = useState(true); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [error, setError] = useState('');
-  useEffect(() => { let active = true; setLoading(true); setError(''); getWorkoutEntry(scheduledWorkoutId).then((result) => { if (active) setEntry(result); }).catch((e) => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [scheduledWorkoutId]);
-  async function handleStart() { setStarting(true); setError(''); try { setEntry(await startWorkout(scheduledWorkoutId)); } catch (e) { setError(e.message); } finally { setStarting(false); } }
-  async function handleFinish() { if (!entry?.session?.id) return; setFinishing(true); setError(''); try { assertResultsSaved(); setEntry(await completeWorkout(entry.session.id)); } catch (e) { setError(e.message); } finally { setFinishing(false); } }
-  return <div className={`phone workout-session-phone${entry?.mode === 'completed' ? ' completed-reference-mode' : ''}`}>{entry?.mode !== 'completed' && <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>}{loading && <div className="workout-session-loading">Загружаем тренировку…</div>}{!loading && !entry && <div className="workout-session-error standalone">{error || 'Тренировка не найдена.'}</div>}{!loading && entry?.mode === 'planned' && <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />}{!loading && entry?.mode === 'active' && <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} onPauseRequest={onPauseRequest} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing} error={error} />}{!loading && entry?.mode === 'completed' && <CompletedWorkout entry={entry} onDone={onCompleted} onReload={async()=>setEntry(await loadWorkoutSession(entry.session.id))}/>}{!loading && entry?.mode === 'abandoned' && <AbandonedWorkout entry={entry} onDone={onCompleted} />}</div>;
+export function WorkoutSessionScreen({ scheduledWorkoutId, initialEntry, canRecoverFinish = false, onBack, onExit, onCompleted, onRequestReplacement, onPauseRequest, pausing = false }) {
+  const [entry, setEntry] = useState(initialEntry ?? null); const [loading, setLoading] = useState(!initialEntry); const [starting, setStarting] = useState(false); const [finishing, setFinishing] = useState(false); const [error, setError] = useState(''); const [reloadKey, setReloadKey] = useState(0);
+  const skipFirstLoad = useRef(Boolean(initialEntry));
+  const finishPending = useRef(false);
+  useEffect(() => { if (skipFirstLoad.current) { skipFirstLoad.current = false; return undefined; } let active = true; setLoading(true); setError(''); getWorkoutEntry(scheduledWorkoutId).then((result) => { if (active) setEntry(result); }).catch((e) => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [scheduledWorkoutId, reloadKey]);
+  async function handleStart() { if (starting) return; setStarting(true); setError(''); try { setEntry(await startWorkout(scheduledWorkoutId)); } catch (e) { setError(e.message); } finally { setStarting(false); } }
+  async function handleFinish() {
+    if (finishPending.current || !entry?.session?.id) return;
+    finishPending.current = true; setFinishing(true); setError('');
+    try {
+      assertResultsSaved();
+      try { await flushPendingSetEdits(); }
+      catch (saveError) {
+        // A value the server keeps rejecting must not make the workout impossible to finish.
+        if (!window.confirm(`${saveError.message}\n\nЗавершить тренировку без этих изменений?`)) throw saveError;
+      }
+      setEntry(await completeWorkout(entry.session.id));
+    } catch (e) { setError(e.message); } finally { finishPending.current = false; setFinishing(false); }
+  }
+  async function handleRecoveryFinish() {
+    if (finishPending.current || !window.confirm('Завершить тренировку? Записанные подходы попадут в результат.')) return;
+    finishPending.current = true; setFinishing(true); setError('');
+    try { setEntry(await finishActiveWorkout(scheduledWorkoutId)); } catch (e) { setError(e.message); } finally { finishPending.current = false; setFinishing(false); }
+  }
+  // Pausing only applies to a running session; every other state must always be able to leave.
+  const handleBack = entry?.mode === 'active' ? onBack : (onExit ?? onBack);
+  return <div className={`phone workout-session-phone${entry?.mode === 'completed' ? ' completed-reference-mode' : ''}`}>{entry?.mode !== 'completed' && <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={handleBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>}{loading && <div className="workout-session-loading">Загружаем тренировку…</div>}{!loading && !entry && <div className="workout-session-error standalone" role="alert">{error || 'Тренировка не найдена.'}<div className="workout-session-recovery"><button type="button" onClick={() => setReloadKey((value) => value + 1)} disabled={finishing}>Повторить</button>{canRecoverFinish && <button className="secondary" type="button" onClick={handleRecoveryFinish} disabled={finishing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button>}</div></div>}{!loading && entry?.mode === 'planned' && <PlannedWorkout workout={entry.workout} onStart={handleStart} starting={starting} error={error} />}{!loading && entry?.mode === 'active' && <ActiveWorkout entry={entry} onEntryChange={setEntry} onFinish={handleFinish} onPauseRequest={onPauseRequest} onRequestReplacement={onRequestReplacement} finishing={finishing} pausing={pausing} error={error} />}{!loading && entry?.mode === 'completed' && <CompletedWorkout entry={entry} onDone={onCompleted} onReload={async()=>setEntry(await loadWorkoutSession(entry.session.id))}/>}{!loading && entry?.mode === 'abandoned' && <AbandonedWorkout entry={entry} onDone={onCompleted} />}</div>;
 }

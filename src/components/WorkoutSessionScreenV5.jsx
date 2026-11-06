@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getWorkoutEntry, startWorkout } from '../lib/workoutSessions.js';
+import { findActiveWorkoutId, getWorkoutEntry, startWorkout } from '../lib/workoutSessions.js';
+import { localDateKey, plannedWorkoutIsInFuture } from '../lib/workoutLifecycle.js';
 import { WorkoutSessionScreen as WorkoutSessionScreenV4 } from './WorkoutSessionScreenV4.jsx';
 import '../workout-session-report-fixes.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
@@ -18,13 +19,13 @@ function plannedSetLabel(set) {
   return set.plannedReps ? `${set.plannedReps} повт.` : 'Повторы не заданы';
 }
 
-function PlannedWorkout({ workout, onBack, onStart, starting, error }) {
+function PlannedWorkout({ workout, onBack, onStart, onOpenActive, starting, error }) {
   return <div className="phone workout-session-phone">
     <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>
     <main className="workout-session-content">
       <section className="workout-session-hero"><span>{formatDate(workout.scheduledDate)}</span><h1>{workout.name}</h1><p>{formatRussianCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений'])} · тренировка ещё не начата</p></section>
       <section className="workout-plan-list">{workout.exercises.map((exercise, index) => <article className="workout-plan-card" key={exercise.id}><div className="workout-plan-number">{index + 1}</div><div className="workout-plan-main"><span>{exercise.muscleGroup || 'Упражнение'}</span><h2>{exercise.name}</h2>{exercise.prescription && <div className="workout-plan-prescription"><span>План</span><strong>{exercise.prescription}</strong></div>}<div className="workout-plan-sets">{exercise.sets.map((set) => <span key={set.id}>Подход {set.setNumber} · {plannedSetLabel(set)}</span>)}</div></div></article>)}</section>
-      {error && <div className="workout-session-error">{error}</div>}
+      {error && <div className="workout-session-error" role="alert">{error}{onOpenActive && <div className="workout-session-recovery"><button type="button" onClick={onOpenActive}>Перейти к текущей тренировке</button></div>}</div>}
     </main>
     <footer className="workout-session-footer"><button type="button" onClick={onStart} disabled={starting}>{starting ? 'Начинаем…' : 'Начать тренировку'}</button></footer>
   </div>;
@@ -32,43 +33,60 @@ function PlannedWorkout({ workout, onBack, onStart, starting, error }) {
 
 export function WorkoutSessionScreen(props) {
   const [entry, setEntry] = useState(null);
+  const [loadedEntry, setLoadedEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const [delegate, setDelegate] = useState(false);
+  const [activeWorkoutId, setActiveWorkoutId] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError('');
     setDelegate(false);
+    setEntry(null);
+    setLoadedEntry(null);
+    setActiveWorkoutId(null);
     getWorkoutEntry(props.scheduledWorkoutId)
       .then((result) => {
         if (!active) return;
-        if (result?.mode === 'planned') setEntry(result);
-        else setDelegate(true);
+        if (result?.mode !== 'planned') { setLoadedEntry(result); setDelegate(true); }
+        else if (plannedWorkoutIsInFuture(result.workout, localDateKey())) setDelegate(true);
+        else setEntry(result);
       })
       .catch((requestError) => { if (active) setError(requestError?.message || 'Не удалось открыть тренировку.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [props.scheduledWorkoutId]);
+  }, [props.scheduledWorkoutId, reloadKey]);
 
   async function handleStart() {
     if (starting) return;
     setStarting(true);
     setError('');
+    setActiveWorkoutId(null);
     try {
-      await startWorkout(props.scheduledWorkoutId);
+      setLoadedEntry(await startWorkout(props.scheduledWorkoutId));
       setDelegate(true);
     } catch (requestError) {
       setError(requestError?.message || 'Не удалось начать тренировку.');
+      if (requestError?.code === 'another-active') {
+        // Otherwise the only way forward would be finding that other workout unaided.
+        findActiveWorkoutId().then((id) => { if (id && id !== props.scheduledWorkoutId) setActiveWorkoutId(id); }).catch(() => {});
+      } else {
+        // The server may have started the session even though its response was lost.
+        getWorkoutEntry(props.scheduledWorkoutId).then((latest) => {
+          if (latest?.mode && latest.mode !== 'planned') { setLoadedEntry(latest); setDelegate(true); }
+        }).catch(() => {});
+      }
     } finally {
       setStarting(false);
     }
   }
 
-  if (delegate) return <WorkoutSessionScreenV4 {...props} />;
+  if (delegate) return <WorkoutSessionScreenV4 {...props} initialEntry={loadedEntry} />;
   if (loading) return <div className="phone workout-session-phone"><header className="workout-session-header"><button type="button" aria-label="Назад" onClick={props.onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header><div className="workout-session-loading">Загружаем тренировку…</div></div>;
-  if (!entry) return <div className="phone workout-session-phone"><header className="workout-session-header"><button type="button" aria-label="Назад" onClick={props.onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header><div className="workout-session-error standalone">{error || 'Тренировка не найдена.'}</div></div>;
-  return <PlannedWorkout workout={entry.workout} onBack={props.onBack} onStart={handleStart} starting={starting} error={error} />;
+  if (!entry) return <div className="phone workout-session-phone"><header className="workout-session-header"><button type="button" aria-label="Назад" onClick={props.onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header><div className="workout-session-error standalone" role="alert">{error || 'Тренировка не найдена.'}<div className="workout-session-recovery"><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></div></div></div>;
+  return <PlannedWorkout workout={entry.workout} onBack={props.onBack} onStart={handleStart} onOpenActive={activeWorkoutId && props.onOpenWorkout ? () => props.onOpenWorkout(activeWorkoutId) : null} starting={starting} error={error} />;
 }
