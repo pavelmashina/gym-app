@@ -166,10 +166,11 @@ export function loadWorkoutSession(sessionId) {
   return withDeadline(readWorkoutSession(sessionId), LOAD_DEADLINE_MS, 'Тренировка загружается слишком долго. Проверьте интернет и повторите.');
 }
 
-export async function getWorkoutSessionStatus(sessionId) {
-  const { data, error } = await settled(supabase.from('workout_sessions').select('status').eq('id', sessionId).maybeSingle());
+export async function getWorkoutSessionState(sessionId) {
+  const { data, error } = await settled(supabase.from('workout_sessions').select('status, paused_at, started_at, active_duration_seconds').eq('id', sessionId).maybeSingle());
   if (error) throw new Error(describeRequestError(error, 'Не удалось проверить состояние тренировки.'));
-  return data?.status ?? null;
+  if (!data) return null;
+  return { status: data.status, paused: Boolean(data.paused_at), startedAt: data.started_at, activeDurationSeconds: data.active_duration_seconds ?? 0 };
 }
 
 export async function findActiveWorkoutId() {

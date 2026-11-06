@@ -37,7 +37,7 @@ assert.equal(backSwipeDirection(-40, 0), 'scroll', 'A drag to the left is not a 
 const activeWorkout = between(workout, 'function ActiveWorkout(', 'function CompletedWorkout(');
 assert.doesNotMatch(activeWorkout, /setInterval|IntersectionObserver/);
 assert.match(activeWorkout, /<WorkoutElapsedTime session=\{session\}/);
-assert.match(between(workout, 'function RestCountdown(', 'function LegacySetRow('), /useSecondTick\(\)/);
+assert.match(between(workout, 'function RestCountdown(', 'function LegacySetRow('), /useSecondTick\(timer\.endsAt\)/);
 assert.match(between(workout, 'function RestCountdown(', 'function LegacySetRow('), /navigator\.vibrate/);
 
 // .phone stays the only scroll container of the workout.

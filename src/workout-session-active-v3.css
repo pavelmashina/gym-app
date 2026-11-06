@@ -5,7 +5,7 @@
   overflow-x: clip;
 }
 
-/* The exercise list must never size itself from a long child (for example the rest timer title). */
+/* The exercise list must never size itself from a long child (for example an exercise name). */
 .workout-session-content.active.v3 .workout-execution-list {
   min-width: 0;
   width: 100%;
@@ -21,27 +21,35 @@
   box-sizing: border-box;
 }
 
-.rest-countdown {
-  width: 100%;
+/* The rest timer sits in the footer, across both of its button columns. */
+.rest-countdown,
+.rest-timer-idle {
+  grid-column: 1 / -1;
   min-width: 0;
-  max-width: 100%;
   box-sizing: border-box;
+}
+.rest-countdown {
   overflow: hidden;
-  margin: 0 0 12px;
-  padding: 13px 14px;
-  border-radius: 18px;
+  padding: 10px 12px;
+  border-radius: 16px;
   background: #171717;
   color: #fff;
-  box-shadow: 0 10px 28px rgba(0,0,0,.14);
 }
 .rest-countdown.finished { background:#2c2c2a; }
 .rest-countdown-copy { min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .rest-countdown-copy span { flex:1 1 auto; min-width:0; font-size:11px; color:rgba(255,255,255,.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rest-countdown-copy strong { flex:0 0 auto; max-width:42%; font-size:24px; line-height:1; letter-spacing:-.6px; white-space:nowrap; }
-.rest-countdown-track { width:100%; min-width:0; height:4px; margin-top:10px; border-radius:999px; background:rgba(255,255,255,.14); overflow:hidden; }
+.rest-countdown-copy strong { flex:0 0 auto; max-width:42%; font-size:24px; line-height:1; letter-spacing:-.6px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.rest-countdown-track { width:100%; min-width:0; height:4px; margin-top:6px; border-radius:999px; background:rgba(255,255,255,.14); overflow:hidden; }
 .rest-countdown-track span { display:block; width:100%; height:100%; transform-origin:left; background:#fff; transition:transform .45s linear; }
-.rest-countdown-actions { min-width:0; margin-top:10px; display:flex; gap:7px; justify-content:flex-end; flex-wrap:wrap; }
-.rest-countdown-actions button { min-width:0; min-height:32px; padding:0 10px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; font-size:11px; font-weight:800; white-space:nowrap; }
+.rest-countdown-actions { min-width:0; margin-top:8px; display:flex; gap:6px; }
+.rest-timer-idle { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.rest-timer-idle > span { flex:1 1 0; min-width:0; color:var(--ink); font-size:12px; font-weight:700; line-height:1.25; }
+.rest-timer-idle-actions { flex:0 0 auto; display:flex; gap:6px; }
+.workout-session-footer .rest-countdown-actions button,
+.workout-session-footer .rest-timer-idle-actions button { width:auto; min-width:0; min-height:36px; padding:0 11px; border:0; border-radius:10px; font-size:11px; font-weight:800; white-space:nowrap; }
+/* One row even at 320px: a second one would make the footer cover the end of the list. */
+.workout-session-footer .rest-countdown-actions button { flex:1 1 auto; padding:0 6px; background:rgba(255,255,255,.12); color:#fff; }
+.workout-session-footer .rest-timer-idle-actions button { border:1px solid var(--line); background:var(--surface); color:var(--ink); }
 
 .exercise-rest-settings {
   border-top: 1px solid #edede8;
