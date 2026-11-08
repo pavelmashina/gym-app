@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
-import { createProgram, getProgram, startProgram, updateProgram } from '../lib/programs.js';
+import { createProgram, getProgram, startProgram, startProgramWithWeekdays, updateProgram } from '../lib/programs.js';
 import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
 import { JoinReadyProgramScreen } from './JoinReadyProgramScreen.jsx';
 import { getCatalogProgram } from '../lib/catalogPrograms.js';
 import { catalogProgramCycleCount } from '../lib/catalogProgramDefaults.js';
+import { defaultTrainingWeekdays, normalizeTrainingWeekdays, nextTrainingDate, trainingFrequencyLabel, trainingScheduleLabel } from '../lib/readyProgramSchedule.js';
 import '../create-program.css';
 import '../program-persistence.css';
 
@@ -54,6 +55,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [details, setDetails] = useState(restored?.details ?? {});
   const [scheduleMode, setScheduleMode] = useState(restored?.scheduleMode ?? 'custom');
   const [cycleRepeatCount, setCycleRepeatCount] = useState(restored?.cycleRepeatCount ?? 1);
+  const [joinWeekdays, setJoinWeekdays] = useState([1, 3, 5]);
   const [programWeeks, setProgramWeeks] = useState(() => restored?.programWeeks ?? [createCycle()]);
   const [editingWorkoutId, setEditingWorkoutId] = useState(restored?.editingWorkoutId ?? null);
   const [startDate, setStartDate] = useState(restored?.startDate ?? '');
@@ -101,14 +103,19 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       try {
         const program = await getProgram(programId);
         let prescribedCycleCount = program.cycleRepeatCount ?? 1;
-        // Already-added catalog programs used to be saved with a hard-coded
-        // single cycle. Restore the source program's planned default at launch.
-        if (launchOnly && !program.participation && program.sourceCatalogProgramId && prescribedCycleCount <= 1) {
+        let joinDetails = program.details ?? {};
+        // Catalog adoption historically omitted the original schedule and set
+        // just one cycle. Read the source defaults for the join screen without
+        // overriding any later explicit user settings.
+        if (launchOnly && program.sourceCatalogProgramId) {
           try {
             const catalog = await getCatalogProgram(program.sourceCatalogProgramId);
-            prescribedCycleCount = catalogProgramCycleCount(catalog.sourcePayload);
+            joinDetails = { ...(catalog.sourcePayload?.details ?? {}), ...joinDetails };
+            if (!program.participation && prescribedCycleCount <= 1) {
+              prescribedCycleCount = catalogProgramCycleCount(catalog.sourcePayload);
+            }
           } catch (lookupError) {
-            console.warn('Using the saved cycle count: catalog duration could not be loaded.', lookupError);
+            console.warn('Using the saved program defaults: source catalog details unavailable.', lookupError);
           }
         }
         if (!active) return;
@@ -118,7 +125,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
         setPlace(program.trainingPlace);
         setEquipment(program.equipment);
         setLevel(normalizeProgramLevel(program.level));
-        setDetails(program.details ?? {});
+        setDetails(launchOnly ? joinDetails : program.details ?? {});
+        if (launchOnly) setJoinWeekdays(defaultTrainingWeekdays({ details: joinDetails, scheduleMode: program.scheduleMode, workoutCount: program.programWeeks?.flatMap(week => week.workouts ?? []).length }));
         setScheduleMode(program.scheduleMode ?? 'custom');
         setCycleRepeatCount(prescribedCycleCount);
         setProgramWeeks(normalizeIntoOneCycle(program.programWeeks));
@@ -166,8 +174,17 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     try {
       let savedProgram;
       if (launchOnly) {
-        const updated = await updateProgram({ programId, existingCoverPath, ...buildSavePayload() });
-        const participation = await startProgram(programId, startDate);
+        const days = normalizeTrainingWeekdays(joinWeekdays);
+        const updated = await updateProgram({
+          programId, existingCoverPath, ...buildSavePayload(),
+          scheduleMode: 'custom',
+          details: {
+            ...details,
+            frequency: trainingFrequencyLabel(days),
+            schedule: trainingScheduleLabel(days),
+          },
+        });
+        const participation = await startProgramWithWeekdays(programId, startDate, days);
         savedProgram = { ...updated, participation };
       } else if (isEditing) {
         savedProgram = await updateProgram({ programId, existingCoverPath, ...buildSavePayload() });
@@ -180,6 +197,13 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     } catch (error) {
       setSaveError(error?.message || 'Не удалось выполнить действие. Попробуйте ещё раз.');
     } finally { setSaving(false); setSavingAction(''); }
+  }
+
+  function changeJoinWeekdays(next) {
+    const days = normalizeTrainingWeekdays(next);
+    if (!days.length) return;
+    setJoinWeekdays(days);
+    setStartDate(current => current ? nextTrainingDate(current, days) : current);
   }
 
   function handleCoverChange(event) {
@@ -205,6 +229,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     scheduleMode={scheduleMode}
     cycleRepeatCount={cycleRepeatCount}
     onCycleRepeatCountChange={setCycleRepeatCount}
+    selectedWeekdays={joinWeekdays}
+    onSelectedWeekdaysChange={changeJoinWeekdays}
     startDate={startDate}
     onStartDateChange={setStartDate}
     onBack={onBack}
