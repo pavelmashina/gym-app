@@ -1,0 +1,147 @@
+/* Program cover framing: use the same GYM mobile sheet, spacing and typography. */
+.program-cover-crop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(12, 16, 22, .66);
+  box-sizing: border-box;
+}
+.program-cover-crop-dialog {
+  width: min(100%, 430px);
+  max-height: 100%;
+  overflow-y: auto;
+  border-radius: var(--radius-lg, 24px);
+  background: var(--bg);
+  color: var(--ink);
+  padding: var(--space-4, 16px);
+  box-sizing: border-box;
+  box-shadow: var(--shadow-float);
+}
+.program-cover-crop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.program-cover-crop-header h2 {
+  margin: 0;
+  font-size: var(--text-h2, 20px);
+  line-height: var(--lh-h2, 24px);
+  font-weight: var(--weight-bold, 700);
+}
+.program-cover-crop-header button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm, 12px);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+.program-cover-crop-hint {
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-size: var(--text-caption, 12px);
+  line-height: var(--lh-caption, 16px);
+}
+.program-cover-crop-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-md, 16px);
+  background: var(--surface-2);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.program-cover-crop-frame:active { cursor: grabbing; }
+.program-cover-crop-frame img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  object-fit: fill;
+  max-width: none;
+  max-height: none;
+  pointer-events: none;
+  user-select: none;
+}
+.program-cover-crop-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+.program-cover-crop-zoom {
+  display: grid;
+  gap: 8px;
+  padding: 18px 0 8px;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+.program-cover-crop-zoom input {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+.program-cover-crop-error {
+  margin: 4px 0 10px;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: #9a3434;
+}
+.program-cover-crop-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3, 12px);
+  margin-top: var(--space-4, 16px);
+}
+.program-cover-crop-actions button {
+  min-height: 48px;
+  border-radius: var(--radius-md, 16px);
+  padding: 8px 12px;
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.program-cover-crop-actions button:first-child {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.program-cover-crop-actions button:last-child {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+.program-cover-crop-actions button:disabled { opacity: .5; cursor: default; }
+.create-program-step1-phone .program-cover-edit-framing {
+  margin-top: 10px;
+  min-height: 42px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 16px);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.create-program-step1-phone .program-cover.has-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
