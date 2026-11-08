@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
+import { readProgramDraftCover, writeProgramDraftCover, clearProgramDraftCover } from '../lib/programDraftCover.js';
 import { createProgram, getProgram, startProgram, startProgramWithWeekdays, updateProgram } from '../lib/programs.js';
 import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
@@ -79,6 +80,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const nameInputRef = useRef(null);
   const descriptionInputRef = useRef(null);
   const coverPickerRef = useRef(null);
+  const coverEditedRef = useRef(false);
   const coverActionsRef = useRef(null);
   const [draftError, setDraftError] = useState(restoration.error);
   const [draftBlocked, setDraftBlocked] = useState(Boolean(restoration.error));
@@ -156,6 +158,32 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     };
   }, [coverMenuOpen]);
 
+  // The text draft lives in localStorage; the cropped image is rehydrated
+  // independently from IndexedDB, before it can be accidentally overwritten.
+  useEffect(() => {
+    if (!draftKey || !restored?.hasCover) return undefined;
+    let active = true;
+    (async () => {
+      try {
+        const savedFile = await readProgramDraftCover(draftKey);
+        if (!active || coverEditedRef.current) return;
+        if (!savedFile) {
+          setCoverNeedsSelection(false);
+          setCoverSelectionError('Фото из старого черновика не сохранилось. Добавьте его повторно.');
+          return;
+        }
+        setCoverFile(savedFile);
+        setCoverUrl(URL.createObjectURL(savedFile));
+        setCoverNeedsSelection(false);
+        setCoverSelectionError('');
+      } catch (error) {
+        if (!active || coverEditedRef.current) return;
+        setCoverSelectionError(error?.message || 'Не удалось восстановить фото из черновика.');
+      }
+    })();
+    return () => { active = false; };
+  }, [draftKey]);
+
   useEffect(() => {
     if (!draftKey || draftFinished.current || draftBlocked) return;
     try {
@@ -170,6 +198,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     if (!window.confirm('Удалить черновик на этом устройстве и начать новую программу?')) return;
     try { clearProgramDraft(localStorage, draftKey); }
     catch { setDraftError('Не удалось удалить черновик. Попробуйте ещё раз.'); return; }
+    coverEditedRef.current = true;
+    clearProgramDraftCover(draftKey).catch(() => {});
     setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel(''); setDetails({});
     setScheduleMode('custom'); setCycleRepeatCount(1); setProgramWeeks([createCycle()]);
     setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverCropSource(null); setCoverSelectionError(''); setCoverNeedsSelection(false); setCoverRemoved(false); setCoverMenuOpen(false);
@@ -284,6 +314,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       }
       draftFinished.current = true;
       try { clearProgramDraft(localStorage, draftKey); } catch { /* The program itself has already been saved. */ }
+      await clearProgramDraftCover(draftKey).catch(() => {});
       onCreated?.(savedProgram);
     } catch (error) {
       setSaveError(error?.message || 'Не удалось выполнить действие. Попробуйте ещё раз.');
@@ -309,7 +340,15 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     setCoverMenuOpen(false);
     setCoverCropSource({ url: URL.createObjectURL(file), createdUrl: true });
   }
-  function applyCoverCrop(file) {
+  async function applyCoverCrop(file) {
+    if (draftKey) {
+      try {
+        await writeProgramDraftCover(draftKey, file);
+      } catch {
+        throw new Error('Не удалось сохранить фото в черновик. Проверьте свободное место на устройстве и попробуйте снова.');
+      }
+    }
+    coverEditedRef.current = true;
     setCoverFile(file);
     setCoverRemoved(false);
     setCoverMenuOpen(false);
@@ -329,6 +368,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     coverPickerRef.current?.click();
   }
   function deleteSelectedCover() {
+    coverEditedRef.current = true;
+    clearProgramDraftCover(draftKey).catch(() => setCoverSelectionError('Не удалось очистить сохранённое фото черновика.'));
     setCoverMenuOpen(false);
     setCoverCropSource(null);
     setCoverFile(null);
