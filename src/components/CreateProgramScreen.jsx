@@ -4,6 +4,9 @@ import { createProgram, getProgram, startProgram, updateProgram } from '../lib/p
 import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
+import { JoinReadyProgramScreen } from './JoinReadyProgramScreen.jsx';
+import { getCatalogProgram } from '../lib/catalogPrograms.js';
+import { catalogProgramCycleCount } from '../lib/catalogProgramDefaults.js';
 import '../create-program.css';
 import '../program-persistence.css';
 
@@ -97,6 +100,17 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       setInitialLoading(true); setInitialError('');
       try {
         const program = await getProgram(programId);
+        let prescribedCycleCount = program.cycleRepeatCount ?? 1;
+        // Already-added catalog programs used to be saved with a hard-coded
+        // single cycle. Restore the source program's planned default at launch.
+        if (launchOnly && !program.participation && program.sourceCatalogProgramId && prescribedCycleCount <= 1) {
+          try {
+            const catalog = await getCatalogProgram(program.sourceCatalogProgramId);
+            prescribedCycleCount = catalogProgramCycleCount(catalog.sourcePayload);
+          } catch (lookupError) {
+            console.warn('Using the saved cycle count: catalog duration could not be loaded.', lookupError);
+          }
+        }
         if (!active) return;
         setName(program.name);
         setDescription(program.description);
@@ -106,7 +120,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
         setLevel(normalizeProgramLevel(program.level));
         setDetails(program.details ?? {});
         setScheduleMode(program.scheduleMode ?? 'custom');
-        setCycleRepeatCount(program.cycleRepeatCount ?? 1);
+        setCycleRepeatCount(prescribedCycleCount);
         setProgramWeeks(normalizeIntoOneCycle(program.programWeeks));
         setParticipationStatus(program.participation?.status ?? null);
         setOriginalStructureMode(program.structureMode ?? 'legacy_weeks');
@@ -184,6 +198,21 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   if (initialLoading) return <div className="phone create-program-phone"><main className="create-program-content"><div className="program-persistence-loading"><div className="exercise-list-spinner" /><span>{launchOnly ? 'Готовим запуск программы…' : 'Загружаем программу…'}</span></div></main></div>;
   if (initialError) return <div className="phone create-program-phone"><header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Программа</strong><span /></header><main className="create-program-content"><div className="program-persistence-message" role="alert">{initialError}</div></main></div>;
   if (legacyActiveLocked) return <div className="phone create-program-phone"><header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Редактировать программу</strong><span /></header><main className="create-program-content"><div className="program-persistence-message" role="alert"><strong>Эта программа использует старую структуру и уже запущена.</strong><br />Чтобы преобразовать её в цикл, сначала завершите или остановите текущий запуск. Расписание и история останутся сохранены.</div></main></div>;
+
+  if (launchOnly) return <JoinReadyProgramScreen
+    programName={name.trim()}
+    programWeeks={programWeeks}
+    scheduleMode={scheduleMode}
+    cycleRepeatCount={cycleRepeatCount}
+    onCycleRepeatCountChange={setCycleRepeatCount}
+    startDate={startDate}
+    onStartDateChange={setStartDate}
+    onBack={onBack}
+    onAction={handleScheduleAction}
+    saving={saving}
+    savingAction={savingAction}
+    saveError={saveError}
+  />;
 
   if (step === 3) return <CreateProgramCycleScheduleScreen
     draftNotice={draftNotice}
