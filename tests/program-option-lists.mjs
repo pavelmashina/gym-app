@@ -21,7 +21,7 @@ const detail=read('src/components/ProgramDetailScreen.jsx');
 const shared=read('src/components/ProgramOverview.jsx');
 const draft=read('src/lib/programDraft.js');
 for(const token of ['CATEGORY_OPTIONS.map','PLACE_OPTIONS','EQUIPMENT_OPTIONS','LEVEL_OPTIONS','PROGRAM_DETAIL_FIELDS.map']) assert.ok(form.includes(token),token);
-assert.match(form,/setDetails\(program\.details \?\? \{\}\)/);
+assert.match(form,/setDetails\(launchOnly \? joinDetails : program\.details \?\? \{\}\)/);
 assert.match(program,/saveProgramDetails/);
 assert.match(program,/\.update\(\{details:normalizeProgramDetails\(details\)\}\)/);
 assert.equal(program.match(/await saveProgramDetails\(/g).length,2);
