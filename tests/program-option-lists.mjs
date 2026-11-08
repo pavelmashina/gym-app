@@ -22,7 +22,7 @@ const shared=read('src/components/ProgramOverview.jsx');
 const draft=read('src/lib/programDraft.js');
 for(const token of ['CATEGORY_OPTIONS.map','PLACE_OPTIONS','EQUIPMENT_OPTIONS','LEVEL_OPTIONS',"PROGRAM_DETAIL_FIELDS.filter(field => ['duration', 'frequency'].includes(field.key))"]) assert.ok(form.includes(token),token);
 assert.doesNotMatch(form, /<span>Шаг 1<\/span>|<h1>Новая программа<\/h1>|Заполните информацию о программе|<span>Обложка<\/span>|<span>Тип тренировок<\/span>|<span>Дополнительно<\/span>/);
-assert.match(form,/option === 'Свой вариант'/);
+assert.match(form,/choice === 'Свой вариант'/);
 assert.match(form,/program-select-custom-input/);
 assert.match(form,/setCustomSelected\(true\)/);
 assert.match(form,/value=\{value \|\| ''\}/);
