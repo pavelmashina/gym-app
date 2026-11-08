@@ -5,6 +5,7 @@ import '../create-program-step2-fixes.css';
 import '../create-program-workout-draft.css';
 import '../create-program-cycle.css';
 import '../exercise-library-picker.css';
+import '../create-program-cycle-standards.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
