@@ -42,7 +42,19 @@ assert.match(form,/className="program-auto-textarea program-description-textarea
 assert.match(creatorCss,/\.create-program-step1-phone \.create-program-form-card \.program-description-textarea/);
 assert.match(creatorCss,/text-align: justify !important/);
 assert.match(form,/<ProgramCoverCropEditor imageUrl=\{coverCropSource\.url\}/);
-assert.match(form,/onClick=\{openExistingCoverCrop\}>Выбрать фрагмент фото/);
+assert.doesNotMatch(form,/program-cover-edit-framing/);
+assert.match(form,/className="program-cover-pencil"/);
+assert.match(form,/aria-label="Управление обложкой"/);
+assert.match(form,/aria-expanded=\{coverMenuOpen\}/);
+assert.match(form,/role="menu" aria-label="Действия с обложкой"/);
+for(const item of ['Изменить фрагмент', 'Выбрать другое фото', 'Удалить фото']) assert.ok(form.includes(item),item);
+assert.match(form,/className="program-cover has-image"/);
+assert.match(form,/className="program-cover program-cover-empty"/);
+assert.match(form,/coverPickerRef\.current\?\.click\(\)/);
+assert.match(form,/setCoverRemoved\(Boolean\(existingCoverPath\)\)/);
+assert.match(form,/removeCover: coverRemoved/);
+assert.match(program,/else if \(removeCover && existingCoverPath\)/);
+assert.match(program,/cover_path: null/);
 assert.match(form,/setCoverCropSource\(\{ url: URL\.createObjectURL\(file\), createdUrl: true \}\)/);
 const cropper = read('src/components/ProgramCoverCropEditor.jsx');
 assert.match(cropper,/onPointerDown=\{startDrag\}/);
@@ -57,6 +69,21 @@ assert.match(cropCss,/aspect-ratio: 16 \/ 9/);
 assert.match(cropCss,/touch-action: none/);
 assert.match(creatorCss,/\.create-program-step1-phone \.create-program-form-card \.program-field:first-child/);
 assert.match(creatorCss,/\.create-program-step1-phone \.program-select-row/);
+assert.match(creatorCss,/\.create-program-step1-phone \.program-cover-actions/);
+assert.match(creatorCss,/\.create-program-step1-phone \.program-cover-pencil/);
+assert.match(creatorCss,/\.create-program-step1-phone \.program-cover-action-menu/);
+const fontRules = [
+  ['header', /\.create-program-step1-phone \.create-program-header > strong \{[\s\S]*?font-size: 20px !important/],
+  ['section titles', /\.create-program-step1-phone \.create-program-section-head h2 \{[\s\S]*?font-size: 20px !important/],
+  ['input labels', /\.create-program-step1-phone \.create-program-form-card \.program-field > span \{[\s\S]*?font-size: 16px !important/],
+  ['input fields', /\.create-program-step1-phone \.create-program-form-card \.program-field \.program-auto-textarea:focus-visible \{[\s\S]*?font-size: 14px !important/],
+  ['categories', /\.create-program-step1-phone \.program-category-list button \{[\s\S]*?font-size: 12px !important/],
+  ['select labels', /\.create-program-step1-phone \.program-select-row-label \{[\s\S]*?font-size: 14px !important/],
+  ['select values', /\.create-program-step1-phone \.program-select-control select option \{[\s\S]*?font-size: 12px !important/],
+  ['cover captions', /\.create-program-step1-phone \.create-program-section-head small \{[\s\S]*?font-size: 12px !important/],
+  ['next button', /\.create-program-step1-phone \.create-program-next \{[\s\S]*?font-size: 14px !important/],
+];
+for(const [label,re] of fontRules) assert.match(creatorCss,re,label);
 assert.match(form,/setDetails\(launchOnly \? joinDetails : program\.details \?\? \{\}\)/);
 assert.match(program,/saveProgramDetails/);
 assert.match(program,/\.update\(\{details:normalizeProgramDetails\(details\)\}\)/);
