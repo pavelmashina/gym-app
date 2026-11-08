@@ -352,3 +352,67 @@
     border-radius: 0 0 34px 34px;
   }
 }
+
+
+/* Custom-program basics: compact blocks without changing established type sizes. */
+.create-program-step1-phone .create-program-content {
+  padding-top: var(--space-3);
+}
+.create-program-step1-phone .create-program-form-card,
+.create-program-step1-phone .program-select-card {
+  padding: 0 !important;
+}
+.create-program-step1-phone .create-program-form-card .program-field:first-child {
+  min-height: 54px;
+  padding: 8px 16px;
+}
+.create-program-step1-phone .create-program-form-card .program-field:last-child {
+  padding: 10px 16px;
+}
+.create-program-step1-phone .create-program-section-head {
+  min-height: 0;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.create-program-step1-phone .create-program-section-head h2 {
+  margin-top: 0;
+}
+.create-program-step1-phone .program-select-row {
+  min-height: 54px;
+  padding: 9px 16px;
+}
+.create-program-step1-phone .program-select-row-label {
+  display: block;
+  margin: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 780;
+}
+.create-program-step1-phone .program-select-custom-input {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding-top: 2px;
+}
+.create-program-step1-phone .program-select-custom-input > label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 780;
+}
+.create-program-step1-phone .program-select-custom-input > input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-body);
+  outline: 0;
+}
+.create-program-step1-phone .program-select-custom-input > input:focus {
+  border-color: var(--ink);
+}
