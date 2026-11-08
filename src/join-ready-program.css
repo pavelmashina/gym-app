@@ -1,38 +1,216 @@
-/* A compact joining flow, separate from the three-step cycle editor. */
-.ready-program-join-phone .program-schedule-content {
-  display: block;
-  min-height: 0;
-  padding-bottom: 56px;
+/* Ready-program joining: single-purpose screen using GYM typography and spacing. */
+.ready-program-join-phone {
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
 }
-.ready-program-join-intro {
-  padding: 7px 2px 19px;
+.ready-program-join-phone .ready-program-join-content {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-6);
 }
-.ready-program-join-intro h1 {
-  margin: 0 0 9px;
-  font-size: var(--text-xl, 24px);
-  line-height: 1.16;
-  letter-spacing: -.5px;
+.ready-program-join-phone .ready-program-join-card {
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  min-width: 0;
 }
-.ready-program-join-intro p {
-  margin: 0;
+.ready-program-join-phone .ready-program-join-summary {
+  display: grid;
+  gap: var(--space-2);
+}
+.ready-program-join-phone .ready-program-eyebrow {
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
   color: var(--muted);
-  font-size: var(--text-body, 14px);
-  line-height: 1.45;
 }
-.ready-program-join-phone .ready-program-join-cycles {
-  margin-top: 18px;
+.ready-program-join-phone .ready-program-join-summary h1 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--text-h2);
+  line-height: var(--lh-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: -.25px;
 }
-.ready-program-join-phone .program-start-section {
-  margin-top: 19px;
+.ready-program-join-phone .ready-program-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-3);
+  margin-top: var(--space-1);
 }
-.ready-program-join-phone .cycle-repeat-card,
-.ready-program-join-phone .program-start-card,
-.ready-program-join-phone .program-schedule-summary {
-  border-radius: 24px;
+.ready-program-join-phone .ready-program-summary-stats > div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
 }
-.ready-program-join-phone .cycle-repeat-stepper button {
+.ready-program-join-phone .ready-program-summary-stats span,
+.ready-program-join-phone .ready-program-date-label > span,
+.ready-program-join-phone .ready-program-date-preview > span {
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--muted);
+}
+.ready-program-join-phone .ready-program-summary-stats strong {
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-semibold);
+}
+.ready-program-join-phone .ready-program-join-section {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.ready-program-join-phone .ready-program-join-section > h2 {
+  margin: 0;
+  padding: 0 var(--space-1);
+  font-size: var(--text-h2);
+  line-height: var(--lh-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: -.25px;
+}
+.ready-program-join-phone .ready-program-week-card {
+  display: grid;
+  gap: var(--space-3);
+}
+.ready-program-join-phone .ready-program-setting-title h3 {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-semibold);
+}
+.ready-program-join-phone .ready-program-card-divider {
+  height: 1px;
+  background: var(--line);
+}
+.ready-program-join-phone .ready-program-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.ready-program-join-phone .ready-program-counter > strong {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-h1);
+  line-height: var(--lh-h1);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+}
+.ready-program-join-phone .ready-program-counter > strong span {
+  color: var(--muted);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-medium);
+}
+.ready-program-join-phone .ready-program-counter-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ready-program-join-phone .ready-program-counter-actions button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
   cursor: pointer;
 }
-.ready-program-join-phone .cycle-repeat-stepper button:disabled {
+.ready-program-join-phone .ready-program-counter-actions button:disabled {
+  opacity: .35;
   cursor: default;
+}
+.ready-program-join-phone .ready-program-counter-actions svg {
+  width: 18px;
+  height: 18px;
+}
+.ready-program-join-phone .ready-program-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7,minmax(0,1fr));
+  gap: 5px;
+  min-width: 0;
+}
+.ready-program-join-phone .ready-program-weekdays button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.ready-program-join-phone .ready-program-weekdays button.selected {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+.ready-program-join-phone .ready-program-weekdays button:disabled {
+  opacity: .7;
+  cursor: default;
+}
+.ready-program-join-phone .ready-program-weekdays button.selected:disabled {
+  opacity: 1;
+}
+.ready-program-join-phone .ready-program-date-card {
+  display: grid;
+  gap: var(--space-3);
+}
+.ready-program-join-phone .ready-program-date-label {
+  display: grid;
+  gap: var(--space-2);
+}
+.ready-program-join-phone .ready-program-date-label input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-body);
+  box-sizing: border-box;
+}
+.ready-program-join-phone .ready-program-date-preview {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+.ready-program-join-phone .ready-program-date-preview strong {
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-semibold);
+}
+.ready-program-join-phone .ready-program-date-error {
+  margin: 0;
+  color: #9a3434;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+}
+.ready-program-join-phone button:focus-visible,
+.ready-program-join-phone input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.ready-program-join-phone .ready-program-join-footer {
+  padding: var(--space-3) var(--page-x) calc(var(--space-3) + env(safe-area-inset-bottom));
+}
+@media (max-width: 360px) {
+  .ready-program-join-phone .ready-program-weekdays { gap: 3px; }
+  .ready-program-join-phone .ready-program-weekdays button { font-size: 11px; }
 }
