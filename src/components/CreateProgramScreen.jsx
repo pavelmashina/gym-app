@@ -1,9 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
 import { createProgram, getProgram, startProgram, startProgramWithWeekdays, updateProgram } from '../lib/programs.js';
 import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
+import { ProgramCoverCropEditor } from './ProgramCoverCropEditor.jsx';
 import { JoinReadyProgramScreen } from './JoinReadyProgramScreen.jsx';
 import { getCatalogProgram } from '../lib/catalogPrograms.js';
 import { catalogProgramCycleCount } from '../lib/catalogProgramDefaults.js';
@@ -54,6 +55,7 @@ function SelectRow({ label, value, onChange, options, placeholder }) {
 }
 
 function resizeTextArea(element) {
+  if (!element) return;
   element.style.height = 'auto';
   element.style.height = `${element.scrollHeight}px`;
 }
@@ -73,6 +75,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   });
   const restored = restoration.draft;
   const draftFinished = useRef(false);
+  const nameInputRef = useRef(null);
+  const descriptionInputRef = useRef(null);
   const [draftError, setDraftError] = useState(restoration.error);
   const [draftBlocked, setDraftBlocked] = useState(Boolean(restoration.error));
   const [step, setStep] = useState(restored?.step ?? (launchOnly ? 3 : 1));
@@ -80,6 +84,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [description, setDescription] = useState(restored?.description ?? '');
   const [coverUrl, setCoverUrl] = useState('');
   const [coverFile, setCoverFile] = useState(null);
+  const [coverCropSource, setCoverCropSource] = useState(null);
+  const [coverSelectionError, setCoverSelectionError] = useState('');
   const [existingCoverPath, setExistingCoverPath] = useState(null);
   const [categories, setCategories] = useState(() => normalizeProgramCategories(restored?.categories));
   const [place, setPlace] = useState(restored?.place ?? '');
@@ -101,6 +107,34 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [initialLoading, setInitialLoading] = useState(Boolean(programId));
   const [initialError, setInitialError] = useState('');
 
+  // Autosize restored drafts and loaded programs before the first paint, not
+  // only when the user focuses/types into a textarea.
+  useLayoutEffect(() => {
+    if (step !== 1 || launchOnly || initialLoading) return undefined;
+    let active = true;
+    const resize = () => {
+      if (!active) return;
+      resizeTextArea(nameInputRef.current);
+      resizeTextArea(descriptionInputRef.current);
+    };
+    resize();
+    const frame = requestAnimationFrame(resize);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => resize());
+    if (descriptionInputRef.current?.parentElement) observer?.observe(descriptionInputRef.current.parentElement);
+    window.addEventListener('resize', resize);
+    document.fonts?.ready?.then(resize).catch(() => {});
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', resize);
+    };
+  }, [step, launchOnly, initialLoading, name, description]);
+
+  useEffect(() => () => {
+    if (coverCropSource?.createdUrl) URL.revokeObjectURL(coverCropSource.url);
+  }, [coverCropSource]);
+
   useEffect(() => {
     if (!draftKey || draftFinished.current || draftBlocked) return;
     try {
@@ -117,7 +151,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     catch { setDraftError('Не удалось удалить черновик. Попробуйте ещё раз.'); return; }
     setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel(''); setDetails({});
     setScheduleMode('custom'); setCycleRepeatCount(1); setProgramWeeks([createCycle()]);
-    setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverNeedsSelection(false);
+    setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverCropSource(null); setCoverSelectionError(''); setCoverNeedsSelection(false);
     setDraftBlocked(false); setDraftError('');
   }
 
@@ -241,9 +275,26 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
 
   function handleCoverChange(event) {
     const file = event.target.files?.[0];
+    event.target.value = '';
     if (!file) return;
-    if (coverUrl?.startsWith('blob:')) URL.revokeObjectURL(coverUrl);
-    setCoverFile(file); setCoverNeedsSelection(false); setCoverUrl(URL.createObjectURL(file));
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setCoverSelectionError('Для обложки подходят изображения JPG, PNG и WEBP.');
+      return;
+    }
+    setCoverSelectionError('');
+    setCoverCropSource({ url: URL.createObjectURL(file), createdUrl: true });
+  }
+  function applyCoverCrop(file) {
+    setCoverFile(file);
+    setCoverNeedsSelection(false);
+    setCoverUrl(URL.createObjectURL(file));
+    setCoverCropSource(null);
+    setCoverSelectionError('');
+  }
+  function openExistingCoverCrop() {
+    if (!coverUrl) return;
+    setCoverSelectionError('');
+    setCoverCropSource({ url: coverUrl, createdUrl: false });
   }
 
   function toggleCategory(category) {
@@ -300,8 +351,8 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к тренировкам" onClick={onBack}><BackIcon /></button><strong>{isEditing ? 'Редактировать программу' : 'Создать программу'}</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content">
       {draftNotice}
-      <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea className="program-auto-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label></section>
+      <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea ref={nameInputRef} className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea ref={descriptionInputRef} className="program-auto-textarea program-description-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
+      <section className="create-program-section"><div className="create-program-section-head"><div><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label>{coverUrl && <button className="program-cover-edit-framing" type="button" onClick={openExistingCoverCrop}>Выбрать фрагмент фото</button>}{coverSelectionError && <div className="program-persistence-message" role="alert">{coverSelectionError}</div>}</section>
       <section className="create-program-section"><div className="create-program-section-head"><div><h2>Дополнительно</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={PLACE_OPTIONS} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={EQUIPMENT_OPTIONS} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={LEVEL_OPTIONS} />{PROGRAM_DETAIL_FIELDS.filter(field => ['duration', 'frequency'].includes(field.key)).map(field =>
           <SelectRow key={field.key} label={field.label} value={details[field.key] ?? ''} placeholder="Выбрать" options={field.options}
             onChange={value => setDetails(current => ({ ...current,[field.key]:value }))} />)}
@@ -309,5 +360,6 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       </section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" disabled={!canContinue} onClick={() => goToStep(2)}>Далее</button></footer>
+    {coverCropSource && <ProgramCoverCropEditor imageUrl={coverCropSource.url} onApply={applyCoverCrop} onCancel={() => setCoverCropSource(null)} />}
   </div>;
 }
