@@ -26,6 +26,13 @@ assert.match(form,/choice === 'Свой вариант'/);
 assert.match(form,/program-select-custom-input/);
 assert.match(form,/setCustomSelected\(true\)/);
 assert.match(form,/value=\{value \|\| ''\}/);
+const cycleStandards = read('src/create-program-cycle-standards.css');
+const cycleScreen = read('src/components/CreateProgramCycleScreen.jsx');
+assert.match(cycleScreen,/create-program-cycle-standards\.css/);
+for(const size of [12,14,16,20,24]) {
+  assert.match(cycleStandards,new RegExp('(?:'+size+'px|--text-[a-z0-9-]+,?'+size+'px)'),'Cycle standards should offer '+size+'px');
+}
+assert.doesNotMatch(cycleStandards,/font-size:\s*(?:8|9|10|11|13|15|17|18|19|21|22|23|25|26|27|28|29|30)px/);
 const creatorCss = read('src/create-program.css');
 assert.match(form,/h2>Дополнительно<\/h2>/);
 assert.doesNotMatch(form,/h2>Характеристики программы<\/h2>/);
@@ -36,6 +43,13 @@ assert.match(creatorCss,/border-radius: 0 !important/);
 assert.match(creatorCss,/\.create-program-step1-phone \.program-select-control select:focus-visible/);
 assert.match(creatorCss,/font-size: var\(--text-micro\) !important/);
 assert.match(form,/useLayoutEffect\(\(\) => \{/);
+assert.match(form,/readProgramDraftCover\(draftKey\)/);
+assert.match(form,/writeProgramDraftCover\(draftKey, file\)/);
+assert.match(form,/clearProgramDraftCover\(draftKey\)/);
+assert.match(form,/setCoverFile\(savedFile\)/);
+assert.match(form,/setCoverUrl\(URL\.createObjectURL\(savedFile\)\)/);
+assert.match(form,/async function applyCoverCrop\(file\)/);
+assert.match(cropperSource(),/await onApply\(file\)/);
 assert.match(form,/resizeTextArea\(descriptionInputRef\.current\)/);
 assert.match(form,/ref=\{descriptionInputRef\}/);
 assert.match(form,/className="program-auto-textarea program-description-textarea"/);
@@ -56,6 +70,7 @@ assert.match(form,/removeCover: coverRemoved/);
 assert.match(program,/else if \(removeCover && existingCoverPath\)/);
 assert.match(program,/cover_path: null/);
 assert.match(form,/setCoverCropSource\(\{ url: URL\.createObjectURL\(file\), createdUrl: true \}\)/);
+function cropperSource(){ return read('src/components/ProgramCoverCropEditor.jsx'); }
 const cropper = read('src/components/ProgramCoverCropEditor.jsx');
 assert.match(cropper,/onPointerDown=\{startDrag\}/);
 assert.match(cropper,/onPointerMove=\{moveDrag\}/);
