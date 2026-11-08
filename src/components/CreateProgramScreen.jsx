@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
 import { createProgram, getProgram, startProgram, startProgramWithWeekdays, updateProgram } from '../lib/programs.js';
 import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
@@ -17,7 +17,40 @@ function ImageIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="curre
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>; }
 
 function SelectRow({ label, value, onChange, options, placeholder }) {
-  return <label className="program-select-row"><span>{label}</span><div className="program-select-control"><select value={value} onChange={(event) => onChange(event.target.value)}>{value && !options.includes(value) && <option value={value}>{value} (ранее сохранено)</option>}<option value="">{placeholder}</option>{options.map((option) => <option value={option} key={option}>{option}</option>)}</select><ChevronIcon /></div></label>;
+  const selectId = useId();
+  const customId = useId();
+  const [customSelected, setCustomSelected] = useState(false);
+  const allowsCustom = options.includes('Свой вариант');
+  // Keep legacy saved values with ё readable in the refreshed dropdown.
+  const displayValue = value === 'Тренажёрный зал' && options.includes('Тренажерный зал')
+    ? 'Тренажерный зал' : value === 'Тренажёры' && options.includes('Тренажеры') ? 'Тренажеры' : value;
+  const existingCustom = Boolean(value && !options.includes(value) && !options.includes(displayValue));
+  const showCustomInput = allowsCustom && (customSelected || existingCustom);
+  const selectedValue = showCustomInput ? 'Свой вариант' : displayValue;
+  const handleChoice = choice => {
+    if (allowsCustom && choice === 'Свой вариант') {
+      setCustomSelected(true);
+      onChange('');
+    } else {
+      setCustomSelected(false);
+      onChange(choice);
+    }
+  };
+  return <div className={`program-select-row${showCustomInput ? ' program-select-row-custom' : ''}`}>
+    <label className="program-select-row-label" htmlFor={selectId}>{label}</label>
+    <div className="program-select-control">
+      <select id={selectId} value={selectedValue} onChange={event => handleChoice(event.target.value)}>
+        {!allowsCustom && value && !options.includes(value) && <option value={value}>{value} (ранее сохранено)</option>}
+        <option value="">{placeholder}</option>
+        {options.map(option => <option value={option} key={option}>{option}</option>)}
+      </select>
+      <ChevronIcon />
+    </div>
+    {showCustomInput && <div className="program-select-custom-input">
+      <label htmlFor={customId}>Свой вариант</label>
+      <input id={customId} type="text" value={value || ''} onChange={event => onChange(event.target.value)} placeholder="Укажите свой вариант" maxLength={100} autoComplete="off" />
+    </div>}
+  </div>;
 }
 
 function resizeTextArea(element) {
@@ -263,16 +296,15 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
 
   if (step === 2) return <CreateProgramCycleScreen draftNotice={draftNotice} editingWorkoutId={editingWorkoutId} onEditingWorkoutChange={setEditingWorkoutId} programName={name.trim()} categories={categories} programWeeks={programWeeks} onProgramWeeksChange={setProgramWeeks} onBack={() => goToStep(1)} onNext={() => structureReady && goToStep(3)} />;
 
-  return <div className="phone create-program-phone">
+  return <div className="phone create-program-phone create-program-step1-phone">
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к тренировкам" onClick={onBack}><BackIcon /></button><strong>{isEditing ? 'Редактировать программу' : 'Создать программу'}</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content">
       {draftNotice}
-      <section className="create-program-intro"><span>Шаг 1</span><h1>{isEditing ? 'Основная информация' : 'Новая программа'}</h1><p>Заполните информацию о программе. На следующем шаге вы соберёте один цикл тренировок, а затем зададите ритм и количество повторений.</p></section>
       <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea className="program-auto-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Обложка</span><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Тип тренировок</span><h2>Категории</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={PLACE_OPTIONS} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={EQUIPMENT_OPTIONS} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={LEVEL_OPTIONS} /></div></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Дополнительно</span><h2>Характеристики программы</h2></div></div>
-        <div className="program-select-card">{PROGRAM_DETAIL_FIELDS.map(field =>
+      <section className="create-program-section"><div className="create-program-section-head"><div><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label></section>
+      <section className="create-program-section"><div className="create-program-section-head"><div><h2>Категории</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={PLACE_OPTIONS} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={EQUIPMENT_OPTIONS} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={LEVEL_OPTIONS} /></div></section>
+      <section className="create-program-section"><div className="create-program-section-head"><div><h2>Характеристики программы</h2></div></div>
+        <div className="program-select-card">{PROGRAM_DETAIL_FIELDS.filter(field => ['duration', 'frequency'].includes(field.key)).map(field =>
           <SelectRow key={field.key} label={field.label} value={details[field.key] ?? ''} placeholder="Выбрать" options={field.options}
             onChange={value => setDetails(current => ({ ...current,[field.key]:value }))} />)}
         </div>
