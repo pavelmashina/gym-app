@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 import { normalizeProgramDetails, normalizeProgramCategories, normalizeProgramLevel } from './programOptions.js';
+import { normalizeTrainingWeekdays } from './readyProgramSchedule.js';
 
 const PROGRAM_COVERS_BUCKET = 'program-covers';
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
@@ -213,6 +214,28 @@ export async function startProgram(programId, startDate) {
     throw new Error('Не удалось присоединиться к программе. Попробуйте ещё раз.');
   }
   return { id: userProgramId, programId, startDate, status: 'active' };
+}
+
+/** Start a ready-made program on the chosen ISO weekdays (Monday=1, Sunday=7). */
+export async function startProgramWithWeekdays(programId, startDate, weekdays) {
+  validateStartDate(startDate);
+  const days = normalizeTrainingWeekdays(weekdays);
+  if (!days.length || days.length !== weekdays?.length) throw new Error('Выберите дни тренировок.');
+  const jsDate = new Date(`${startDate}T12:00:00`);
+  if (!days.includes(jsDate.getDay() || 7)) throw new Error('Первая тренировка должна приходиться на выбранный день недели.');
+  await requireCurrentUser();
+  const { data: userProgramId, error } = await supabase.rpc('start_program_with_weekdays', {
+    p_program_id: programId,
+    p_start_date: startDate,
+    p_weekdays: days,
+  });
+  if (error || !userProgramId) {
+    if (error?.code === '23505' || error?.message?.includes('already active')) throw new Error('Вы уже присоединились к этой программе.');
+    if (error?.message?.includes('First workout must be on a selected training day')) throw new Error('Первая тренировка должна приходиться на выбранный день недели.');
+    if (error?.message?.includes('Start date cannot be in the past')) throw new Error('Дата начала не может быть в прошлом.');
+    throw new Error(error?.message || 'Не удалось присоединиться к программе.');
+  }
+  return { id: userProgramId, programId, startDate, weekdays: days, status: 'active' };
 }
 
 async function saveProgramDetails(programId,userId,details) {
