@@ -416,3 +416,56 @@
 .create-program-step1-phone .program-select-custom-input > input:focus {
   border-color: var(--ink);
 }
+
+
+/* Step 1: unobtrusive square text editors (the outer card remains rounded). */
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea,
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea:focus,
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea:focus-visible {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  overflow-x: hidden;
+  text-overflow: clip;
+}
+/* Give glyphs enough breathing space while keeping the compact card height. */
+.create-program-step1-phone .create-program-form-card .program-field {
+  overflow: visible;
+}
+.create-program-step1-phone .create-program-form-card .program-auto-textarea {
+  min-height: 24px;
+  line-height: 1.5;
+}
+/* Fit selected values without outlined focus rings or truncating the choices. */
+.create-program-step1-phone .program-select-row {
+  grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+  column-gap: 8px;
+}
+.create-program-step1-phone .program-select-control {
+  min-width: 0;
+  gap: 3px;
+}
+.create-program-step1-phone .program-select-control select,
+.create-program-step1-phone .program-select-control select:focus,
+.create-program-step1-phone .program-select-control select:focus-visible {
+  min-width: 0;
+  max-width: 100%;
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  font-size: var(--text-micro) !important;
+  line-height: var(--lh-micro) !important;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+.create-program-step1-phone .program-select-control select option {
+  font-size: var(--text-micro);
+}
