@@ -107,7 +107,7 @@ export function ProgramCoverCropEditor({ imageUrl, onApply, onCancel }) {
       const ext = type === 'image/webp' ? 'webp' : type === 'image/jpeg' ? 'jpg' : 'png';
       const file = new File([blob], `program-cover-${Date.now()}.${ext}`, { type, lastModified: Date.now() });
       if (file.size > 5 * 1024 * 1024) throw new Error('Обложка после обработки превышает 5 МБ.');
-      onApply(file);
+      await onApply(file);
     } catch (failure) {
       setError(failure?.name === 'SecurityError'
         ? 'Не удалось обработать это фото. Загрузите изображение с устройства повторно.'
