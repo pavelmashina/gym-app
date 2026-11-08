@@ -38,8 +38,8 @@
   line-height: var(--lh-body,20px) !important;
 }
 .cycle-builder-phone .program-step2-summary > div:first-child > strong {
-  font-size: var(--text-h3,16px) !important;
-  line-height: var(--lh-h3,21px) !important;
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
   font-weight: var(--weight-semibold,600) !important;
   overflow-wrap: anywhere;
 }
@@ -63,7 +63,6 @@
   font-size: var(--text-caption,12px) !important;
   line-height: var(--lh-caption,16px) !important;
 }
-.cycle-builder-phone .cycle-workout-card .program-workout-copy strong,
 .program-workout-editor-phone .program-workout-exercise-head strong,
 .program-exercise-picker-phone .program-exercise-row-copy strong,
 .program-exercise-picker-phone .exercise-library-row-copy strong {
@@ -138,4 +137,16 @@
 }
 .program-exercise-picker-phone .program-exercise-picker-intro h1 {
   overflow-wrap: anywhere;
+}
+
+/* The cycle list deliberately uses S/14 for both program and workout names. */
+.cycle-builder-phone .cycle-workout-card .program-workout-copy strong {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+  overflow-wrap: anywhere;
+}
+/* With the intro removed, keep a single standard section gap. */
+.cycle-builder-phone .program-step2-section {
+  margin-top: var(--space-4,16px) !important;
 }
