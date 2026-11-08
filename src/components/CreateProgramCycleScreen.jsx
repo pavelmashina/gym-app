@@ -76,7 +76,7 @@ function WorkoutEditor({ workout, onBack, onSave, onChange, draftNotice }) {
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к циклу" onClick={onBack}><BackIcon /></button><strong>Тренировка цикла</strong><span className="create-program-header-spacer" /></header>
     <main className="program-workout-editor-content">
       {draftNotice}
-      <section className="program-workout-editor-intro"><span>Один цикл</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /><p>Добавьте упражнения и задайте подходы.</p></section>
+      <section className="program-workout-editor-intro"><label className="program-workout-name-field"><span>Название тренировки</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /></label></section>
       <section className="program-workout-editor-section">
         <div className="program-workout-editor-section-head"><div><span>Упражнения</span><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
         <div className="program-workout-selected-list">{draft.exercises.map((exercise, index) => {
