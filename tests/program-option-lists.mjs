@@ -30,6 +30,17 @@ const cycleStandards = read('src/create-program-cycle-standards.css');
 const cycleScreen = read('src/components/CreateProgramCycleScreen.jsx');
 assert.match(cycleScreen,/create-program-cycle-standards\.css/);
 const cyclePage = cycleScreen.slice(cycleScreen.indexOf('return <div className="phone create-program-phone create-program-step2-phone cycle-builder-phone">'));
+const workoutEditor = cycleScreen.slice(cycleScreen.indexOf('function WorkoutEditor('),cycleScreen.indexOf('export function CreateProgramCycleScreen('));
+assert.doesNotMatch(workoutEditor, /<span>Один цикл<\/span>|Добавьте упражнения и задайте подходы\./);
+assert.match(workoutEditor, /<label className="program-workout-name-field"><span>Название тренировки<\/span><input className="cycle-workout-name-input"/);
+const workoutFontChecks = [
+  ['name label', /\.program-workout-editor-phone \.program-workout-name-field > span \{[^}]*font-size: var\(--text-h3,16px\) !important/],
+  ['name input', /\.program-workout-editor-phone \.program-workout-name-field \.cycle-workout-name-input:focus-visible \{[^}]*font-size: var\(--text-body,14px\) !important/],
+  ['exercise title', /\.program-workout-editor-phone \.program-workout-exercise-head strong \{[^}]*font-size: var\(--text-h3,16px\) !important/],
+  ['exercise caption', /\.program-workout-editor-phone \.program-workout-exercise-head small,[^}]*font-size: var\(--text-caption,12px\) !important/],
+  ['action buttons', /\.program-workout-editor-phone \.create-program-next \{[^}]*font-size: var\(--text-body,14px\) !important/]
+];
+for (const [label, re] of workoutFontChecks) assert.match(cycleStandards,re,label);
 for(const removed of [
   'Один цикл тренировок', 'Последовательность тренировок', 'Шаг 2',
   'Соберите последовательность тренировок', '<span>Программа</span>',
