@@ -44,8 +44,8 @@ function ExercisePicker({ workout, onBack, onSave, onChange, draftNotice }) {
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Упражнения</strong><span className="create-program-header-spacer" /></header>
     <main className="program-exercise-picker-content">
       {draftNotice}
-      <section className="program-exercise-picker-intro"><span>Цикл тренировок</span><h1>{workout.name}</h1><p>Выберите упражнения из базы или создайте своё.</p></section>
       <ExerciseLibraryPicker
+        hideTitle
         multi
         selectedIds={selectedIds}
         onChange={(ids, all) => { setSelectedIds(ids); setCatalog(all); onChange(selectedExercises(ids, all)); }}
@@ -78,7 +78,7 @@ function WorkoutEditor({ workout, onBack, onSave, onChange, draftNotice }) {
       {draftNotice}
       <section className="program-workout-editor-intro"><label className="program-workout-name-field"><span>Название тренировки</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /></label></section>
       <section className="program-workout-editor-section">
-        <div className="program-workout-editor-section-head"><div><span>Упражнения</span><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
+        <div className="program-workout-editor-section-head"><div><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
         <div className="program-workout-selected-list">{draft.exercises.map((exercise, index) => {
           const key = exerciseKey(exercise);
           return <article className="program-workout-exercise-card" key={key}>
@@ -87,7 +87,7 @@ function WorkoutEditor({ workout, onBack, onSave, onChange, draftNotice }) {
             <button className="program-workout-add-set" type="button" onClick={() => updateExercise(key, (item) => ({ ...item, sets: [...(item.sets ?? []), createSet()] }))}><PlusIcon /><span>Добавить подход</span></button>
           </article>;
         })}</div>
-        <button className="program-workout-add-exercise" type="button" onClick={() => setPickerOpen(true)}><span><PlusIcon /></span><div><strong>Добавить упражнение</strong><small>Недавние, мои и вся база</small></div><ChevronIcon /></button>
+        <button className="program-workout-add-exercise" type="button" onClick={() => setPickerOpen(true)}><span><PlusIcon /></span><div><strong>Добавить упражнение</strong></div><ChevronIcon /></button>
       </section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" onClick={() => onSave({ ...draft, name: draft.name.trim() || 'Без названия' })}>Сохранить тренировку</button></footer>
