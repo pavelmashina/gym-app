@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft, hasProgramDraftProgress } from '../src/lib/programDraft.js';
+import { readProgramDraftCover, writeProgramDraftCover, clearProgramDraftCover } from '../src/lib/programDraftCover.js';
 import { matchesProgramFilters, programFilterOptions, EMPTY_PROGRAM_FILTERS } from '../src/lib/programFilters.js';
 
 const values = new Map();
@@ -28,6 +29,58 @@ assert.throws(() => readProgramDraft(storage, key));
 storage.setItem(key, JSON.stringify({ ...draft, version: 1, programWeeks: [{}] }));
 assert.throws(() => readProgramDraft(storage, key));
 assert.throws(() => writeProgramDraft({ setItem() { throw new Error('quota'); } }, key, draft));
+
+// Minimal asynchronous IndexedDB harness verifies the actual binary draft
+// path, not just the "hasCover" flag stored alongside the text.
+const covers = new Map();
+globalThis.indexedDB = {
+  open() {
+    const request = {};
+    queueMicrotask(() => {
+      const db = {
+        objectStoreNames: { contains: () => false },
+        createObjectStore: () => {},
+        close: () => {},
+        transaction() {
+          const transaction = {
+            objectStore() {
+              return Object.fromEntries(['get','put','delete'].map(method => [method, (value,key) => {
+                const item = {};
+                queueMicrotask(() => {
+                  if (method === 'get') item.result = covers.get(value);
+                  if (method === 'put') covers.set(key,value);
+                  if (method === 'delete') covers.delete(value);
+                  item.onsuccess?.();
+                  queueMicrotask(() => transaction.oncomplete?.());
+                });
+                return item;
+              }]));
+            },
+          };
+          return transaction;
+        },
+      };
+      request.result = db;
+      request.onupgradeneeded?.();
+      request.onsuccess?.();
+    });
+    return request;
+  },
+};
+const demoFile = new File([new Uint8Array([1,2,3,4])], 'training-photo.webp', { type: 'image/webp' });
+await writeProgramDraftCover(key,demoFile);
+const restoredCover = await readProgramDraftCover(key);
+assert.equal(restoredCover.name,'training-photo.webp');
+assert.equal(restoredCover.type,'image/webp');
+assert.deepEqual([...new Uint8Array(await restoredCover.arrayBuffer())],[1,2,3,4]);
+assert.equal(await readProgramDraftCover(programDraftKey('athlete-b')),null,'Image drafts are per account');
+await clearProgramDraftCover(key);
+assert.equal(await readProgramDraftCover(key),null,'Deleted drafts must not retain old photos');
+// Rapid writes followed by deletion must never resurrect stale image data.
+const one = writeProgramDraftCover(key,demoFile);
+const two = clearProgramDraftCover(key);
+await Promise.all([one,two]);
+assert.equal(await readProgramDraftCover(key),null);
 
 const programs = [
   { name: 'А', trainingPlace: 'Дом', categories: ['Сила'], level: 'Начальный' },
