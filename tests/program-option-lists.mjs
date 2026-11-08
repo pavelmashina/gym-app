@@ -29,6 +29,17 @@ assert.match(form,/value=\{value \|\| ''\}/);
 const cycleStandards = read('src/create-program-cycle-standards.css');
 const cycleScreen = read('src/components/CreateProgramCycleScreen.jsx');
 assert.match(cycleScreen,/create-program-cycle-standards\.css/);
+const cyclePage = cycleScreen.slice(cycleScreen.indexOf('return <div className="phone create-program-phone create-program-step2-phone cycle-builder-phone">'));
+for(const removed of [
+  'Один цикл тренировок', 'Последовательность тренировок', 'Шаг 2',
+  'Соберите последовательность тренировок', '<span>Программа</span>',
+  'cycle-recommendation-card', 'program-step2-categories', 'categories.map',
+]) assert.ok(!cyclePage.includes(removed), `Removed cycle-page copy must not remain: ${removed}`);
+assert.match(cyclePage, /<strong>\{programName\}<\/strong>/);
+assert.match(cyclePage, /cycle-workout-list/);
+assert.match(cyclePage, /onClick=\{addWorkout\}/);
+assert.match(cycleStandards,/\.cycle-builder-phone \.program-step2-summary > div:first-child > strong \{\s*font-size: var\(--text-body,14px\) !important;/);
+assert.match(cycleStandards,/\.cycle-builder-phone \.cycle-workout-card \.program-workout-copy strong \{\s*font-size: var\(--text-body,14px\) !important;/);
 for(const size of [12,14,16,20,24]) {
   assert.match(cycleStandards,new RegExp('(?:'+size+'px|--text-[a-z0-9-]+,?'+size+'px)'),'Cycle standards should offer '+size+'px');
 }
