@@ -469,3 +469,19 @@
 .create-program-step1-phone .program-select-control select option {
   font-size: var(--text-micro);
 }
+
+
+/* Step-one description: show all restored text immediately and align its lines. */
+.create-program-step1-phone .create-program-form-card .program-description-textarea {
+  width: 100%;
+  height: auto;
+  min-height: 24px;
+  max-height: none !important;
+  overflow: hidden !important;
+  resize: none;
+  text-align: justify !important;
+  text-align-last: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
