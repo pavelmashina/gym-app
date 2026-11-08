@@ -265,7 +265,7 @@ export async function createProgram({ coverFile = null, startDate = null, detail
   }
 }
 
-export async function updateProgram({ programId, coverFile = null, existingCoverPath = null, details = {}, ...program }) {
+export async function updateProgram({ programId, coverFile = null, existingCoverPath = null, removeCover = false, details = {}, ...program }) {
   validateCover(coverFile);
   const user = await requireCurrentUser();
   const payload = buildProgramPayload(program);
@@ -285,6 +285,15 @@ export async function updateProgram({ programId, coverFile = null, existingCover
     const previousCoverPath = existingCoverPath;
     coverPath = await saveCover({ coverFile, programId, userId: user.id });
     if (previousCoverPath && previousCoverPath !== coverPath) await removeCoverQuietly(previousCoverPath);
+  } else if (removeCover && existingCoverPath) {
+    // Clearing the database reference first guarantees the deleted image does
+    // not remain visible after a reload. Deleting storage comes afterwards.
+    const { data: cleared, error: clearError } = await supabase.from('programs')
+      .update({ cover_path: null, updated_at: new Date().toISOString() })
+      .eq('id', programId).eq('owner_id', user.id).select('id').maybeSingle();
+    if (clearError || !cleared) throw new Error('Не удалось удалить обложку программы. Попробуйте ещё раз.');
+    coverPath = null;
+    await removeCoverQuietly(existingCoverPath);
   }
   return { id: updatedProgramId, coverPath };
 }
