@@ -36,11 +36,29 @@ assert.match(workoutEditor, /<label className="program-workout-name-field"><span
 const workoutFontChecks = [
   ['name label', /\.program-workout-editor-phone \.program-workout-name-field > span \{[^}]*font-size: var\(--text-h3,16px\) !important/],
   ['name input', /\.program-workout-editor-phone \.program-workout-name-field \.cycle-workout-name-input:focus-visible \{[^}]*font-size: var\(--text-body,14px\) !important/],
-  ['exercise title', /\.program-workout-editor-phone \.program-workout-exercise-head strong \{[^}]*font-size: var\(--text-h3,16px\) !important/],
+  ['exercise title', /\.program-workout-editor-phone \.program-workout-exercise-head strong \{[^}]*font-size: var\(--text-body,14px\) !important/],
   ['exercise caption', /\.program-workout-editor-phone \.program-workout-exercise-head small,[^}]*font-size: var\(--text-caption,12px\) !important/],
   ['action buttons', /\.program-workout-editor-phone \.create-program-next \{[^}]*font-size: var\(--text-body,14px\) !important/]
 ];
 for (const [label, re] of workoutFontChecks) assert.match(cycleStandards,re,label);
+assert.doesNotMatch(workoutEditor, /<span>Упражнения<\/span>/);
+assert.doesNotMatch(workoutEditor, /Недавние, мои и вся база/);
+assert.match(workoutEditor, /<h2>\{formatRussianCount\(draft\.exercises\.length/);
+assert.match(cycleStandards,/\.program-workout-editor-phone \.program-workout-editor-section-head h2 \{\s*font-size: var\(--text-h3,16px\) !important/);
+assert.match(cycleStandards,/\.program-workout-editor-phone \.program-workout-set-columns > span \{[^}]*font-size: var\(--text-caption,12px\) !important/);
+assert.match(cycleStandards,/text-transform: none !important;/);
+assert.match(cycleStandards,/\.program-workout-editor-phone \.program-workout-add-set > span \{\s*font-size: var\(--text-caption,12px\) !important/);
+const exercisePickerScreen = cycleScreen.slice(cycleScreen.indexOf('function ExercisePicker('),cycleScreen.indexOf('function WorkoutEditor('));
+for(const omitted of ['Цикл тренировок','Выберите упражнения из базы или создайте своё.','program-exercise-picker-intro','<h1>{workout.name}</h1>']) assert.ok(!exercisePickerScreen.includes(omitted),omitted);
+assert.match(exercisePickerScreen,/<ExerciseLibraryPicker\s+hideTitle\s+multi/);
+const exerciseLibraryPicker = read('src/components/ExerciseLibraryPicker.jsx');
+assert.match(exerciseLibraryPicker,/hideTitle = false/);
+assert.match(exerciseLibraryPicker,/!browseOnly && !hideTitle && <div className="exercise-library-heading">/);
+assert.match(cycleStandards,/\.program-exercise-picker-phone \.exercise-library-filter > span/);
+assert.match(cycleStandards,/\.program-exercise-picker-phone \.exercise-library-create-form label/);
+assert.match(cycleStandards,/\.program-exercise-picker-phone \.exercise-library-row-copy strong/);
+assert.match(cycleStandards,/\.program-exercise-picker-phone \.exercise-library-section-title strong/);
+
 for(const removed of [
   'Один цикл тренировок', 'Последовательность тренировок', 'Шаг 2',
   'Соберите последовательность тренировок', '<span>Программа</span>',
