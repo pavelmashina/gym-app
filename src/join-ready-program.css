@@ -1,0 +1,38 @@
+/* A compact joining flow, separate from the three-step cycle editor. */
+.ready-program-join-phone .program-schedule-content {
+  display: block;
+  min-height: 0;
+  padding-bottom: 56px;
+}
+.ready-program-join-intro {
+  padding: 7px 2px 19px;
+}
+.ready-program-join-intro h1 {
+  margin: 0 0 9px;
+  font-size: var(--text-xl, 24px);
+  line-height: 1.16;
+  letter-spacing: -.5px;
+}
+.ready-program-join-intro p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-body, 14px);
+  line-height: 1.45;
+}
+.ready-program-join-phone .ready-program-join-cycles {
+  margin-top: 18px;
+}
+.ready-program-join-phone .program-start-section {
+  margin-top: 19px;
+}
+.ready-program-join-phone .cycle-repeat-card,
+.ready-program-join-phone .program-start-card,
+.ready-program-join-phone .program-schedule-summary {
+  border-radius: 24px;
+}
+.ready-program-join-phone .cycle-repeat-stepper button {
+  cursor: pointer;
+}
+.ready-program-join-phone .cycle-repeat-stepper button:disabled {
+  cursor: default;
+}
