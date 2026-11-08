@@ -33,8 +33,8 @@ export function programLevelIndex(level) {
   const index = LEVEL_OPTIONS.indexOf(normalizeProgramLevel(level));
   return index === -1 ? 0 : index + 1;
 }
-export const PLACE_OPTIONS=['Тренажёрный зал','Дом','Улица','Неважно'];
-export const EQUIPMENT_OPTIONS=['Полный зал','Свободные веса','Тренажёры','Минимум оборудования','Без оборудования'];
+export const PLACE_OPTIONS=['Тренажерный зал','Дом','Улица','Другое','Свой вариант'];
+export const EQUIPMENT_OPTIONS=['Свободные веса','Тренажеры','Без оборудования','Полный зал','Свой вариант'];
 export const PROGRAM_DETAIL_FIELDS=[
 {key:'goal',label:'Цель',options:['Набор мышечной массы','Развитие силы','Снижение веса','Выносливость','Поддержание формы','Общая физическая подготовка']},
 {key:'duration',label:'Продолжительность',options:['2 недели','4 недели','6 недель','8 недель','12 недель','Без ограничения']},
