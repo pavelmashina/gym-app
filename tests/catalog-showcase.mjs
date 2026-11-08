@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync,existsSync } from 'node:fs';
 import { catalogProgramCycleCount } from '../src/lib/catalogProgramDefaults.js';
+import {
+  defaultTrainingWeekdays, normalizeTrainingWeekdays, resizeTrainingWeekdays,
+  nextTrainingDate, trainingFrequencyLabel, trainingScheduleLabel,
+} from '../src/lib/readyProgramSchedule.js';
 const read=p=>readFileSync(p,'utf8');
 const catalog=read('src/lib/catalogPrograms.js');
 const ui=read('src/components/CatalogProgramsPanel.jsx');
@@ -46,5 +50,37 @@ assert.equal(catalogProgramCycleCount({cycle:{repeat_count:3}}),3);
 assert.equal(catalogProgramCycleCount({}),1);
 assert.match(adoptionMigration,/v_repeat_count:=greatest/);
 assert.match(adoptionMigration,/v_catalog\.source_payload/);
+const joinsCss = read('src/join-ready-program.css');
+const clientPrograms = read('src/lib/programs.js');
+const weekdayMigration = read('supabase/migrations/20261108140000_start_program_with_selected_weekdays.sql');
+assert.deepEqual(defaultTrainingWeekdays({details:{schedule:'Понедельник, среда, пятница',frequency:'3 тренировки в неделю'}}),[1,3,5]);
+assert.deepEqual(defaultTrainingWeekdays({details:{schedule:'Вторник, четверг, суббота',frequency:'3 тренировки в неделю'}}),[2,4,6]);
+assert.deepEqual(defaultTrainingWeekdays({details:{frequency:'2 тренировки в неделю'},workoutCount:3}),[1,3]);
+assert.deepEqual(defaultTrainingWeekdays({scheduleMode:'weekly_tts',workoutCount:3}),[2,4,6]);
+assert.deepEqual(normalizeTrainingWeekdays([7,1,1,8,0,3]),[1,3,7]);
+assert.deepEqual(resizeTrainingWeekdays([2,4,6],4),[1,2,4,6]);
+assert.deepEqual(resizeTrainingWeekdays([2,4,6],2),[2,4]);
+assert.equal(nextTrainingDate('2026-11-08',[1,3,5]),'2026-11-09');
+assert.equal(nextTrainingDate('2026-11-10',[2,4,6]),'2026-11-10');
+assert.equal(trainingFrequencyLabel([1,3,5]),'3 тренировки в неделю');
+assert.equal(trainingScheduleLabel([1,3,5]),'Понедельник, среда, пятница');
+assert.match(join,/Тренировок в неделю/);
+assert.match(join,/Дни тренировок/);
+assert.match(join,/TRAINING_WEEKDAYS\.map/);
+assert.match(join,/aria-pressed=\{days\.includes\(id\)\}/);
+assert.match(join,/onSelectedWeekdaysChange/);
+assert.match(join,/resizeTrainingWeekdays\(days, count\)/);
+assert.doesNotMatch(join,/Присоединиться к программе|Выберите, сколько|Сначала задайте/);
+assert.match(creator,/defaultTrainingWeekdays\(\{ details: joinDetails/);
+assert.match(creator,/startProgramWithWeekdays\(programId, startDate, days\)/);
+assert.match(creator,/frequency: trainingFrequencyLabel\(days\)/);
+assert.match(creator,/schedule: trainingScheduleLabel\(days\)/);
+assert.match(clientPrograms,/supabase\.rpc\('start_program_with_weekdays'/);
+assert.match(weekdayMigration,/CREATE OR REPLACE FUNCTION public\.start_program_with_weekdays/);
+assert.match(weekdayMigration,/p\.owner_id=v_user_id/);
+assert.match(weekdayMigration,/v_current_date := v_current_date \+ 1/);
+assert.match(weekdayMigration,/grant execute on function public\.start_program_with_weekdays/);
+assert.match(joinsCss,/var\(--radius-lg\)/);
+assert.match(joinsCss,/min-height: 44px/);
 assert.ok(existsSync('public/assets/program-fullbody-example-hq.webp'),'High-resolution catalog cover must exist locally');
 console.log('Showcase catalog cover, complete details and published-only access verified.');
