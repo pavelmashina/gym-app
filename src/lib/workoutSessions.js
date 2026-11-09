@@ -340,6 +340,15 @@ export async function addPerformedSet(sessionExerciseId, setNumber, setType = 'w
   return mapSet(data);
 }
 
+// Writes the whole order of an exercise's sets at once (warm-ups first), so it is never half-saved.
+export async function reorderPerformedSets(sessionExerciseId, orderedSetIds) {
+  const { error } = await settled(supabase.rpc('reorder_performed_sets', {
+    p_workout_session_exercise_id: sessionExerciseId,
+    p_ordered_set_ids: orderedSetIds,
+  }));
+  if (error) throw new Error(describeRequestError(error, 'Не удалось сохранить порядок подходов.'));
+}
+
 export async function deletePerformedSet(setId) {
   const { error } = await supabase.from('performed_sets').delete().eq('id', setId);
   if (error) throw new Error('Не удалось удалить подход.');

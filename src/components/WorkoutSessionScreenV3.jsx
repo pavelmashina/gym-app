@@ -17,15 +17,18 @@ import {
   getWorkoutEntry,
   getWorkoutSessionState,
   loadWorkoutSession,
+  reorderPerformedSets,
   startWorkout,
   updateExerciseNote,
   updatePerformedSet,
 } from '../lib/workoutSessions.js';
 import { getExerciseDetails, reorderSessionExercises } from '../lib/workoutSessionExperience.js';
+import { applySetOrder, isWarmupSet, labelSets, moveSet, orderSets, renumberSets, sameSetOrder } from '../lib/setOrder.js';
 import '../workout-session.css';
 import '../workout-session-active-v2.css';
 import '../workout-session-active-v3.css';
 import '../workout-exercise-card.css';
+import '../workout-set-order.css';
 import { CompletedWorkoutEditor } from './CompletedWorkoutEditor.jsx';
 import { formatExerciseCount } from '../lib/formatRussianCount.js';
 import {
@@ -110,13 +113,13 @@ function readStoredObject(key) {
   } catch { return {}; }
 }
 function exerciseStorageKey(exercise) { return String(exercise.id); }
-function buildDisplaySets(sets) {
-  let working = 0;
-  let warmup = 0;
-  return (sets ?? []).map((set) => set.setType === 'warmup'
-    ? { ...set, displayLabel: `Р${++warmup}`, warmup: true }
-    : { ...set, displayLabel: String(++working), warmup: false });
+// Both kinds of set rows share one order: warm-ups on top, then working sets (src/lib/setOrder.js).
+function buildDisplaySets(sets, draggedOrder) {
+  return labelSets(draggedOrder ? applySetOrder(sets, draggedOrder) : orderSets(sets));
 }
+// Holding the set number this long picks the row up; a swipe that starts on the number moves nothing.
+const SET_HOLD_MS = 250;
+const SET_HOLD_SLOP_PX = 8;
 
 function PlannedWorkout({ workout, onStart, starting, error }) {
   return <><main className="workout-session-content"><section className="workout-session-hero"><span>{formatDate(workout.scheduledDate)}</span><h1>{workout.name}</h1><p>{formatExerciseCount(workout.exercises.length)} · тренировка ещё не начата</p></section><section className="workout-plan-list">{workout.exercises.map((exercise, index) => <article className="workout-plan-card" key={exercise.id}><div className="workout-plan-number">{index + 1}</div><div className="workout-plan-main"><span>{exercise.muscleGroup || 'Упражнение'}</span><h2>{exercise.name}</h2><div className="workout-plan-sets">{exercise.sets.map((set) => <span key={set.id}>Подход {set.setNumber} · {plannedSetLabel(set, exercise.prescription)}</span>)}</div></div></article>)}</section>{error && <div className="workout-session-error">{error}</div>}</main><footer className="workout-session-footer"><button type="button" onClick={onStart} disabled={starting}>{starting ? 'Начинаем…' : 'Начать тренировку'}</button></footer></>;
@@ -240,7 +243,7 @@ function RestTimerDock({ timer, autostart, idleSeconds, onStart, onStop, onAdd, 
   return <section className="rest-timer-idle" aria-label="Таймер отдыха"><span>{autostart ? `Таймер отдыха · ${formatRest(idleSeconds)}` : 'Таймер отдыха выключен'}</span><div className="rest-timer-idle-actions"><button type="button" onClick={onStart}>Запустить</button><button type="button" onClick={() => onAutostartChange(!autostart)}>{autostart ? 'Выключить' : 'Включить'}</button></div></section>;
 }
 
-function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
+function LegacySetRow({ set, unit, saving, dragging, handleProps, onPersist, onToggle, onDelete }) {
   const [restored]=useState(()=>readSetDraft(set.id));
   const [weight,setWeight]=useState(()=>toDisplayWeight(restored?restored.weight:set.weight,unit));
   const [reps,setReps]=useState(()=>(restored?restored.reps:set.reps)??'');
@@ -320,8 +323,8 @@ function LegacySetRow({ set, unit, saving, onPersist, onToggle, onDelete }) {
   }
 
   // The column head names the unit, so an empty weight shows a dash rather than repeating “кг”.
-  return <div className={`exercise-set-row${set.completed?' done':''}${set.warmup?' warmup':''}`}>
-    <span className="exercise-set-number">{set.displayLabel}</span>
+  return <div className={`exercise-set-row${set.completed?' done':''}${set.warmup?' warmup':''}${dragging?' dragging':''}`} data-set-id={set.id}>
+    <span className="exercise-set-number" {...handleProps}>{set.displayLabel}</span>
     <input aria-label={`Вес, ${unit==='lb'?'lb':'кг'}`} inputMode="decimal" enterKeyHint="next" placeholder="—" value={weight} disabled={creating} onFocus={e=>e.currentTarget.select()} onChange={e=>changeWeight(e.target.value)} onBlur={flush}/>
     <input aria-label="Повторы" data-reps-set-id={set.id} inputMode="numeric" enterKeyHint="done" placeholder={set.plannedReps?String(set.plannedReps):'—'} value={reps} disabled={creating} onFocus={e=>e.currentTarget.select()} onChange={e=>changeReps(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur();}} onBlur={flush}/>
     <button className="exercise-set-check" type="button" aria-label={set.completed?'Снять отметку':'Подход выполнен'} onClick={toggle} disabled={saving||creating}><CheckIcon /></button>
@@ -354,10 +357,51 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
   // The only rest timer there is: every start replaces it, and it outlives a remount or reload of this screen.
   const [restTimer, setRestTimer] = useState(() => readRestTimer(session.id, Date.now()));
   const [restAutostart, setRestAutostart] = useState(readRestAutostart);
+  // Issue #60: a set row picked up by its number, with the order it is being dragged through.
+  const [setDrag, setSetDrag] = useState(null);
+  const setDragRef = useRef(null);
+  const setHoldRef = useRef(null);
+  const orderSavesRef = useRef(new Set());
+  // Highest set number each exercise may still hold on the server, so a new set never takes a number
+  // that a reorder in flight has not yet freed.
+  const highestSetNumberRef = useRef(new Map());
 
   useEffect(() => {
     if (restTimer) writeRestTimer(restTimer); else clearRestTimer();
   }, [restTimer]);
+
+  useEffect(() => () => setHoldRef.current?.(), []);
+
+  useEffect(() => {
+    if (!setDrag) return undefined;
+    const { pointerId } = setDrag;
+    function move(event) {
+      const current = setDragRef.current;
+      if (!current || event.pointerId !== pointerId) return;
+      const targetId = document.elementFromPoint(event.clientX, event.clientY)?.closest?.('[data-set-id]')?.dataset.setId;
+      const order = targetId ? moveSet(current.order, current.setId, targetId, current.warmupIds) : current.order;
+      if (order === current.order) return;
+      setDragRef.current = { ...current, order };
+      setSetDrag(setDragRef.current);
+    }
+    function drop(event) {
+      const current = setDragRef.current;
+      if (!current || event.pointerId !== pointerId) return;
+      setDragRef.current = null;
+      setSetDrag(null);
+      // When the system takes the gesture over, the sets go back where they were.
+      if (event.type === 'pointerup') saveSetOrder(current.exerciseId, current.order, current.numbers);
+    }
+    // On the window: the dragged row moves in the DOM mid-gesture and the finger may leave the list.
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', drop);
+    window.addEventListener('pointercancel', drop);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', drop);
+      window.removeEventListener('pointercancel', drop);
+    };
+  }, [setDrag?.pointerId, setDrag?.exerciseId]);
 
   useEffect(() => {
     const flush = () => { flushPendingSetEdits().catch(() => {}); };
@@ -411,7 +455,8 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
   async function saveV2(exercise, set) {
     applySetToRest(exercise, set);
     try {
-      const saved=await updatePerformedSet(set.id, set);
+      // The stored number may predate a reorder that is still on its way; the order stays the screen's.
+      const {setNumber:_storedNumber,...saved}=await updatePerformedSet(set.id, set);
       patchSet(exercise.id, set.id, saved);
     } catch(e) {
       if(set.completed)cancelRestOfSet(set.id);
@@ -445,8 +490,70 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
       return false;
     } finally { setSavingSetId(null); }
   }
+  function noteSetNumbers(exerciseId, numbers) {
+    highestSetNumberRef.current.set(exerciseId, Math.max(highestSetNumberRef.current.get(exerciseId) ?? 0, ...numbers));
+  }
+  function patchExerciseSets(exerciseId, change) {
+    onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exerciseId ? { ...item, sets: change(item.sets) } : item) } }));
+  }
+  // Stores the shown order of an exercise's sets in one call. `numbers` are the stored numbers it replaces.
+  // `quiet`: a background tidy-up after adding a warm-up; the screen already shows the right order, so a failure is not reported.
+  async function saveSetOrder(exerciseId, order, numbers, { quiet = false } = {}) {
+    const stored = [...numbers.keys()].sort((a, b) => numbers.get(a) - numbers.get(b));
+    if (sameSetOrder(order, stored)) return;
+    if (quiet && orderSavesRef.current.has(exerciseId)) return;
+    noteSetNumbers(exerciseId, numbers.values());
+    orderSavesRef.current.add(exerciseId);
+    patchExerciseSets(exerciseId, (sets) => renumberSets(sets, order));
+    if (!quiet) setLocalError('');
+    try {
+      await reorderPerformedSets(exerciseId, order);
+    } catch (e) {
+      patchExerciseSets(exerciseId, (sets) => sets.map((set) => numbers.has(set.id) ? { ...set, setNumber: numbers.get(set.id) } : set).sort((a, b) => a.setNumber - b.setNumber));
+      if (!quiet) setLocalError(e.message);
+    } finally {
+      orderSavesRef.current.delete(exerciseId);
+    }
+  }
+  // Holding the number picks the row up; moving the finger first, or lifting it early, does nothing.
+  function holdSetHandle(event, exercise, set) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    // A set still being created has no id the server knows, and one save of the order runs at a time.
+    if (setDragRef.current || orderSavesRef.current.has(exercise.id) || exercise.sets.some((item) => String(item.id).startsWith('temp:'))) return;
+    setHoldRef.current?.();
+    const { pointerId, clientX, clientY } = event;
+    const timer = window.setTimeout(() => {
+      release();
+      const shown = orderSets(exercise.sets);
+      setDragRef.current = {
+        exerciseId: exercise.id,
+        setId: set.id,
+        pointerId,
+        order: shown.map((item) => item.id),
+        warmupIds: new Set(shown.filter(isWarmupSet).map((item) => item.id)),
+        numbers: new Map(exercise.sets.map((item) => [item.id, item.setNumber])),
+      };
+      setSetDrag(setDragRef.current);
+      // A short buzz where the phone can (not iOS); browsers refuse it before the first tap on the page.
+      if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(10);
+    }, SET_HOLD_MS);
+    const moved = (moveEvent) => { if (moveEvent.pointerId === pointerId && Math.hypot(moveEvent.clientX - clientX, moveEvent.clientY - clientY) > SET_HOLD_SLOP_PX) release(); };
+    const lifted = (upEvent) => { if (upEvent.pointerId === pointerId) release(); };
+    function release() {
+      window.clearTimeout(timer);
+      window.removeEventListener('pointermove', moved);
+      window.removeEventListener('pointerup', lifted);
+      window.removeEventListener('pointercancel', lifted);
+      if (setHoldRef.current === release) setHoldRef.current = null;
+    }
+    window.addEventListener('pointermove', moved);
+    window.addEventListener('pointerup', lifted);
+    window.addEventListener('pointercancel', lifted);
+    setHoldRef.current = release;
+  }
   async function addSet(exercise,setType) {
-    const nextNumber=Math.max(0,...exercise.sets.map(set=>set.setNumber))+1;
+    const nextNumber=Math.max(highestSetNumberRef.current.get(exercise.id)??0,...exercise.sets.map(set=>set.setNumber))+1;
+    noteSetNumbers(exercise.id,[nextNumber]);
     const tempId=`temp:${crypto.randomUUID()}`;
     const optimistic={id:tempId,setNumber:nextNumber,setType,plannedReps:null,weight:'',reps:'',completed:false,completedAt:null,resultV2:null};
     setLocalError('');
@@ -454,6 +561,12 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
     try {
       const created=await addPerformedSet(exercise.id,nextNumber,setType);
       onEntryChange(current=>({...current,workout:{...current.workout,exercises:current.workout.exercises.map(item=>item.id===exercise.id?{...item,sets:item.sets.map(set=>set.id===tempId?created:set)}:item)}}));
+      // A new warm-up is shown under the other warm-ups; store that order too, so the history and the next
+      // load agree with the screen. Skipped while another set of this exercise is still being created.
+      const sets=[...exercise.sets,created];
+      if(setType==='warmup'&&!sets.some(set=>String(set.id).startsWith('temp:'))) {
+        void saveSetOrder(exercise.id,orderSets(sets).map(set=>set.id),new Map(sets.map(set=>[set.id,set.setNumber])),{quiet:true});
+      }
     } catch(e) {
       onEntryChange(current=>({...current,workout:{...current.workout,exercises:current.workout.exercises.map(item=>item.id===exercise.id?{...item,sets:item.sets.filter(set=>set.id!==tempId)}:item)}}));
       setLocalError(e.message);
@@ -493,7 +606,7 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
   const restExercise = workout.exercises.find((exercise) => exercise.sets.some((set) => !set.completed)) ?? workout.exercises[workout.exercises.length - 1];
   const idleRestSeconds = restExercise ? getRestSeconds(restExercise) : DEFAULT_REST_SECONDS;
 
-  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><WorkoutElapsedTime session={session} /></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const displaySets = buildDisplaySets(exercise.sets); const execution = getExecutionSettings(exercise); return <article className="workout-exercise-card v3" key={exercise.id}><div className="exercise-card-head"><button className="exercise-card-title" type="button" onClick={() => openInfo(exercise)}><span className="exercise-card-eyebrow">{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="exercise-card-name">{exercise.name}<InfoIcon /></span></button><button className="exercise-card-more" type="button" aria-label="Действия с упражнением" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="exercise-set-head" aria-hidden="true"><span /><span>{unit === 'lb' ? 'lb' : 'кг'}</span><span>Повт.</span></div><div className="exercise-set-list">{displaySets.map((set) => (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />)}</div><div className="exercise-card-actions"><button className="exercise-card-add" type="button" onClick={() => addSet(exercise, 'working')}>+ Подход</button><button className="exercise-card-add" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминка</button><button className="exercise-card-history" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><HistoryIcon />{historyLoadingId === exercise.id ? 'Загрузка…' : 'История'}</button></div><label className="exercise-card-note-field"><span>Заметка</span><textarea className="exercise-card-note" rows="1" value={exercise.note ?? ''} placeholder="…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label></article>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<RestTimerDock timer={restTimer} autostart={restAutostart} idleSeconds={idleRestSeconds} onStart={() => setRestTimer(createRestTimer({ sessionId: session.id, exerciseName: restExercise?.name ?? '', seconds: idleRestSeconds, now: Date.now() }))} onStop={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current && extendRestTimer(current, seconds, Date.now()))} onAutostartChange={changeRestAutostart} /><button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
+  return <><main className="workout-session-content active v3"><section className="workout-active-head"><div><span>Тренировка идёт</span><h1>{workout.name}</h1></div><WorkoutElapsedTime session={session} /></section>{workout.standalone && <StandaloneExerciseEditor sessionId={session.id} exercises={workout.exercises} onEntryChange={onEntryChange} />}<section className="workout-execution-list">{workout.exercises.map((exercise, exerciseIndex) => { const unit = getUnit(exercise); const drag = setDrag?.exerciseId === exercise.id ? setDrag : null; const displaySets = buildDisplaySets(exercise.sets, drag?.order); const execution = getExecutionSettings(exercise); return <article className="workout-exercise-card v3" key={exercise.id}><div className="exercise-card-head"><button className="exercise-card-title" type="button" onClick={() => openInfo(exercise)}><span className="exercise-card-eyebrow">{exerciseIndex + 1} · {exercise.muscleGroup || 'Упражнение'}</span><span className="exercise-card-name">{exercise.name}<InfoIcon /></span></button><button className="exercise-card-more" type="button" aria-label="Действия с упражнением" onClick={() => setActionTarget(exercise)}><MoreIcon /></button></div>{import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && <div className="exercise-execution-settings"><ExerciseConfigurationEditor exerciseId={exercise.metricContract.exercise_id} equipmentInstanceId={execution.equipmentInstanceId} value={execution.configuration} onChange={(configuration) => patchExecutionSettings(exercise, { configuration })} onEquipmentChange={(equipmentInstanceId) => patchExecutionSettings(exercise, { equipmentInstanceId })} /></div>}{exercise.prescription && <p className="workout-exercise-prescription">{exercise.prescription}</p>}<div className="exercise-set-head" aria-hidden="true"><span /><span>{unit === 'lb' ? 'lb' : 'кг'}</span><span>Повт.</span></div><div className={`exercise-set-list${drag ? ' reordering' : ''}`}>{displaySets.map((set) => { const handleProps = { onPointerDown: (event) => holdSetHandle(event, exercise, set), onContextMenu: (event) => event.preventDefault() }; const dragging = drag?.setId === set.id; return (set.resultV2 || (import.meta.env.VITE_EXERCISE_RESULTS_V2 === 'true' && exercise.metricContract && !set.completed && set.weight === '')) ? <ResultSetV2 key={set.id} set={set} contract={exercise.metricContract} configurationKeyValue={configurationKey(execution.configuration)} equipmentInstanceId={execution.equipmentInstanceId} dragging={dragging} handleProps={handleProps} onSave={next => saveV2(exercise,next)} onDelete={() => removeSet(exercise,set)} /> : <LegacySetRow key={set.id} set={set} unit={unit} saving={savingSetId===set.id} dragging={dragging} handleProps={handleProps} onPersist={saveSet} onToggle={next=>toggleComplete(exercise,next)} onDelete={()=>removeSet(exercise,set)} />; })}</div><div className="exercise-card-actions"><button className="exercise-card-add" type="button" onClick={() => addSet(exercise, 'working')}>+ Подход</button><button className="exercise-card-add" type="button" onClick={() => addSet(exercise, 'warmup')}>+ Разминка</button><button className="exercise-card-history" type="button" onClick={() => openHistory(exercise)} disabled={historyLoadingId === exercise.id}><HistoryIcon />{historyLoadingId === exercise.id ? 'Загрузка…' : 'История'}</button></div><label className="exercise-card-note-field"><span>Заметка</span><textarea className="exercise-card-note" rows="1" value={exercise.note ?? ''} placeholder="…" onChange={(e) => onEntryChange((current) => ({ ...current, workout: { ...current.workout, exercises: current.workout.exercises.map((item) => item.id === exercise.id ? { ...item, note: e.target.value } : item) } }))} onBlur={() => saveNote(exercise)} /></label></article>; })}</section></main><footer className="workout-session-footer workout-session-footer-dual">{(error || localError) && <div className="workout-session-error workout-footer-error" role="alert">{error || localError}</div>}<RestTimerDock timer={restTimer} autostart={restAutostart} idleSeconds={idleRestSeconds} onStart={() => setRestTimer(createRestTimer({ sessionId: session.id, exerciseName: restExercise?.name ?? '', seconds: idleRestSeconds, now: Date.now() }))} onStop={() => setRestTimer(null)} onAdd={(seconds) => setRestTimer((current) => current && extendRestTimer(current, seconds, Date.now()))} onAutostartChange={changeRestAutostart} /><button className="workout-pause-button" type="button" onClick={onPauseRequest} disabled={finishing || pausing}>{pausing ? 'Сохраняем…' : 'Поставить на паузу'}</button><button type="button" onClick={onFinish} disabled={finishing || pausing}>{finishing ? 'Завершаем…' : 'Завершить тренировку'}</button></footer>{actionTarget && <ExerciseActionsPopup exercise={actionTarget} unit={getUnit(actionTarget)} restSeconds={getRestSeconds(actionTarget)} onUnitChange={(unit) => setUnit(actionTarget, unit)} onRestChange={(seconds) => setRestSeconds(actionTarget, seconds)} onReplace={() => openReplacement(actionTarget)} onReorder={() => { setReorderState({ focusId: actionTarget.id }); setActionTarget(null); }} onDelete={() => removeExercise(actionTarget)} onClose={() => setActionTarget(null)} />}{history && <HistoryModal data={history.data} exerciseName={history.exerciseName} unit={history.unit} onClose={() => setHistory(null)} />}{reorderState && <ReorderExerciseScreen standalone={workout.standalone} exercises={workout.exercises} focusId={reorderState.focusId} saving={reorderSaving} onSave={saveReorder} onClose={() => !reorderSaving && setReorderState(null)} />}{exerciseInfo && <ExerciseInfoScreen exercise={exerciseInfo.exercise} details={exerciseInfo.details} loading={infoLoading} onClose={() => setExerciseInfo(null)} />}</>;
 }
 
 function CompletedWorkout({ entry, onDone, onReload }) {

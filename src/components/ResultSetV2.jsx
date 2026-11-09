@@ -8,7 +8,7 @@ const TrashIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 
 const labels = {weight:'Вес, кг',reps:'Повторения',duration_seconds:'Время, с',distance_meters:'Дистанция, м',assistance_weight:'Помощь, кг'};
 
-export default function ResultSetV2({set,contract,configurationKeyValue='standard',equipmentInstanceId=null,onSave,onDelete}) {
+export default function ResultSetV2({set,contract,configurationKeyValue='standard',equipmentInstanceId=null,dragging=false,handleProps,onSave,onDelete}) {
   const initial = set.resultV2 || {...contract,metric_version:'v2',weight_unit:'kg',configuration_key:configurationKeyValue,equipment_instance_id:equipmentInstanceId,set_type:set.setType,completed:false};
   const [draft,setDraft] = useState(initial);
   const [dirty,setDirty] = useState(false);
@@ -44,8 +44,10 @@ export default function ResultSetV2({set,contract,configurationKeyValue='standar
   }
   useEffect(()=>{if(!set.resultV2)setDraft(current=>({...current,configuration_key:configurationKeyValue,equipment_instance_id:equipmentInstanceId||null}));},[configurationKeyValue,equipmentInstanceId,set.resultV2]);
   const loadLabel=['dumbbell_each','kettlebell_each'].includes(draft.load_mode)?'Вес одного снаряда, кг':draft.load_mode==='barbell_total'?'Штанга с грифом, кг':draft.load_mode==='bodyweight'?'Дополнительный вес, кг':'Указанный вес, кг';
-  return <div className={`result-set-v2 compact${draft.completed?' done':''}`}>
-    <span className="result-set-v2-number">{set.setType==='warmup'?'Р':''}{set.setNumber}</span>
+  // The label comes from the shown order (Р1, 1, 2…), as on the weight × reps rows; the stored number may have gaps.
+  const label=set.displayLabel??`${set.setType==='warmup'?'Р':''}${set.setNumber}`;
+  return <div className={`result-set-v2 compact${draft.completed?' done':''}${set.setType==='warmup'?' warmup':''}${dragging?' dragging':''}`} data-set-id={set.id}>
+    <span className="result-set-v2-number" {...handleProps}>{label}</span>
     <div className="result-set-v2-fields">{resultFieldsV2(draft.measurement_type).map(field=><label key={field}>
       <span>{field==='weight'?loadLabel:labels[field]}</span><input aria-label={field==='weight'?loadLabel:labels[field]} inputMode={field==='reps'?'numeric':'decimal'} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
     </label>)}</div>

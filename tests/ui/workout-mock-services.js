@@ -4,34 +4,39 @@ export * from './mock-services.js';
 const params = new URLSearchParams(location.search);
 const exerciseCount = Math.max(1, Number(params.get('exercises')) || 8);
 const setCount = Math.max(1, Number(params.get('sets')) || 6);
+// `v2=1`: the second exercise has a measurement contract, so (with VITE_EXERCISE_RESULTS_V2=true)
+// its empty sets are results v2 rows. `order=fail`: saving a new set order fails.
+const resultsV2 = params.get('v2') === '1';
+const orderFails = params.get('order') === 'fail';
 const pause = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function buildSet(exerciseIndex, setIndex) {
+function buildSet(exerciseIndex, setIndex, empty) {
   const warmup = setIndex === 0;
   return {
     id: `set-${exerciseIndex}-${setIndex}`,
     setNumber: setIndex + 1,
     setType: warmup ? 'warmup' : 'working',
     plannedReps: warmup ? 15 : 10,
-    weight: setIndex < 2 ? String(20 + setIndex * 10) : '',
-    reps: setIndex < 2 ? '10' : '',
-    completed: setIndex === 0,
+    weight: !empty && setIndex < 2 ? String(20 + setIndex * 10) : '',
+    reps: !empty && setIndex < 2 ? '10' : '',
+    completed: !empty && setIndex === 0,
     completedAt: null,
     resultV2: null,
   };
 }
 
 function buildExercise(_, index) {
+  const v2 = resultsV2 && index === 1;
   return {
     id: `exercise-${index}`,
     exerciseId: `catalog-${index}`,
     linkedExerciseId: `catalog-${index}`,
-    name: `Тестовое упражнение с длинным названием ${index + 1}`,
-    muscleGroup: index % 2 ? 'Спина' : 'Грудь',
+    name: v2 ? 'Жим гантелей сидя' : `Тестовое упражнение с длинным названием ${index + 1}`,
+    muscleGroup: v2 ? 'Плечи' : index % 2 ? 'Спина' : 'Грудь',
     prescription: '',
     note: '',
-    metricContract: null,
-    sets: Array.from({ length: setCount }, (__, setIndex) => buildSet(index, setIndex)),
+    metricContract: v2 ? { exercise_id: `catalog-${index}`, measurement_type: 'weight_reps', load_mode: 'dumbbell_each', laterality: 'bilateral', measurement_note: null } : null,
+    sets: Array.from({ length: setCount }, (__, setIndex) => buildSet(index, setIndex, v2)),
   };
 }
 
@@ -66,6 +71,11 @@ export async function updatePerformedSet(_, values) { await pause(); return valu
 export async function addPerformedSet(_, setNumber, setType = 'working') {
   await pause();
   return { id: `set-new-${crypto.randomUUID()}`, setNumber, setType, plannedReps: null, weight: '', reps: '', completed: false, completedAt: null, resultV2: null };
+}
+export async function reorderPerformedSets(_, orderedSetIds) {
+  await pause(300);
+  (window.__setOrderSaves ??= []).push(orderedSetIds);
+  if (orderFails) throw new Error('Не удалось сохранить порядок подходов.');
 }
 export async function deletePerformedSet() { await pause(); }
 export async function deleteSessionExercise() { await pause(); }

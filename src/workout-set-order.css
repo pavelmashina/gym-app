@@ -1,0 +1,28 @@
+/* Issue #60: moving sets inside an exercise card of an active workout.
+   The set number is the handle on both kinds of rows: hold it, then drag the row up or down. */
+.exercise-set-number,
+.result-set-v2-number {
+  /* The finger on the number belongs to the drag, not to page scrolling or text selection. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+}
+
+/* Warm-up numbers are muted on results v2 rows too, as on the weight × reps rows. */
+.result-set-v2.warmup .result-set-v2-number { color: var(--muted); }
+
+/* The row being dragged lifts above its neighbours. */
+.exercise-set-row.dragging,
+.result-set-v2.compact.dragging {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 18%, transparent);
+  transform: scale(1.02);
+}
+.exercise-set-row.dragging:not(.done),
+.result-set-v2.compact.dragging:not(.done) { background: var(--surface); }
+.exercise-set-list.reordering,
+.exercise-set-list.reordering .exercise-set-number,
+.exercise-set-list.reordering .result-set-v2-number { cursor: grabbing; }
