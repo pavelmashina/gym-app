@@ -5,6 +5,7 @@ import { CATEGORY_OPTIONS, LEVEL_OPTIONS, normalizeProgramCategories, normalizeP
 const read = path => readFileSync(path,'utf8');
 const training = read('src/components/ExercisesScreen.jsx');
 const picker = read('src/components/ExerciseLibraryPicker.jsx');
+const browser = read('src/components/TrainingExerciseBrowser.jsx');
 const library = read('src/lib/exerciseLibrary.js');
 const program = read('src/lib/programs.js');
 const catalog = read('src/lib/catalogPrograms.js');
@@ -29,9 +30,10 @@ assert.match(catalogUI,/programLevelIndex\(b\.level\)/);
 assert.doesNotMatch(catalogUI,/const DIFFICULTY_POINTS/);
 
 assert.match(training,/id: 'exercises', label: 'Упражнения'/);
-assert.match(training,/<ExerciseLibraryPicker browseOnly/);
+assert.match(training,/<TrainingExerciseBrowser refreshKey=\{refreshKey\}/);
+assert.doesNotMatch(training,/\{ id: 'my-exercises', label: 'Мои упражнения' \}/);
 assert.ok(training.indexOf('<nav className="training-tabs"') < training.indexOf('className="exercise-search training-search"'),'Training navigation precedes its search input');
-assert.match(training,/!\['exercises','my-exercises','received'\]\.includes\(activeTab\) && <label className="exercise-search training-search"/);
+assert.match(training,/!\['exercises','received'\]\.includes\(activeTab\) && <label className="exercise-search training-search"/);
 assert.match(picker,/exercise-library-search\$\{browseOnly \? ' exercise-search training-search' : ''\}/);
 assert.match(css,/\.exercise-catalog-content \.training-search \{\s*margin-top: 4px;/);
 assert.match(css,/\.training-exercise-browser \.exercise-library-search \{[\s\S]*?margin-top: 4px;/);
@@ -41,6 +43,9 @@ assert.match(picker,/!browseOnly && !hideTitle && <div className="exercise-libra
 assert.match(picker,/hideHeading=\{browseOnly\}/);
 assert.match(picker,/includeLegacy: browseOnly/);
 assert.match(picker,/if \(browseOnly\) \{ setInfoExercise\(exercise\); return; \}/);
+assert.match(browser,/listExerciseLibrary\(\{ includeLegacy: true \}\)/);
+assert.match(browser,/listMyExercises\(\)/);
+assert.match(browser,/training-exercise-source-switcher/);
 assert.match(library,/includeLegacy && CATALOG_V2_ENABLED/);
 assert.match(library,/knownIds\.has\(row\.id\)/);
 assert.match(css,/data-training-tab="exercises"/);
