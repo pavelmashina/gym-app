@@ -36,6 +36,9 @@ assert.doesNotMatch(navCss,/\.app-nav-item\.home|margin-top:\s*-22px|border:\s*2
 assert.match(navCss,/\.app-nav-item\.active \.app-nav-icon/);
 const navigationPolish = read('src/november-card-navigation-refinements.css');
 assert.match(navigationPolish,/\.app-nav-item\.active::before/);
+assert.match(navigationPolish,/\.app-bottom-nav \.app-nav-item\.active::before \{[\s\S]*?inset: 10px 8px;/);
+assert.match(navigationPolish,/radial-gradient\(ellipse 48% 46% at center,[\s\S]*?transparent 100%\)/);
+assert.match(navigationPolish,/\.app-bottom-nav \.app-nav-item\.active \{[\s\S]*?isolation: isolate;/);
 assert.doesNotMatch(navigationPolish,/\.app-nav-item\.active:not\(\.home\)/);
 assert.doesNotMatch(home,/function BottomNav\(/);
 assert.doesNotMatch(training,/function TrainingBottomNav\(/);
