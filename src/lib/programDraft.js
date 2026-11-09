@@ -3,6 +3,16 @@ export function programDraftKey(userId) {
   return userId ? `gym:program-draft:v${VERSION}:${userId}` : null;
 }
 
+// Whether this device's draft of a new program still refers to the exercise. Storage that
+// cannot be read counts as yes, so deleting the exercise keeps the row the draft may need.
+export function programDraftUsesExercise(userId, exerciseId) {
+  try {
+    return Boolean(globalThis.localStorage?.getItem(programDraftKey(userId))?.includes(exerciseId));
+  } catch {
+    return true;
+  }
+}
+
 export function readProgramDraft(storage, key) {
   if (!key) return null;
   const raw = storage.getItem(key);

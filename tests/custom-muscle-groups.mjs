@@ -146,14 +146,17 @@ assert.deepEqual(filterOptions([]), mainGroups, 'Without own exercises the filte
 assert.deepEqual(filterOptions(result.mine), [...mainGroups, 'Вращатели плеча', 'Шея'], 'Only groups outside the main ones are added');
 
 // 8. The form wires the field in; the field offers «Другое» with a bounded text input.
+// The form is shared by the picker and «Мои упражнения»; the picker keeps the filter.
 const picker = read('../src/components/ExerciseLibraryPicker.jsx');
+const form = read('../src/components/CustomExerciseForm.jsx');
 const field = read('../src/components/MuscleGroupField.jsx');
 const styles = read('../src/exercise-library-picker.css');
-assert.match(picker, /<MuscleGroupField muscleGroup=\{draft\.muscleGroup\} customMuscleGroup=\{draft\.customMuscleGroup\}/);
-assert.match(picker, /\.\.\.muscleGroupDraft\(exercise\.display_muscle_group\)/);
-assert.match(picker, /!muscleGroupChoiceError\(draft\)/);
+assert.match(form, /<MuscleGroupField muscleGroup=\{draft\.muscleGroup\} customMuscleGroup=\{draft\.customMuscleGroup\}/);
+assert.match(form, /\.\.\.muscleGroupDraft\(exercise\.display_muscle_group\)/);
+assert.match(form, /!muscleGroupChoiceError\(draft\)/);
 assert.match(picker, /exerciseMuscleGroupFilterOptions\(library\.mine\)/);
-assert.match(picker, /customMuscleGroup: ''/);
+assert.match(form, /customMuscleGroup: ''/);
+assert.match(picker, /setLastChoice\(\{ \.\.\.muscleGroupDraft\(saved\.muscle_group\)/, 'The next exercise starts from the same group, a typed one included');
 assert.match(field, /CUSTOM_EXERCISE_MUSCLE_GROUPS\.map/);
 assert.match(field, /<option>\{EXERCISE_MUSCLE_GROUP_OTHER\}<\/option>/);
 assert.match(field, /maxLength=\{MAX_MUSCLE_GROUP_LENGTH\}/);
