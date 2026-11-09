@@ -45,6 +45,16 @@ Use available line-height tokens (e.g. 20px body, 16px caption, 13px micro) and 
 
 Rules are implemented in `src/training-catalog-standards.css`, imported after other style sheets in `src/main.jsx`. Matching regression assertions live in `tests/training-typography-standard.mjs`.
 
+### Training → Exercises — unified Base / My catalog
+
+- The former separate “Мои упражнения” upper tab was removed. The single “Упражнения” tab contains a two-way text switcher **База / Мои упражнения**.
+- Search bar is followed by a single compact row containing **Группа мышц**, **Оборудование** and the same outlined **+ Создать** button used for creating a training program. Filter values use **10px**, labels use **12px**. Keep the three controls on one line on mobile.
+- Exercises are displayed in standard horizontal list cards. There is **no right chevron**. The circled **i** icon has no surrounding tile/background. Tapping the row or the i icon opens the full-screen details screen, not a bottom sheet.
+- Details: eyebrow **«Упражнение» 16px**, not uppercase; exercise title **14px**; muscle/equipment tags **12px**; **«Описание» 16px**; description/technique text **14px**. Existing photos, videos and long-form technique remain accessible.
+- Creation and editing use a standalone full-height screen with a back arrow. The old **«Мои упражнения»** overline on the form is removed; **«Обязательные поля отмечены *»** is **12px**, video-divider **«или»** is **10px**.
+- Owner-only edit/delete actions remain on the detail screen; deletion still safeguards exercises used in programs and workout history. The library picker in the workout editor is intentionally separate and continues to support multi-selection.
+- Source files: `src/components/TrainingExerciseBrowser.jsx`, `src/training-exercise-browser.css`; checks: `tests/training-exercise-browser.mjs`.
+
 ### Bottom navigation
 Five equal-sized buttons, from left to right: **Главная → Тренировки → Статистика → Питание → Спортпит**. No raised or outlined central icon. The active section uses an **inset radial gradient** fading from stronger center color to transparent outer edges, with room between the highlight and outer dock border. Preserve this effect; do not substitute a solid block.
 
