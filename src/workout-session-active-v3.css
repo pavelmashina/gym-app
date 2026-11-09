@@ -64,69 +64,6 @@
   scroll-margin-top: 80px;
 }
 
-.workout-exercise-card.v3 .performed-set-row input:focus {
-  outline: 2px solid #171717;
-  outline-offset: 1px;
-}
-
-/* Показываем единицу веса в заголовке для конкретного упражнения. */
-.workout-exercise-card.v3 .performed-set-head:has(+ .performed-set-list input[placeholder="кг"]) > span:nth-child(2)::after {
-  content: " · кг";
-}
-.workout-exercise-card.v3 .performed-set-head:has(+ .performed-set-list input[placeholder="lb"]) > span:nth-child(2)::after {
-  content: " · lb";
-}
-
-/* Разминочные подходы всегда визуально идут перед рабочими. */
-.workout-exercise-card.v3 .performed-set-list {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.workout-exercise-card.v3 .performed-set-row:has(.set-number-label.warmup) {
-  order: -1;
-}
-
-/* Предыдущий результат — простая текстовая ссылка с компактной i-иконкой. */
-.workout-exercise-card.v3 .previous-result-button {
-  width: auto;
-  min-height: 0;
-  margin: 12px 0 14px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #4f4f4b;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: left;
-  box-shadow: none;
-}
-.workout-exercise-card.v3 .previous-result-button::before {
-  content: "i";
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
-  border: 1.4px solid #777772;
-  border-radius: 50%;
-  display: inline-grid;
-  place-items: center;
-  color: #777772;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1;
-}
-.workout-exercise-card.v3 .previous-result-button .previous-result-icon,
-.workout-exercise-card.v3 .previous-result-button > svg {
-  display: none;
-}
-.workout-exercise-card.v3 .previous-result-button:disabled {
-  opacity: .55;
-}
-
 @media (max-width: 360px) {
   .exercise-rest-settings > div { grid-template-columns:1fr 1fr; }
   .rest-countdown-copy strong { max-width:36%; font-size:22px; }
@@ -134,7 +71,7 @@
 
 /* Exercise-level execution settings: secondary, compact and lazy. */
 .exercise-execution-settings {
-  margin: 7px 0 8px;
+  margin: var(--space-2) 0 0;
 }
 
 .exercise-execution-settings > details {
@@ -144,7 +81,7 @@
 .exercise-execution-settings summary {
   width: max-content;
   max-width: 100%;
-  min-height: 34px;
+  min-height: 28px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -154,9 +91,9 @@
   gap: 6px;
   cursor: pointer;
   list-style: none;
-  font-size: 11px;
-  line-height: 15px;
-  font-weight: 700;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
 }
 
 .exercise-execution-settings summary::-webkit-details-marker {
@@ -234,36 +171,35 @@
   gap: 6px;
 }
 
-/* Restore compact set-entry geometry instead of one settings card per set. */
+/* Compact set entry on the columns, sizes and type scale of the exercise card (workout-exercise-card.css). */
 .result-set-v2.compact {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 36px 32px;
+  grid-template-columns: 28px minmax(0, 1fr) 32px 28px;
   align-items: end;
-  gap: 7px;
+  gap: 6px;
   margin: 0;
-  padding: 7px 0;
+  padding: 4px;
   border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: 12px;
   background: transparent;
 }
 
 .result-set-v2.compact.done {
-  opacity: .72;
+  background: color-mix(in srgb, #2e9e57 13%, var(--surface));
 }
 
 .result-set-v2-number {
-  min-height: 40px;
+  min-height: 32px;
   display: grid;
   place-items: center;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
 }
 
 .result-set-v2.compact .result-set-v2-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
-  gap: 7px;
+  gap: 6px;
 }
 
 .result-set-v2.compact label {
@@ -275,9 +211,9 @@
 .result-set-v2.compact label > span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 9px;
-  line-height: 11px;
-  font-weight: 600;
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -286,14 +222,21 @@
 .result-set-v2.compact select {
   width: 100%;
   min-width: 0;
-  min-height: 40px;
+  min-height: 32px;
+  height: 32px;
   box-sizing: border-box;
   padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: 10px !important;
+  background: var(--bg);
   color: var(--ink);
+  font-weight: var(--weight-semibold);
   text-align: center;
+}
+
+.result-set-v2.compact.done input,
+.result-set-v2.compact.done select {
+  background: var(--surface);
 }
 
 .result-set-v2-side {
@@ -303,26 +246,38 @@
 .result-set-v2-complete,
 .result-set-v2-delete {
   width: 32px;
-  height: 40px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: 10px;
   display: grid;
   place-items: center;
   font: inherit;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
 }
 
+.result-set-v2-delete { width: 28px; }
+
 .result-set-v2-complete {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.result-set-v2.compact.done .result-set-v2-complete {
+  border-color: var(--ink);
   background: var(--ink);
   color: var(--surface);
 }
 
 .result-set-v2-delete {
-  background: var(--surface-2);
+  background: transparent;
   color: var(--muted);
 }
+
+.result-set-v2-complete svg,
+.result-set-v2-delete svg { width: 16px; height: 16px; }
 
 .result-set-v2-discard,
 .result-set-v2.compact .workout-session-error {
@@ -335,20 +290,19 @@
   border: 0;
   background: transparent;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-caption);
   text-decoration: underline;
 }
 
 @media (max-width: 370px) {
   .result-set-v2.compact {
-    grid-template-columns: 28px minmax(0, 1fr) 34px 28px;
+    grid-template-columns: 24px minmax(0, 1fr) 32px 28px;
     gap: 5px;
   }
   .exercise-execution-settings .result-set-v2-fields {
     grid-template-columns: 1fr;
   }
 }
-
 
 .exercise-actions-popup .exercise-action-row.danger {
   color: #9a3434;

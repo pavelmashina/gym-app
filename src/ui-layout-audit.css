@@ -76,7 +76,7 @@
   .meal-plan-card-copy,
   .sportpit-card-copy,
   .statistics-section,
-  .workout-exercise-title-button,
+  .exercise-card-title,
   .exercise-info-copy,
   .account-card,
   .settings-card,
@@ -220,13 +220,13 @@
   min-width: 0;
 }
 
-.workout-exercise-title-row,
+.exercise-card-head,
 .exercise-actions-heading,
 .workout-active-head {
   min-width: 0;
 }
 
-.workout-exercise-name-link strong,
+.exercise-card-name,
 .workout-active-head h1 {
   min-width: 0;
   overflow-wrap: anywhere;
