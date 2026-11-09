@@ -1,10 +1,17 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.111.0";
 
 declare const EdgeRuntime: { waitUntil(task: Promise<unknown>): void };
 
 type TgMessage = {
   message_id?: number;
   text?: string;
+  caption?: string;
+  media_group_id?: string;
+  photo?: Array<{ file_id: string; file_size?: number }>;
+  voice?: { file_id: string; file_size?: number; mime_type?: string };
+  audio?: { file_id: string; file_size?: number; mime_type?: string; file_name?: string };
+  document?: { file_id: string; file_size?: number; mime_type?: string; file_name?: string };
   from?: { id?: number };
   chat?: { id?: number; type?: string };
 };
@@ -20,6 +27,20 @@ type IssueDraft = {
 const REPO = "pavelmashina/gym-app";
 const GITHUB_API = `https://api.github.com/repos/${REPO}/issues`;
 const MAX_MESSAGE_LENGTH = 4000;
+const MAX_IMAGES = 6;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
+const BUCKET = "telegram-issue-screenshots";
+type ImageRef = { fileId: string; messageId: number; mime: string };
+type TaskDraft = {
+  chat_id: string;
+  batch_id: string;
+  description: string;
+  images: ImageRef[];
+  composing: boolean;
+  updated_at: string;
+};
+type Admin = ReturnType<typeof createClient>;
 
 const json = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -126,7 +147,7 @@ async function makeDraft(input: string): Promise<IssueDraft> {
   };
 }
 
-function formatIssue(draft: IssueDraft, marker: string) {
+function formatIssue(draft: IssueDraft, marker: string, screenshotUrls: string[] = []) {
   const descriptions: Record<string, string> = {
     P0: "критично (блокирующий дефект)",
     P1: "высокий",
@@ -140,6 +161,11 @@ function formatIssue(draft: IssueDraft, marker: string) {
       draft.criteria.map((s) => `- [ ] ${s}`).join("\n"));
   }
   parts.push(`**Приоритет:** ${draft.priority} — ${descriptions[draft.priority]}.`);
+  if (screenshotUrls.length) {
+    parts.push("## Скриншоты\n" + screenshotUrls.map((url, index) =>
+      "![Скриншот " + (index + 1) + "](" + url + ")"
+    ).join("\n\n"));
+  }
   parts.push("_Создано через Telegram-бота._");
   parts.push(marker);
   return parts.join("\n\n");
@@ -172,13 +198,13 @@ async function findExisting(token: string, marker: string): Promise<string | nul
   )?.html_url || null;
 }
 
-async function createIssue(token: string, draft: IssueDraft, marker: string) {
+async function createIssue(token: string, draft: IssueDraft, marker: string, screenshotUrls: string[] = []) {
   const res = await githubRequest(token, GITHUB_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       title: draft.title,
-      body: formatIssue(draft, marker),
+      body: formatIssue(draft, marker, screenshotUrls),
     }),
   });
   if (!res.ok) {
