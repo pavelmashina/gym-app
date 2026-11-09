@@ -2,12 +2,16 @@
 export * from './mock-services.js';
 
 const params = new URLSearchParams(location.search);
-const exerciseCount = Math.max(1, Number(params.get('exercises')) || 8);
+// `exercises=0` opens a workout without exercises.
+const exerciseCount = params.has('exercises') ? Math.max(0, Number(params.get('exercises')) || 0) : 8;
 const setCount = Math.max(1, Number(params.get('sets')) || 6);
 // `v2=1`: the second exercise has a measurement contract, so (with VITE_EXERCISE_RESULTS_V2=true)
 // its empty sets are results v2 rows. `order=fail`: saving a new set order fails.
+// `standalone=1`: a workout without a program. `add=fail`: adding an exercise fails.
 const resultsV2 = params.get('v2') === '1';
 const orderFails = params.get('order') === 'fail';
+const standalone = params.get('standalone') === '1';
+const addFails = params.get('add') === 'fail';
 const pause = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildSet(exerciseIndex, setIndex, empty) {
@@ -52,7 +56,7 @@ function readClock() {
 function writeClock(patch) { sessionStorage.setItem(CLOCK_KEY, JSON.stringify({ ...readClock(), ...patch })); }
 const segmentSeconds = (clock) => Math.max(0, Math.floor((Date.now() - new Date(clock.startedAt).getTime()) / 1000));
 
-const workout = { id: 'fixture-workout', name: 'Проверка прокрутки', standalone: false, scheduledDate: new Date().toLocaleDateString('sv'), exercises: Array.from({ length: exerciseCount }, buildExercise) };
+const workout = { id: 'fixture-workout', name: 'Проверка прокрутки', standalone, programWorkoutId: standalone ? null : 'fixture-template', scheduledDate: new Date().toLocaleDateString('sv'), exercises: Array.from({ length: exerciseCount }, buildExercise) };
 function buildEntry() {
   const { startedAt, activeDurationSeconds } = readClock();
   return { mode: 'active', session: { id: 'fixture-session', status: 'active', activeDurationSeconds, startedAt }, workout: structuredClone(workout) };
@@ -66,7 +70,16 @@ export async function getWorkoutSessionState() {
 }
 export async function findActiveWorkoutId() { return null; }
 export async function startWorkout() { return buildEntry(); }
-export async function addStandaloneExercise() { return buildEntry(); }
+// Like add_session_exercise: the picked exercise goes to the end of this workout with one empty set;
+// scope 'program' links it to the program.
+export async function addSessionExercise(_, exerciseId, scope = 'session') {
+  await pause(300);
+  (window.__exerciseAdds ??= []).push({ exerciseId, scope });
+  if (addFails) throw new Error('Не удалось добавить упражнение.');
+  const id = `exercise-added-${workout.exercises.length}`;
+  workout.exercises.push({ id, exerciseId, linkedExerciseId: exerciseId, name: 'Тестовый жим', muscleGroup: 'Грудь', prescription: '', note: '', metricContract: null, addedInWorkout: scope !== 'program', sets: [{ id: `${id}-set-1`, setNumber: 1, setType: 'working', plannedReps: null, weight: '', reps: '', completed: false, completedAt: null, resultV2: null }] });
+  return id;
+}
 export async function updatePerformedSet(_, values) { await pause(); return values; }
 export async function addPerformedSet(_, setNumber, setType = 'working') {
   await pause();
@@ -116,7 +129,7 @@ export async function createEquipmentInstance() { throw new Error('Не испо
 export async function updateCustomExercise() { throw new Error('Не используется на этом стенде'); }
 
 const tableResults = {
-  scheduled_workouts: () => ({ id: 'fixture-workout', scheduled_date: workout.scheduledDate, status: 'in_progress', sequence_number: 1, user_program_id: 'fixture-program' }),
+  scheduled_workouts: () => ({ id: 'fixture-workout', scheduled_date: workout.scheduledDate, status: 'in_progress', sequence_number: 1, user_program_id: standalone ? null : 'fixture-program' }),
   workout_sessions: () => [{ id: 'fixture-session', status: 'active', paused_at: readClock().pausedAt }],
 };
 

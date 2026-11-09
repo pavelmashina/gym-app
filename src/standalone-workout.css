@@ -57,21 +57,7 @@
   font-size: var(--text-caption);
 }
 
-.standalone-exercise-editor { margin: 14px 0; }
-.standalone-exercise-editor p { font-size: 14px; line-height: 1.5; }
-.standalone-exercise-editor details { margin-top: 12px; }
-
-.standalone-add-exercise {
-  min-height: 40px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  padding: 0 14px;
-  background: var(--ink);
-  color: var(--surface);
-  font: inherit;
-  font-size: var(--text-caption);
-  font-weight: var(--weight-semibold);
-}
+/* Adding exercises to any active workout: src/workout-exercise-adder.css (issue #61). */
 
 .standalone-remove-exercise {
   display: block;

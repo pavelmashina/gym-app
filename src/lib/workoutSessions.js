@@ -189,14 +189,14 @@ async function readWorkoutSession(sessionId) {
 
   const { data: workout, error: workoutError } = await supabase
     .from('scheduled_workouts')
-    .select('id, workout_name, scheduled_date, status, standalone_owner_id')
+    .select('id, workout_name, scheduled_date, status, standalone_owner_id, source_program_workout_id')
     .eq('id', session.scheduled_workout_id)
     .single();
   if (workoutError || !workout) throw new Error(describeRequestError(workoutError, 'Не удалось загрузить тренировку.'));
 
   const { data: exerciseRows, error: exerciseError } = await supabase
     .from('workout_session_exercises')
-    .select('id, exercise_id, exercise_name_snapshot, prescription_snapshot, position, note')
+    .select('id, exercise_id, source_scheduled_workout_exercise_id, exercise_name_snapshot, prescription_snapshot, position, note')
     .eq('workout_session_id', sessionId)
     .order('position', { ascending: true });
   if (exerciseError) throw new Error(describeRequestError(exerciseError, 'Не удалось загрузить упражнения тренировки.'));
@@ -235,6 +235,8 @@ async function readWorkoutSession(sessionId) {
       scheduledDate: workout.scheduled_date,
       completedDate: mode === 'completed' ? (session.completed_on || localDateKeyFromTimestamp(session.ended_at) || workout.scheduled_date) : null,
       standalone: Boolean(workout.standalone_owner_id),
+      // The program workout this one was made from: an added exercise can go into it too (#61).
+      programWorkoutId: workout.source_program_workout_id ?? null,
       originalScheduledDate: workout.scheduled_date,
       status: workout.status,
       exercises: (exerciseRows ?? []).map((row) => {
@@ -249,6 +251,8 @@ async function readWorkoutSession(sessionId) {
           prescription: row.prescription_snapshot ?? '',
           metricContract: exercise?.measurement_type ? {exercise_id:row.exercise_id,measurement_type:exercise.measurement_type,load_mode:exercise.load_mode,laterality:exercise.laterality,measurement_note:exercise.measurement_note} : null,
           note: row.note ?? '',
+          // Added during the workout: there is no program exercise behind it.
+          addedInWorkout: !row.source_scheduled_workout_exercise_id,
           sets: setRows.filter((set) => set.workout_session_exercise_id === row.id).map(mapSet),
         };
       }),
@@ -278,11 +282,13 @@ export async function startStandaloneWorkout() {
   return data;
 }
 
-export async function addStandaloneExercise(sessionId, exerciseId) {
-  const { data, error } = await settled(supabase.rpc('add_standalone_exercise', {
-    p_session_id: sessionId, p_exercise_id: exerciseId,
+// Adds an exercise with one empty set to the end of any active workout, from a program or standalone.
+// Scope 'program' also adds it to the program: the template workout and every such workout not started yet.
+export async function addSessionExercise(sessionId, exerciseId, scope = 'session') {
+  const { data, error } = await settled(supabase.rpc('add_session_exercise', {
+    p_session_id: sessionId, p_exercise_id: exerciseId, p_scope: scope,
   }));
-  if (error || !data) throw new Error('Не удалось добавить упражнение. Проверьте соединение и повторите.');
+  if (error || !data) throw new Error(describeRequestError(error, 'Не удалось добавить упражнение.'));
   return data;
 }
 

@@ -108,7 +108,8 @@ const v4 = fs.readFileSync('src/components/WorkoutSessionScreenV4.jsx', 'utf8');
 const lib = fs.readFileSync('src/lib/workoutSessions.js', 'utf8');
 const active = between(v3, 'function ActiveWorkout(', 'function CompletedWorkout(');
 const dock = between(v3, 'function RestTimerDock(', 'function LegacySetRow(');
-const list = between(active, 'className="workout-execution-list"', '</section></main>');
+// Up to the end of the scrolling content, which also holds «Добавить упражнение» (#61).
+const list = between(active, 'className="workout-execution-list"', '</main>');
 const footer = between(active, '<footer className="workout-session-footer', '</footer>');
 
 for (const label of ['Запустить', 'Выключить', 'Включить']) assert.match(dock, new RegExp(label), `${label} is on the dock.`);

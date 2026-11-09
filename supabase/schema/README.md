@@ -104,6 +104,13 @@ Starting a scheduled workout creates a separate WorkoutSession snapshot. Only on
 
 The order of the sets inside one session exercise is `performed_sets.set_number`. `reorder_performed_sets(p_workout_session_exercise_id, p_ordered_set_ids)` (migration `20261109161041_reorder_performed_sets.sql`, authenticated, `SECURITY INVOKER`) rewrites every number of that exercise as 1..n in one transaction. It accepts only the owner's active session, every set of the exercise exactly once, and warm-up sets before working sets. Completed and abandoned sessions keep their order.
 
+`add_session_exercise(p_session_id, p_exercise_id, p_scope default 'session')` (migrations `20261109190000_add_session_exercise.sql` and `20261109200000_add_exercise_to_program_from_workout.sql`, authenticated, `SECURITY INVOKER`) adds an exercise to the end of the owner's active, not paused session, from a program or standalone. The exercise must be visible in `exercise_catalog_v2` (published, or the user's own). It gets the catalog name as `exercise_name_snapshot` and one empty working set.
+
+- `'session'`: only this session. No `source_scheduled_workout_exercise_id`; the program, its template and the scheduled copies do not change. A session that holds such an exercise can be reordered only within the session.
+- `'program'`: the session's scheduled workout must come from a template workout of the user's own program. The exercise is appended to that template workout (`program_workout_exercises` plus one `program_exercise_sets` row without reps), to this workout's plan and to every workout of the user's active or paused participations made from the same template workout that has not started (status `scheduled`, no session). The session exercise and its set are linked to this workout's plan, so `reorder_workout_session_exercises(..., 'program')` still works.
+
+The older `add_standalone_exercise` stays for cached app builds; the app no longer calls it. The two-argument `add_session_exercise` was replaced by the one with the scope, so a two-argument call is still valid and means `'session'`.
+
 Completing a workout marks the session and scheduled workout `completed`. Abandoning marks the session `abandoned` and the scheduled workout `skipped`. Skipped/cancelled workouts cannot be started again. When no scheduled workouts remain, the corresponding participation is completed automatically.
 
 ## Catalog programs
