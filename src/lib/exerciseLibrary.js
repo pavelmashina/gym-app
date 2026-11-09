@@ -1,6 +1,5 @@
 import { supabase } from './supabase.js';
 import { normalizeCatalogSearch } from './exerciseCatalogV2.js';
-import { programDraftKey } from './programDraft.js';
 
 const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
 
@@ -24,10 +23,70 @@ const isRemovedCustomExercise = row => Boolean(row?.owner_id) && row.status === 
 export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'Ноги', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гакк', 'Гантели', 'Штанга', 'Смит', 'Турник', 'Свой вес', 'Гравитрон', 'Гири', 'Тренажёр'];
 
+// Groups offered for a user's own exercise. The finer ones are filtered under a main
+// group by normalizeExerciseMuscleGroup (Квадрицепсы → Ноги); Предплечья and Шея get
+// their own filter option once an exercise uses them.
+export const CUSTOM_EXERCISE_MUSCLE_GROUPS = [
+  'Грудь', 'Спина', 'Трапеции', 'Поясница', 'Плечи', 'Бицепс', 'Трицепс', 'Предплечья', 'Пресс',
+  'Ягодицы', 'Ноги', 'Квадрицепсы', 'Бицепс бедра', 'Приводящие', 'Отводящие', 'Икры', 'Шея', 'Всё тело', 'Кардио',
+];
+export const EXERCISE_MUSCLE_GROUP_OTHER = 'Другое';
+export const MAX_MUSCLE_GROUP_LENGTH = 40;
+
+const collapseSpaces = value => String(value ?? '').replace(/\s+/g, ' ').trim();
+const muscleGroupKey = value => collapseSpaces(value).toLocaleLowerCase('ru').replace(/ё/g, 'е');
+const RESERVED_MUSCLE_GROUP_KEYS = new Set(['все', 'другое']);
+
+function typedMuscleGroupError(value) {
+  if (!value) return 'Введите название группы мышц.';
+  if (value.length > MAX_MUSCLE_GROUP_LENGTH) return `Название группы мышц — не длиннее ${MAX_MUSCLE_GROUP_LENGTH} символов.`;
+  if (!/\p{L}/u.test(value)) return 'Название группы мышц должно содержать буквы.';
+  if (RESERVED_MUSCLE_GROUP_KEYS.has(muscleGroupKey(value))) return 'Введите конкретную группу мышц.';
+  return '';
+}
+
+// The draft keeps the select value and the text typed after «Другое» separately, so
+// typing a name that matches a list item does not flip the form back to the select.
+export function muscleGroupChoiceError({ muscleGroup, customMuscleGroup = '' } = {}) {
+  if (muscleGroup === EXERCISE_MUSCLE_GROUP_OTHER) return typedMuscleGroupError(collapseSpaces(customMuscleGroup));
+  return CUSTOM_EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) ? '' : 'Выберите группу мышц.';
+}
+
+export function resolveExerciseMuscleGroup(choice = {}) {
+  const error = muscleGroupChoiceError(choice);
+  if (error) throw new Error(error);
+  if (choice.muscleGroup !== EXERCISE_MUSCLE_GROUP_OTHER) return choice.muscleGroup;
+  const typed = collapseSpaces(choice.customMuscleGroup);
+  const known = CUSTOM_EXERCISE_MUSCLE_GROUPS.find(group => muscleGroupKey(group) === muscleGroupKey(typed));
+  return known || typed.charAt(0).toLocaleUpperCase('ru') + typed.slice(1);
+}
+
+// Opens a saved exercise in the form: list values go to the select, anything else to «Другое».
+export function muscleGroupDraft(value) {
+  const clean = collapseSpaces(value);
+  return CUSTOM_EXERCISE_MUSCLE_GROUPS.includes(clean)
+    ? { muscleGroup: clean, customMuscleGroup: '' }
+    : { muscleGroup: EXERCISE_MUSCLE_GROUP_OTHER, customMuscleGroup: clean };
+}
+
+// The shared catalog keeps the main groups. Own exercises add the groups that do not fold
+// into one of them, so an exercise saved with «Шея» can still be found by its group.
+export function exerciseMuscleGroupFilterOptions(ownExercises = []) {
+  const extra = new Set();
+  for (const exercise of ownExercises) {
+    const group = normalizeExerciseMuscleGroup(exercise?.muscle_group);
+    if (!EXERCISE_MUSCLE_GROUPS.includes(group)) extra.add(group);
+  }
+  return [...EXERCISE_MUSCLE_GROUPS, ...[...extra].sort((a, b) => a.localeCompare(b, 'ru'))];
+}
+
 export function normalizeExerciseMuscleGroup(value) {
   const source = String(value || '').trim();
   const lower = source.toLocaleLowerCase('ru');
   if (!source) return 'Всё тело';
+  if (lower.startsWith('трапец') || lower.startsWith('поясниц')) return 'Спина';
+  if (lower.startsWith('квадрицеп') || lower.startsWith('бицепс бедр')) return 'Ноги';
+  if (lower.startsWith('отвод')) return 'Ягодицы';
   if (lower.startsWith('груд')) return 'Грудь';
   if (lower.startsWith('плеч')) return 'Плечи';
   if (lower.startsWith('спин')) return 'Спина';
@@ -85,7 +144,9 @@ function mapExercise(row, userId, resolvedVideoUrl = null, photoUrls = []) {
     ...row,
     photo_path: photoPaths[0] || null,
     photo_paths: photoPaths,
-    display_muscle_group: normalizeExerciseMuscleGroup(row.primary_group_name_ru || row.muscle_group),
+    // Own exercises show the group exactly as chosen or typed; shared rows use the main groups.
+    display_muscle_group: (row.owner_id && collapseSpaces(row.muscle_group))
+      || normalizeExerciseMuscleGroup(row.primary_group_name_ru || row.muscle_group),
     equipment: normalizeExerciseEquipment(row),
     isMine: Boolean(row.owner_id && row.owner_id === userId),
     resolvedVideoUrl: resolvedVideoUrl || row.video_url || null,
@@ -230,12 +291,12 @@ function normalizeOptionalUrl(value) {
   }
 }
 
-export async function createCustomExercise({ name, muscleGroup, equipment, description = '', videoUrl = '', videoFile = null, photoFile = null, photoFiles = [] }) {
+export async function createCustomExercise({ name, muscleGroup, customMuscleGroup = '', equipment, description = '', videoUrl = '', videoFile = null, photoFile = null, photoFiles = [] }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   const cleanDescription = String(description || '').trim();
   if (!cleanName) throw new Error('Введите название упражнения.');
-  if (!EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) || muscleGroup === 'Все') throw new Error('Выберите группу мышц.');
+  const cleanMuscleGroup = resolveExerciseMuscleGroup({ muscleGroup, customMuscleGroup });
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
   validateVideoFile(videoFile);
   const selectedPhotos = requestedPhotoFiles(photoFiles, photoFile);
@@ -248,7 +309,7 @@ export async function createCustomExercise({ name, muscleGroup, equipment, descr
     .insert({
       owner_id: user.id,
       name: cleanName,
-      muscle_group: muscleGroup,
+      muscle_group: cleanMuscleGroup,
       equipment,
       exercise_type: 'Пользовательское',
       movement_type: 'Пользовательское',
@@ -307,14 +368,14 @@ export async function markExerciseRecent(exerciseId) {
 }
 
 export async function updateCustomExercise(exerciseId, {
-  name, muscleGroup, equipment, description = '',
+  name, muscleGroup, customMuscleGroup = '', equipment, description = '',
   photoFile = null, photoFiles = [], removePhoto = false, removedPhotoPaths = [],
   videoUrl, videoFile = null, removeVideoFile = false,
 }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   if (!cleanName || cleanName.length > 100) throw new Error('Введите название длиной до 100 символов.');
-  if (!EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) || muscleGroup === 'Все') throw new Error('Выберите группу мышц.');
+  const cleanMuscleGroup = resolveExerciseMuscleGroup({ muscleGroup, customMuscleGroup });
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
   validateVideoFile(videoFile);
   if (videoFile && String(videoUrl || '').trim()) throw new Error('Добавьте либо видеофайл, либо ссылку на видео.');
@@ -340,7 +401,7 @@ export async function updateCustomExercise(exerciseId, {
     const nextVideoUrl = videoFile ? null : (cleanVideoUrl === undefined ? previous.video_url : cleanVideoUrl);
     const { data, error } = await supabase.from('exercises').update({
       name: cleanName,
-      muscle_group: muscleGroup,
+      muscle_group: cleanMuscleGroup,
       equipment,
       description: String(description).trim() || null,
       photo_path: nextPaths[0] || null,
@@ -394,13 +455,6 @@ export async function getCustomExerciseUsage(exerciseId) {
 }
 
 // An unsaved program on this device would otherwise fail to save with a dangling exercise ID.
-function programDraftUsesExercise(userId, exerciseId) {
-  try {
-    return Boolean(globalThis.localStorage?.getItem(programDraftKey(userId))?.includes(exerciseId));
-  } catch {
-    return true;
-  }
-}
 
 async function removeExerciseMedia(exercise) {
   const photoPaths = exercisePhotoPaths(exercise);
@@ -418,14 +472,17 @@ async function removeExerciseMedia(exercise) {
  * Programs and history reference exercises through restricting foreign keys and read
  * the current name by ID, so a used exercise is retired instead of deleted.
  */
-export async function deleteCustomExercise(exerciseId) {
+// heldLocally(userId, exerciseId) says whether this device still refers to the exercise, as a
+// program draft does. The caller passes it because this module takes no imports: tests load
+// it from a data: URL. Without it the row is kept, as a draft might still need it.
+export async function deleteCustomExercise(exerciseId, { heldLocally = () => true } = {}) {
   const user = await currentUser();
   const { data: exercise, error: lookupError } = await supabase.from('exercises')
     .select('id,photo_path,photo_paths,video_path').eq('id', exerciseId).eq('owner_id', user.id).single();
   if (lookupError || !exercise) throw new Error('Своё упражнение не найдено.');
 
   const usage = await getCustomExerciseUsage(exerciseId);
-  if (usage.total === 0 && !programDraftUsesExercise(user.id, exerciseId)) {
+  if (usage.total === 0 && !heldLocally(user.id, exerciseId)) {
     const { data, error } = await supabase.from('exercises').delete()
       .eq('id', exerciseId).eq('owner_id', user.id).select('id');
     if (!error && data?.length) {

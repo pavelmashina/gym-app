@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
   EXERCISE_EQUIPMENT,
-  EXERCISE_MUSCLE_GROUPS,
   createCustomExercise,
+  muscleGroupChoiceError,
+  muscleGroupDraft,
   updateCustomExercise,
 } from '../lib/exerciseLibrary.js';
 import '../exercise-library-picker.css';
 import { ExercisePhotoGallery } from './ExercisePhotoGallery.jsx';
+import { MuscleGroupField } from './MuscleGroupField.jsx';
 
 const EMPTY_DRAFT = {
-  name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '',
+  name: '', muscleGroup: 'Грудь', customMuscleGroup: '', equipment: 'Гантели', description: '',
   videoUrl: '', videoFile: null, removeVideoFile: false,
   photoFiles: [], existingPhotos: [], removedPhotoPaths: [],
 };
@@ -18,7 +20,7 @@ function draftFromExercise(exercise) {
   return {
     ...EMPTY_DRAFT,
     name: exercise.name,
-    muscleGroup: exercise.display_muscle_group,
+    ...muscleGroupDraft(exercise.display_muscle_group),
     equipment: exercise.equipment,
     description: exercise.description || '',
     videoUrl: exercise.video_url || '',
@@ -78,13 +80,13 @@ export function CustomExerciseForm({ exercise = null, initialChoice = null, onCa
     }
   }
 
-  const canSave = Boolean(draft.name.trim()) && draft.muscleGroup !== 'Все' && draft.equipment !== 'Все';
+  const canSave = Boolean(draft.name.trim()) && !muscleGroupChoiceError(draft) && draft.equipment !== 'Все';
 
   return <form className="exercise-library-create-form" onSubmit={submit}>
     <div className="exercise-library-create-form-head"><span>Мои упражнения</span><h3>{editing ? 'Редактирование упражнения' : 'Новое упражнение'}</h3><small>Обязательные поля отмечены *</small></div>
     <label><span>Название *</span><input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Например, жим гантелей сидя" autoFocus /></label>
     <div className="exercise-library-create-form-grid">
-      <label><span>Группа мышц *</span><select required value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+      <MuscleGroupField muscleGroup={draft.muscleGroup} customMuscleGroup={draft.customMuscleGroup} onChange={(fields) => setDraft(current => ({ ...current, ...fields }))} />
       <label><span>Оборудование *</span><select required value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
     </div>
     <label><span>Описание · необязательно</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>

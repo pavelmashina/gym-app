@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { deleteCustomExercise, getCustomExerciseUsage, listMyExercises } from '../lib/exerciseLibrary.js';
 import { formatWorkoutCount } from '../lib/formatRussianCount.js';
+import { programDraftUsesExercise } from '../lib/programDraft.js';
 import '../exercise-library-picker.css';
 import '../my-exercises.css';
 import { CustomExerciseForm } from './CustomExerciseForm.jsx';
@@ -29,7 +30,7 @@ function DeleteExerciseDialog({ exercise, onClose, onDeleted }) {
     setPending(true);
     setError('');
     try {
-      await deleteCustomExercise(exercise.id);
+      await deleteCustomExercise(exercise.id, { heldLocally: programDraftUsesExercise });
       onDeleted(exercise.id);
     } catch (requestError) {
       setError(requestError?.message || 'Не удалось удалить упражнение.');

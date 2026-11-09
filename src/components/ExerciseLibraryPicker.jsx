@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   EXERCISE_EQUIPMENT,
-  EXERCISE_MUSCLE_GROUPS,
+  exerciseMuscleGroupFilterOptions,
   filterExerciseList,
   listExerciseLibrary,
+  muscleGroupDraft,
 } from '../lib/exerciseLibrary.js';
 import '../exercise-library-picker.css';
 import { CustomExerciseForm } from './CustomExerciseForm.jsx';
@@ -63,6 +64,10 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
 
   useEffect(reload, [browseOnly]);
 
+  const muscleGroupOptions = useMemo(() => {
+    const options = exerciseMuscleGroupFilterOptions(library.mine);
+    return options.includes(muscleGroup) ? options : [...options, muscleGroup];
+  }, [library.mine, muscleGroup]);
   const filterConfig = useMemo(() => ({ query, muscleGroup, equipment }), [query, muscleGroup, equipment]);
   const visible = useMemo(() => {
     const filter = (items) => filterExerciseList(items, filterConfig).filter((exercise) => exercise.id !== excludeId);
@@ -89,7 +94,8 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
       return;
     }
     setLibrary((current) => ({ all: [...current.all, saved].sort((a, b) => a.name.localeCompare(b.name, 'ru')), mine: [saved, ...current.mine], recent: current.recent }));
-    setLastChoice({ muscleGroup: saved.muscle_group, equipment: saved.equipment });
+    // The next exercise starts from the same group, a typed one included, and equipment.
+    setLastChoice({ ...muscleGroupDraft(saved.muscle_group), equipment: saved.equipment });
     closeForm();
     await pick(saved);
   }
@@ -99,7 +105,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
       {!browseOnly && !hideTitle && <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>}
       <label className={`exercise-library-search${browseOnly ? ' exercise-search training-search' : ''}`}><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <div className="exercise-library-filter-row">
-        <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{EXERCISE_MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{muscleGroupOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
         <label className="exercise-library-filter"><span>Оборудование</span><select value={equipment} onChange={(event) => setEquipment(event.target.value)}>{EXERCISE_EQUIPMENT.map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
     </section>

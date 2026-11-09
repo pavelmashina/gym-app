@@ -27,7 +27,11 @@
 .exercise-library-create-form textarea{min-height:100px;padding:12px;resize:vertical;line-height:1.45}
 .exercise-library-create-form input:focus,.exercise-library-create-form select:focus,.exercise-library-create-form textarea:focus,.exercise-library-filter select:focus{border-color:rgba(0,0,0,.32)}
 .exercise-library-create-form input:disabled{opacity:.5}
-.exercise-library-create-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.exercise-library-create-form-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:8px}
+/* The «Другое» text field takes a full row under both selects; dense flow keeps equipment beside the group. */
+.exercise-library-muscle-other{grid-column:1/-1}
+.exercise-library-create-form .exercise-library-field-error{color:#a63c3c;font-size:11px;font-weight:650;line-height:1.35}
+.exercise-library-create-form input[aria-invalid="true"]{border-color:#d98c8c}
 .exercise-library-video-fields{display:grid;gap:8px;padding:12px;border-radius:16px;background:var(--bg)}
 .exercise-library-video-divider{display:flex;align-items:center;gap:8px;color:var(--muted-2);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
 .exercise-library-video-divider::before,.exercise-library-video-divider::after{content:"";height:1px;flex:1;background:var(--line)}

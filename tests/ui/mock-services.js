@@ -2,6 +2,17 @@
 const exercise = { id: 'fixture-exercise', name: 'Тестовый жим', muscle_group: 'Грудь', equipment: 'Гантели' };
 export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Спина', 'Ноги'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гантели', 'Штанга', 'Свой вес'];
+export const CUSTOM_EXERCISE_MUSCLE_GROUPS = ['Грудь', 'Спина', 'Ноги'];
+export const EXERCISE_MUSCLE_GROUP_OTHER = 'Другое';
+export const MAX_MUSCLE_GROUP_LENGTH = 40;
+export const muscleGroupChoiceError = ({ muscleGroup, customMuscleGroup = '' } = {}) =>
+  muscleGroup === EXERCISE_MUSCLE_GROUP_OTHER && !customMuscleGroup.trim() ? 'Введите название группы мышц.' : '';
+export const muscleGroupDraft = (value) => CUSTOM_EXERCISE_MUSCLE_GROUPS.includes(value)
+  ? { muscleGroup: value, customMuscleGroup: '' }
+  : { muscleGroup: EXERCISE_MUSCLE_GROUP_OTHER, customMuscleGroup: value };
+export const exerciseMuscleGroupFilterOptions = () => EXERCISE_MUSCLE_GROUPS;
+const chosenMuscleGroup = ({ muscleGroup, customMuscleGroup = '' }) =>
+  muscleGroup === EXERCISE_MUSCLE_GROUP_OTHER ? customMuscleGroup.trim() : muscleGroup;
 export async function listExerciseLibrary() { return { all: [exercise], recent: [], mine: [] }; }
 export const filterExerciseList = (items) => items;
 export async function markExerciseRecent() {}
@@ -42,17 +53,17 @@ export async function deleteCustomExercise(exerciseId) {
   writeMyExercises(readMyExercises().filter((row) => row.id !== exerciseId));
   return { outcome: exerciseId === 'fixture-used' ? 'retired' : 'deleted' };
 }
-export async function createCustomExercise({ name, muscleGroup, equipment, description = '', videoUrl = '' }) {
-  const row = { id: crypto.randomUUID(), name: name.trim(), muscle_group: muscleGroup, equipment, description, video_url: videoUrl || null, video_path: null };
+export async function createCustomExercise({ name, muscleGroup, customMuscleGroup, equipment, description = '', videoUrl = '' }) {
+  const row = { id: crypto.randomUUID(), name: name.trim(), muscle_group: chosenMuscleGroup({ muscleGroup, customMuscleGroup }), equipment, description, video_url: videoUrl || null, video_path: null };
   writeMyExercises([row, ...readMyExercises()]);
   return myExerciseCard(row);
 }
-export async function updateCustomExercise(exerciseId, { name, muscleGroup, equipment, description = '', videoUrl, videoFile, removeVideoFile }) {
+export async function updateCustomExercise(exerciseId, { name, muscleGroup, customMuscleGroup, equipment, description = '', videoUrl, videoFile, removeVideoFile }) {
   if (name.startsWith('Ошибка')) throw new Error('Не удалось обновить своё упражнение.');
   const rows = readMyExercises();
   const row = rows.find((item) => item.id === exerciseId);
   Object.assign(row, {
-    name: name.trim(), muscle_group: muscleGroup, equipment, description,
+    name: name.trim(), muscle_group: chosenMuscleGroup({ muscleGroup, customMuscleGroup }), equipment, description,
     video_url: videoFile ? null : (videoUrl || null),
     video_path: videoFile ? 'fixture/new.mp4' : ((removeVideoFile || videoUrl) ? null : row.video_path),
   });

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { programDraftKey, programDraftUsesExercise } from '../src/lib/programDraft.js';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 const ALICE = 'alice';
@@ -85,9 +86,10 @@ globalThis.__myExercisesTest = { client: null };
 const source = read('../src/lib/exerciseLibrary.js')
   .replace("import { supabase } from './supabase.js';", 'const supabase = new Proxy({}, { get: (_target, key) => globalThis.__myExercisesTest.client[key] });')
   .replace("import { normalizeCatalogSearch } from './exerciseCatalogV2.js';", 'const normalizeCatalogSearch = value => value;')
-  .replace("import { programDraftKey } from './programDraft.js';", 'const programDraftKey = userId => `draft:${userId}`;')
   .replace("import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true'", 'true');
 const library = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+// Deletes the way the screen does: the draft check comes from programDraft.js.
+const deleteMine = id => library.deleteCustomExercise(id, { heldLocally: programDraftUsesExercise });
 
 function useWorld(options) {
   const world = createWorld(options);
@@ -137,7 +139,7 @@ const mine = (id, extra = {}) => ({ id, name: `Упражнение ${id}`, musc
 // An unused exercise is really deleted, together with its media.
 {
   const world = useWorld({ exercises: [mine('free', { photo_paths: ['a/1.jpg', 'a/2.jpg'], video_path: 'a/v.mp4' })] });
-  const result = await library.deleteCustomExercise('free');
+  const result = await deleteMine('free');
   assert.equal(result.outcome, 'deleted');
   assert.equal(world.exercises.length, 0);
   assert.deepEqual(world.removed['exercise-photos'], ['a/1.jpg', 'a/2.jpg']);
@@ -150,7 +152,7 @@ for (const table of Object.keys(REFERENCE_TABLES)) {
     exercises: [mine('used', { photo_paths: ['a/1.jpg'], video_path: 'a/v.mp4' })],
     references: { [table]: { used: 1 } },
   });
-  const result = await library.deleteCustomExercise('used');
+  const result = await deleteMine('used');
   assert.equal(result.outcome, 'retired', table);
   assert.equal(world.exercises[0].status, 'retired');
   assert.equal(world.writes.some(write => write.action === 'delete'), false, 'never attempts a delete for a counted reference');
@@ -163,7 +165,7 @@ for (const table of Object.keys(REFERENCE_TABLES)) {
 // RESTRICT reports 23503 before PostgreSQL 18 and 23001 since.
 for (const restrictCode of ['23503', '23001']) {
   const world = useWorld({ exercises: [mine('hidden-link', { video_path: 'a/v.mp4' })], invisibleReferences: ['hidden-link'], restrictCode });
-  assert.equal((await library.deleteCustomExercise('hidden-link')).outcome, 'retired');
+  assert.equal((await deleteMine('hidden-link')).outcome, 'retired');
   assert.equal(world.exercises[0].status, 'retired');
   assert.deepEqual(world.removed, {});
 }
@@ -171,22 +173,28 @@ for (const restrictCode of ['23503', '23001']) {
 // A program draft on this device still needs the row to save.
 {
   const world = useWorld({ exercises: [mine('in-draft')] });
-  globalThis.localStorage = { getItem: key => key === `draft:${ALICE}` ? JSON.stringify({ programWeeks: [{ workouts: [{ exercises: [{ id: 'in-draft' }] }] }] }) : null };
-  assert.equal((await library.deleteCustomExercise('in-draft')).outcome, 'retired');
+  globalThis.localStorage = { getItem: key => key === programDraftKey(ALICE) ? JSON.stringify({ programWeeks: [{ workouts: [{ exercises: [{ id: 'in-draft' }] }] }] }) : null };
+  assert.equal((await deleteMine('in-draft')).outcome, 'retired');
   assert.equal(world.exercises.length, 1);
 }
 {
   const world = useWorld({ exercises: [mine('unreadable-draft')] });
   globalThis.localStorage = { getItem() { throw new Error('blocked'); } };
-  assert.equal((await library.deleteCustomExercise('unreadable-draft')).outcome, 'retired', 'unreadable storage keeps the row');
+  assert.equal((await deleteMine('unreadable-draft')).outcome, 'retired', 'unreadable storage keeps the row');
   assert.equal(world.exercises.length, 1);
+}
+{
+  const world = useWorld({ exercises: [mine('unchecked', { video_path: 'a/v.mp4' })] });
+  assert.equal((await library.deleteCustomExercise('unchecked')).outcome, 'retired', 'a caller without a draft check keeps the row');
+  assert.equal(world.exercises.length, 1);
+  assert.deepEqual(world.removed, {});
 }
 
 // Someone else's exercise is untouchable even when its ID is known.
 {
   const world = useWorld({ exercises: [mine('foreign', { owner_id: BOB, photo_paths: ['b/1.jpg'] }), { ...mine('shared'), owner_id: null }] });
   for (const id of ['foreign', 'shared']) {
-    await assert.rejects(library.deleteCustomExercise(id), /Своё упражнение не найдено/);
+    await assert.rejects(deleteMine(id), /Своё упражнение не найдено/);
     await assert.rejects(library.updateCustomExercise(id, { name: 'Захват', muscleGroup: 'Грудь', equipment: 'Гантели' }), /Своё упражнение не найдено/);
   }
   assert.deepEqual(world.writes, []);
@@ -197,17 +205,17 @@ for (const restrictCode of ['23503', '23001']) {
 // Failures are reported and write nothing, or nothing further.
 {
   const world = useWorld({ exercises: [mine('free')], failing: { program_workout_exercises: ['select'] } });
-  await assert.rejects(library.deleteCustomExercise('free'), /Не удалось проверить/);
+  await assert.rejects(deleteMine('free'), /Не удалось проверить/);
   assert.deepEqual(world.writes, []);
 }
 {
   const world = useWorld({ exercises: [mine('free', { photo_paths: ['a/1.jpg'] })], failing: { exercises: ['delete'] } });
-  await assert.rejects(library.deleteCustomExercise('free'), /Не удалось удалить упражнение/);
+  await assert.rejects(deleteMine('free'), /Не удалось удалить упражнение/);
   assert.deepEqual(world.removed, {}, 'media survives a failed delete');
 }
 {
   const world = useWorld({ exercises: [mine('used')], references: { workout_session_exercises: { used: 1 } }, failing: { exercises: ['update'] } });
-  await assert.rejects(library.deleteCustomExercise('used'), /Не удалось удалить упражнение/);
+  await assert.rejects(deleteMine('used'), /Не удалось удалить упражнение/);
   assert.equal(world.exercises[0].status, 'legacy');
 }
 
@@ -281,6 +289,7 @@ assert.match(panel, /\[refreshKey, reloadKey\]/);
 assert.match(panel, /role="dialog" aria-modal="true"/);
 assert.match(panel, /disabled=\{pending \|\| !usage\}/, 'deletion waits for the usage check');
 assert.match(panel, /onDelete=\{setDeleting\}/);
+assert.match(panel, /deleteCustomExercise\(exercise\.id, \{ heldLocally: programDraftUsesExercise \}\)/, 'the screen checks the program draft');
 assert.doesNotMatch(picker, /onDelete=/, 'only the owner screen offers deletion');
 for (const component of [panel, picker]) {
   assert.match(component, /<CustomExerciseForm /);
