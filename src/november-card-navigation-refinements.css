@@ -177,14 +177,14 @@
 .app-bottom-nav .app-nav-item.active::before {
   content: "" !important;
   position: absolute;
-  inset: 10px 8px;
+  inset: 8px 6px;
   z-index: 0;
   border-radius: 14px;
   pointer-events: none;
-  background: radial-gradient(ellipse 48% 46% at center,
-    color-mix(in srgb, var(--accent-soft) 94%, transparent) 0%,
-    color-mix(in srgb, var(--accent-soft) 60%, transparent) 44%,
-    color-mix(in srgb, var(--accent-soft) 20%, transparent) 75%,
+  background: radial-gradient(ellipse 56% 54% at center,
+    color-mix(in srgb, var(--accent-soft) 90%, var(--ink) 10%) 0%,
+    color-mix(in srgb, var(--accent-soft) 76%, transparent) 46%,
+    color-mix(in srgb, var(--accent-soft) 28%, transparent) 76%,
     transparent 100%) !important;
 }
 .app-bottom-nav .app-nav-item.active .app-nav-icon,
