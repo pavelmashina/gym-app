@@ -1,0 +1,64 @@
+/*
+ * GYM APP Training / Recommendations / Catalog text-size contract.
+ * Source: AGENTS.md and docs/design-system.md.
+ * This must load AFTER legacy training styles, in src/main.jsx.
+ * All sizes are six-step shared design tokens (24/20/16/14/12/10).
+ */
+
+/* Visual navigation for all training sub-sections. */
+.exercise-catalog-content .training-tabs button {
+  font-size: var(--gym-type-xs) !important; /* 12px */
+  line-height: var(--lh-caption) !important;
+}
+
+/* Recommendation empty state. */
+.exercise-catalog-content .training-empty-programs > strong {
+  font-size: var(--gym-type-m) !important; /* 16px */
+  line-height: var(--lh-h3) !important;
+  font-weight: var(--weight-semibold) !important;
+}
+.exercise-catalog-content .training-empty-programs > span {
+  font-size: var(--gym-type-xs) !important; /* 12px */
+  line-height: var(--lh-caption) !important;
+  font-weight: var(--weight-regular) !important;
+}
+
+/* Catalog list: the program title stays 14px, compact tags are 10px. */
+.exercise-catalog-content .program-list-card-heading > strong {
+  font-size: var(--gym-type-s) !important; /* 14px */
+  line-height: var(--lh-body) !important;
+}
+.exercise-catalog-content .program-list-unified-card .catalog-program-tag {
+  font-size: var(--gym-type-xxs) !important; /* 10px */
+  line-height: var(--lh-micro) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+/* Catalog filters. No all-caps headings, even if legacy CSS asks for them. */
+.exercise-catalog-content .catalog-filter-group > span {
+  font-size: var(--gym-type-s) !important; /* 14px */
+  line-height: var(--lh-body) !important;
+  font-weight: var(--weight-semibold) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+.exercise-catalog-content .catalog-filter-pills button {
+  font-size: var(--gym-type-xs) !important; /* 12px */
+  line-height: var(--lh-caption) !important;
+  font-weight: var(--weight-semibold) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+.exercise-catalog-content .catalog-filters-reset {
+  font-size: var(--gym-type-xs) !important; /* 12px */
+  line-height: var(--lh-caption) !important;
+  font-weight: var(--weight-semibold) !important;
+  text-transform: none !important;
+}
+
+/* Catalog empty state. Keep its explanatory caption intentionally compact. */
+.exercise-catalog-content .catalog-empty > span {
+  font-size: var(--gym-type-xxs) !important; /* 10px */
+  line-height: var(--lh-micro) !important;
+}
