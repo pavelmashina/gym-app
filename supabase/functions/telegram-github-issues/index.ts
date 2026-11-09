@@ -8,11 +8,12 @@ type TgMessage = {
   text?: string;
   caption?: string;
   media_group_id?: string;
+  message_thread_id?: number;
   photo?: Array<{ file_id: string; file_size?: number }>;
   voice?: { file_id: string; file_size?: number; mime_type?: string };
   audio?: { file_id: string; file_size?: number; mime_type?: string; file_name?: string };
   document?: { file_id: string; file_size?: number; mime_type?: string; file_name?: string };
-  from?: { id?: number };
+  from?: { id?: number; is_bot?: boolean };
   chat?: { id?: number; type?: string };
 };
 type TgUpdate = { update_id?: number; message?: TgMessage };
@@ -54,11 +55,26 @@ function constantTimeEquals(a: string, b: string): boolean {
   return diff === 0;
 }
 
-async function telegramSend(token: string, chatId: number, text: string) {
+const BUTTONS = {
+  keyboard: [
+    [{ text: "🆕 Новая задача" }, { text: "✅ Отправить" }],
+    [{ text: "❌ Отмена" }, { text: "📖 Правила" }],
+    [{ text: "🆔 Мой ID" }],
+  ],
+  resize_keyboard: true,
+  is_persistent: true,
+  input_field_placeholder: "Описание задачи, скриншот или голосовое",
+};
+
+async function telegramSend(token: string, chatId: number, text: string, threadId?: number) {
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
+    body: JSON.stringify({
+      chat_id: chatId, text, disable_web_page_preview: true,
+      ...(threadId ? { message_thread_id: threadId } : {}),
+      reply_markup: BUTTONS,
+    }),
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`Telegram sendMessage HTTP ${res.status}`);
@@ -244,7 +260,7 @@ function adminClient(): Admin {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-async function readPending(admin: Admin, chatId: number): Promise<TaskDraft | null> {
+async function readPending(admin: Admin, chatId: string): Promise<TaskDraft | null> {
   const { data, error } = await admin.from("telegram_issue_drafts")
     .select("chat_id,batch_id,description,images,composing,updated_at")
     .eq("chat_id", String(chatId)).maybeSingle();
@@ -252,7 +268,7 @@ async function readPending(admin: Admin, chatId: number): Promise<TaskDraft | nu
   return data as TaskDraft | null;
 }
 
-async function savePending(admin: Admin, chatId: number, values: Partial<TaskDraft>, old?: TaskDraft | null): Promise<TaskDraft> {
+async function savePending(admin: Admin, chatId: string, values: Partial<TaskDraft>, old?: TaskDraft | null): Promise<TaskDraft> {
   const item: TaskDraft = {
     chat_id: String(chatId),
     batch_id: old?.batch_id || crypto.randomUUID(),
@@ -350,13 +366,14 @@ async function speechToText(botToken: string, fileId: string, mimeType: string):
 async function createFromMessage(
   admin: Admin, botToken: string, githubToken: string, chatId: number,
   messageId: number, description: string, pending: TaskDraft | null,
+  threadId?: number,
 ) {
   if (!description.trim()) {
-    await telegramSend(botToken, chatId, "Сначала добавь описание текстом или голосом.");
+    await telegramSend(botToken, chatId, "Сначала добавь описание текстом или голосом.", threadId);
     return;
   }
   if (description.length > 12000) {
-    await telegramSend(botToken, chatId, "Описание слишком длинное. Максимум 12000 символов.");
+    await telegramSend(botToken, chatId, "Описание слишком длинное. Максимум 12000 символов.", threadId);
     return;
   }
   const digest = await crypto.subtle.digest("SHA-256",
@@ -369,7 +386,7 @@ async function createFromMessage(
   const already = await findExisting(githubToken, marker);
   if (already) {
     if (pending) await clearPending(admin, pending);
-    await telegramSend(botToken, chatId, "Эта задача уже существует: " + already);
+    await telegramSend(botToken, chatId, "Эта задача уже существует: " + already, threadId);
     return;
   }
   const draft = await makeDraft(description);
@@ -381,7 +398,7 @@ async function createFromMessage(
   await telegramSend(botToken, chatId,
     "✅ Issue #" + created.number + " создан\n\n" + draft.title +
     (screenshots.length ? "\n📎 Скриншотов: " + screenshots.length : "") +
-    "\n\n" + created.url);
+    "\n\n" + created.url, threadId);
 }
 
 async function processMessage(message: TgMessage, botToken: string, githubToken: string) {
