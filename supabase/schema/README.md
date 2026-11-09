@@ -48,7 +48,7 @@ The application keeps three layers separate:
 2. joined-program schedule snapshot: `UserProgram → ScheduledWorkout → ScheduledWorkoutExercise → ScheduledSet`;
 3. actual execution snapshot: `WorkoutSession → WorkoutSessionExercise → PerformedSet`.
 
-Template edits must not rewrite already materialized exercise/set snapshots or completed workout history.
+Saving a template rebuilds the joined-program snapshot of every workout that has not started yet (status `scheduled` and no WorkoutSession) in active or paused participations; see `../migrations/20261109145203_sync_not_started_workouts_with_program_edits.sql`. Completed, skipped and cancelled workouts, started workouts and every WorkoutSession snapshot are never rewritten.
 
 ## Repeating-cycle model
 
@@ -65,7 +65,7 @@ Supported schedule modes are:
 
 Rhythm continues across cycle boundaries rather than resetting at the beginning of every repetition.
 
-While a participation is `active` or `paused`, `structure_mode` and `cycle_repeat_count` are frozen by the `programs_guard_active_cycle_configuration` trigger. Rhythm/date edits may only recalculate future scheduled dates; completed/skipped history and exercise/set snapshots remain unchanged.
+While a participation is `active` or `paused`, `structure_mode` and `cycle_repeat_count` are frozen by the `programs_guard_active_cycle_configuration` trigger. Rhythm/date edits may only recalculate future scheduled dates. Exercise edits rebuild the not-started workouts by plan position (`mod(sequence_number - 1, workouts_in_cycle) + 1`); adding or removing a cycle workout grows or trims the not-started tail to `workouts_in_cycle × cycle_repeat_count`, and a participation with nothing left to do is completed. Completed/skipped history keeps its snapshots.
 
 ## Program participation lifecycle
 
@@ -98,7 +98,7 @@ Editing rhythm for a joined program recalculates only future scheduled dates. Pa
 
 Starting a scheduled workout creates a separate WorkoutSession snapshot. Only one active session is allowed per user. The session supports warm-up/working sets, weight/reps, notes, previous results, best set, exercise replacement, drag-and-drop reordering and abandonment.
 
-`workout-session-reorder-scope.sql` provides the current authenticated `SECURITY INVOKER` reorder RPC. It can change only the current session or, when explicitly requested, the future scheduled copies of the same program workout. The old one-position move RPC is retired and dropped by this milestone.
+`workout-session-reorder-scope.sql` provides the current authenticated `SECURITY INVOKER` reorder RPC. It can change only the current session or, when explicitly requested, the future scheduled copies of the same program workout. Since the 2026-11-09 migration the program-wide order is also stored in the template workout, so a later program edit keeps it. The old one-position move RPC is retired and dropped by this milestone.
 
 Completing a workout marks the session and scheduled workout `completed`. Abandoning marks the session `abandoned` and the scheduled workout `skipped`. Skipped/cancelled workouts cannot be started again. When no scheduled workouts remain, the corresponding participation is completed automatically.
 
