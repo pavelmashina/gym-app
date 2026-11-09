@@ -30,7 +30,6 @@ const GITHUB_API = `https://api.github.com/repos/${REPO}/issues`;
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_IMAGES = 6;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
 const BUCKET = "telegram-issue-screenshots";
 type ImageRef = { fileId: string; messageId: number; mime: string };
 type TaskDraft = {
@@ -63,7 +62,7 @@ const BUTTONS = {
   ],
   resize_keyboard: true,
   is_persistent: true,
-  input_field_placeholder: "Описание задачи, скриншот или голосовое",
+  input_field_placeholder: "Описание задачи или скриншот",
 };
 
 async function telegramSend(token: string, chatId: number, text: string, threadId?: number) {
@@ -355,67 +354,13 @@ async function saveScreenshots(admin: Admin, token: string, images: ImageRef[], 
   return urls;
 }
 
-function encodeAudioBase64(bytes: Uint8Array): string {
-  const parts: string[] = [];
-  const blockSize = 16_384;
-  for (let offset = 0; offset < bytes.length; offset += blockSize) {
-    parts.push(String.fromCharCode(...bytes.subarray(offset, offset + blockSize)));
-  }
-  return btoa(parts.join(""));
-}
-
-async function speechToText(botToken: string, fileId: string, _mimeType: string): Promise<string> {
-  // Cloudflare-hosted Whisper needs no powered-on PC and no Groq/OpenAI API key.
-  const key = Deno.env.get("CLOUDFLARE_API_TOKEN");
-  const account = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
-  if (!key || !account) throw new Error("AUDIO_KEY_MISSING");
-  if (!/^[a-f0-9]{32}$/i.test(account)) throw new Error("CLOUDFLARE_ACCOUNT_ID_INVALID");
-
-  const bytes = await telegramFile(botToken, fileId, MAX_AUDIO_BYTES);
-  const model = Deno.env.get("CLOUDFLARE_TRANSCRIPTION_MODEL") ||
-    "@cf/openai/whisper-large-v3-turbo";
-  if (!/^@cf\/openai\/whisper(?:-large-v3-turbo)?$/.test(model)) {
-    throw new Error("CLOUDFLARE_MODEL_INVALID");
-  }
-
-  const url = "https://api.cloudflare.com/client/v4/accounts/" + account +
-    "/ai/run/" + model;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + key,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      audio: encodeAudioBase64(bytes),
-      task: "transcribe",
-      language: "ru",
-      initial_prompt:
-        "Термины спортивного веб-приложения: тренировки, подходы, повторения, " +
-        "GitHub, Supabase, UI, карточки.",
-    }),
-    signal: AbortSignal.timeout(65000),
-  });
-  if (!res.ok) {
-    console.error("Cloudflare Whisper transcription failed", { status: res.status });
-    throw new Error("AUDIO_API_HTTP_" + res.status);
-  }
-  const response = await res.json();
-  if (response?.success === false) throw new Error("CLOUDFLARE_API_ERROR");
-  const transcript: unknown = response?.result?.text ?? response?.text;
-  if (typeof transcript !== "string" || !transcript.trim()) {
-    throw new Error("AUDIO_EMPTY");
-  }
-  return transcript.trim();
-}
-
 async function createFromMessage(
   admin: Admin, botToken: string, githubToken: string, chatId: number,
   messageId: number, description: string, pending: TaskDraft | null,
   threadId?: number,
 ) {
   if (!description.trim()) {
-    await telegramSend(botToken, chatId, "Сначала добавь описание текстом или голосом.", threadId);
+    await telegramSend(botToken, chatId, "Сначала добавь текстовое описание задачи.", threadId);
     return;
   }
   if (description.length > 12000) {
@@ -457,13 +402,13 @@ const RULES = [
   "Все задачи попадают в GitHub Issues: pavelmashina/gym-app.",
   "",
   "🆕 Новая задача — начать сбор материалов.",
-  "📝 Пришли текст, голосовое и до 6 скриншотов в любом порядке.",
+  "📝 Пришли текст и до 6 скриншотов в любом порядке.",
   "✅ Отправить — создать Issue и получить ссылку.",
   "❌ Отмена — удалить незавершённый черновик.",
   "📖 Правила — показать эту памятку.",
   "🆔 Мой ID — узнать свой числовой Telegram ID.",
   "",
-  "В личном чате текст или голосовое также можно отправлять сразу — без кнопки «Новая задача».",
+  "В личном чате текст можно отправлять сразу — без кнопки «Новая задача».",
   "В групповом топике сначала нажми «Новая задача», затем «Отправить».",
   "Данные разных пользователей не смешиваются.",
   "",
@@ -647,11 +592,11 @@ async function processMessage(
   if (command === "/new") {
     if (pending) {
       if (!pending.composing) await savePending(admin, scopeId, { composing: true }, pending);
-      await send("📝 Черновик открыт. Отправляй текст, голос и скриншоты, затем нажми «✅ Отправить».");
+      await send("📝 Черновик открыт. Отправляй текст и скриншоты, затем нажми «✅ Отправить».");
       return;
     }
     await savePending(admin, scopeId, { composing: true });
-    await send("🆕 Новая задача! Отправь текст, голосовые и до 6 скриншотов. Затем нажми «✅ Отправить».");
+    await send("🆕 Новая задача! Отправь текст и до 6 скриншотов. Затем нажми «✅ Отправить».");
     return;
   }
   if (command === "/create") {
@@ -717,30 +662,13 @@ async function processMessage(
       await send("📎 Скриншот добавлен (" + updated.images.length + "/6). " +
         (updated.composing
           ? "Пришли следующие материалы и нажми «✅ Отправить»."
-          : "Теперь отправь описание текстом или голосом."));
+          : "Теперь отправь описание текстом."));
     }
     return;
   }
 
-  const voice = message.voice || message.audio;
-  if (voice) {
-    if (voice.file_size && voice.file_size > MAX_AUDIO_BYTES) {
-      await send("Голосовое слишком большое. Максимум 20 МБ.");
-      return;
-    }
-    const transcript = await speechToText(botToken, voice.file_id,
-      message.voice ? "audio/ogg" : voice.mime_type || "audio/ogg");
-    if (pending?.composing) {
-      const saved = await savePending(admin, scopeId, {
-        description: [pending.description, transcript].filter(Boolean).join("\n\n"),
-      }, pending);
-      await send("🎙 Распознано:\n" + transcript.slice(0, 1300) +
-        "\n\nЧерновик сохранён. Скриншотов: " + saved.images.length +
-        ". Для создания нажми «✅ Отправить».");
-    } else {
-      await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
-        [pending?.description || "", transcript].filter(Boolean).join("\n\n"), pending, threadId);
-    }
+  if (message.voice || message.audio) {
+    await send("🎙 Голосовые сообщения пока не поддерживаются. Пожалуйста, отправь описание задачи текстом. Скриншоты можно прикреплять отдельно.");
     return;
   }
 
@@ -761,7 +689,7 @@ async function processMessage(
     }
     return;
   }
-  await send("Принимаю текст, голосовые и изображения JPG/PNG/WebP. Нажми «📖 Правила».");
+  await send("Принимаю текстовые задачи и скриншоты JPG/PNG/WebP. Голосовые пока отключены. Нажми «📖 Правила».");
 }
 
 Deno.serve(async (req: Request) => {
@@ -807,21 +735,11 @@ Deno.serve(async (req: Request) => {
           ? "❌ GitHub отклонил создание Issue. Проверь GITHUB_ISSUES_TOKEN в Supabase: выбран репозиторий pavelmashina/gym-app и разрешение Issues → Read and write. После исправления отправь задачу снова."
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
-            : detail.includes("AUDIO_KEY_MISSING")
-            ? "❌ Для голосовых нужны CLOUDFLARE_API_TOKEN и CLOUDFLARE_ACCOUNT_ID в Supabase Secrets."
-            : detail.includes("AUDIO_API_HTTP_401")
-              ? "❌ Cloudflare отклонил API-токен. Проверь CLOUDFLARE_API_TOKEN."
-              : detail.includes("AUDIO_API_HTTP_429")
-                ? "❌ Cloudflare ограничил распознавание голоса: проверь дневную квоту Workers AI или попробуй позже."
-                : detail.includes("AUDIO_API_HTTP_")
-                  ? "❌ Не удалось расшифровать голосовое через Cloudflare Workers AI. Проверь токен, аккаунт и ограничения."
                   : detail.includes("FILE_TOO_LARGE")
-                    ? "❌ Файл слишком большой: скриншоты до 8 МБ, аудио до 20 МБ."
+                    ? "❌ Файл слишком большой: скриншоты до 8 МБ."
                     : detail.includes("IMAGE_UNSUPPORTED")
                       ? "❌ Изображение должно быть PNG, JPEG или WebP."
-                      : detail.includes("CLOUDFLARE_")
-                    ? "❌ Ошибка Cloudflare. Проверь CLOUDFLARE_ACCOUNT_ID и Workers AI API Token."
-                    : detail.includes("CLAUDE_API_HTTP_401") || detail.includes("CLAUDE_API_HTTP_403")
+                      : detail.includes("CLAUDE_API_HTTP_401") || detail.includes("CLAUDE_API_HTTP_403")
                         ? "❌ Claude API не разрешил запрос. Проверь ANTHROPIC_API_KEY в Supabase."
                         : detail.includes("CLAUDE_API_HTTP_402")
                           ? "❌ На счёте Claude API недостаточно средств. Проверь баланс Anthropic Console."
