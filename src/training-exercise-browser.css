@@ -38,8 +38,8 @@
   min-height: 40px !important;
   padding: 0 20px 0 7px !important;
   border-radius: var(--radius-sm) !important;
-  font-size: var(--gym-type-xxs) !important;
-  line-height: var(--lh-micro) !important;
+  font-size: var(--gym-type-xs) !important;
+  line-height: var(--lh-caption) !important;
   font-weight: var(--weight-semibold) !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,13 +82,13 @@
   display: grid;
   grid-template-columns: repeat(2,minmax(0,1fr));
   gap: var(--space-3);
-  margin: 2px 0 0;
+  margin: 0;
 }
 .exercise-catalog-content .training-exercise-source-switcher button {
   position: relative;
   min-width: 0;
-  min-height: 42px;
-  padding: 0 4px 9px;
+  min-height: 32px;
+  padding: 0 4px 4px;
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -249,7 +249,31 @@ body:has(.training-exercise-page) .app-bottom-nav {
   border-radius: var(--radius-md);
   background: var(--surface);
 }
-.training-exercise-detail-video video { display:block;width:100%;max-height:350px; }
+.training-exercise-detail-video video,
+.training-exercise-detail-video img {
+  display: block;
+  width: 100%;
+  max-height: 350px;
+  object-fit: contain;
+}
+.training-exercise-detail-video.is-empty {
+  border: 1px dashed var(--line);
+  background: transparent;
+}
+.training-exercise-video-empty {
+  display: flex;
+  min-height: 174px;
+  padding: var(--space-4);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--muted);
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
+  text-align: center;
+}
+.training-exercise-video-empty svg { width: 28px; height: 28px; }
 .training-exercise-detail-video a {
   display:block;padding:var(--space-4);
   text-align:center;color:var(--ink);
@@ -262,18 +286,52 @@ body:has(.training-exercise-page) .app-bottom-nav {
   border-radius: var(--radius-lg);
   background: var(--surface);
 }
+.training-exercise-detail-description h2,
 .training-exercise-detail-description .exercise-technique h4 {
   margin: 0 0 var(--space-3);
-  font-size: var(--gym-type-m) !important; /* «Описание» */
+  font-size: var(--gym-type-m) !important;
   line-height: var(--lh-h3) !important;
   font-weight: var(--weight-semibold);
 }
+.training-exercise-detail-description .training-exercise-description-text,
 .training-exercise-detail-description .exercise-technique p,
 .training-exercise-detail-description .exercise-technique li {
-  margin-top: 0;
-  font-size: var(--gym-type-s) !important; /* content */
+  margin: 0;
+  font-size: var(--gym-type-s) !important;
   line-height: var(--lh-body) !important;
   font-weight: var(--weight-regular);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.training-exercise-description-text.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  overflow: hidden;
+}
+.training-exercise-extra-technique { margin-top: var(--space-3); }
+.training-exercise-extra-technique .exercise-technique > section:first-of-type { display: none; }
+.training-exercise-description-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin-top: var(--space-3);
+  padding: 0;
+  min-height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.training-exercise-description-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
 .training-exercise-detail-actions {
   display: grid;
@@ -299,6 +357,45 @@ body:has(.training-exercise-page) .app-bottom-nav {
 .training-exercise-editor-page .exercise-library-create-form {
   width: 100%;
   margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.training-exercise-editor-page .exercise-library-create-form-head h3 {
+  margin-top: 0;
+  font-size: var(--gym-type-l);
+  line-height: var(--lh-h2);
+  letter-spacing: normal;
+  font-weight: var(--weight-semibold);
+}
+.training-exercise-editor-page .exercise-library-create-form label,
+.training-exercise-editor-page .exercise-library-create-form label > span {
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-medium);
+}
+.training-exercise-editor-page .exercise-library-create-form input,
+.training-exercise-editor-page .exercise-library-create-form select,
+.training-exercise-editor-page .exercise-library-create-form textarea {
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-regular);
+}
+.training-exercise-editor-page .exercise-library-create-form small,
+.training-exercise-editor-page .exercise-library-photo-upload small,
+.training-exercise-editor-page .exercise-library-video-upload strong,
+.training-exercise-editor-page .exercise-library-video-current,
+.training-exercise-editor-page .exercise-library-photo-restore,
+.training-exercise-editor-page .exercise-library-create-form .exercise-library-field-error {
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+}
+.training-exercise-editor-page .exercise-library-create-actions button {
+  font-size: var(--gym-type-m);
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-semibold);
 }
 .training-exercise-editor-page .exercise-library-create-form-head > small {
   display: block;
