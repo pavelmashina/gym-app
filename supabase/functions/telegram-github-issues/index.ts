@@ -236,41 +236,274 @@ async function createIssue(token: string, draft: IssueDraft, marker: string, scr
   return { number: issue.number as number, url: issue.html_url as string };
 }
 
+
+function adminClient(): Admin {
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) throw new Error("Supabase service key unavailable");
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+async function readPending(admin: Admin, chatId: number): Promise<TaskDraft | null> {
+  const { data, error } = await admin.from("telegram_issue_drafts")
+    .select("chat_id,batch_id,description,images,composing,updated_at")
+    .eq("chat_id", String(chatId)).maybeSingle();
+  if (error) throw new Error("Draft lookup: " + error.code);
+  return data as TaskDraft | null;
+}
+
+async function savePending(admin: Admin, chatId: number, values: Partial<TaskDraft>, old?: TaskDraft | null): Promise<TaskDraft> {
+  const item: TaskDraft = {
+    chat_id: String(chatId),
+    batch_id: old?.batch_id || crypto.randomUUID(),
+    description: values.description ?? old?.description ?? "",
+    images: values.images ?? old?.images ?? [],
+    composing: values.composing ?? old?.composing ?? false,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await admin.from("telegram_issue_drafts")
+    .upsert(item, { onConflict: "chat_id" });
+  if (error) throw new Error("Draft save: " + error.code);
+  return item;
+}
+
+async function clearPending(admin: Admin, item: TaskDraft) {
+  // Prevent older requests from deleting more recently updated drafts.
+  const { error } = await admin.from("telegram_issue_drafts")
+    .delete().eq("chat_id", item.chat_id).eq("updated_at", item.updated_at);
+  if (error) throw new Error("Draft cleanup: " + error.code);
+}
+
+async function telegramFile(botToken: string, fileId: string, maxSize: number): Promise<Uint8Array> {
+  const meta = await fetch("https://api.telegram.org/bot" + botToken +
+    "/getFile?file_id=" + encodeURIComponent(fileId), { signal: AbortSignal.timeout(15000) });
+  if (!meta.ok) throw new Error("Telegram getFile HTTP " + meta.status);
+  const data = await meta.json();
+  const path: unknown = data?.result?.file_path;
+  const size: unknown = data?.result?.file_size;
+  if (typeof size === "number" && size > maxSize) throw new Error("FILE_TOO_LARGE");
+  if (typeof path !== "string" || !/^[A-Za-z0-9/_.-]+$/.test(path) || path.includes("..")) {
+    throw new Error("Telegram returned invalid file path");
+  }
+  const res = await fetch("https://api.telegram.org/file/bot" + botToken + "/" + path, {
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!res.ok) throw new Error("Telegram file HTTP " + res.status);
+  if (Number(res.headers.get("content-length") || 0) > maxSize) throw new Error("FILE_TOO_LARGE");
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (!bytes.length || bytes.byteLength > maxSize) throw new Error("FILE_TOO_LARGE");
+  return bytes;
+}
+
+function detectImageType(bytes: Uint8Array): string | null {
+  if (bytes.length > 8 && bytes[0] === 137 && bytes[1] === 80 &&
+    bytes[2] === 78 && bytes[3] === 71) return "image/png";
+  if (bytes.length > 3 && bytes[0] === 255 && bytes[1] === 216 &&
+    bytes[2] === 255) return "image/jpeg";
+  if (bytes.length > 12 && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.slice(8, 12)) === "WEBP") return "image/webp";
+  return null;
+}
+
+async function saveScreenshots(admin: Admin, token: string, images: ImageRef[], batch: string): Promise<string[]> {
+  const urls: string[] = [];
+  for (let i = 0; i < images.length; i++) {
+    const bytes = await telegramFile(token, images[i].fileId, MAX_IMAGE_BYTES);
+    const mime = detectImageType(bytes);
+    if (!mime) throw new Error("IMAGE_UNSUPPORTED");
+    const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
+    const path = batch + "/" + images[i].messageId + "-" + i + "." + ext;
+    const { error } = await admin.storage.from(BUCKET).upload(path, bytes, {
+      contentType: mime, cacheControl: "31536000", upsert: false,
+    });
+    if (error && !/already exists|duplicate/i.test(error.message)) {
+      throw new Error("Screenshot upload failed: " + error.message);
+    }
+    const url = admin.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+    if (!url) throw new Error("No screenshot URL");
+    urls.push(url);
+  }
+  return urls;
+}
+
+async function speechToText(botToken: string, fileId: string, mimeType: string): Promise<string> {
+  const key = Deno.env.get("OPENAI_API_KEY");
+  if (!key) throw new Error("AUDIO_KEY_MISSING");
+  const bytes = await telegramFile(botToken, fileId, MAX_AUDIO_BYTES);
+  const mime = mimeType === "audio/mpeg" ? "audio/mpeg" :
+    mimeType === "audio/mp4" ? "audio/mp4" : "audio/ogg";
+  const extension = mime === "audio/mpeg" ? "mp3" : mime === "audio/mp4" ? "m4a" : "ogg";
+  const form = new FormData();
+  form.append("file", new Blob([bytes], { type: mime }), "task." + extension);
+  form.append("model", Deno.env.get("OPENAI_TRANSCRIPTION_MODEL") || "gpt-transcribe");
+  form.append("prompt", "Русский язык. Термины спортивного веб-приложения: тренировки, подходы, повторения, GitHub, Supabase, UI, карточки.");
+  const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST", headers: { Authorization: "Bearer " + key }, body: form,
+    signal: AbortSignal.timeout(70000),
+  });
+  if (!res.ok) throw new Error("AUDIO_API_HTTP_" + res.status);
+  const response = await res.json();
+  if (typeof response?.text !== "string" || !response.text.trim()) throw new Error("AUDIO_EMPTY");
+  return response.text.trim();
+}
+
+async function createFromMessage(
+  admin: Admin, botToken: string, githubToken: string, chatId: number,
+  messageId: number, description: string, pending: TaskDraft | null,
+) {
+  if (!description.trim()) {
+    await telegramSend(botToken, chatId, "Сначала добавь описание текстом или голосом.");
+    return;
+  }
+  if (description.length > 12000) {
+    await telegramSend(botToken, chatId, "Описание слишком длинное. Максимум 12000 символов.");
+    return;
+  }
+  const marker = pending
+    ? "<!-- gym-telegram-task:" + pending.batch_id + " -->"
+    : "<!-- gym-telegram-task:" + crypto.randomUUID() + ":" + messageId + " -->";
+  const already = await findExisting(githubToken, marker);
+  if (already) {
+    if (pending) await clearPending(admin, pending);
+    await telegramSend(botToken, chatId, "Эта задача уже существует: " + already);
+    return;
+  }
+  const draft = await makeDraft(description);
+  const screenshots = pending?.images?.length
+    ? await saveScreenshots(admin, botToken, pending.images, pending.batch_id)
+    : [];
+  const created = await createIssue(githubToken, draft, marker, screenshots);
+  if (pending) await clearPending(admin, pending);
+  await telegramSend(botToken, chatId,
+    "✅ Issue #" + created.number + " создан\n\n" + draft.title +
+    (screenshots.length ? "\n📎 Скриншотов: " + screenshots.length : "") +
+    "\n\n" + created.url);
+}
+
 async function processMessage(message: TgMessage, botToken: string, githubToken: string) {
   const chatId = message.chat!.id!;
   const text = message.text?.trim() || "";
+  const admin = adminClient();
   if (text === "/start" || text === "/help") {
     await telegramSend(botToken, chatId,
-      "Отправь описание задачи обычным сообщением. Я оформлю GitHub Issue " +
-      "в pavelmashina/gym-app и пришлю ссылку.");
+      "Отправь текст или голосовое — создам GitHub Issue.\n" +
+      "📎 Можно прислать до 6 скриншотов перед описанием задачи.\n" +
+      "/new — собирать задачу из нескольких сообщений;\n" +
+      "/create — создать её;\n" +
+      "/cancel — отменить.\n" +
+      "Фото с подписью (не альбом) создаёт задачу сразу.\n" +
+      "⚠️ Прикреплённые скриншоты будут публично доступны.");
     return;
   }
   if (text === "/id") {
-    await telegramSend(botToken, chatId, `Твой Telegram ID: ${chatId}`);
+    await telegramSend(botToken, chatId, "Твой Telegram ID: " + chatId);
     return;
   }
-  if (!text) {
-    await telegramSend(botToken, chatId,
-      "Пока принимаю только текстовые сообщения с описанием задачи.");
+  const pending = await readPending(admin, chatId);
+  if (text === "/cancel") {
+    if (pending) await clearPending(admin, pending);
+    await telegramSend(botToken, chatId, "Черновик очищен.");
     return;
   }
-  if (text.length > MAX_MESSAGE_LENGTH) {
+  if (text === "/new") {
+    if (pending) {
+      await telegramSend(botToken, chatId,
+        "Черновик уже есть. Пришли остальные материалы и отправь /create либо /cancel.");
+      return;
+    }
+    await savePending(admin, chatId, { composing: true });
     await telegramSend(botToken, chatId,
-      `Слишком длинное сообщение. Максимум ${MAX_MESSAGE_LENGTH} символов.`);
+      "📝 Начали задачу. Присылай текст, голосовые и до 6 скриншотов в любом порядке. " +
+      "Затем отправь /create.");
+    return;
+  }
+  if (text === "/create") {
+    if (!pending) {
+      await telegramSend(botToken, chatId, "Нет черновика. Отправь описание задачи.");
+      return;
+    }
+    await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
+      pending.description, pending);
     return;
   }
 
-  const marker = `<!-- telegram-gym-app:${chatId}:${message.message_id} -->`;
-  const existing = await findExisting(githubToken, marker);
-  if (existing) {
-    await telegramSend(botToken, chatId, `Эта задача уже создана: ${existing}`);
+  const photo = message.photo?.[message.photo.length - 1];
+  const document = message.document;
+  const imageDocument = document && (
+    ["image/jpeg", "image/png", "image/webp"].includes(document.mime_type || "") ||
+    /\.(png|jpe?g|webp)$/i.test(document.file_name || "")
+  );
+  if (photo || imageDocument) {
+    const file = photo || document!;
+    if (file.file_size && file.file_size > MAX_IMAGE_BYTES) {
+      await telegramSend(botToken, chatId, "Скриншот больше 8 МБ. Пришли файл меньшего размера.");
+      return;
+    }
+    if ((pending?.images?.length || 0) >= MAX_IMAGES) {
+      await telegramSend(botToken, chatId, "Лимит — 6 скриншотов на одну задачу.");
+      return;
+    }
+    const image: ImageRef = { fileId: file.file_id, messageId: message.message_id!,
+      mime: photo ? "image/jpeg" : document?.mime_type || "image/png" };
+    const updated = await savePending(admin, chatId, {
+      images: [...(pending?.images || []), image],
+      description: [pending?.description || "", message.caption?.trim() || ""]
+        .filter(Boolean).join("\n\n"),
+    }, pending);
+    if (message.caption?.trim() && !message.media_group_id && !updated.composing) {
+      await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
+        updated.description, updated);
+    } else if (!message.media_group_id) {
+      await telegramSend(botToken, chatId,
+        "📎 Скриншот добавлен (" + updated.images.length + "/6). " +
+        (updated.composing ? "Пришли материалы, затем /create."
+          : "Теперь отправь задачу текстом или голосом."));
+    }
     return;
   }
 
-  const draft = await makeDraft(text);
-  const issue = await createIssue(githubToken, draft, marker);
+  const voice = message.voice || message.audio;
+  if (voice) {
+    if (voice.file_size && voice.file_size > MAX_AUDIO_BYTES) {
+      await telegramSend(botToken, chatId, "Голосовое слишком большое. Максимум 20 МБ.");
+      return;
+    }
+    const transcript = await speechToText(botToken, voice.file_id,
+      message.voice ? "audio/ogg" : voice.mime_type || "audio/ogg");
+    if (pending?.composing) {
+      const saved = await savePending(admin, chatId, {
+        description: [pending.description, transcript].filter(Boolean).join("\n\n"),
+      }, pending);
+      await telegramSend(botToken, chatId, "🎙 Распознано:\n" +
+        transcript.slice(0, 1300) + "\n\nЧерновик сохранён. Скриншотов: " +
+        saved.images.length + ". Для создания отправь /create.");
+    } else {
+      await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
+        [pending?.description || "", transcript].filter(Boolean).join("\n\n"), pending);
+    }
+    return;
+  }
+
+  if (text) {
+    if (text.length > MAX_MESSAGE_LENGTH) {
+      await telegramSend(botToken, chatId,
+        "Слишком длинное сообщение. Максимум " + MAX_MESSAGE_LENGTH + " символов.");
+      return;
+    }
+    if (pending?.composing) {
+      const saved = await savePending(admin, chatId, {
+        description: [pending.description, text].filter(Boolean).join("\n\n"),
+      }, pending);
+      await telegramSend(botToken, chatId,
+        "📝 Текст добавлен. Скриншотов: " + saved.images.length + ". Для создания отправь /create.");
+    } else {
+      await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
+        [pending?.description || "", text].filter(Boolean).join("\n\n"), pending);
+    }
+    return;
+  }
   await telegramSend(botToken, chatId,
-    `✅ Issue #${issue.number} создан\n\n${draft.title}\n\n${issue.url}`);
+    "Принимаю текст, голосовые сообщения и скриншоты JPG/PNG/WebP.");
 }
 
 Deno.serve(async (req: Request) => {
@@ -316,9 +549,21 @@ Deno.serve(async (req: Request) => {
           ? "❌ GitHub отклонил создание Issue. Проверь GITHUB_ISSUES_TOKEN в Supabase: выбран репозиторий pavelmashina/gym-app и разрешение Issues → Read and write. После исправления отправь задачу снова."
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
-            : detail.includes("OpenAI")
-              ? "❌ Ошибка OpenAI API. Проверь OPENAI_API_KEY или удали его: бот сможет сохранять исходный текст без AI."
-              : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
+            : detail.includes("AUDIO_KEY_MISSING")
+            ? "❌ Для голосовых нужен OPENAI_API_KEY в Supabase → Edge Functions → Secrets."
+            : detail.includes("AUDIO_API_HTTP_401")
+              ? "❌ Неверный OPENAI_API_KEY для распознавания голоса."
+              : detail.includes("AUDIO_API_HTTP_429")
+                ? "❌ Лимит OpenAI API. Проверь баланс и ограничения."
+                : detail.includes("AUDIO_API_HTTP_")
+                  ? "❌ Не удалось распознать голосовое. Проверь OpenAI API."
+                  : detail.includes("FILE_TOO_LARGE")
+                    ? "❌ Файл слишком большой: скриншоты до 8 МБ, аудио до 20 МБ."
+                    : detail.includes("IMAGE_UNSUPPORTED")
+                      ? "❌ Изображение должно быть PNG, JPEG или WebP."
+                      : detail.includes("OpenAI")
+                        ? "❌ Ошибка OpenAI API. Проверь OPENAI_API_KEY."
+                        : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
         await telegramSend(botToken, msg.chat!.id!, message);
       } catch (notifyError) {
         console.error("Telegram notification failed:", String(notifyError));
