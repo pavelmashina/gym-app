@@ -77,8 +77,8 @@ try {
   await assert.rejects(q('select start_standalone_workout()'),e=>e.code==='42501');
   const home=read('../src/components/HomeScreen.jsx'), active=read('../src/components/WorkoutSessionScreenV3.jsx');
   assert(home.includes('<StandaloneWorkoutLauncher onOpenWorkout={onOpenWorkout}'));
-  assert(active.includes('<StandaloneExerciseEditor sessionId={session.id}'));
-  assert(active.includes('<ReorderExerciseScreen standalone={workout.standalone}'));
+  assert(active.includes('<WorkoutExerciseAdder sessionId={session.id}'));
+  assert(active.includes('<ReorderExerciseScreen sessionOnly={workout.standalone ||'));
   assert(read('../src/lib/statistics.js').includes(".eq('status', 'completed')"));
   console.log('Standalone workouts passed: empty start, retry, add/results, pause/resume, reorder, statistics, program isolation, no-program user, RLS and planned regression.');
 } finally {await db.close();}

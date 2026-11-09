@@ -1,0 +1,65 @@
+/* «Добавить упражнение» under the last exercise card of an active workout (issue #61).
+   Theme tokens only, so the button follows the dark theme like the cards above it. */
+
+.workout-exercise-adder {
+  min-width: 0;
+  margin-top: var(--card-gap);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.workout-add-exercise {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.workout-add-exercise svg { flex: 0 0 auto; width: 18px; height: 18px; }
+.workout-add-exercise:disabled { opacity: .55; cursor: default; }
+
+/* Only a workout without exercises (usually a standalone one) explains what to do first. */
+.workout-exercise-adder-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+}
+
+.workout-exercise-adder-busy {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  text-align: center;
+}
+
+/* The same light pink box as the other workout errors: readable on both themes. */
+/* «Куда добавить упражнение?» opens over the exercise picker (.workout-modal-shell, z-index 90).
+   Two classes: .reorder-scope-shell alone (z-index 70) is loaded later and would win. */
+.reorder-scope-shell.workout-add-scope { z-index: 100; }
+
+.workout-exercise-adder-error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #e8caca;
+  border-radius: var(--radius-sm);
+  background: #fff4f4;
+  color: #943333;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+}
+.workout-modal-card .workout-exercise-adder-error { margin-bottom: var(--space-3); }

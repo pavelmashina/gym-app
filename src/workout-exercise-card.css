@@ -97,6 +97,8 @@
 /* Results v2 rows label their own fields, so a list of only those needs no column head. */
 .exercise-set-head:has(+ .exercise-set-list:not(:has(.exercise-set-row))) { display: none; }
 .exercise-set-list:not(:has(.exercise-set-row)) { margin-top: var(--space-3); }
+/* An exercise added during the workout starts without sets (#61): no column head over nothing. */
+.exercise-set-head:has(+ .exercise-set-list:empty) { display: none; }
 
 .exercise-set-row {
   min-height: 40px;

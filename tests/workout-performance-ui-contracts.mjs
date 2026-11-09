@@ -10,7 +10,7 @@ const editor=read('src/components/ExerciseConfigurationEditor.jsx');
 const picker=read('src/components/EquipmentInstancePicker.jsx');
 const activeCss=read('src/workout-session-active-v3.css');
 const completedCss=read('src/workout-session-completed-reference.css');
-const standalone=read('src/components/StandaloneExerciseEditor.jsx');
+const standalone=read('src/components/WorkoutExerciseAdder.jsx');
 
 assert.match(home,/workout_sessions/);
 assert.match(home,/standalone_owner_id/);
