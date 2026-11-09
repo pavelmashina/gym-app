@@ -359,9 +359,13 @@ async function createFromMessage(
     await telegramSend(botToken, chatId, "Описание слишком длинное. Максимум 12000 символов.");
     return;
   }
+  const digest = await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(String(chatId) + ":" + messageId));
+  const fingerprint = Array.from(new Uint8Array(digest))
+    .map((x) => x.toString(16).padStart(2, "0")).join("");
   const marker = pending
     ? "<!-- gym-telegram-task:" + pending.batch_id + " -->"
-    : "<!-- gym-telegram-task:" + crypto.randomUUID() + ":" + messageId + " -->";
+    : "<!-- gym-telegram-task:" + fingerprint + " -->";
   const already = await findExisting(githubToken, marker);
   if (already) {
     if (pending) await clearPending(admin, pending);
@@ -445,11 +449,22 @@ async function processMessage(message: TgMessage, botToken: string, githubToken:
     }
     const image: ImageRef = { fileId: file.file_id, messageId: message.message_id!,
       mime: photo ? "image/jpeg" : document?.mime_type || "image/png" };
-    const updated = await savePending(admin, chatId, {
-      images: [...(pending?.images || []), image],
-      description: [pending?.description || "", message.caption?.trim() || ""]
-        .filter(Boolean).join("\n\n"),
-    }, pending);
+    // Atomic append prevents lost screenshots when Telegram delivers an album in parallel.
+    const { data: appended, error: appendError } = await admin.rpc("gym_telegram_append_image", {
+      p_chat_id: String(chatId),
+      p_message_id: message.message_id!,
+      p_file_id: image.fileId,
+      p_mime: image.mime,
+      p_caption: message.caption?.trim() || "",
+    });
+    if (appendError?.message?.includes("TOO_MANY_IMAGES")) {
+      await telegramSend(botToken, chatId, "Лимит — 6 скриншотов на одну задачу.");
+      return;
+    }
+    if (appendError || !appended) {
+      throw new Error("Photo queue failed " + (appendError?.code || "empty"));
+    }
+    const updated = appended as TaskDraft;
     if (message.caption?.trim() && !message.media_group_id && !updated.composing) {
       await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
         updated.description, updated);
