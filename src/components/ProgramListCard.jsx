@@ -4,10 +4,11 @@ import { ProgramStatusIcon } from './ProgramStatusIcon.jsx';
 /** Shared accessible program card: clickable cover/title, independently scrollable tags. */
 export function ProgramListCard({ program, onOpen, status = null }) {
   const categories = normalizeProgramCategories(program.categories);
-  const duration = program.details?.duration || program.sourcePayload?.details?.duration || program.sourcePayload?.duration
-    || (program.structureMode !== 'cycle' && program.weekCount > 1 ? `${program.weekCount} нед.` : '');
+  const duration = program.details?.duration || program.sourcePayload?.details?.duration || program.sourcePayload?.duration || '';
   const place = program.trainingPlace || '';
   const difficulty = programLevelIndex(program.level);
+  const hasFirstRow = Boolean(place || categories.length);
+  const hasSecondRow = Boolean(duration || program.level);
   return <article className={`catalog-program-card program-list-unified-card${status ? ' my-program-card' : ''}`}>
     <button className="program-list-card-open" type="button" onClick={() => onOpen(program.id)} aria-label={`Открыть программу «${program.name}»`} />
     <span className={`catalog-program-cover${program.coverUrl ? ' catalog-program-cover-image' : ' catalog-program-placeholder'}`} aria-hidden="true">
@@ -18,18 +19,18 @@ export function ProgramListCard({ program, onOpen, status = null }) {
         <strong>{program.name}</strong>
         {status && <ProgramStatusIcon tone={status.tone} label={status.label} />}
       </span>
-      <span className="catalog-program-card-meta program-list-tag-scroll" role="region" tabIndex={0} aria-label={`Теги программы «${program.name}». Прокрутите по горизонтали`}>
-        <span className="catalog-program-tag program-list-tag-key">{place || 'Место не указано'}</span>
+      {hasFirstRow && <span className="catalog-program-card-meta program-list-tag-scroll" role="region" tabIndex={0} aria-label={`Теги программы «${program.name}». Прокрутите по горизонтали`}>
+        {place && <span className="catalog-program-tag program-list-tag-key">{place}</span>}
         {categories.map(category => <span className="catalog-program-tag" key={category}>{category}</span>)}
-      </span>
-      <span className="program-list-difficulty-row">
-        <span className="catalog-program-tag program-list-tag-key">{duration || 'Продолжительность не указана'}</span>
+      </span>}
+      {hasSecondRow && <span className="program-list-difficulty-row">
+        {duration && <span className="catalog-program-tag program-list-tag-key">{duration}</span>}
         {(difficulty > 0 || program.level) && (difficulty
           ? <span className={`catalog-program-difficulty level-${difficulty}`} title={program.level} aria-label={`Сложность: ${program.level}, ${difficulty} из 5`}>
             {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < difficulty ? 'filled' : ''} />)}
           </span>
           : <span className="catalog-program-tag">{program.level}</span>)}
-      </span>
+      </span>}
     </span>
   </article>;
 }

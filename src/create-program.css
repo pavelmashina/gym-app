@@ -352,3 +352,280 @@
     border-radius: 0 0 34px 34px;
   }
 }
+
+
+/* Custom-program basics: compact blocks without changing established type sizes. */
+.create-program-step1-phone .create-program-content {
+  padding-top: var(--space-3);
+}
+.create-program-step1-phone .create-program-form-card,
+.create-program-step1-phone .program-select-card {
+  padding: 0 !important;
+}
+.create-program-step1-phone .create-program-form-card .program-field:first-child {
+  min-height: 54px;
+  padding: 8px 16px;
+}
+.create-program-step1-phone .create-program-form-card .program-field:last-child {
+  padding: 10px 16px;
+}
+.create-program-step1-phone .create-program-section-head {
+  min-height: 0;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.create-program-step1-phone .create-program-section-head h2 {
+  margin-top: 0;
+}
+.create-program-step1-phone .program-select-row {
+  min-height: 54px;
+  padding: 9px 16px;
+}
+.create-program-step1-phone .program-select-row-label {
+  display: block;
+  margin: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 780;
+}
+.create-program-step1-phone .program-select-custom-input {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding-top: 2px;
+}
+.create-program-step1-phone .program-select-custom-input > label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 780;
+}
+.create-program-step1-phone .program-select-custom-input > input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-body);
+  outline: 0;
+}
+.create-program-step1-phone .program-select-custom-input > input:focus {
+  border-color: var(--ink);
+}
+
+
+/* Step 1: unobtrusive square text editors (the outer card remains rounded). */
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea,
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea:focus,
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea:focus-visible {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  overflow-x: hidden;
+  text-overflow: clip;
+}
+/* Give glyphs enough breathing space while keeping the compact card height. */
+.create-program-step1-phone .create-program-form-card .program-field {
+  overflow: visible;
+}
+.create-program-step1-phone .create-program-form-card .program-auto-textarea {
+  min-height: 24px;
+  line-height: 1.5;
+}
+/* Fit selected values without outlined focus rings or truncating the choices. */
+.create-program-step1-phone .program-select-row {
+  grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+  column-gap: 8px;
+}
+.create-program-step1-phone .program-select-control {
+  min-width: 0;
+  gap: 3px;
+}
+.create-program-step1-phone .program-select-control select,
+.create-program-step1-phone .program-select-control select:focus,
+.create-program-step1-phone .program-select-control select:focus-visible {
+  min-width: 0;
+  max-width: 100%;
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  font-size: var(--text-micro) !important;
+  line-height: var(--lh-micro) !important;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+.create-program-step1-phone .program-select-control select option {
+  font-size: var(--text-micro);
+}
+
+
+/* Step-one description: show all restored text immediately and align its lines. */
+.create-program-step1-phone .create-program-form-card .program-description-textarea {
+  width: 100%;
+  height: auto;
+  min-height: 24px;
+  max-height: none !important;
+  overflow: hidden !important;
+  resize: none;
+  text-align: justify !important;
+  text-align-last: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+
+/* Cover controls: only the pencil opens actions when an image is present. */
+.create-program-step1-phone .program-cover-picker-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.create-program-step1-phone .program-cover-shell {
+  position: relative;
+  min-width: 0;
+}
+.create-program-step1-phone .program-cover-shell .program-cover {
+  width: 100%;
+  box-sizing: border-box;
+}
+.create-program-step1-phone .program-cover-shell .program-cover-empty {
+  padding: 12px;
+  font: inherit;
+}
+.create-program-step1-phone .program-cover-shell .program-cover.has-image {
+  cursor: default;
+}
+.create-program-step1-phone .program-cover-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+}
+.create-program-step1-phone .program-cover-pencil {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.create-program-step1-phone .program-cover-pencil svg {
+  width: 22px;
+  height: 22px;
+}
+.create-program-step1-phone .program-cover-action-menu {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: min(235px, calc(100vw - 56px));
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+  display: grid;
+  gap: 2px;
+}
+.create-program-step1-phone .program-cover-action-menu button {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px !important;
+  line-height: 20px;
+  font-weight: var(--weight-medium);
+  text-align: left;
+  cursor: pointer;
+}
+.create-program-step1-phone .program-cover-action-menu button:hover,
+.create-program-step1-phone .program-cover-action-menu button:focus-visible {
+  background: var(--accent-soft);
+}
+.create-program-step1-phone .program-cover-action-menu .program-cover-delete {
+  color: #a23d3b;
+}
+
+/* Prescribed type scale for the first screen of custom-program creation.
+   Override the global iOS 16px control rule only in this screen. */
+.create-program-step1-phone .create-program-header > strong {
+  font-size: 20px !important;
+  line-height: 24px !important;
+}
+.create-program-step1-phone .create-program-section-head h2 {
+  font-size: 20px !important;
+  line-height: 24px !important;
+}
+.create-program-step1-phone .create-program-form-card .program-field > span {
+  font-size: 16px !important;
+  line-height: 20px !important;
+}
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea,
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea:focus,
+.create-program-step1-phone .create-program-form-card .program-field .program-auto-textarea:focus-visible {
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.create-program-step1-phone .program-category-list button {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.create-program-step1-phone .program-select-row-label {
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.create-program-step1-phone .program-select-control select,
+.create-program-step1-phone .program-select-control select:focus,
+.create-program-step1-phone .program-select-control select:focus-visible,
+.create-program-step1-phone .program-select-control select option {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.create-program-step1-phone .program-cover strong,
+.create-program-step1-phone .program-cover small,
+.create-program-step1-phone .create-program-section-head small {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.create-program-step1-phone .program-select-custom-input > label {
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.create-program-step1-phone .program-select-custom-input > input {
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.create-program-step1-phone .create-program-next {
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+.create-program-step1-phone .program-draft-notice,
+.create-program-step1-phone .program-draft-notice button,
+.create-program-step1-phone .program-persistence-message {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}

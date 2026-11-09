@@ -1,22 +1,63 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { programDraftKey, readProgramDraft, writeProgramDraft, clearProgramDraft } from '../lib/programDraft.js';
-import { createProgram, getProgram, startProgram, updateProgram } from '../lib/programs.js';
+import { readProgramDraftCover, writeProgramDraftCover, clearProgramDraftCover } from '../lib/programDraftCover.js';
+import { createProgram, getProgram, startProgram, startProgramWithWeekdays, updateProgram } from '../lib/programs.js';
 import { CATEGORY_OPTIONS,PLACE_OPTIONS,EQUIPMENT_OPTIONS,LEVEL_OPTIONS,PROGRAM_DETAIL_FIELDS,normalizeProgramCategories,normalizeProgramLevel } from '../lib/programOptions.js';
 import { CreateProgramCycleScreen } from './CreateProgramCycleScreen.jsx';
 import { CreateProgramCycleScheduleScreen } from './CreateProgramCycleScheduleScreen.jsx';
+import { ProgramCoverCropEditor } from './ProgramCoverCropEditor.jsx';
+import { JoinReadyProgramScreen } from './JoinReadyProgramScreen.jsx';
+import { getCatalogProgram } from '../lib/catalogPrograms.js';
+import { catalogProgramCycleCount } from '../lib/catalogProgramDefaults.js';
+import { defaultTrainingWeekdays, normalizeTrainingWeekdays, nextTrainingDate, trainingFrequencyLabel, trainingScheduleLabel } from '../lib/readyProgramSchedule.js';
 import '../create-program.css';
 import '../program-persistence.css';
 
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
 function ImageIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="3" /><circle cx="9" cy="9" r="1.7" /><path d="m5.5 17 4.2-4.2 3 2.8 2.4-2.2 3.4 3.6" /></svg>; }
+function PencilIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M17 3a2.1 2.1 0 0 1 3 3L9.5 16.5 5 18l1.5-4.5L17 3Z" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>; }
 
 function SelectRow({ label, value, onChange, options, placeholder }) {
-  return <label className="program-select-row"><span>{label}</span><div className="program-select-control"><select value={value} onChange={(event) => onChange(event.target.value)}>{value && !options.includes(value) && <option value={value}>{value} (ранее сохранено)</option>}<option value="">{placeholder}</option>{options.map((option) => <option value={option} key={option}>{option}</option>)}</select><ChevronIcon /></div></label>;
+  const selectId = useId();
+  const customId = useId();
+  const [customSelected, setCustomSelected] = useState(false);
+  const allowsCustom = options.includes('Свой вариант');
+  // Keep legacy saved values with ё readable in the refreshed dropdown.
+  const displayValue = value === 'Тренажёрный зал' && options.includes('Тренажерный зал')
+    ? 'Тренажерный зал' : value === 'Тренажёры' && options.includes('Тренажеры') ? 'Тренажеры' : value;
+  const existingCustom = Boolean(value && !options.includes(value) && !options.includes(displayValue));
+  const showCustomInput = allowsCustom && (customSelected || existingCustom);
+  const selectedValue = showCustomInput ? 'Свой вариант' : displayValue;
+  const handleChoice = choice => {
+    if (allowsCustom && choice === 'Свой вариант') {
+      setCustomSelected(true);
+      onChange('');
+    } else {
+      setCustomSelected(false);
+      onChange(choice);
+    }
+  };
+  return <div className={`program-select-row${showCustomInput ? ' program-select-row-custom' : ''}`}>
+    <label className="program-select-row-label" htmlFor={selectId}>{label}</label>
+    <div className="program-select-control">
+      <select id={selectId} value={selectedValue} onChange={event => handleChoice(event.target.value)}>
+        {!allowsCustom && value && !options.includes(value) && <option value={value}>{value} (ранее сохранено)</option>}
+        <option value="">{placeholder}</option>
+        {options.map(option => <option value={option} key={option}>{option}</option>)}
+      </select>
+      <ChevronIcon />
+    </div>
+    {showCustomInput && <div className="program-select-custom-input">
+      <label htmlFor={customId}>Свой вариант</label>
+      <input id={customId} type="text" value={value || ''} onChange={event => onChange(event.target.value)} placeholder="Укажите свой вариант" maxLength={100} autoComplete="off" />
+    </div>}
+  </div>;
 }
 
 function resizeTextArea(element) {
+  if (!element) return;
   element.style.height = 'auto';
   element.style.height = `${element.scrollHeight}px`;
 }
@@ -36,6 +77,11 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   });
   const restored = restoration.draft;
   const draftFinished = useRef(false);
+  const nameInputRef = useRef(null);
+  const descriptionInputRef = useRef(null);
+  const coverPickerRef = useRef(null);
+  const coverEditedRef = useRef(false);
+  const coverActionsRef = useRef(null);
   const [draftError, setDraftError] = useState(restoration.error);
   const [draftBlocked, setDraftBlocked] = useState(Boolean(restoration.error));
   const [step, setStep] = useState(restored?.step ?? (launchOnly ? 3 : 1));
@@ -43,6 +89,10 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [description, setDescription] = useState(restored?.description ?? '');
   const [coverUrl, setCoverUrl] = useState('');
   const [coverFile, setCoverFile] = useState(null);
+  const [coverCropSource, setCoverCropSource] = useState(null);
+  const [coverSelectionError, setCoverSelectionError] = useState('');
+  const [coverMenuOpen, setCoverMenuOpen] = useState(false);
+  const [coverRemoved, setCoverRemoved] = useState(false);
   const [existingCoverPath, setExistingCoverPath] = useState(null);
   const [categories, setCategories] = useState(() => normalizeProgramCategories(restored?.categories));
   const [place, setPlace] = useState(restored?.place ?? '');
@@ -51,6 +101,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [details, setDetails] = useState(restored?.details ?? {});
   const [scheduleMode, setScheduleMode] = useState(restored?.scheduleMode ?? 'custom');
   const [cycleRepeatCount, setCycleRepeatCount] = useState(restored?.cycleRepeatCount ?? 1);
+  const [joinWeekdays, setJoinWeekdays] = useState([1, 3, 5]);
   const [programWeeks, setProgramWeeks] = useState(() => restored?.programWeeks ?? [createCycle()]);
   const [editingWorkoutId, setEditingWorkoutId] = useState(restored?.editingWorkoutId ?? null);
   const [startDate, setStartDate] = useState(restored?.startDate ?? '');
@@ -62,6 +113,76 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   const [saveError, setSaveError] = useState('');
   const [initialLoading, setInitialLoading] = useState(Boolean(programId));
   const [initialError, setInitialError] = useState('');
+
+  // Autosize restored drafts and loaded programs before the first paint, not
+  // only when the user focuses/types into a textarea.
+  useLayoutEffect(() => {
+    if (step !== 1 || launchOnly || initialLoading) return undefined;
+    let active = true;
+    const resize = () => {
+      if (!active) return;
+      resizeTextArea(nameInputRef.current);
+      resizeTextArea(descriptionInputRef.current);
+    };
+    resize();
+    const frame = requestAnimationFrame(resize);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => resize());
+    if (descriptionInputRef.current?.parentElement) observer?.observe(descriptionInputRef.current.parentElement);
+    window.addEventListener('resize', resize);
+    document.fonts?.ready?.then(resize).catch(() => {});
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', resize);
+    };
+  }, [step, launchOnly, initialLoading, name, description]);
+
+  useEffect(() => () => {
+    if (coverCropSource?.createdUrl) URL.revokeObjectURL(coverCropSource.url);
+  }, [coverCropSource]);
+
+  useEffect(() => {
+    if (!coverMenuOpen) return undefined;
+    const closeOutside = event => {
+      if (!coverActionsRef.current?.contains(event.target)) setCoverMenuOpen(false);
+    };
+    const closeEscape = event => {
+      if (event.key === 'Escape') setCoverMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeEscape);
+    };
+  }, [coverMenuOpen]);
+
+  // The text draft lives in localStorage; the cropped image is rehydrated
+  // independently from IndexedDB, before it can be accidentally overwritten.
+  useEffect(() => {
+    if (!draftKey || !restored?.hasCover) return undefined;
+    let active = true;
+    (async () => {
+      try {
+        const savedFile = await readProgramDraftCover(draftKey);
+        if (!active || coverEditedRef.current) return;
+        if (!savedFile) {
+          setCoverNeedsSelection(false);
+          setCoverSelectionError('Фото из старого черновика не сохранилось. Добавьте его повторно.');
+          return;
+        }
+        setCoverFile(savedFile);
+        setCoverUrl(URL.createObjectURL(savedFile));
+        setCoverNeedsSelection(false);
+        setCoverSelectionError('');
+      } catch (error) {
+        if (!active || coverEditedRef.current) return;
+        setCoverSelectionError(error?.message || 'Не удалось восстановить фото из черновика.');
+      }
+    })();
+    return () => { active = false; };
+  }, [draftKey]);
 
   useEffect(() => {
     if (!draftKey || draftFinished.current || draftBlocked) return;
@@ -77,9 +198,11 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     if (!window.confirm('Удалить черновик на этом устройстве и начать новую программу?')) return;
     try { clearProgramDraft(localStorage, draftKey); }
     catch { setDraftError('Не удалось удалить черновик. Попробуйте ещё раз.'); return; }
+    coverEditedRef.current = true;
+    clearProgramDraftCover(draftKey).catch(() => {});
     setStep(1); setName(''); setDescription(''); setCategories([]); setPlace(''); setEquipment(''); setLevel(''); setDetails({});
     setScheduleMode('custom'); setCycleRepeatCount(1); setProgramWeeks([createCycle()]);
-    setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverNeedsSelection(false);
+    setEditingWorkoutId(null); setStartDate(''); setCoverFile(null); setCoverUrl(''); setCoverCropSource(null); setCoverSelectionError(''); setCoverNeedsSelection(false); setCoverRemoved(false); setCoverMenuOpen(false);
     setDraftBlocked(false); setDraftError('');
   }
 
@@ -97,6 +220,22 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       setInitialLoading(true); setInitialError('');
       try {
         const program = await getProgram(programId);
+        let prescribedCycleCount = program.cycleRepeatCount ?? 1;
+        let joinDetails = program.details ?? {};
+        // Catalog adoption historically omitted the original schedule and set
+        // just one cycle. Read the source defaults for the join screen without
+        // overriding any later explicit user settings.
+        if (launchOnly && program.sourceCatalogProgramId) {
+          try {
+            const catalog = await getCatalogProgram(program.sourceCatalogProgramId);
+            joinDetails = { ...(catalog.sourcePayload?.details ?? {}), ...joinDetails };
+            if (!program.participation && prescribedCycleCount <= 1) {
+              prescribedCycleCount = catalogProgramCycleCount(catalog.sourcePayload);
+            }
+          } catch (lookupError) {
+            console.warn('Using the saved program defaults: source catalog details unavailable.', lookupError);
+          }
+        }
         if (!active) return;
         setName(program.name);
         setDescription(program.description);
@@ -104,13 +243,16 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
         setPlace(program.trainingPlace);
         setEquipment(program.equipment);
         setLevel(normalizeProgramLevel(program.level));
-        setDetails(program.details ?? {});
+        setDetails(launchOnly ? joinDetails : program.details ?? {});
+        if (launchOnly) setJoinWeekdays(defaultTrainingWeekdays({ details: joinDetails, scheduleMode: program.scheduleMode, workoutCount: program.programWeeks?.flatMap(week => week.workouts ?? []).length }));
         setScheduleMode(program.scheduleMode ?? 'custom');
-        setCycleRepeatCount(program.cycleRepeatCount ?? 1);
+        setCycleRepeatCount(prescribedCycleCount);
         setProgramWeeks(normalizeIntoOneCycle(program.programWeeks));
         setParticipationStatus(program.participation?.status ?? null);
         setOriginalStructureMode(program.structureMode ?? 'legacy_weeks');
         setExistingCoverPath(program.coverPath);
+        setCoverRemoved(false);
+        setCoverMenuOpen(false);
         setCoverUrl(program.coverUrl ?? '');
         if (launchOnly) setStep(3);
       } catch (error) {
@@ -143,6 +285,7 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       scheduleMode,
       programWeeks: normalizeIntoOneCycle(programWeeks),
       coverFile,
+      removeCover: coverRemoved,
     };
   }
 
@@ -152,8 +295,17 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
     try {
       let savedProgram;
       if (launchOnly) {
-        const updated = await updateProgram({ programId, existingCoverPath, ...buildSavePayload() });
-        const participation = await startProgram(programId, startDate);
+        const days = normalizeTrainingWeekdays(joinWeekdays);
+        const updated = await updateProgram({
+          programId, existingCoverPath, ...buildSavePayload(),
+          scheduleMode: 'custom',
+          details: {
+            ...details,
+            frequency: trainingFrequencyLabel(days),
+            schedule: trainingScheduleLabel(days),
+          },
+        });
+        const participation = await startProgramWithWeekdays(programId, startDate, days);
         savedProgram = { ...updated, participation };
       } else if (isEditing) {
         savedProgram = await updateProgram({ programId, existingCoverPath, ...buildSavePayload() });
@@ -162,17 +314,69 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
       }
       draftFinished.current = true;
       try { clearProgramDraft(localStorage, draftKey); } catch { /* The program itself has already been saved. */ }
+      await clearProgramDraftCover(draftKey).catch(() => {});
       onCreated?.(savedProgram);
     } catch (error) {
       setSaveError(error?.message || 'Не удалось выполнить действие. Попробуйте ещё раз.');
     } finally { setSaving(false); setSavingAction(''); }
   }
 
+  function changeJoinWeekdays(next) {
+    const days = normalizeTrainingWeekdays(next);
+    if (!days.length) return;
+    setJoinWeekdays(days);
+    setStartDate(current => current ? nextTrainingDate(current, days) : current);
+  }
+
   function handleCoverChange(event) {
     const file = event.target.files?.[0];
+    event.target.value = '';
     if (!file) return;
-    if (coverUrl?.startsWith('blob:')) URL.revokeObjectURL(coverUrl);
-    setCoverFile(file); setCoverNeedsSelection(false); setCoverUrl(URL.createObjectURL(file));
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setCoverSelectionError('Для обложки подходят изображения JPG, PNG и WEBP.');
+      return;
+    }
+    setCoverSelectionError('');
+    setCoverMenuOpen(false);
+    setCoverCropSource({ url: URL.createObjectURL(file), createdUrl: true });
+  }
+  async function applyCoverCrop(file) {
+    if (draftKey) {
+      try {
+        await writeProgramDraftCover(draftKey, file);
+      } catch {
+        throw new Error('Не удалось сохранить фото в черновик. Проверьте свободное место на устройстве и попробуйте снова.');
+      }
+    }
+    coverEditedRef.current = true;
+    setCoverFile(file);
+    setCoverRemoved(false);
+    setCoverMenuOpen(false);
+    setCoverNeedsSelection(false);
+    setCoverUrl(URL.createObjectURL(file));
+    setCoverCropSource(null);
+    setCoverSelectionError('');
+  }
+  function openExistingCoverCrop() {
+    if (!coverUrl) return;
+    setCoverMenuOpen(false);
+    setCoverSelectionError('');
+    setCoverCropSource({ url: coverUrl, createdUrl: false });
+  }
+  function chooseReplacementCover() {
+    setCoverMenuOpen(false);
+    coverPickerRef.current?.click();
+  }
+  function deleteSelectedCover() {
+    coverEditedRef.current = true;
+    clearProgramDraftCover(draftKey).catch(() => setCoverSelectionError('Не удалось очистить сохранённое фото черновика.'));
+    setCoverMenuOpen(false);
+    setCoverCropSource(null);
+    setCoverFile(null);
+    setCoverUrl('');
+    setCoverSelectionError('');
+    setCoverNeedsSelection(false);
+    setCoverRemoved(Boolean(existingCoverPath));
   }
 
   function toggleCategory(category) {
@@ -184,6 +388,23 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
   if (initialLoading) return <div className="phone create-program-phone"><main className="create-program-content"><div className="program-persistence-loading"><div className="exercise-list-spinner" /><span>{launchOnly ? 'Готовим запуск программы…' : 'Загружаем программу…'}</span></div></main></div>;
   if (initialError) return <div className="phone create-program-phone"><header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Программа</strong><span /></header><main className="create-program-content"><div className="program-persistence-message" role="alert">{initialError}</div></main></div>;
   if (legacyActiveLocked) return <div className="phone create-program-phone"><header className="create-program-header"><button className="create-program-back" type="button" onClick={onBack}><BackIcon /></button><strong>Редактировать программу</strong><span /></header><main className="create-program-content"><div className="program-persistence-message" role="alert"><strong>Эта программа использует старую структуру и уже запущена.</strong><br />Чтобы преобразовать её в цикл, сначала завершите или остановите текущий запуск. Расписание и история останутся сохранены.</div></main></div>;
+
+  if (launchOnly) return <JoinReadyProgramScreen
+    programName={name.trim()}
+    programWeeks={programWeeks}
+    scheduleMode={scheduleMode}
+    cycleRepeatCount={cycleRepeatCount}
+    onCycleRepeatCountChange={setCycleRepeatCount}
+    selectedWeekdays={joinWeekdays}
+    onSelectedWeekdaysChange={changeJoinWeekdays}
+    startDate={startDate}
+    onStartDateChange={setStartDate}
+    onBack={onBack}
+    onAction={handleScheduleAction}
+    saving={saving}
+    savingAction={savingAction}
+    saveError={saveError}
+  />;
 
   if (step === 3) return <CreateProgramCycleScheduleScreen
     draftNotice={draftNotice}
@@ -208,21 +429,38 @@ export function CreateProgramScreen({ onBack, onCreated, programId = null, launc
 
   if (step === 2) return <CreateProgramCycleScreen draftNotice={draftNotice} editingWorkoutId={editingWorkoutId} onEditingWorkoutChange={setEditingWorkoutId} programName={name.trim()} categories={categories} programWeeks={programWeeks} onProgramWeeksChange={setProgramWeeks} onBack={() => goToStep(1)} onNext={() => structureReady && goToStep(3)} />;
 
-  return <div className="phone create-program-phone">
+  return <div className="phone create-program-phone create-program-step1-phone">
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к тренировкам" onClick={onBack}><BackIcon /></button><strong>{isEditing ? 'Редактировать программу' : 'Создать программу'}</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content">
       {draftNotice}
-      <section className="create-program-intro"><span>Шаг 1</span><h1>{isEditing ? 'Основная информация' : 'Новая программа'}</h1><p>Заполните информацию о программе. На следующем шаге вы соберёте один цикл тренировок, а затем зададите ритм и количество повторений.</p></section>
-      <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea className="program-auto-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Обложка</span><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div><label className={`program-cover ${coverUrl ? 'has-image' : ''}`}>{coverUrl ? <img src={coverUrl} alt="Предпросмотр обложки программы" /> : <><span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small></>}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} /></label></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Тип тренировок</span><h2>Категории</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={PLACE_OPTIONS} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={EQUIPMENT_OPTIONS} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={LEVEL_OPTIONS} /></div></section>
-      <section className="create-program-section"><div className="create-program-section-head"><div><span>Дополнительно</span><h2>Характеристики программы</h2></div></div>
-        <div className="program-select-card">{PROGRAM_DETAIL_FIELDS.map(field =>
+      <section className="create-program-form-card"><label className="program-field"><span>Название программы <b>*</b></span><textarea ref={nameInputRef} className="program-auto-textarea" value={name} onChange={(event) => { setName(event.target.value); resizeTextArea(event.target); }} placeholder="Например, Сила и масса" rows="1" maxLength={80} /></label><label className="program-field"><span>Описание</span><textarea ref={descriptionInputRef} className="program-auto-textarea program-description-textarea" value={description} onChange={(event) => { setDescription(event.target.value); resizeTextArea(event.target); }} placeholder="Коротко опишите цель и особенности программы" rows="1" maxLength={600} /></label></section>
+      <section className="create-program-section">
+        <div className="create-program-section-head"><div><h2>Фото программы</h2></div><small>Необязательно · до 5 МБ</small></div>
+        <input ref={coverPickerRef} className="program-cover-picker-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} aria-label="Выбрать фото программы" />
+        <div className="program-cover-shell">
+          {coverUrl
+            ? <div className="program-cover has-image"><img src={coverUrl} alt="Обложка программы" draggable={false} /></div>
+            : <button type="button" className="program-cover program-cover-empty" onClick={() => coverPickerRef.current?.click()}>
+                <span className="program-cover-icon"><ImageIcon /></span><strong>Добавить обложку</strong><small>JPG, PNG или WEBP</small>
+              </button>}
+          {coverUrl && <div className="program-cover-actions" ref={coverActionsRef}>
+            <button type="button" className="program-cover-pencil" aria-label="Управление обложкой" aria-haspopup="menu" aria-expanded={coverMenuOpen} onClick={() => setCoverMenuOpen(open => !open)}><PencilIcon /></button>
+            {coverMenuOpen && <div className="program-cover-action-menu" role="menu" aria-label="Действия с обложкой">
+              <button type="button" role="menuitem" onClick={openExistingCoverCrop}>Изменить фрагмент</button>
+              <button type="button" role="menuitem" onClick={chooseReplacementCover}>Выбрать другое фото</button>
+              <button type="button" role="menuitem" className="program-cover-delete" onClick={deleteSelectedCover}>Удалить фото</button>
+            </div>}
+          </div>}
+        </div>
+        {coverSelectionError && <div className="program-persistence-message" role="alert">{coverSelectionError}</div>}
+      </section>
+      <section className="create-program-section"><div className="create-program-section-head"><div><h2>Дополнительно</h2></div></div><div className="program-category-list">{CATEGORY_OPTIONS.map((category) => <button className={categories.includes(category) ? 'active' : ''} type="button" key={category} onClick={() => toggleCategory(category)}>{category}</button>)}</div><div className="program-select-card"><SelectRow label="Место тренировок" value={place} onChange={setPlace} placeholder="Выбрать" options={PLACE_OPTIONS} /><SelectRow label="Оборудование" value={equipment} onChange={setEquipment} placeholder="Выбрать" options={EQUIPMENT_OPTIONS} /><SelectRow label="Уровень" value={level} onChange={setLevel} placeholder="Выбрать" options={LEVEL_OPTIONS} />{PROGRAM_DETAIL_FIELDS.filter(field => ['duration', 'frequency'].includes(field.key)).map(field =>
           <SelectRow key={field.key} label={field.label} value={details[field.key] ?? ''} placeholder="Выбрать" options={field.options}
             onChange={value => setDetails(current => ({ ...current,[field.key]:value }))} />)}
         </div>
       </section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" disabled={!canContinue} onClick={() => goToStep(2)}>Далее</button></footer>
+    {coverCropSource && <ProgramCoverCropEditor imageUrl={coverCropSource.url} onApply={applyCoverCrop} onCancel={() => setCoverCropSource(null)} />}
   </div>;
 }

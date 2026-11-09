@@ -37,7 +37,7 @@ assert.match(css,/\.exercise-catalog-content \.training-search \{\s*margin-top: 
 assert.match(css,/\.training-exercise-browser \.exercise-library-search \{[\s\S]*?margin-top: 4px;/);
 assert.match(css,/grid-template-columns: 22px minmax\(0,1fr\) auto;/);
 assert.match(picker,/browseOnly = false/);
-assert.match(picker,/!browseOnly && <div className="exercise-library-heading"/);
+assert.match(picker,/!browseOnly && !hideTitle && <div className="exercise-library-heading"/);
 assert.match(picker,/hideHeading=\{browseOnly\}/);
 assert.match(picker,/includeLegacy: browseOnly/);
 assert.match(picker,/if \(browseOnly\) \{ setInfoExercise\(exercise\); return; \}/);

@@ -66,6 +66,7 @@ export async function createProgram(program) {
 }
 export async function updateProgram() { throw new Error('Не используется в этом тесте'); }
 export async function startProgram() { throw new Error('Не используется в этом тесте'); }
+export async function startProgramWithWeekdays() { throw new Error('Не используется в этом тесте'); }
 export async function getProgram() { throw new Error('Не используется в этом тесте'); }
 export async function listPrograms() {
   return [

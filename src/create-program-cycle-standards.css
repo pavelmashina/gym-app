@@ -1,0 +1,340 @@
+/* GYM standard typography for program cycle creation only:
+   XL 24px, L 20px, M 16px, S 14px, XS 12px.
+   No text below 12px is permitted inside this creation flow. */
+.cycle-builder-phone :is(span,strong,small,p,button,input,label,h1,h2,h3),
+.program-workout-editor-phone :is(span,strong,small,p,button,input,label,h1,h2,h3),
+.program-exercise-picker-phone :is(span,strong,small,p,button,input,label,h1,h2,h3) {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.cycle-builder-phone .create-program-header > strong,
+.program-workout-editor-phone .create-program-header > strong,
+.program-exercise-picker-phone .create-program-header > strong {
+  font-size: var(--text-h2,20px) !important;
+  line-height: var(--lh-h2,24px) !important;
+}
+.cycle-builder-phone .create-program-step2-intro h1,
+.program-exercise-picker-phone .program-exercise-picker-intro h1 {
+  font-size: 24px !important;
+  line-height: 28px !important;
+  font-weight: var(--weight-bold,700) !important;
+  letter-spacing: -.4px;
+}
+.cycle-builder-phone .create-program-step2-intro > span,
+.cycle-builder-phone .program-step2-summary > div:first-child > span,
+.cycle-builder-phone .program-step2-section-head > div > span,
+.program-workout-editor-phone .program-workout-editor-intro > span,
+.program-workout-editor-phone .program-workout-editor-section-head span,
+.program-exercise-picker-phone .program-exercise-picker-intro > span {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+}
+.cycle-builder-phone .create-program-step2-intro p,
+.cycle-builder-phone .cycle-recommendation-card > span,
+.program-workout-editor-phone .program-workout-editor-intro p,
+.program-exercise-picker-phone .program-exercise-picker-intro p {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.cycle-builder-phone .program-step2-summary > div:first-child > strong {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+  overflow-wrap: anywhere;
+}
+.cycle-builder-phone .program-step2-section-head h2 {
+  font-size: var(--text-h2,20px) !important;
+  line-height: var(--lh-h2,24px) !important;
+  font-weight: var(--weight-bold,700) !important;
+}
+.program-workout-editor-phone .program-workout-editor-section-head h2 {
+  font-size: var(--text-h3,16px) !important;
+  line-height: var(--lh-h3,21px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+}
+.cycle-builder-phone .program-step2-summary-meta span,
+.cycle-builder-phone .program-step2-categories span,
+.cycle-builder-phone .cycle-recommendation-card > strong,
+.cycle-builder-phone .program-workout-copy > span,
+.program-workout-editor-phone .program-workout-exercise-number,
+.program-workout-editor-phone .program-workout-exercise-head small,
+.program-workout-editor-phone .program-workout-set-columns,
+.program-workout-editor-phone .program-workout-set-number,
+.program-exercise-picker-phone .program-exercise-picker-meta,
+.program-exercise-picker-phone .program-exercise-picker-meta strong,
+.program-exercise-picker-phone .exercise-library-section-title small {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+}
+.program-workout-editor-phone .program-workout-exercise-head strong,
+.program-exercise-picker-phone .program-exercise-row-copy strong,
+.program-exercise-picker-phone .exercise-library-row-copy strong {
+  font-size: var(--text-h3,16px) !important;
+  line-height: var(--lh-h3,21px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+}
+.cycle-builder-phone .program-workout-number {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.cycle-builder-phone .program-step2-summary,
+.cycle-builder-phone .cycle-recommendation-card,
+.cycle-builder-phone .cycle-workout-card,
+.program-workout-editor-phone .program-workout-exercise-card {
+  border-radius: var(--radius-lg,24px) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+.cycle-builder-phone .program-step2-summary,
+.cycle-builder-phone .cycle-recommendation-card,
+.program-workout-editor-phone .program-workout-exercise-card {
+  padding: var(--space-4,16px) !important;
+}
+.cycle-builder-phone .cycle-recommendation-card {
+  display: grid;
+  gap: var(--space-2,8px);
+}
+.cycle-builder-phone .cycle-workout-list {
+  gap: var(--space-3,12px) !important;
+}
+.cycle-builder-phone .cycle-workout-card {
+  padding: 12px !important;
+  min-height: 66px;
+  gap: 10px;
+  box-sizing: border-box;
+}
+.cycle-builder-phone .program-workout-copy,
+.cycle-builder-phone .program-step2-summary {
+  min-width: 0;
+}
+.cycle-builder-phone .program-add-workout strong,
+.program-workout-editor-phone .program-workout-add-exercise strong,
+.program-workout-editor-phone .program-workout-add-set,
+.program-exercise-picker-phone .program-exercise-state.error button,
+.cycle-builder-phone .create-program-next,
+.program-workout-editor-phone .create-program-next,
+.program-exercise-picker-phone .create-program-next {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.cycle-builder-phone .program-add-workout {
+  min-height: 50px !important;
+  border-radius: var(--radius-md,16px) !important;
+}
+.program-workout-editor-phone .cycle-workout-name-input {
+  font-size: var(--text-h3,16px) !important;
+  line-height: var(--lh-h3,21px) !important;
+}
+.program-workout-editor-phone .program-workout-set-row input {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+  min-height: 42px;
+}
+.program-workout-editor-phone .program-workout-exercise-head {
+  gap: var(--space-3,12px);
+}
+.program-exercise-picker-phone .program-exercise-row-copy small,
+.program-exercise-picker-phone .exercise-library-row-copy small,
+.program-workout-editor-phone .program-workout-add-exercise small {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+}
+.program-exercise-picker-phone .program-exercise-picker-intro h1 {
+  overflow-wrap: anywhere;
+}
+
+/* The cycle list deliberately uses S/14 for both program and workout names. */
+.cycle-builder-phone .cycle-workout-card .program-workout-copy strong {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+  overflow-wrap: anywhere;
+}
+/* With the intro removed, keep a single standard section gap. */
+.cycle-builder-phone .program-step2-section {
+  margin-top: var(--space-4,16px) !important;
+}
+
+
+/* Workout cycle editor: the name label sits ABOVE its 14px editable block. */
+.program-workout-editor-phone .program-workout-editor-intro {
+  padding: var(--space-4,16px) 0 var(--space-3,12px) !important;
+}
+.program-workout-editor-phone .program-workout-name-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2,8px);
+  min-width: 0;
+}
+.program-workout-editor-phone .program-workout-name-field > span {
+  display: block;
+  color: var(--ink);
+  font-size: var(--text-h3,16px) !important;
+  line-height: var(--lh-h3,21px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+  letter-spacing: 0;
+  text-transform: none !important;
+}
+.program-workout-editor-phone .program-workout-name-field .cycle-workout-name-input,
+.program-workout-editor-phone .program-workout-name-field .cycle-workout-name-input:focus,
+.program-workout-editor-phone .program-workout-name-field .cycle-workout-name-input:focus-visible {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px !important;
+  margin: 0;
+  padding: 12px var(--space-4,16px) !important;
+  box-sizing: border-box;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-md,16px) !important;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+  font-weight: var(--weight-medium,500);
+  letter-spacing: normal;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.program-workout-editor-phone .program-workout-editor-section {
+  padding-top: 0;
+}
+.program-workout-editor-phone .program-workout-editor-section-head {
+  margin-bottom: var(--space-3,12px);
+}
+/* Preserve readable minimum captions and button sizes inside workout cards. */
+.program-workout-editor-phone .program-workout-exercise-head strong {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.program-workout-editor-phone .program-workout-exercise-head small,
+.program-workout-editor-phone .program-workout-exercise-number,
+.program-workout-editor-phone .program-workout-set-number,
+.program-workout-editor-phone .program-workout-set-columns > span,
+.program-workout-editor-phone .program-workout-add-exercise small {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+}
+.program-workout-editor-phone .program-workout-set-row input,
+.program-workout-editor-phone .program-workout-add-set,
+.program-workout-editor-phone .program-workout-add-exercise strong,
+.program-workout-editor-phone .create-program-next {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+
+/* Workout editor: compact labels without forced uppercase. */
+.program-workout-editor-phone .program-workout-set-columns,
+.program-workout-editor-phone .program-workout-set-columns > span {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+  font-weight: var(--weight-semibold,600) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+.program-workout-editor-phone .program-workout-add-set,
+.program-workout-editor-phone .program-workout-add-set > span {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+}
+.program-workout-editor-phone .program-workout-add-exercise > div {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Exercise picker: native GYM XL/L/M/S/XS scale, including inline creation
+   and exercise-detail surfaces; no 8-11px text anywhere in this flow. */
+.program-exercise-picker-phone .program-exercise-picker-content {
+  padding-top: var(--space-3,12px);
+}
+.program-exercise-picker-phone .exercise-library-shell {
+  gap: var(--space-3,12px);
+}
+.program-exercise-picker-phone .exercise-library-top {
+  gap: var(--space-3,12px);
+}
+.program-exercise-picker-phone .exercise-library-search input,
+.program-exercise-picker-phone .exercise-library-search input::placeholder,
+.program-exercise-picker-phone .exercise-library-filter select,
+.program-exercise-picker-phone .exercise-library-create-form input,
+.program-exercise-picker-phone .exercise-library-create-form select,
+.program-exercise-picker-phone .exercise-library-create-form textarea,
+.program-exercise-picker-phone .exercise-library-photo-upload input,
+.program-exercise-picker-phone .exercise-library-search button {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.program-exercise-picker-phone .exercise-library-filter > span,
+.program-exercise-picker-phone .exercise-library-create-form label,
+.program-exercise-picker-phone .exercise-library-create-form label > span,
+.program-exercise-picker-phone .exercise-library-create-form-head > span,
+.program-exercise-picker-phone .exercise-library-create-form-head > small,
+.program-exercise-picker-phone .exercise-library-create-copy small,
+.program-exercise-picker-phone .exercise-library-row-copy small,
+.program-exercise-picker-phone .exercise-library-section-title small,
+.program-exercise-picker-phone .exercise-library-video-divider,
+.program-exercise-picker-phone .exercise-library-video-upload strong,
+.program-exercise-picker-phone .exercise-library-photo-upload small,
+.program-exercise-picker-phone .exercise-library-info-card header span,
+.program-exercise-picker-phone .exercise-library-info-video a small,
+.program-exercise-picker-phone .exercise-library-info-description > span,
+.program-exercise-picker-phone .exercise-library-info-tags span {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+  letter-spacing: normal !important;
+}
+.program-exercise-picker-phone .exercise-library-create-copy strong,
+.program-exercise-picker-phone .exercise-library-row-copy strong,
+.program-exercise-picker-phone .exercise-library-create-actions button,
+.program-exercise-picker-phone .exercise-library-info-video a strong,
+.program-exercise-picker-phone .exercise-library-info-description p,
+.program-exercise-picker-phone .exercise-library-info-description div,
+.program-exercise-picker-phone .exercise-library-info-description h4,
+.program-exercise-picker-phone .exercise-library-error,
+.program-exercise-picker-phone .exercise-library-state.error button {
+  font-size: var(--text-body,14px) !important;
+  line-height: var(--lh-body,20px) !important;
+}
+.program-exercise-picker-phone .exercise-library-section-title strong,
+.program-exercise-picker-phone .exercise-library-create-form-head h3,
+.program-exercise-picker-phone .exercise-library-info-card header h3 {
+  font-size: var(--text-h3,16px) !important;
+  line-height: var(--lh-h3,21px) !important;
+  letter-spacing: normal !important;
+}
+.program-exercise-picker-phone .exercise-library-row-copy strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.program-exercise-picker-phone .exercise-library-row-copy small {
+  white-space: normal;
+}
+.program-exercise-picker-phone .exercise-library-section,
+.program-exercise-picker-phone .exercise-library-create,
+.program-exercise-picker-phone .exercise-library-create-form {
+  border-radius: var(--radius-lg,24px) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+.program-exercise-picker-phone .exercise-library-create-form {
+  padding: var(--space-4,16px) !important;
+}
+.program-exercise-picker-phone .exercise-library-create {
+  min-height: 64px;
+}
+.program-exercise-picker-phone .exercise-library-row {
+  min-height: 64px;
+}
+.program-exercise-picker-phone .exercise-library-create-arrow,
+.program-exercise-picker-phone .exercise-library-row-chevron,
+.program-exercise-picker-phone .exercise-library-info-card header button,
+.program-exercise-picker-phone .exercise-library-photo-thumb button {
+  font-size: var(--text-h2,20px) !important;
+  line-height: var(--lh-h2,24px) !important;
+}
+.program-exercise-picker-phone .exercise-library-info-description :is(li,span,strong,p),
+.program-exercise-picker-phone .exercise-library-state :is(span,strong,p),
+.program-exercise-picker-phone .exercise-library-empty {
+  font-size: var(--text-caption,12px) !important;
+  line-height: var(--lh-caption,16px) !important;
+}

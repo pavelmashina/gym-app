@@ -5,6 +5,7 @@ import '../create-program-step2-fixes.css';
 import '../create-program-workout-draft.css';
 import '../create-program-cycle.css';
 import '../exercise-library-picker.css';
+import '../create-program-cycle-standards.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
 
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>; }
@@ -43,8 +44,8 @@ function ExercisePicker({ workout, onBack, onSave, onChange, draftNotice }) {
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Упражнения</strong><span className="create-program-header-spacer" /></header>
     <main className="program-exercise-picker-content">
       {draftNotice}
-      <section className="program-exercise-picker-intro"><span>Цикл тренировок</span><h1>{workout.name}</h1><p>Выберите упражнения из базы или создайте своё.</p></section>
       <ExerciseLibraryPicker
+        hideTitle
         multi
         selectedIds={selectedIds}
         onChange={(ids, all) => { setSelectedIds(ids); setCatalog(all); onChange(selectedExercises(ids, all)); }}
@@ -75,9 +76,9 @@ function WorkoutEditor({ workout, onBack, onSave, onChange, draftNotice }) {
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к циклу" onClick={onBack}><BackIcon /></button><strong>Тренировка цикла</strong><span className="create-program-header-spacer" /></header>
     <main className="program-workout-editor-content">
       {draftNotice}
-      <section className="program-workout-editor-intro"><span>Один цикл</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /><p>Добавьте упражнения и задайте подходы.</p></section>
+      <section className="program-workout-editor-intro"><label className="program-workout-name-field"><span>Название тренировки</span><input className="cycle-workout-name-input" type="text" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} maxLength={80} /></label></section>
       <section className="program-workout-editor-section">
-        <div className="program-workout-editor-section-head"><div><span>Упражнения</span><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
+        <div className="program-workout-editor-section-head"><div><h2>{formatRussianCount(draft.exercises.length, ['упражнение', 'упражнения', 'упражнений'])}</h2></div></div>
         <div className="program-workout-selected-list">{draft.exercises.map((exercise, index) => {
           const key = exerciseKey(exercise);
           return <article className="program-workout-exercise-card" key={key}>
@@ -86,14 +87,14 @@ function WorkoutEditor({ workout, onBack, onSave, onChange, draftNotice }) {
             <button className="program-workout-add-set" type="button" onClick={() => updateExercise(key, (item) => ({ ...item, sets: [...(item.sets ?? []), createSet()] }))}><PlusIcon /><span>Добавить подход</span></button>
           </article>;
         })}</div>
-        <button className="program-workout-add-exercise" type="button" onClick={() => setPickerOpen(true)}><span><PlusIcon /></span><div><strong>Добавить упражнение</strong><small>Недавние, мои и вся база</small></div><ChevronIcon /></button>
+        <button className="program-workout-add-exercise" type="button" onClick={() => setPickerOpen(true)}><span><PlusIcon /></span><div><strong>Добавить упражнение</strong></div><ChevronIcon /></button>
       </section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" onClick={() => onSave({ ...draft, name: draft.name.trim() || 'Без названия' })}>Сохранить тренировку</button></footer>
   </div>;
 }
 
-export function CreateProgramCycleScreen({ programName, categories, programWeeks, onProgramWeeksChange, onBack, onNext, editingWorkoutId, onEditingWorkoutChange, draftNotice }) {
+export function CreateProgramCycleScreen({ programName, programWeeks, onProgramWeeksChange, onBack, onNext, editingWorkoutId, onEditingWorkoutChange, draftNotice }) {
   const cycle = programWeeks[0] ?? { id: crypto.randomUUID(), number: 1, workouts: [] };
   const setEditingWorkoutId = onEditingWorkoutChange;
   const totalExercises = cycle.workouts.reduce((sum, workout) => sum + workout.exercises.length, 0);
@@ -122,10 +123,8 @@ export function CreateProgramCycleScreen({ programName, categories, programWeeks
     <header className="create-program-header"><button className="create-program-back" type="button" aria-label="Назад к описанию программы" onClick={onBack}><BackIcon /></button><strong>Создать программу</strong><span className="create-program-header-spacer" /></header>
     <main className="create-program-content create-program-step2-content">
       {draftNotice}
-      <section className="create-program-intro create-program-step2-intro"><span>Шаг 2</span><h1>Один цикл тренировок</h1><p>Соберите последовательность тренировок, которая затем будет повторяться.</p></section>
-      <section className="program-step2-summary"><div><span>Программа</span><strong>{programName}</strong></div><div className="program-step2-summary-meta"><span>1 цикл</span><span>{formatRussianCount(cycle.workouts.length, ['тренировка', 'тренировки', 'тренировок'])}</span><span>{formatRussianCount(totalExercises, ['упражнение', 'упражнения', 'упражнений'])}</span></div>{categories.length > 0 && <div className="program-step2-categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}</section>
-      <section className="cycle-recommendation-card"><strong>Рекомендация</strong><span>Обычно удобнее, если один цикл примерно равен одной неделе. Но это не ограничение.</span></section>
-      <section className="program-step2-section"><div className="program-step2-section-head"><div><span>Цикл</span><h2>Последовательность тренировок</h2></div></div><div className="cycle-workout-list">{cycle.workouts.map((workout, index) => <article className="program-workout-card cycle-workout-card" key={workout.id}><div className="program-workout-number">{index + 1}</div><div className="program-workout-copy"><strong>{workout.name}</strong><span>{workout.exercises.length ? formatRussianCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений']) : 'Упражнения не выбраны'}</span></div><button className="program-workout-open" type="button" onClick={() => setEditingWorkoutId(workout.id)}><ChevronIcon /></button><button className="program-workout-remove" type="button" onClick={() => updateCycle((current) => ({ ...current, workouts: current.workouts.filter((item) => item.id !== workout.id) }))}><TrashIcon /></button></article>)}</div><button className="program-add-workout cycle-add-workout" type="button" onClick={addWorkout}><span><PlusIcon /></span><strong>Добавить тренировку в цикл</strong></button></section>
+      <section className="program-step2-summary"><div><strong>{programName}</strong></div><div className="program-step2-summary-meta"><span>1 цикл</span><span>{formatRussianCount(cycle.workouts.length, ['тренировка', 'тренировки', 'тренировок'])}</span><span>{formatRussianCount(totalExercises, ['упражнение', 'упражнения', 'упражнений'])}</span></div></section>
+      <section className="program-step2-section"><div className="cycle-workout-list">{cycle.workouts.map((workout, index) => <article className="program-workout-card cycle-workout-card" key={workout.id}><div className="program-workout-number">{index + 1}</div><div className="program-workout-copy"><strong>{workout.name}</strong><span>{workout.exercises.length ? formatRussianCount(workout.exercises.length, ['упражнение', 'упражнения', 'упражнений']) : 'Упражнения не выбраны'}</span></div><button className="program-workout-open" type="button" onClick={() => setEditingWorkoutId(workout.id)} aria-label={`Открыть ${workout.name}`}><ChevronIcon /></button><button className="program-workout-remove" type="button" onClick={() => updateCycle((current) => ({ ...current, workouts: current.workouts.filter((item) => item.id !== workout.id) }))} aria-label={`Удалить ${workout.name}`}><TrashIcon /></button></article>)}</div><button className="program-add-workout cycle-add-workout" type="button" onClick={addWorkout}><span><PlusIcon /></span><strong>Добавить тренировку в цикл</strong></button></section>
     </main>
     <footer className="create-program-footer"><button className="create-program-next" type="button" disabled={!ready} onClick={onNext}>Далее</button></footer>
   </div>;
