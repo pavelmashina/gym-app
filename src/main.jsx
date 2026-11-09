@@ -17,6 +17,7 @@ import './nutrition-standard.css';
 import './training-program-polish.css';
 import './program-ui-refresh.css';
 import './november-card-navigation-refinements.css';
+import './nutrition-card-alignment.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
