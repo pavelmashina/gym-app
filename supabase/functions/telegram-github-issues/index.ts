@@ -92,8 +92,10 @@ function rawDraft(input: string): IssueDraft {
   };
 }
 
-async function makeDraft(input: string): Promise<IssueDraft> {
-  const key = Deno.env.get("OPENAI_API_KEY");
+async function makeDraft(input: string, screenshotUrls: string[] = []): Promise<IssueDraft> {
+  // Claude replaces GPT for all task structuring; never silently call OpenAI for text.
+  // Without Anthropic credentials, plain-text Issues continue to work.
+  const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) return rawDraft(input);
 
   const schema = {
@@ -108,49 +110,60 @@ async function makeDraft(input: string): Promise<IssueDraft> {
       priority: { type: "string", enum: ["P0", "P1", "P2"] },
     },
   };
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2026-10-21",
+      "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: Deno.env.get("OPENAI_MODEL") || "gpt-4.1-mini",
-      temperature: 0,
-      response_format: {
-        type: "json_schema",
-        json_schema: { name: "github_issue", strict: true, schema },
-      },
-      messages: [
-        {
-          role: "system",
-          content:
-            "Ты создаёшь GitHub Issues для русскоязычного спортивного веб-приложения. " +
-            "Сохраняй КАЖДОЕ конкретное требование, название экрана, текст интерфейса, " +
-            "числовое значение, размер шрифта и ограничение пользователя. " +
-            "Не придумывай новых функций, требований или технических причин. " +
-            "title: точный короткий заголовок до 120 символов. " +
-            "problem: кратко, только если проблема указана. " +
-            "tasks: конкретные действия, одно на пункт; не теряй ни одного. " +
-            "criteria: проверяемые критерии, вытекающие из tasks, без добавления функций. " +
-            "P0 — приложение или ключевая функция заблокированы; " +
-            "P1 — серьёзная ошибка; P2 — остальные изменения и улучшения. " +
-            "Верни только JSON по схеме.",
-        },
-        { role: "user", content: input },
-      ],
-      max_completion_tokens: 2500,
+      model: Deno.env.get("ANTHROPIC_MODEL") || "claude-sonnet-5-5",
+      max_tokens: 2500,
+      output_config: { format: { type: "json_schema", schema } },
+      system:
+        "Ты создаёшь GitHub Issues для русскоязычного спортивного веб-приложения. " +
+        "Сохраняй КАЖДОЕ конкретное требование, название экрана, точный текст интерфейса, " +
+        "числовые значения, размер шрифта и ограничения пользователя. " +
+        "Не придумывай новых функций, требований, причин ошибок или деталей реализации. " +
+        "title: точный короткий заголовок до 120 символов. " +
+        "problem: кратко, только если проблема указана. " +
+        "tasks: конкретные действия, одно на пункт, ничего не пропускай. " +
+        "criteria: проверяемые критерии по требованиям, без добавления новых функций. " +
+        "P0 — приложение или ключевая функция заблокированы; " +
+        "P1 — серьёзная ошибка; P2 — остальные изменения и улучшения. " +
+        "Все поля по заданной JSON-схеме; текст на русском языке.",
+      messages: [{
+        role: "user",
+        content: screenshotUrls.length ? [
+          { type: "text", text: input + "\n\nПроанализируй приложенные скриншоты как контекст. " +
+            "Перенеси в задачу только наблюдаемые проблемы и требования, не делай предположений." },
+          ...screenshotUrls.map((url) => ({
+            type: "image", source: { type: "url", url },
+          })),
+        ] : input,
+      }],
     }),
-    signal: AbortSignal.timeout(35000),
+    signal: AbortSignal.timeout(65000),
   });
-  if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);
+  if (!res.ok) {
+    console.error("Claude issue formatting failed", { status: res.status });
+    throw new Error("CLAUDE_API_HTTP_" + res.status);
+  }
   const data = await res.json();
-  const output = data?.choices?.[0]?.message?.content;
-  if (typeof output !== "string") throw new Error("OpenAI returned no content");
-  const parsed = JSON.parse(output) as IssueDraft;
+  const output = data?.content?.find(
+    (block: { type?: string }) => block.type === "text"
+  )?.text;
+  if (typeof output !== "string") throw new Error("CLAUDE_EMPTY");
+  let parsed: IssueDraft;
+  try {
+    parsed = JSON.parse(output) as IssueDraft;
+  } catch {
+    throw new Error("CLAUDE_BAD_JSON");
+  }
   if (!parsed.title?.trim() || !Array.isArray(parsed.tasks) ||
       !parsed.tasks.some((task) => typeof task === "string" && task.trim())) {
-    throw new Error("OpenAI produced an incomplete issue");
+    throw new Error("CLAUDE_INCOMPLETE");
   }
   return {
     title: parsed.title.trim().slice(0, 180),
@@ -343,7 +356,9 @@ async function saveScreenshots(admin: Admin, token: string, images: ImageRef[], 
 }
 
 async function speechToText(botToken: string, fileId: string, mimeType: string): Promise<string> {
-  const key = Deno.env.get("OPENAI_API_KEY");
+  // Claude Sonnet handles text/images, not raw audio. Use Groq's free-tier
+  // Whisper-compatible transcription service, never OpenAI API.
+  const key = Deno.env.get("GROQ_API_KEY");
   if (!key) throw new Error("AUDIO_KEY_MISSING");
   const bytes = await telegramFile(botToken, fileId, MAX_AUDIO_BYTES);
   const mime = mimeType === "audio/mpeg" ? "audio/mpeg" :
@@ -351,13 +366,18 @@ async function speechToText(botToken: string, fileId: string, mimeType: string):
   const extension = mime === "audio/mpeg" ? "mp3" : mime === "audio/mp4" ? "m4a" : "ogg";
   const form = new FormData();
   form.append("file", new Blob([bytes], { type: mime }), "task." + extension);
-  form.append("model", Deno.env.get("OPENAI_TRANSCRIPTION_MODEL") || "gpt-transcribe");
+  form.append("model", Deno.env.get("GROQ_TRANSCRIPTION_MODEL") || "whisper-large-v3-turbo");
+  form.append("language", "ru");
+  form.append("response_format", "json");
   form.append("prompt", "Русский язык. Термины спортивного веб-приложения: тренировки, подходы, повторения, GitHub, Supabase, UI, карточки.");
-  const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+  const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
     method: "POST", headers: { Authorization: "Bearer " + key }, body: form,
-    signal: AbortSignal.timeout(70000),
+    signal: AbortSignal.timeout(65000),
   });
-  if (!res.ok) throw new Error("AUDIO_API_HTTP_" + res.status);
+  if (!res.ok) {
+    console.error("Groq transcription failed", { status: res.status });
+    throw new Error("AUDIO_API_HTTP_" + res.status);
+  }
   const response = await res.json();
   if (typeof response?.text !== "string" || !response.text.trim()) throw new Error("AUDIO_EMPTY");
   return response.text.trim();
@@ -389,10 +409,11 @@ async function createFromMessage(
     await telegramSend(botToken, chatId, "Эта задача уже существует: " + already, threadId);
     return;
   }
-  const draft = await makeDraft(description);
   const screenshots = pending?.images?.length
     ? await saveScreenshots(admin, botToken, pending.images, pending.batch_id)
     : [];
+  // Claude sees image URLs and the description, while GitHub Issue embeds images.
+  const draft = await makeDraft(description, screenshots);
   const created = await createIssue(githubToken, draft, marker, screenshots);
   if (pending) await clearPending(admin, pending);
   await telegramSend(botToken, chatId,
@@ -761,20 +782,26 @@ Deno.serve(async (req: Request) => {
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
             : detail.includes("AUDIO_KEY_MISSING")
-            ? "❌ Для голосовых нужен OPENAI_API_KEY в Supabase → Edge Functions → Secrets."
+            ? "❌ Для голосовых нужен GROQ_API_KEY в Supabase → Edge Functions → Secrets."
             : detail.includes("AUDIO_API_HTTP_401")
-              ? "❌ Неверный OPENAI_API_KEY для распознавания голоса."
+              ? "❌ Неверный GROQ_API_KEY. Проверь ключ сервиса Groq."
               : detail.includes("AUDIO_API_HTTP_429")
-                ? "❌ Лимит OpenAI API. Проверь баланс и ограничения."
+                ? "❌ Достигнут бесплатный лимит Groq для голосовых. Повтори позже или проверь квоту."
                 : detail.includes("AUDIO_API_HTTP_")
-                  ? "❌ Не удалось распознать голосовое. Проверь OpenAI API."
+                  ? "❌ Не удалось расшифровать голосовое через Groq. Проверь GROQ_API_KEY и ограничения."
                   : detail.includes("FILE_TOO_LARGE")
                     ? "❌ Файл слишком большой: скриншоты до 8 МБ, аудио до 20 МБ."
                     : detail.includes("IMAGE_UNSUPPORTED")
                       ? "❌ Изображение должно быть PNG, JPEG или WebP."
-                      : detail.includes("OpenAI")
-                        ? "❌ Ошибка OpenAI API. Проверь OPENAI_API_KEY."
-                        : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
+                      : detail.includes("CLAUDE_API_HTTP_401") || detail.includes("CLAUDE_API_HTTP_403")
+                        ? "❌ Claude API не разрешил запрос. Проверь ANTHROPIC_API_KEY в Supabase."
+                        : detail.includes("CLAUDE_API_HTTP_402")
+                          ? "❌ На счёте Claude API недостаточно средств. Проверь баланс Anthropic Console."
+                          : detail.includes("CLAUDE_API_HTTP_429")
+                            ? "❌ Достигнут лимит Claude API. Попробуй позже или проверь лимиты Anthropic."
+                            : detail.includes("CLAUDE_")
+                              ? "❌ Claude не смог оформить задачу. Проверь модель ANTHROPIC_MODEL и лимиты Claude API."
+                              : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
         await telegramSend(botToken, msg.chat!.id!, message, msg.message_thread_id);
       } catch (notifyError) {
         console.error("Telegram notification failed:", String(notifyError));
