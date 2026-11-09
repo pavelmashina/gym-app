@@ -87,6 +87,6 @@ assert.match(workflow,/VITE_APP_BUILD_ID:/);
 assert.match(workflow,/dist\/version\.json/);
 assert.match(update,/version\.json\?t=/);
 assert.match(update,/document\.visibilityState/);
-assert.match(update,/>Обновить<\/button>/);
+assert.match(update,/aria-label="Доступна новая версия GYM APP\. Обновить"/);
 assert.match(app,/<AppUpdateNotice \/>/);
 console.log('Program card geometry, unified details, training icons and update availability passed.');
