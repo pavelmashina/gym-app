@@ -444,7 +444,7 @@ function normalizedCommand(raw: string): string {
   const match = /^\/([a-z_]+)(?:@([A-Za-z0-9_]+))?(\s+.*)?$/i.exec(text);
   if (match) {
     // Don't respond to commands addressed to another bot in a group.
-    if (match[2] && match[2].toLowerCase() !== "gymappeditbot") return "";
+    if (match[2] && match[2].toLowerCase() !== "gymappeditbot") return "__ignore__";
     return "/" + match[1].toLowerCase() + (match[3] || "");
   }
   return text;
@@ -474,6 +474,7 @@ async function processMessage(
   const threadId = chatType === "supergroup" ? message.message_thread_id : undefined;
   const original = message.text?.trim() || "";
   const command = normalizedCommand(original);
+  if (command === "__ignore__") return;
   const owner = String(senderId) === ownerId;
   const admin = adminClient();
   const send = (text: string) => telegramSend(botToken, chatId, text, threadId);
@@ -740,9 +741,9 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid JSON" }, 400);
   }
   const msg = update?.message;
-  if (!msg?.chat?.id || !msg?.from?.id || !msg?.message_id ||
-      msg.chat.type !== "private" || msg.chat.id !== msg.from.id ||
-      String(msg.from.id) !== allowedId) {
+  if (!msg?.chat?.id || !msg?.from?.id || !msg?.message_id || msg.from.is_bot ||
+      !["private", "supergroup"].includes(msg.chat.type || "") ||
+      (msg.chat.type === "private" && msg.chat.id !== msg.from.id)) {
     return json({ ok: true, ignored: true });
   }
 
@@ -750,7 +751,7 @@ Deno.serve(async (req: Request) => {
   // completed in the background, with a user-visible success or error message.
   EdgeRuntime.waitUntil((async () => {
     try {
-      await processMessage(msg, botToken, githubToken);
+      await processMessage(msg, botToken, githubToken, allowedId);
     } catch (error) {
       console.error("Telegram GitHub Issue failed:", String(error));
       try {
@@ -774,7 +775,7 @@ Deno.serve(async (req: Request) => {
                       : detail.includes("OpenAI")
                         ? "❌ Ошибка OpenAI API. Проверь OPENAI_API_KEY."
                         : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
-        await telegramSend(botToken, msg.chat!.id!, message);
+        await telegramSend(botToken, msg.chat!.id!, message, msg.message_thread_id);
       } catch (notifyError) {
         console.error("Telegram notification failed:", String(notifyError));
       }
