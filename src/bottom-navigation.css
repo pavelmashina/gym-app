@@ -75,44 +75,14 @@ body .bottom-nav:not(.app-bottom-nav) {
   color: var(--ink);
 }
 
-.app-nav-item.active:not(.home) .app-nav-icon {
+.app-nav-item.active .app-nav-icon {
   background: transparent;
   color: var(--ink);
 }
 
-.app-nav-item.active:not(.home) .app-nav-label {
+.app-nav-item.active .app-nav-label {
   color: var(--ink);
   font-weight: var(--weight-bold);
-}
-
-.app-nav-item.home {
-  grid-template-rows: 42px 14px;
-  padding-top: 1px;
-}
-
-.app-nav-item.home .app-nav-icon {
-  width: 60px;
-  height: 60px;
-  margin-top: -22px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 4px 14px rgba(0,0,0,.08);
-}
-
-.app-nav-item.home .app-nav-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.app-nav-item.home.active .app-nav-icon {
-  background: var(--ink);
-  color: var(--surface);
-}
-
-.app-nav-item.home .app-nav-label {
-  margin-top: -3px;
 }
 
 .app-nav-item:focus-visible {
