@@ -275,13 +275,19 @@ const videoFile = { type: 'video/mp4', size: 1024 };
 // Screen contracts: navigation, states, confirmation, and one shared form and card.
 const training = read('../src/components/ExercisesScreen.jsx');
 const panel = read('../src/components/MyExercisesPanel.jsx');
+const browser = read('../src/components/TrainingExerciseBrowser.jsx');
 const picker = read('../src/components/ExerciseLibraryPicker.jsx');
 const styles = read('../src/my-exercises.css');
 const faq = read('../src/components/MenuScreens.jsx');
-assert.match(training, /\{ id: 'my-exercises', label: 'Мои упражнения' \}/);
-assert.match(training, /activeTab === 'my-exercises' && <MyExercisesPanel refreshKey=\{refreshKey\} \/>/);
-assert.match(styles, /data-training-tab="my-exercises"\]::before/);
-assert.match(styles, /data-training-tab="my-exercises"\]\.active::before/);
+assert.doesNotMatch(training, /\{ id: 'my-exercises', label: 'Мои упражнения' \}/);
+assert.match(training, /activeTab === 'exercises' && <section[^\n]*<TrainingExerciseBrowser refreshKey=\{refreshKey\}/);
+assert.match(browser, /role="tablist" aria-label="Источник упражнений"/);
+assert.match(browser, /onClick=\{\(\) => setSource\('base'\)\}>База/);
+assert.match(browser, /onClick=\{\(\) => setSource\('mine'\)\}>Мои упражнения/);
+assert.match(browser, /listMyExercises\(\)/);
+assert.match(browser, /<DeleteExerciseDialog exercise=\{deleting\}/);
+assert.match(browser, /<CustomExerciseForm key=\{selected\?\.id \?\? 'new'\}/);
+assert.match(styles, /\.my-exercises-usage/);
 assert.match(panel, /Загружаем ваши упражнения…/);
 assert.match(panel, /Пока пусто/);
 assert.match(panel, /setReloadKey\(\(value\) => value \+ 1\)\}>Повторить/);
@@ -295,7 +301,7 @@ for (const component of [panel, picker]) {
   assert.match(component, /<CustomExerciseForm /);
   assert.match(component, /<ExerciseInfoModal /);
 }
-assert.match(faq, /«Тренировки» → «Мои упражнения»/);
+assert.match(faq, /«Тренировки» → «Упражнения» → «Мои упражнения»/);
 // The picker no longer lists a retired exercise, so the program editor must keep it from the workout itself.
 assert.match(read('../src/components/CreateProgramCycleScreen.jsx'), /const existing = existingByCanonical\.get\(id\);\s*if \(existing\) return existing;/);
 
