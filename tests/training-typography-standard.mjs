@@ -26,6 +26,8 @@ assert.match(tokens, /--gym-type-xxs:var\(--text-micro\)/);
 assert.match(tokens, /--text-micro:10px/);
 assert.match(agentRules, /Read this file before changing UI/);
 assert.match(agentRules, /Training → Recommendations & Catalog/);
+assert.match(agentRules, /Upper navigation labels[^\n]*\*\*10px \(XXS\)\*\*/);
+assert.match(doc, /Top navigation labels[^\n]*\*\*10px\*\*/);
 
 const lastImport = "import './training-catalog-standards.css';";
 assert.ok(entry.includes(lastImport), 'Training standards must be imported');
@@ -42,7 +44,7 @@ function rule(selector) {
 function font(selector, tier) {
   assert.match(rule(selector), new RegExp('font-size: var\\(--gym-type-' + tier + '\\) !important'));
 }
-font('.exercise-catalog-content .training-tabs button', 'xs');
+font('.exercise-catalog-content .training-tabs button', 'xxs');
 font('.exercise-catalog-content .training-empty-programs > strong', 'm');
 font('.exercise-catalog-content .training-empty-programs > span', 'xs');
 font('.exercise-catalog-content .program-list-card-heading > strong', 's');
