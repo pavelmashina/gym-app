@@ -65,15 +65,6 @@
   font-weight: 800;
 }
 
-.workout-exercise-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.workout-exercise-title-row .workout-exercise-title { min-width: 0; }
-
 .exercise-order-buttons {
   flex: 0 0 auto;
   display: flex;
@@ -111,36 +102,6 @@
   font-size: 8px;
   font-weight: 820;
 }
-
-.performed-set-head.five-columns,
-.performed-set-row.five-columns {
-  grid-template-columns: 64px minmax(0,1fr) minmax(0,1fr) 36px 32px;
-  gap: 5px;
-}
-
-.set-delete-button {
-  width: 32px;
-  min-height: 36px;
-  padding: 0;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: #9d5555;
-  display: grid;
-  place-items: center;
-}
-
-.set-delete-button svg { width: 16px; height: 16px; }
-
-.add-set-actions {
-  margin-top: 9px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
-}
-
-.add-set-actions .add-set-button { margin-top: 0; }
-.add-set-actions .add-set-button.warmup { background: #fafaf7; }
 
 .workout-modal-shell {
   position: fixed;

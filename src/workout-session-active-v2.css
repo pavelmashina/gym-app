@@ -1,109 +1,7 @@
-.workout-exercise-card.v2 {
-  overflow: visible;
-}
-
-.workout-exercise-title-row.v2 {
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.workout-exercise-title-button {
-  min-width: 0;
-  flex: 1;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
-
-.workout-exercise-title-button > span:first-child {
-  display: block;
-  color: var(--muted, #777772);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .35px;
-}
-
-.workout-exercise-name-link {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.workout-exercise-name-link strong {
-  min-width: 0;
-  font-size: 20px;
-  line-height: 1.12;
-  letter-spacing: -.55px;
-}
-
-.workout-exercise-name-link svg {
-  width: 11px;
-  height: 11px;
-  flex: 0 0 auto;
-  opacity: .42;
-}
-
-.exercise-more-button {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  border: 0;
-  border-radius: 12px;
-  background: #f2f2ef;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.exercise-more-button svg {
-  width: 19px;
-  height: 19px;
-}
-
 .workout-active-tools.v2 {
   justify-content: flex-end;
 }
 
-.set-number-label {
-  display: grid;
-  place-items: center;
-  min-height: 38px;
-  font-size: 13px;
-  font-weight: 800;
-  color: #171717;
-}
-
-.set-number-label.warmup {
-  color: #9a9a95;
-  font-weight: 700;
-}
-
-.previous-result-button {
-  width: 100%;
-  min-height: 46px;
-  margin: 12px 0 14px;
-  padding: 0 12px;
-  border: 1px solid #e6e6e1;
-  border-radius: 14px;
-  background: #f8f8f5;
-  display: grid;
-  grid-template-columns: 28px 1fr 14px;
-  align-items: center;
-  gap: 8px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.previous-result-button:disabled { opacity: .6; }
-.previous-result-button > svg { width: 11px; height: 11px; opacity: .4; }
-.previous-result-icon { width: 26px; height: 26px; border-radius: 50%; background: #ecece8; display: grid; place-items: center; }
-.previous-result-icon svg { width: 15px; height: 15px; }
 .history-warmup-label { color: #9a9a95; }
 
 .exercise-actions-shell,
@@ -263,6 +161,5 @@
 .reorder-scope-card > button.cancel { background: transparent; color: #777772; }
 
 @media (max-width: 360px) {
-  .previous-result-button { grid-template-columns: 25px 1fr 12px; }
   .exercise-unit-row { align-items: flex-start; flex-direction: column; padding: 12px 0; }
 }

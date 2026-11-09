@@ -2,6 +2,10 @@ import {useEffect,useRef,useState} from 'react';
 import {parseMetricInput, resultFieldsV2, validateResultV2} from '../lib/exerciseResultsV2.js';
 import {markResultDraft} from '../lib/resultDraftGuard.js';
 
+// The same icons as the other set rows of the exercise card.
+const CheckIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>;
+const TrashIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" /></svg>;
+
 const labels = {weight:'Вес, кг',reps:'Повторения',duration_seconds:'Время, с',distance_meters:'Дистанция, м',assistance_weight:'Помощь, кг'};
 
 export default function ResultSetV2({set,contract,configurationKeyValue='standard',equipmentInstanceId=null,onSave,onDelete}) {
@@ -46,8 +50,8 @@ export default function ResultSetV2({set,contract,configurationKeyValue='standar
       <span>{field==='weight'?loadLabel:labels[field]}</span><input aria-label={field==='weight'?loadLabel:labels[field]} inputMode={field==='reps'?'numeric':'decimal'} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
     </label>)}</div>
     {['unilateral','independent'].includes(draft.laterality)&&<label className="result-set-v2-side"><span>Сторона</span><select aria-label="Сторона выполнения" value={draft.side||''} disabled={saving||Boolean(set.resultV2)} onChange={e=>patch('side',e.target.value)}><option value="">—</option><option value="left">Л</option><option value="right">П</option></select></label>}
-    <button className="result-set-v2-complete" type="button" disabled={saving} onClick={()=>save(!draft.completed)} aria-label={draft.completed?'Снять отметку':'Записать подход'}>{saving?'…':'✓'}</button>
-    <button className="result-set-v2-delete" type="button" disabled={saving} onClick={onDelete} aria-label="Удалить подход">×</button>
+    <button className="result-set-v2-complete" type="button" disabled={saving} onClick={()=>save(!draft.completed)} aria-label={draft.completed?'Снять отметку':'Записать подход'}>{saving?'…':<CheckIcon />}</button>
+    <button className="result-set-v2-delete" type="button" disabled={saving} onClick={onDelete} aria-label="Удалить подход"><TrashIcon /></button>
     {error&&<p role="alert" className="workout-session-error">{error}</p>}
     {dirty&&<button className="result-set-v2-discard" type="button" disabled={saving} onClick={discard}>Отменить</button>}
   </div>;

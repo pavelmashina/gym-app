@@ -1,0 +1,234 @@
+/* Exercise card in an active workout (issues #56, #57).
+   One type scale from design-system.css, 32px controls, and theme tokens only,
+   so the card follows the dark theme as well. */
+
+.workout-exercise-card.v3 {
+  padding: var(--space-4);
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* Head: eyebrow, name with the info icon, actions menu. */
+.exercise-card-head {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.exercise-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  cursor: pointer;
+}
+.exercise-card-eyebrow {
+  color: var(--muted);
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.exercise-card-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--text-h3);
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-bold);
+  letter-spacing: -.2px;
+}
+/* The name opens the exercise information, so the info icon belongs here. */
+.exercise-card-name svg {
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  vertical-align: -3px;
+  color: var(--muted);
+}
+.exercise-card-more {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.exercise-card-more svg { width: 18px; height: 18px; }
+
+.workout-exercise-card.v3 .workout-exercise-prescription { margin: var(--space-1) 0 0; }
+
+/* Sets: the head and every row share one column grid. */
+.exercise-set-head,
+.exercise-set-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 32px 28px;
+  gap: 6px;
+  align-items: center;
+}
+.exercise-set-head {
+  margin-top: var(--space-3);
+  padding: 0 4px 4px;
+  color: var(--muted);
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: .05em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.exercise-set-list {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+/* Results v2 rows label their own fields, so a list of only those needs no column head. */
+.exercise-set-head:has(+ .exercise-set-list:not(:has(.exercise-set-row))) { display: none; }
+.exercise-set-list:not(:has(.exercise-set-row)) { margin-top: var(--space-3); }
+
+.exercise-set-row {
+  min-height: 40px;
+  padding: 4px;
+  border-radius: 12px;
+  transition: background 120ms ease;
+}
+/* Warm-up sets always come before working sets. */
+.exercise-set-row.warmup { order: -1; }
+.exercise-set-row.done { background: color-mix(in srgb, #2e9e57 13%, var(--surface)); }
+.exercise-set-number {
+  text-align: center;
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+.exercise-set-row.warmup .exercise-set-number { color: var(--muted); }
+.exercise-set-row input {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 10px !important;
+  outline: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  /* 16px keeps iOS from zooming in on focus. */
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.exercise-set-row input::placeholder { color: var(--muted); font-weight: var(--weight-medium); opacity: .75; }
+.exercise-set-row input:focus { border-color: var(--ink); }
+.exercise-set-row.done input { background: var(--surface); }
+.exercise-set-check,
+.exercise-set-delete {
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.exercise-set-check {
+  width: 32px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.exercise-set-row.done .exercise-set-check {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+.exercise-set-delete {
+  width: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.exercise-set-check svg,
+.exercise-set-delete svg { width: 16px; height: 16px; }
+.exercise-set-row button:disabled { opacity: .45; }
+
+/* One row of equal, plain buttons: add a set, add a warm-up, open the history. */
+.exercise-card-actions {
+  margin-top: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.exercise-card-actions button {
+  min-width: 0;
+  height: 32px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  font: inherit;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.exercise-card-history svg { flex: 0 0 auto; width: 14px; height: 14px; }
+.exercise-card-history:disabled { opacity: .55; }
+
+/* The note: a short caption and one line with an ellipsis until it is used. */
+.exercise-card-note-field {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-1);
+}
+.exercise-card-note-field > span {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: var(--text-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.exercise-card-note {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  max-height: 140px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px !important;
+  outline: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 20px;
+  resize: none;
+  field-sizing: content;
+}
+.exercise-card-note::placeholder { color: var(--muted); }
+.exercise-card-note:focus,
+.exercise-card-note:not(:placeholder-shown) { min-height: 56px; }
+.exercise-card-note:focus { border-color: var(--ink); }
