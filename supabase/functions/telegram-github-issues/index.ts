@@ -355,32 +355,58 @@ async function saveScreenshots(admin: Admin, token: string, images: ImageRef[], 
   return urls;
 }
 
-async function speechToText(botToken: string, fileId: string, mimeType: string): Promise<string> {
-  // Claude Sonnet handles text/images, not raw audio. Use Groq's free-tier
-  // Whisper-compatible transcription service, never OpenAI API.
-  const key = Deno.env.get("GROQ_API_KEY");
-  if (!key) throw new Error("AUDIO_KEY_MISSING");
+function encodeAudioBase64(bytes: Uint8Array): string {
+  const parts: string[] = [];
+  const blockSize = 16_384;
+  for (let offset = 0; offset < bytes.length; offset += blockSize) {
+    parts.push(String.fromCharCode(...bytes.subarray(offset, offset + blockSize)));
+  }
+  return btoa(parts.join(""));
+}
+
+async function speechToText(botToken: string, fileId: string, _mimeType: string): Promise<string> {
+  // Cloudflare-hosted Whisper needs no powered-on PC and no Groq/OpenAI API key.
+  const key = Deno.env.get("CLOUDFLARE_API_TOKEN");
+  const account = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
+  if (!key || !account) throw new Error("AUDIO_KEY_MISSING");
+  if (!/^[a-f0-9]{32}$/i.test(account)) throw new Error("CLOUDFLARE_ACCOUNT_ID_INVALID");
+
   const bytes = await telegramFile(botToken, fileId, MAX_AUDIO_BYTES);
-  const mime = mimeType === "audio/mpeg" ? "audio/mpeg" :
-    mimeType === "audio/mp4" ? "audio/mp4" : "audio/ogg";
-  const extension = mime === "audio/mpeg" ? "mp3" : mime === "audio/mp4" ? "m4a" : "ogg";
-  const form = new FormData();
-  form.append("file", new Blob([bytes], { type: mime }), "task." + extension);
-  form.append("model", Deno.env.get("GROQ_TRANSCRIPTION_MODEL") || "whisper-large-v3-turbo");
-  form.append("language", "ru");
-  form.append("response_format", "json");
-  form.append("prompt", "Русский язык. Термины спортивного веб-приложения: тренировки, подходы, повторения, GitHub, Supabase, UI, карточки.");
-  const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-    method: "POST", headers: { Authorization: "Bearer " + key }, body: form,
+  const model = Deno.env.get("CLOUDFLARE_TRANSCRIPTION_MODEL") ||
+    "@cf/openai/whisper-large-v3-turbo";
+  if (!/^@cf\/openai\/whisper(?:-large-v3-turbo)?$/.test(model)) {
+    throw new Error("CLOUDFLARE_MODEL_INVALID");
+  }
+
+  const url = "https://api.cloudflare.com/client/v4/accounts/" + account +
+    "/ai/run/" + model;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + key,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      audio: encodeAudioBase64(bytes),
+      task: "transcribe",
+      language: "ru",
+      initial_prompt:
+        "Термины спортивного веб-приложения: тренировки, подходы, повторения, " +
+        "GitHub, Supabase, UI, карточки.",
+    }),
     signal: AbortSignal.timeout(65000),
   });
   if (!res.ok) {
-    console.error("Groq transcription failed", { status: res.status });
+    console.error("Cloudflare Whisper transcription failed", { status: res.status });
     throw new Error("AUDIO_API_HTTP_" + res.status);
   }
   const response = await res.json();
-  if (typeof response?.text !== "string" || !response.text.trim()) throw new Error("AUDIO_EMPTY");
-  return response.text.trim();
+  if (response?.success === false) throw new Error("CLOUDFLARE_API_ERROR");
+  const transcript: unknown = response?.result?.text ?? response?.text;
+  if (typeof transcript !== "string" || !transcript.trim()) {
+    throw new Error("AUDIO_EMPTY");
+  }
+  return transcript.trim();
 }
 
 async function createFromMessage(
@@ -782,18 +808,20 @@ Deno.serve(async (req: Request) => {
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
             : detail.includes("AUDIO_KEY_MISSING")
-            ? "❌ Для голосовых нужен GROQ_API_KEY в Supabase → Edge Functions → Secrets."
+            ? "❌ Для голосовых нужны CLOUDFLARE_API_TOKEN и CLOUDFLARE_ACCOUNT_ID в Supabase Secrets."
             : detail.includes("AUDIO_API_HTTP_401")
-              ? "❌ Неверный GROQ_API_KEY. Проверь ключ сервиса Groq."
+              ? "❌ Cloudflare отклонил API-токен. Проверь CLOUDFLARE_API_TOKEN."
               : detail.includes("AUDIO_API_HTTP_429")
-                ? "❌ Достигнут бесплатный лимит Groq для голосовых. Повтори позже или проверь квоту."
+                ? "❌ Cloudflare ограничил распознавание голоса: проверь дневную квоту Workers AI или попробуй позже."
                 : detail.includes("AUDIO_API_HTTP_")
-                  ? "❌ Не удалось расшифровать голосовое через Groq. Проверь GROQ_API_KEY и ограничения."
+                  ? "❌ Не удалось расшифровать голосовое через Cloudflare Workers AI. Проверь токен, аккаунт и ограничения."
                   : detail.includes("FILE_TOO_LARGE")
                     ? "❌ Файл слишком большой: скриншоты до 8 МБ, аудио до 20 МБ."
                     : detail.includes("IMAGE_UNSUPPORTED")
                       ? "❌ Изображение должно быть PNG, JPEG или WebP."
-                      : detail.includes("CLAUDE_API_HTTP_401") || detail.includes("CLAUDE_API_HTTP_403")
+                      : detail.includes("CLOUDFLARE_")
+                    ? "❌ Ошибка Cloudflare. Проверь CLOUDFLARE_ACCOUNT_ID и Workers AI API Token."
+                    : detail.includes("CLAUDE_API_HTTP_401") || detail.includes("CLAUDE_API_HTTP_403")
                         ? "❌ Claude API не разрешил запрос. Проверь ANTHROPIC_API_KEY в Supabase."
                         : detail.includes("CLAUDE_API_HTTP_402")
                           ? "❌ На счёте Claude API недостаточно средств. Проверь баланс Anthropic Console."
