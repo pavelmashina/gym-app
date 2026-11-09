@@ -184,7 +184,8 @@
   background: radial-gradient(ellipse 62% 60% at center,
     color-mix(in srgb, var(--accent-soft) 90%, var(--ink) 10%) 0%,
     color-mix(in srgb, var(--accent-soft) 78%, transparent) 46%,
-    color-mix(in srgb, var(--accent-soft) 25%, transparent) 76%,
+    color-mix(in srgb, var(--accent-soft) 30%, transparent) 76%,
+    color-mix(in srgb, var(--accent-soft) 8%, transparent) 90%,
     transparent 100%) !important;
 }
 .app-bottom-nav .app-nav-item.active .app-nav-icon,
