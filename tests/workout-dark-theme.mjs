@@ -8,7 +8,7 @@ const settings = read('src/settings-screen.css');
 const darkTokens = settings.match(/html\[data-theme='dark'\],html\[data-theme='dark'\] body\{([^}]*)\}/)?.[1] ?? '';
 const flipped = [...darkTokens.matchAll(/(--[a-z0-9-]+):/g)].map((match) => match[1]);
 for (const token of ['--bg', '--surface', '--surface-2', '--ink', '--muted', '--line']) assert.ok(flipped.includes(token), `dark theme defines ${token}`);
-const allowedTokens = new Set([...flipped, '--workout-danger']);
+const allowedTokens = new Set([...flipped, '--workout-danger', '--workout-rest-ending']);
 
 const files = [
   'src/workout-session.css',
@@ -63,3 +63,9 @@ const session = read('src/workout-session.css');
 assert.match(session, /:root \{\s*--workout-danger: color-mix\(in srgb, #bc3f3f 75%, var\(--ink\)\);\s*\}/);
 assert.match(rule('.workout-session-footer-dual .workout-pause-button'), /border: 1px solid color-mix\(in srgb, var\(--workout-danger\) 30%, var\(--surface\)\);[\s\S]*color: var\(--workout-danger\);/);
 assert.match(rule('.exercise-actions-popup .exercise-action-row.danger'), /color: var\(--workout-danger\);/);
+
+// The rest bar in its last 15 seconds (#63) lies on the --ink plate, which inverts with the theme, so its red
+// is mixed into --surface: bright on the black plate, deeper on the light one. Mixed into --ink like
+// --workout-danger, it would fade into the plate on both themes.
+assert.match(session, /:root \{\s*--workout-rest-ending: color-mix\(in srgb, #ff453a 85%, var\(--surface\)\);\s*\}/);
+assert.match(rule('.rest-countdown.ending .rest-countdown-track span'), /background:var\(--workout-rest-ending\)/);

@@ -294,3 +294,9 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - «Поставить на паузу» and «Удалить упражнение» share `--workout-danger: color-mix(in srgb, #bc3f3f 75%, var(--ink))`: dark red on the light theme, soft red on the dark one.
 - Scrims, shadows and the video frame of the exercise information stay dark on both themes. Error boxes keep their light pink background with dark red text, which is readable on both.
 - `tests/workout-dark-theme.mjs` (part of `test:ui-audit`) fails when one of these rules gets a literal colour or a token that the dark theme does not redefine.
+
+## Rest timer: the last 15 seconds — November 2026 (#63)
+- While a rest runs, the progress bar under the countdown is `--surface` on the `--ink` plate. From the moment the display shows «0:15» down to «0:01» the bar turns red: a quiet hint that it is time to go back to the machine. At «0:00» the timer switches to its finished look («Отдых закончен», bar empty), as before.
+- Only the bar changes. The plate, the digits, the caption and the buttons keep their colours, and nothing blinks or vibrates; the vibration stays at the end of the rest. «+30 сек» that brings the rest above 15 seconds turns the bar back to `--surface`.
+- The red is `--workout-rest-ending: color-mix(in srgb, #ff453a 85%, var(--surface))`. The `--ink` plate inverts with the theme, so this red is mixed into `--surface`, not into `--ink` like `--workout-danger`: a bright red on the black plate of the light theme, a deeper red on the light plate of the dark theme. The colour changes over .3 s.
+- The threshold lives in `src/lib/workoutTimers.js` (`REST_ENDING_SECONDS`, `isRestEnding`); the countdown gets the class `ending`. Checks: `tests/workout-timers.mjs` (`test:workout-ui`) and `tests/workout-dark-theme.mjs` (`test:ui-audit`).

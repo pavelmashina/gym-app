@@ -5,7 +5,9 @@ import {
   clockSkewMs,
   createRestTimer,
   extendRestTimer,
+  isRestEnding,
   msUntilNextSecond,
+  REST_ENDING_SECONDS,
   readRestAutostart,
   readRestTimer,
   restRemainingSeconds,
@@ -54,6 +56,16 @@ assert.equal(restRemainingSeconds(timer, T0 + 500), 90);
 assert.equal(restRemainingSeconds(timer, T0 + 89_500), 1);
 assert.equal(restRemainingSeconds(timer, T0 + 90_000), 0);
 assert.equal(restRemainingSeconds(timer, T0 + 600_000), 0);
+
+// The bar turns red for the last 15 seconds (#63): from the moment the display shows 0:15 until 0:01.
+assert.equal(REST_ENDING_SECONDS, 15);
+const endingAt = (ms) => isRestEnding(restRemainingSeconds(timer, T0 + ms));
+assert.equal(endingAt(0), false, 'A fresh rest is not ending.');
+assert.equal(endingAt(74_999), false, 'At 0:16 the bar is still plain.');
+assert.equal(endingAt(75_000), true, 'At 0:15 the bar turns red.');
+assert.equal(endingAt(89_999), true, 'At 0:01 the bar is still red.');
+assert.equal(endingAt(90_000), false, 'A finished rest has its own look, not the red bar.');
+assert.equal(isRestEnding(restRemainingSeconds(extendRestTimer(timer, 30, T0 + 80_000), T0 + 80_000)), false, '+30 sec takes the rest out of its last seconds.');
 
 // +30 sec works while running and also long after the end.
 const extended = extendRestTimer(timer, 30, T0 + 45_000);
@@ -114,6 +126,7 @@ const footer = between(active, '<footer className="workout-session-footer', '</f
 
 for (const label of ['Запустить', 'Выключить', 'Включить']) assert.match(dock, new RegExp(label), `${label} is on the dock.`);
 assert.match(between(v3, 'function RestCountdown(', 'function RestTimerDock('), /Остановить/);
+assert.match(between(v3, 'function RestCountdown(', 'function RestTimerDock('), /className=\{`rest-countdown\$\{remaining === 0 \? ' finished' : isRestEnding\(remaining\) \? ' ending' : ''\}`\}/, 'The countdown marks its last 15 seconds.');
 assert.match(footer, /<RestTimerDock /, 'The controls stay reachable wherever the list is scrolled.');
 assert.doesNotMatch(list, /RestCountdown|RestTimerDock/, 'A timer inside the list moves the cards when it appears.');
 assert.equal(active.match(/<RestTimerDock /g).length, 1, 'One timer on the screen.');
@@ -131,5 +144,12 @@ const sessionCss = fs.readFileSync('src/workout-session.css', 'utf8');
 assert.doesNotMatch(activeCss.match(/\.rest-countdown-actions \{[^}]*\}/)[0], /flex-wrap/);
 assert.match(activeCss, /\.rest-countdown-actions button \{ flex:1 1 auto; padding:0 6px;/);
 assert.match(sessionCss, /\.workout-session-content\.active \{ padding-bottom: calc\(128px \+ env\(safe-area-inset-bottom\)\); \}/);
+
+// In the last 15 seconds only the bar turns red (#63): the plate, the digits and the buttons keep their colours.
+const endingRules = [...activeCss.matchAll(/([^{}]*\.rest-countdown\.ending[^{}]*)\{([^}]*)\}/g)];
+assert.equal(endingRules.length, 1, 'One rule for the last seconds.');
+assert.equal(endingRules[0][1].trim().split(/\s+/).pop(), 'span', 'It colours the bar only.');
+assert.match(endingRules[0][1], /\.rest-countdown\.ending \.rest-countdown-track span\s*$/);
+assert.match(endingRules[0][2], /background:var\(--workout-rest-ending\)/);
 
 console.log('Workout timer tests passed.');
