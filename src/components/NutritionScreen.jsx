@@ -164,8 +164,8 @@ function MealPlanDetails({ plan, meals, onBack }) {
 function CatalogToolbar({ filterOpen, setFilterOpen, favoritesOnly, setFavoritesOnly, activeFilterCount, sortOpen, setSortOpen, sortMode }) {
   return <div className="catalog-toolbar">
     <button type="button" className={`catalog-tool-button${filterOpen || activeFilterCount ? ' active' : ''}`} title="Фильтры" aria-label={`Фильтры${activeFilterCount ? `, применено: ${activeFilterCount}` : ''}`} onClick={() => setFilterOpen((value) => !value)} aria-expanded={filterOpen}><FilterIcon /></button>
-    <button type="button" className={`catalog-tool-button${favoritesOnly ? ' active' : ''}`} title="Избранное" aria-label="Только избранное" onClick={() => setFavoritesOnly((value) => !value)} aria-pressed={favoritesOnly}><HeartIcon filled={favoritesOnly} /></button>
     <button type="button" className={`catalog-tool-button${sortOpen || sortMode !== 'default' ? ' active' : ''}`} title="Сортировка" aria-label="Сортировка" aria-expanded={sortOpen} onClick={() => setSortOpen(value => !value)}><SortIcon /></button>
+    <button type="button" className={`catalog-tool-button${favoritesOnly ? ' active' : ''}`} title="Избранное" aria-label="Только избранное" onClick={() => setFavoritesOnly((value) => !value)} aria-pressed={favoritesOnly}><HeartIcon filled={favoritesOnly} /></button>
   </div>;
 }
 
