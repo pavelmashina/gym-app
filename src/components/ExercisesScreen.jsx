@@ -3,8 +3,7 @@ import { RootSectionHeader } from './RootSectionHeader.jsx';
 import { listPrograms, listRecentCompletedPrograms } from '../lib/programs.js';
 import { CatalogProgramsPanel } from './CatalogProgramsPanel.jsx';
 import { ProgramListCard } from './ProgramListCard.jsx';
-import { ExerciseLibraryPicker } from './ExerciseLibraryPicker.jsx';
-import { MyExercisesPanel } from './MyExercisesPanel.jsx';
+import { TrainingExerciseBrowser } from './TrainingExerciseBrowser.jsx';
 import { ProgramDetailScreen } from './ProgramDetailScreen.jsx';
 import { ReceiveProgramPanel } from './ReceiveProgramPanel.jsx';
 import { EMPTY_PROGRAM_FILTERS, matchesProgramFilters, programFilterOptions } from '../lib/programFilters.js';
@@ -15,7 +14,6 @@ const TRAINING_TABS = [
   { id: 'recommendations', label: 'Рекомендации' },
   { id: 'catalog', label: 'Каталог' },
   { id: 'exercises', label: 'Упражнения' },
-  { id: 'my-exercises', label: 'Мои упражнения' },
   { id: 'your-programs', label: 'Мои программы' },
   { id: 'received', label: 'Получить' },
   { id: 'completed', label: 'Пройденные' },
@@ -70,7 +68,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
 
-  useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
+  useEffect(() => { setActiveTab(initialTab === 'my-exercises' ? 'exercises' : initialTab); }, [initialTab]);
 
   useEffect(() => {
     if (!['your-programs', 'completed'].includes(activeTab)) return undefined;
@@ -123,7 +121,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
 
   function handleTabClick(tabId) {
     if (tabId === 'create') return openCreateProgram();
-    setActiveTab(tabId);
+    setActiveTab(tabId === 'my-exercises' ? 'exercises' : tabId);
   }
 
   if (selectedProgramId) return <ProgramDetailScreen programId={selectedProgramId} onBack={() => setSelectedProgramId(null)} onEdit={(programId) => onEditProgram?.(programId)} onStart={(programId) => onStartProgram?.(programId)} onOpenWorkout={onOpenWorkout} onDeleted={() => { setSelectedProgramId(null); setProgramsReloadKey(value => value + 1); }} />;
@@ -132,7 +130,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
     <RootSectionHeader title="Тренировки" />
     <main className="exercise-catalog-content">
       <nav className="training-tabs" aria-label="Разделы тренировок">{TRAINING_TABS.map((tab) => <button data-training-tab={tab.id} className={tab.id === activeTab ? 'active' : ''} type="button" key={tab.id} onClick={() => handleTabClick(tab.id)}>{tab.label}</button>)}</nav>
-      {!['exercises','my-exercises','received'].includes(activeTab) && <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>}
+      {!['exercises','received'].includes(activeTab) && <label className="exercise-search training-search"><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти программу" aria-label="Поиск программ" />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>}
       {['recommendations','catalog'].includes(activeTab) && <div className="training-toolbar-row compact-training-toolbar">
         <div className="training-tools" role="group" aria-label="Настройка списка программ">
           {['recommendations','catalog'].includes(activeTab) && <>
@@ -158,8 +156,7 @@ export function ExercisesScreen({ initialTab = 'recommendations', refreshKey = 0
 
       {activeTab === 'received' && <ReceiveProgramPanel onAccepted={(programId) => { setProgramsReloadKey((value) => value + 1); setSelectedProgramId(programId); }} />}
       {isCatalogTab && <CatalogProgramsPanel query={query} sortDirection={sortDirection} filtersOpen={filtersOpen} onJoin={(programId) => onStartProgram?.(programId)} />}
-      {activeTab === 'exercises' && <section className="training-exercise-browser" aria-label="Полная база упражнений"><ExerciseLibraryPicker browseOnly searchPlaceholder="Найти упражнение" /></section>}
-      {activeTab === 'my-exercises' && <MyExercisesPanel refreshKey={refreshKey} />}
+      {activeTab === 'exercises' && <section className="training-exercise-browser" aria-label="База и мои упражнения"><TrainingExerciseBrowser refreshKey={refreshKey} /></section>}
       {isProgramsTab && programsLoading && <div className="my-programs-state"><div className="exercise-list-spinner" /><span>{isCompletedTab ? 'Загружаем пройденные программы…' : 'Загружаем ваши программы…'}</span></div>}
       {isProgramsTab && !programsLoading && programsError && <div className="my-programs-state error"><span>{programsError}</span><button type="button" onClick={() => setProgramsReloadKey((value) => value + 1)}>Повторить</button></div>}
       {activeTab === 'your-programs' && !programsLoading && !programsError && <section className="my-programs-section">
