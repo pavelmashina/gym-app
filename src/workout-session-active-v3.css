@@ -204,20 +204,22 @@
   gap: 6px;
 }
 
+/* Inputs of one row stay on one line when a neighbouring caption takes two. */
 .result-set-v2.compact label {
   min-width: 0;
   display: grid;
+  align-content: end;
   gap: 3px;
 }
 
+/* The caption is shown whole (#64): on a narrow phone «Вес одного снаряда, кг» wraps to two even lines instead of losing its unit. */
 .result-set-v2.compact label > span {
-  overflow: hidden;
   color: var(--muted);
   font-size: var(--text-micro);
   line-height: var(--lh-micro);
   font-weight: var(--weight-semibold);
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: normal;
+  text-wrap: balance;
 }
 
 .result-set-v2.compact input,
