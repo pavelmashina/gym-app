@@ -10,15 +10,43 @@ This file is the source-of-truth companion to `src/design-system.css`. New scree
 - Spacing scale: 4, 8, 12, 16, 20, 24, 32px.
 - Default card gap: 12px; section gap: 24px; card padding: 18px.
 
-## Typography
-Single UI family: Inter, weights 400/500/600/700/800.
-- Display: 32/36, 700.
-- H1: 28/32, 700.
-- H2: 20/24, 700.
-- H3: 16/21, 600.
-- Body: 14/20, 400.
-- Caption: 12/16, 500.
-- Micro: 10/13, 600-700.
+## Typography — canonical GYM APP scale (mandatory for new/edited UI)
+Single UI family: **Inter**, Arial fallback. All ordinary UI text must use the **six** sizes below.
+The CSS source of truth is `src/design-system.css`; `AGENTS.md` makes this a required contract for any developer or AI agent.
+
+| Tier | Size | Token | Typical UI role |
+| --- | --- | --- | --- |
+| XL | **24px** | `--gym-type-xl` | Page and feature headings |
+| L | **20px** | `--gym-type-l` | Section headings |
+| M | **16px** | `--gym-type-m` | Subheadings, prominent labels |
+| S | **14px** | `--gym-type-s` | Main body, cards, field/filter headings |
+| XS | **12px** | `--gym-type-xs` | Tab labels, controls, descriptions, filter options |
+| XXS | **10px** | `--gym-type-xxs` | **Small tags inside cards** and other very compact metadata |
+
+Use available line-height tokens (e.g. 20px body, 16px caption, 13px micro) and weights 400/500/600/700, 800 only where already required. **Do not add other font sizes, including 8/9/11/13/15px,** or use automatic uppercase on filter headings. Do not use a font size to compensate for a broken container width—fix the layout.
+
+**Legacy caveat:** existing `--text-display:32px` and `--text-h1:28px` and some historical local CSS declarations remain for screens not yet migrated. Do not change them globally without an explicit cross-app migration. All newly built components and affected text in edited screens follow the six-step scale.
+
+### Training: Recommendations + Catalog — exact text sizes
+
+| Element | Font size |
+| --- | --- |
+| Top navigation labels “Рекомендации”, “Каталог” and peers | 12px |
+| Search | 14px |
+| Toolbar “Создать” and sort options | 12px |
+| Recommendations “Пока пусто” | 16px |
+| Recommendations empty-state description | 12px |
+| Catalog program title | 14px |
+| Program card tags (place, duration, type etc.) | 10px |
+| Catalog empty-state explanation | 10px |
+| Filter headings “Место”, “Направление”, “Уровень” | 14px, sentence case, never uppercase |
+| Filter option pills (Все, Силовой etc.) | 12px |
+| Filter reset button | 12px |
+
+Rules are implemented in `src/training-catalog-standards.css`, imported after other style sheets in `src/main.jsx`. Matching regression assertions live in `tests/training-typography-standard.mjs`.
+
+### Bottom navigation
+Five equal-sized buttons, from left to right: **Главная → Тренировки → Статистика → Питание → Спортпит**. No raised or outlined central icon. The active section uses an **inset radial gradient** fading from stronger center color to transparent outer edges, with room between the highlight and outer dock border. Preserve this effect; do not substitute a solid block.
 
 ## Components
 - Radii: 12px small, 16px control, 24px card, 28px hero.
