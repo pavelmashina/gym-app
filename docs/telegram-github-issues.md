@@ -13,7 +13,7 @@ Telegram-бот создаёт Issues в репозитории
 - URL webhook:
   `https://sjggdpyficjkpcmybbfr.supabase.co/functions/v1/telegram-github-issues`
 
-Функция принимает личные текстовые и голосовые сообщения, фото и изображения-файлы от указанного пользователя Telegram.
+Функция принимает текстовые задачи, фото и изображения-файлы от владельца и разрешённых Telegram-пользователей. Голосовые сообщения пока отключены.
 Команды: `/start`, `/help`, `/id`, `/new`, `/create`, `/cancel`.
 Новые задачи автоматически становятся Issues и получают ссылку в ответе Telegram.
 
@@ -48,11 +48,8 @@ BotFather выдаст токен. **Никогда не добавлять ег
 | `GITHUB_ISSUES_TOKEN` | GitHub fine-grained PAT |
 | `ANTHROPIC_API_KEY` | Ключ Claude API для структурирования задач (создаётся в Anthropic Console) |
 | `ANTHROPIC_MODEL` (опционально) | `claude-sonnet-5-5` по умолчанию |
-| `CLOUDFLARE_API_TOKEN` | Токен Cloudflare с разрешением Account → Workers AI → Read для распознавания голосовых |
-| `CLOUDFLARE_ACCOUNT_ID` | Account ID из Cloudflare Workers AI → Use REST API |
-| `CLOUDFLARE_TRANSCRIPTION_MODEL` (опционально) | `@cf/openai/whisper-large-v3-turbo` — распознавание голоса в Cloudflare Workers AI |
 
-Если `ANTHROPIC_API_KEY` отсутствует, текстовые задачи по-прежнему создаются в GitHub из исходного текста, без автоматического структурирования. Если Cloudflare API Token и Account ID отсутствуют, голосовые сообщения не расшифровываются. **OpenAI API больше не используется**.
+Если `ANTHROPIC_API_KEY` отсутствует, текстовые задачи по-прежнему создаются в GitHub из исходного текста, без автоматического структурирования. Для текстовых задач со скриншотами дополнительный сервис распознавания аудио не требуется. **OpenAI, Groq и Cloudflare API не используются.**
 
 **Важно:** подписка Claude Pro не включает API-запросы. Создай API-ключ в [Claude Console](https://platform.claude.com/settings/keys) и добавь его в Supabase Secrets как `ANTHROPIC_API_KEY`. Не присылай ключ в чат или репозиторий.
 
@@ -95,10 +92,10 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 
 1. Открыть бота, отправить `/start` — должен перечислить команды.
 2. Отправить обычное текстовое сообщение — появится Issue.
-3. Отправить голосовое — Cloudflare Whisper расшифрует речь, Claude оформит задачу и пришлёт ссылку (нужны Cloudflare API Token/Account ID и `ANTHROPIC_API_KEY`).
-4. Отправить скриншот **без подписи**, затем голосовое или текстовое описание — одна Issue со скриншотом.
+3. Отправить голосовое — бот ответит, что обработка аудио временно отключена; Issue не создаётся.
+4. Отправить скриншот **без подписи**, затем текстовое описание — одна Issue со скриншотом.
 5. Отправить **одну фотографию с подписью** — одна Issue с изображением.
-6. Для нескольких сообщений в любом порядке: `/new`, затем фото/голос/текст, затем `/create`.
+6. Для нескольких сообщений в любом порядке: `/new`, затем фото/текст, затем `/create`.
 7. Проверить фотографии и требования в [Issues gym-app](https://github.com/pavelmashina/gym-app/issues).
 
 ## Безопасность и особенности
@@ -114,9 +111,9 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 - Скриншоты анализируются Claude Vision (если настроен `ANTHROPIC_API_KEY`) и размещаются в отдельном **публичном** Supabase Storage bucket `telegram-issue-screenshots` и отображаются в GitHub Issue через Markdown. Любой с URL сможет их просматривать.
 - Внутренние черновики хранятся в таблице `public.telegram_issue_drafts`; RLS включён, публичный доступ запрещён. Функция `gym_telegram_append_image` добавляет файлы атомарно для альбомов.
 - Файлы в хранилище не удаляются автоматически при удалении Issue.
-- Обычный текст без черновика сразу создаёт Issue. Фото без подписи добавляется в ожидающую задачу; следующее текстовое/голосовое описание создаёт Issue. Для материалов в любом порядке используй `/new` и `/create`.
+- Обычный текст без черновика сразу создаёт Issue. Фото без подписи добавляется в ожидающую задачу; следующее текстовое описание создаёт Issue. Для материалов в любом порядке используй `/new` и `/create`.
 - Чтобы отменить незавершённую задачу, отправь `/cancel`.
-- Если Claude API вернёт ошибку при оформлении задачи, Issue не создаётся, и бот сообщает об ошибке. Для голосовых сообщений отдельно используется Whisper в Cloudflare Workers AI (бесплатная ежедневная квота), без включённого ПК. Токены не логируются.
+- Если Claude API вернёт ошибку при оформлении задачи, Issue не создаётся, и бот сообщает об ошибке. Голосовые сообщения не обрабатываются. Токены не логируются.
 
 
 ## Хранилище и SQL
@@ -125,13 +122,12 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 
 
 
-## Claude Ultra + Cloudflare: голос без включённого ПК и платного OpenAI API
+## Claude Ultra: подключение для текстовых задач и скриншотов
 
-1. В [Claude → Settings → Billing](https://claude.ai/settings/billing) активировать **API credits → Link organization** для своего плана Ultra. В ноябре 2026 Ultra предусматривает $200 API-кредитов в месяц при соблюдении условий Anthropic. Кредиты доступны после 7 дней на плане, не переносятся; автопополнение необязательно.
-2. В [Claude Console → API Keys](https://platform.claude.com/settings/keys) создать API-ключ в привязанной организации и добавить его в [Supabase Edge Functions Secrets](https://supabase.com/dashboard/project/sjggdpyficjkpcmybbfr/functions/secrets) под именем `ANTHROPIC_API_KEY`.
-3. В [Cloudflare Workers AI](https://dash.cloudflare.com/?to=/:account/ai/workers-ai) нажать **Use REST API** и создать **Workers AI API Token** с правом Account → Workers AI → Read. Скопировать Account ID. Добавить в Supabase Secrets два значения: `CLOUDFLARE_API_TOKEN` и `CLOUDFLARE_ACCOUNT_ID`. Бесплатный план Workers AI даёт 10 000 Neurons в день; при использовании только Whisper Large V3 Turbo это около 214 минут аудио в день, при соблюдении остальных лимитов.
-4. `ANTHROPIC_MODEL` и `CLOUDFLARE_TRANSCRIPTION_MODEL` необязательны: применяются значения `claude-sonnet-5-5` и `@cf/openai/whisper-large-v3-turbo`. OpenAI/Cloudflare API-токены не нужны.
-5. Старый `OPENAI_API_KEY` можно удалить из Supabase Secrets после успешной проверки: код его больше не использует. **Не публиковать ключи в GitHub, Telegram или этом чате.**
-6. Для теста: в личной беседе или в разрешённом топике нажать «Новая задача», прислать скриншот и короткое голосовое, затем «Отправить». Проверить новую GitHub Issue с описанием и изображением.
+1. В [Claude → Settings → Billing](https://claude.ai/settings/billing) при доступности программы API credits → Link organization привязать организацию Claude Console.
+2. Создать ключ в [Claude Console → API Keys](https://platform.claude.com/settings/keys).
+3. Добавить ключ в [Supabase Edge Functions Secrets](https://supabase.com/dashboard/project/sjggdpyficjkpcmybbfr/functions/secrets) под именем `ANTHROPIC_API_KEY`.
+4. При необходимости `ANTHROPIC_MODEL` задаёт Claude-модель. По умолчанию используется `claude-sonnet-5-5`.
+5. В боте нажать «Новая задача», прислать текст и скриншот, затем «Отправить». Проверить Issue в GitHub.
 
-**Сервисы**: Claude структурирует текст и анализирует скриншоты; Cloudflare Workers AI расшифровывает голос; GitHub хранит Issue, Supabase — изображения. ПК включать не нужно. Подписка Claude сама по себе не предоставляет прямого доступа к Telegram без API-ключа из Claude Console. До добавления ключей запускать голосовые задачи нельзя; текстовые без Claude-ключа создаются без AI-обработки.
+**Голосовые временно отключены:** бот не загружает и не расшифровывает аудио. Cloudflare, Groq и OpenAI API для работы не нужны. ПК не требуется. Не пересылай API-ключи в чат.
