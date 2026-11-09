@@ -65,6 +65,8 @@ Supported schedule modes are:
 
 Rhythm continues across cycle boundaries rather than resetting at the beginning of every repetition.
 
+A ready-made program can also be joined on chosen ISO weekdays with `start_program_with_weekdays(uuid, date, int[])`. The program stays in `custom` mode, and the participation stores the days in `user_programs.training_weekdays`. While the program is in `custom` mode, saving the program, `resume_program`, `reschedule_scheduled_workout`, the `tail` scope of `reschedule_scheduled_workout_scoped` and `change_program_start_date` put the remaining workouts on the next chosen weekday instead of using `rest_days_after`; the date the user picks for the first moved workout is kept as is. Choosing a preset rhythm in the editor clears the chosen weekdays. See `../migrations/20261109170000_keep_chosen_training_weekdays.sql`.
+
 While a participation is `active` or `paused`, `structure_mode` and `cycle_repeat_count` are frozen by the `programs_guard_active_cycle_configuration` trigger. Rhythm/date edits may only recalculate future scheduled dates. Exercise edits rebuild the not-started workouts by plan position (`mod(sequence_number - 1, workouts_in_cycle) + 1`); adding or removing a cycle workout grows or trims the not-started tail to `workouts_in_cycle × cycle_repeat_count`, and a participation with nothing left to do is completed. Completed/skipped history keeps its snapshots.
 
 ## Program participation lifecycle
