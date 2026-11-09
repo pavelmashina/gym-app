@@ -19,8 +19,8 @@ assert.doesNotMatch(sportpit,/SportPitBottomNav/);
 assert.match(sportpit,/sportpit-state error/);
 assert.match(sportpit,/setError\('Не удалось загрузить каталог\.'\)/);
 
-assert.match(navCss,/\.app-nav-item\.home \.app-nav-icon[\s\S]*width:\s*60px[\s\S]*height:\s*60px/);
-assert.match(navCss,/\.app-nav-item\.home\.active \.app-nav-icon[\s\S]*background:\s*var\(--ink\)/);
+assert.match(navCss,/\.app-nav-item\.active \.app-nav-icon/);
+assert.doesNotMatch(navCss,/\.app-nav-item\.home|margin-top:\s*-22px/);
 
 assert.match(main,/ui-layout-audit\.css/);
 assert.match(audit,/\.program-detail-day,[\s\S]*\.program-schedule-day/);
