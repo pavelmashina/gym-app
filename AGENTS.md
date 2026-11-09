@@ -17,8 +17,8 @@ new or modified interface text:
 | L | **20px** | `--gym-type-l` | section title |
 | M | **16px** | `--gym-type-m` | subsection title, prominent card title, empty-state heading |
 | S | **14px** | `--gym-type-s` | ordinary text, standard card title, filter heading |
-| XS | **12px** | `--gym-type-xs` | toolbar/tab labels, filter options, helper text |
-| XXS | **10px** | `--gym-type-xxs` | **small tags in cards**, compact secondary metadata |
+| XS | **12px** | `--gym-type-xs` | toolbar labels, filter options, helper text |
+| XXS | **10px** | `--gym-type-xxs` | **upper Training tabs, small tags in cards**, compact secondary metadata |
 
 Do not introduce 8, 9, 11, 13, 15, 17, 18px etc. as new text sizes.
 Existing legacy `--text-display:32px` and `--text-h1:28px` are
@@ -31,7 +31,7 @@ uppercase for normal labels, filter headings or program tags.
 
 ### Training → Recommendations & Catalog (binding design contract)
 
-- Upper navigation labels (“Рекомендации”, “Каталог”, etc.): **12px (XS)**.
+- Upper navigation labels (“Рекомендации”, “Каталог”, etc.): **10px (XXS)**.
 - Search text: **14px (S)**; “Создать” and sorting choices: **12px (XS)**.
 - Recommendations empty state: “Пока пусто” **16px (M)**;
   explanatory copy **12px (XS)**.
