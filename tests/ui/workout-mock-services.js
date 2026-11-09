@@ -8,10 +8,12 @@ const setCount = Math.max(1, Number(params.get('sets')) || 6);
 // `v2=1`: the second exercise has a measurement contract, so (with VITE_EXERCISE_RESULTS_V2=true)
 // its empty sets are results v2 rows. `order=fail`: saving a new set order fails.
 // `standalone=1`: a workout without a program. `add=fail`: adding an exercise fails.
+// `save=fail`: saving a set fails as on a dead connection (#64).
 const resultsV2 = params.get('v2') === '1';
 const orderFails = params.get('order') === 'fail';
 const standalone = params.get('standalone') === '1';
 const addFails = params.get('add') === 'fail';
+const saveFails = params.get('save') === 'fail';
 const pause = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildSet(exerciseIndex, setIndex, empty) {
@@ -80,7 +82,11 @@ export async function addSessionExercise(_, exerciseId, scope = 'session') {
   workout.exercises.push({ id, exerciseId, linkedExerciseId: exerciseId, name: 'Тестовый жим', muscleGroup: 'Грудь', prescription: '', note: '', metricContract: null, addedInWorkout: scope !== 'program', sets: [{ id: `${id}-set-1`, setNumber: 1, setType: 'working', plannedReps: null, weight: '', reps: '', completed: false, completedAt: null, resultV2: null }] });
   return id;
 }
-export async function updatePerformedSet(_, values) { await pause(); return values; }
+export async function updatePerformedSet(_, values) {
+  await pause();
+  if (saveFails) throw new Error('Не удалось сохранить подход. Проверьте интернет и повторите.');
+  return values;
+}
 export async function addPerformedSet(_, setNumber, setType = 'working') {
   await pause();
   return { id: `set-new-${crypto.randomUUID()}`, setNumber, setType, plannedReps: null, weight: '', reps: '', completed: false, completedAt: null, resultV2: null };

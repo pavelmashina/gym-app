@@ -62,6 +62,20 @@ assert.match(rule(v3Css, '.result-set-v2-complete,\n.result-set-v2-delete'), /he
 assert.match(resultSet, /<CheckIcon \/>/);
 assert.match(resultSet, /<TrashIcon \/>/);
 assert.doesNotMatch(resultSet, /'✓'|>×</);
+// #64: a field caption is never cut, so «Вес одного снаряда, кг» keeps its unit on a narrow phone.
+// It wraps to two lines instead, and the inputs of the row stay level with each other.
+const caption = rule(v3Css, '.result-set-v2.compact label > span');
+assert.doesNotMatch(caption, /nowrap|ellipsis|overflow: hidden/);
+assert.match(caption, /white-space: normal;/);
+assert.match(caption, /text-wrap: balance;/);
+assert.match(rule(v3Css, '.result-set-v2.compact label'), /align-content: end;/);
+assert.match(resultSet, /'Вес одного снаряда, кг'/);
+// Those captions make the «кг / Повт.» head redundant over a card of only results v2 rows. The rule
+// that hid it nested :has() inside :has(), which browsers reject, so the head always showed.
+assert.match(css, /\.workout-exercise-card\.v3:not\(:has\(\.exercise-set-row\)\) \.exercise-set-head \{ display: none; \}/);
+for (const [, selector] of css.matchAll(/([^{}]+)\{/g)) {
+  assert.doesNotMatch(selector.replace(/\/\*[\s\S]*?\*\//g, ''), /:has\([^)]*:has\(/, `${selector.trim()}: a :has() inside :has() is dropped by the browser`);
+}
 
 // One type scale: card text uses design-system tokens; 16px stays only where iOS would zoom on focus.
 const sizes = [...css.matchAll(/font-size: ([^;]+);/g)].map((match) => match[1]);

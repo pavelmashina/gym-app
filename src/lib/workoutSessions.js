@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 import { validateResultV2 } from './exerciseResultsV2.js';
-import { describeRequestError, withDeadline } from './requestResilience.js';
+import { describeRequestError, isNetworkError, withDeadline } from './requestResilience.js';
 
 const LOAD_DEADLINE_MS = 30_000;
 const WRITE_DEADLINE_MS = 20_000;
@@ -294,14 +294,49 @@ export async function addSessionExercise(sessionId, exerciseId, scope = 'session
 
 const performedSetWriteQueues = new Map();
 
+const SET_SAVE_NETWORK_MESSAGE = 'Не удалось сохранить подход. Проверьте интернет и повторите.';
+// The write (15 s, as the fetch limit for writes) and the check after it stay inside WRITE_DEADLINE_MS.
+const STORED_RESULT_CHECK_MS = 4_000;
+const RESULT_WRITE_MS = WRITE_DEADLINE_MS - STORED_RESULT_CHECK_MS - 1_000;
+const RESULT_V2_KEYS = ['completed','set_type','weight','reps','duration_seconds','distance_meters','assistance_weight','configuration_key','equipment_instance_id','side'];
+
+function holdsResultV2(row, result) {
+  const stored = row?.result_v2;
+  return Boolean(stored) && RESULT_V2_KEYS.every((key) => (stored[key] ?? null) === (result[key] ?? null));
+}
+
+// Issue #64: on a weak connection the server can save a set while its answer is lost on the way back.
+// Before reporting a failure, look whether the row already holds exactly this result.
+async function readStoredResultV2(setId, result) {
+  const { data, error } = await settled(
+    supabase.from('performed_sets').select('*').eq('id', setId).maybeSingle(),
+    STORED_RESULT_CHECK_MS,
+  );
+  return !error && holdsResultV2(data, result) ? data : null;
+}
+
+// Only a refusal from the server may speak of the set's settings; a lost connection says so instead.
+function describeResultV2Error(error) {
+  console.error('Unable to save a results v2 set:', error);
+  if (isNetworkError(error)) return SET_SAVE_NETWORK_MESSAGE;
+  if (/immutable/i.test(error?.message ?? '')) return 'Этот подход уже записан с другими настройками выполнения, их нельзя изменить.';
+  if (error?.code === '23514') return 'Не удалось сохранить подход. Проверьте введённые значения.';
+  return 'Не удалось сохранить подход.';
+}
+
 async function updatePerformedSetNow(setId, values) {
   if (values.resultV2) {
     const result = {...values.resultV2, set_type:values.setType, completed:Boolean(values.completed)};
     if (validateResultV2(result).length) throw new Error('Проверьте поля результата и сторону выполнения.');
-    const {data,error} = await supabase.from('performed_sets').update({result_v2:result,weight:null,reps:null,
+    let {data,error} = await settled(supabase.from('performed_sets').update({result_v2:result,weight:null,reps:null,
       set_type:values.setType,completed:result.completed,completed_at:result.completed?(values.completedAt||new Date().toISOString()):null,
-      updated_at:new Date().toISOString()}).eq('id',setId).select('*').single();
-    if(error||!data) throw new Error('Не удалось сохранить результат. Настройки уже записанного подхода менять нельзя.');
+      updated_at:new Date().toISOString()}).eq('id',setId).select('*').single(), RESULT_WRITE_MS);
+    if (error && isNetworkError(error)) {
+      const stored = await readStoredResultV2(setId, result);
+      if (stored) ({ data, error } = { data: stored, error: null });
+    }
+    if (error) throw new Error(describeResultV2Error(error));
+    if (!data) throw new Error('Не удалось сохранить подход.');
     if (result.completed) void markRecentExerciseForSet(setId);
     return mapSet(data);
   }
@@ -321,7 +356,7 @@ async function updatePerformedSetNow(setId, values) {
 
 export function updatePerformedSet(setId, values) {
   const previous = performedSetWriteQueues.get(setId) || Promise.resolve();
-  const task = previous.catch(() => {}).then(() => withDeadline(updatePerformedSetNow(setId, values), WRITE_DEADLINE_MS, 'Не удалось сохранить подход. Проверьте интернет и повторите.'));
+  const task = previous.catch(() => {}).then(() => withDeadline(updatePerformedSetNow(setId, values), WRITE_DEADLINE_MS, SET_SAVE_NETWORK_MESSAGE));
   performedSetWriteQueues.set(setId, task);
   void task.then(
     () => { if (performedSetWriteQueues.get(setId) === task) performedSetWriteQueues.delete(setId); },
