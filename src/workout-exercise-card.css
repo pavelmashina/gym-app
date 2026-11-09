@@ -104,8 +104,7 @@
   border-radius: 12px;
   transition: background 120ms ease;
 }
-/* Warm-up sets always come before working sets. */
-.exercise-set-row.warmup { order: -1; }
+/* Warm-up sets come first in the markup itself (src/lib/setOrder.js), for both kinds of rows. */
 .exercise-set-row.done { background: color-mix(in srgb, #2e9e57 13%, var(--surface)); }
 .exercise-set-number {
   text-align: center;

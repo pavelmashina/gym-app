@@ -75,9 +75,10 @@ const colours = css.match(/#[0-9a-f]{3,8}\b/gi) ?? [];
 assert.deepEqual([...new Set(colours)], ['#2e9e57']);
 assert.match(rule(css, '.exercise-set-row.done'), /color-mix\(in srgb, #2e9e57 13%, var\(--surface\)\)/);
 
-// Warm-up sets still come before working sets.
+// Warm-up sets still come before working sets: since #60 the markup is ordered for both kinds of rows
+// (tests/workout-set-order.mjs), and the warm-up class only mutes the number.
 assert.match(setRow, /\$\{set\.warmup\?' warmup':''\}/);
-assert.match(rule(css, '.exercise-set-row.warmup'), /order: -1;/);
+assert.match(rule(css, '.exercise-set-row.warmup .exercise-set-number'), /color: var\(--muted\);/);
 
 // The old card markup and its styles are gone from every stylesheet.
 for (const file of ['src/workout-session.css', 'src/workout-session-active-v2.css', 'src/workout-session-active-v3.css', 'src/workout-session-figma.css', 'src/ui-layout-audit.css']) {

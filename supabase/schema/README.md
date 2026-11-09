@@ -102,6 +102,8 @@ Starting a scheduled workout creates a separate WorkoutSession snapshot. Only on
 
 `workout-session-reorder-scope.sql` provides the current authenticated `SECURITY INVOKER` reorder RPC. It can change only the current session or, when explicitly requested, the future scheduled copies of the same program workout. Since the 2026-11-09 migration the program-wide order is also stored in the template workout, so a later program edit keeps it. The old one-position move RPC is retired and dropped by this milestone.
 
+The order of the sets inside one session exercise is `performed_sets.set_number`. `reorder_performed_sets(p_workout_session_exercise_id, p_ordered_set_ids)` (migration `20261109161041_reorder_performed_sets.sql`, authenticated, `SECURITY INVOKER`) rewrites every number of that exercise as 1..n in one transaction. It accepts only the owner's active session, every set of the exercise exactly once, and warm-up sets before working sets. Completed and abandoned sessions keep their order.
+
 Completing a workout marks the session and scheduled workout `completed`. Abandoning marks the session `abandoned` and the scheduled workout `skipped`. Skipped/cancelled workouts cannot be started again. When no scheduled workouts remain, the corresponding participation is completed automatically.
 
 ## Catalog programs
