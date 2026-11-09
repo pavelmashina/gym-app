@@ -168,22 +168,30 @@
 }
 .exercise-catalog-content .catalog-program-difficulty i.filled { background: var(--ink); }
 
-/* All five destinations share the same inset gradient and active styling. */
-.app-nav-item.active { background: transparent !important; }
-.app-nav-item.active::before {
+/* Active navigation highlight is an INSET, fading glow — never a solid
+   full-height/full-width tile. The five buttons (including Home) are equal. */
+.app-bottom-nav .app-nav-item.active {
+  background: transparent !important;
+  isolation: isolate;
+}
+.app-bottom-nav .app-nav-item.active::before {
   content: "" !important;
   position: absolute;
-  inset: 7px 5px 6px;
+  inset: 10px 8px;
   z-index: 0;
-  border-radius: 15px;
+  border-radius: 14px;
   pointer-events: none;
-  background: radial-gradient(ellipse 75% 72% at center,
+  background: radial-gradient(ellipse 48% 46% at center,
     color-mix(in srgb, var(--accent-soft) 94%, transparent) 0%,
-    color-mix(in srgb, var(--accent-soft) 52%, transparent) 48%,
+    color-mix(in srgb, var(--accent-soft) 60%, transparent) 44%,
+    color-mix(in srgb, var(--accent-soft) 20%, transparent) 75%,
     transparent 100%) !important;
 }
-.app-nav-item.active .app-nav-icon,
-.app-nav-item.active .app-nav-label { position: relative; z-index: 1; }
+.app-bottom-nav .app-nav-item.active .app-nav-icon,
+.app-bottom-nav .app-nav-item.active .app-nav-label {
+  position: relative;
+  z-index: 1;
+}
 
 /* SportPit search matches the 42px Training search, including text size. */
 .sportpit-content .sportpit-search {
