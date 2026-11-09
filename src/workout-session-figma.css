@@ -171,14 +171,14 @@
   padding: 14px;
   border-radius: 16px;
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
   display: grid;
   gap: 4px;
 }
 
 .history-best-card span,
 .history-best-card small {
-  color: rgba(255,255,255,.62);
+  color: color-mix(in srgb, var(--surface) 62%, transparent);
   font-size: 8px;
   font-weight: 800;
   text-transform: uppercase;
@@ -257,9 +257,9 @@
 }
 
 .workout-session-footer-dual .workout-pause-button {
-  border: 1px solid #dfc4c4;
+  border: 1px solid color-mix(in srgb, var(--workout-danger) 30%, var(--surface));
   background: var(--surface);
-  color: #8f3b3b;
+  color: var(--workout-danger);
   font-size: 11px;
 }
 

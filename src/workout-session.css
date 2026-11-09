@@ -4,6 +4,12 @@
   background: var(--bg);
 }
 
+/* Red of pause and delete: mixed into --ink, so it stays dark red on the light theme
+   and turns soft red with enough contrast on the dark one. */
+:root {
+  --workout-danger: color-mix(in srgb, #bc3f3f 75%, var(--ink));
+}
+
 /* .phone is the scroll container of this screen. Instant scrolling keeps the jump to a
    focused field from racing the keyboard animation; no browser pull-to-refresh mid-workout. */
 .phone.workout-session-phone {
@@ -118,7 +124,7 @@ html:has(.workout-session-phone) {
   height: 34px;
   border-radius: 11px;
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
   display: grid;
   place-items: center;
   font-size: 11px;
@@ -161,7 +167,7 @@ html:has(.workout-session-phone) {
   padding: 16px;
   border-radius: 20px;
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -169,14 +175,14 @@ html:has(.workout-session-phone) {
 }
 
 .workout-active-head > div:first-child { min-width: 0; }
-.workout-active-head > div > span { color: rgba(255,255,255,.62); }
+.workout-active-head > div > span { color: color-mix(in srgb, var(--surface) 62%, transparent); }
 .workout-active-head h1 { margin-bottom: 0; font-size: 20px; }
 
 .workout-timer {
   flex: 0 0 auto;
   padding: 9px 10px;
   border-radius: 12px;
-  background: rgba(255,255,255,.1);
+  background: color-mix(in srgb, var(--surface) 10%, transparent);
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 850;
@@ -222,7 +228,7 @@ html:has(.workout-session-phone) {
   border: 0;
   border-radius: 17px;
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
   font-size: 14px;
   font-weight: 820;
 }
@@ -251,7 +257,7 @@ html:has(.workout-session-phone) {
   margin: 0 auto 14px;
   border-radius: 18px;
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
   display: grid;
   place-items: center;
 }

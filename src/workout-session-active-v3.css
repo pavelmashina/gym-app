@@ -32,15 +32,15 @@
   overflow: hidden;
   padding: 10px 12px;
   border-radius: 16px;
-  background: #171717;
-  color: #fff;
+  background: var(--ink);
+  color: var(--surface);
 }
-.rest-countdown.finished { background:#2c2c2a; }
+.rest-countdown.finished { background:color-mix(in srgb, var(--ink) 90%, var(--surface)); }
 .rest-countdown-copy { min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.rest-countdown-copy span { flex:1 1 auto; min-width:0; font-size:11px; color:rgba(255,255,255,.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rest-countdown-copy span { flex:1 1 auto; min-width:0; font-size:11px; color:color-mix(in srgb, var(--surface) 65%, transparent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rest-countdown-copy strong { flex:0 0 auto; max-width:42%; font-size:24px; line-height:1; letter-spacing:-.6px; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.rest-countdown-track { width:100%; min-width:0; height:4px; margin-top:6px; border-radius:999px; background:rgba(255,255,255,.14); overflow:hidden; }
-.rest-countdown-track span { display:block; width:100%; height:100%; transform-origin:left; background:#fff; transition:transform .45s linear; }
+.rest-countdown-track { width:100%; min-width:0; height:4px; margin-top:6px; border-radius:999px; background:color-mix(in srgb, var(--surface) 14%, transparent); overflow:hidden; }
+.rest-countdown-track span { display:block; width:100%; height:100%; transform-origin:left; background:var(--surface); transition:transform .45s linear; }
 .rest-countdown-actions { min-width:0; margin-top:8px; display:flex; gap:6px; }
 .rest-timer-idle { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .rest-timer-idle > span { flex:1 1 0; min-width:0; color:var(--ink); font-size:12px; font-weight:700; line-height:1.25; }
@@ -48,17 +48,17 @@
 .workout-session-footer .rest-countdown-actions button,
 .workout-session-footer .rest-timer-idle-actions button { width:auto; min-width:0; min-height:36px; padding:0 11px; border:0; border-radius:10px; font-size:11px; font-weight:800; white-space:nowrap; }
 /* One row even at 320px: a second one would make the footer cover the end of the list. */
-.workout-session-footer .rest-countdown-actions button { flex:1 1 auto; padding:0 6px; background:rgba(255,255,255,.12); color:#fff; }
+.workout-session-footer .rest-countdown-actions button { flex:1 1 auto; padding:0 6px; background:color-mix(in srgb, var(--surface) 12%, transparent); color:var(--surface); }
 .workout-session-footer .rest-timer-idle-actions button { border:1px solid var(--line); background:var(--surface); color:var(--ink); }
 
 .exercise-rest-settings {
-  border-top: 1px solid #edede8;
+  border-top: 1px solid var(--line);
   padding: 12px 0 2px;
 }
 .exercise-rest-settings > span { display:block; margin-bottom:8px; font-size:13px; font-weight:700; }
 .exercise-rest-settings > div { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-.exercise-rest-settings button { height:34px; border:0; border-radius:10px; background:#efefeb; font-size:11px; font-weight:800; }
-.exercise-rest-settings button.active { background:#171717; color:#fff; }
+.exercise-rest-settings button { height:34px; border:0; border-radius:10px; background:var(--surface-2); font-size:11px; font-weight:800; }
+.exercise-rest-settings button.active { background:var(--ink); color:var(--surface); }
 
 .workout-exercise-card.v3 {
   scroll-margin-top: 80px;
@@ -305,5 +305,5 @@
 }
 
 .exercise-actions-popup .exercise-action-row.danger {
-  color: #9a3434;
+  color: var(--workout-danger);
 }
