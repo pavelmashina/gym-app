@@ -20,8 +20,8 @@ The CSS source of truth is `src/design-system.css`; `AGENTS.md` makes this a req
 | L | **20px** | `--gym-type-l` | Section headings |
 | M | **16px** | `--gym-type-m` | Subheadings, prominent labels |
 | S | **14px** | `--gym-type-s` | Main body, cards, field/filter headings |
-| XS | **12px** | `--gym-type-xs` | Tab labels, controls, descriptions, filter options |
-| XXS | **10px** | `--gym-type-xxs` | **Small tags inside cards** and other very compact metadata |
+| XS | **12px** | `--gym-type-xs` | Controls, descriptions, filter options |
+| XXS | **10px** | `--gym-type-xxs` | **Training upper tabs, small tags inside cards** and other very compact metadata |
 
 Use available line-height tokens (e.g. 20px body, 16px caption, 13px micro) and weights 400/500/600/700, 800 only where already required. **Do not add other font sizes, including 8/9/11/13/15px,** or use automatic uppercase on filter headings. Do not use a font size to compensate for a broken container width—fix the layout.
 
@@ -31,7 +31,7 @@ Use available line-height tokens (e.g. 20px body, 16px caption, 13px micro) and 
 
 | Element | Font size |
 | --- | --- |
-| Top navigation labels “Рекомендации”, “Каталог” and peers | 12px |
+| Top navigation labels “Рекомендации”, “Каталог” and peers | **10px** |
 | Search | 14px |
 | Toolbar “Создать” and sort options | 12px |
 | Recommendations “Пока пусто” | 16px |
