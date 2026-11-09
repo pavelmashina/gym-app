@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   EXERCISE_EQUIPMENT,
-  EXERCISE_MUSCLE_GROUPS,
   createCustomExercise,
   updateCustomExercise,
+  exerciseMuscleGroupFilterOptions,
   filterExerciseList,
   listExerciseLibrary,
+  muscleGroupChoiceError,
+  muscleGroupDraft,
 } from '../lib/exerciseLibrary.js';
 import '../exercise-library-picker.css';
 import ExerciseTechnique from './ExerciseTechnique.jsx';
 import { ExercisePhotoGallery } from './ExercisePhotoGallery.jsx';
+import { MuscleGroupField } from './MuscleGroupField.jsx';
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
@@ -65,7 +68,7 @@ function LibrarySection({ title, items, selectedIds, multi, onPick, onInfo, hide
 }
 
 const EMPTY_DRAFT = {
-  name: '', muscleGroup: 'Грудь', equipment: 'Гантели', description: '',
+  name: '', muscleGroup: 'Грудь', customMuscleGroup: '', equipment: 'Гантели', description: '',
   videoUrl: '', videoFile: null,
   photoFiles: [], existingPhotos: [], removedPhotoPaths: [],
 };
@@ -120,7 +123,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
     setDraft({
       ...EMPTY_DRAFT,
       name: exercise.name,
-      muscleGroup: exercise.display_muscle_group,
+      ...muscleGroupDraft(exercise.display_muscle_group),
       equipment: exercise.equipment,
       description: exercise.description || '',
       existingPhotos: exercise.resolvedPhotos || [],
@@ -136,6 +139,10 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
 
   useEffect(reload, [browseOnly]);
 
+  const muscleGroupOptions = useMemo(() => {
+    const options = exerciseMuscleGroupFilterOptions(library.mine);
+    return options.includes(muscleGroup) ? options : [...options, muscleGroup];
+  }, [library.mine, muscleGroup]);
   const filterConfig = useMemo(() => ({ query, muscleGroup, equipment }), [query, muscleGroup, equipment]);
   const visible = useMemo(() => {
     const filter = (items) => filterExerciseList(items, filterConfig).filter((exercise) => exercise.id !== excludeId);
@@ -162,7 +169,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
       }
       const created = await createCustomExercise(draft);
       setLibrary((current) => ({ all: [...current.all, created].sort((a, b) => a.name.localeCompare(b.name, 'ru')), mine: [created, ...current.mine], recent: current.recent }));
-      setDraft({ ...EMPTY_DRAFT, muscleGroup: draft.muscleGroup, equipment: draft.equipment });
+      setDraft({ ...EMPTY_DRAFT, muscleGroup: draft.muscleGroup, customMuscleGroup: draft.customMuscleGroup, equipment: draft.equipment });
       setCreateOpen(false);
       await pick(created);
     } catch (requestError) {
@@ -172,14 +179,14 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
     }
   }
 
-  const canCreate = Boolean(draft.name.trim()) && draft.muscleGroup !== 'Все' && draft.equipment !== 'Все';
+  const canCreate = Boolean(draft.name.trim()) && !muscleGroupChoiceError(draft) && draft.equipment !== 'Все';
 
   return <div className="exercise-library-shell">
     <section className="exercise-library-top">
       {!browseOnly && !hideTitle && <div className="exercise-library-heading"><span>База упражнений</span><h2>Выберите упражнение</h2></div>}
       <label className={`exercise-library-search${browseOnly ? ' exercise-search training-search' : ''}`}><SearchIcon /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} />{query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}</label>
       <div className="exercise-library-filter-row">
-        <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{EXERCISE_MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label className="exercise-library-filter"><span>Группа мышц</span><select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value)}>{muscleGroupOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
         <label className="exercise-library-filter"><span>Оборудование</span><select value={equipment} onChange={(event) => setEquipment(event.target.value)}>{EXERCISE_EQUIPMENT.map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
     </section>
@@ -194,7 +201,7 @@ export function ExerciseLibraryPicker({ selectedIds = [], multi = false, browseO
       <div className="exercise-library-create-form-head"><span>Мои упражнения</span><h3>{editingId?'Редактирование упражнения':'Новое упражнение'}</h3><small>Обязательные поля отмечены *</small></div>
       <label><span>Название *</span><input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Например, жим гантелей сидя" autoFocus /></label>
       <div className="exercise-library-create-form-grid">
-        <label><span>Группа мышц *</span><select required value={draft.muscleGroup} onChange={(event) => setDraft({ ...draft, muscleGroup: event.target.value })}>{EXERCISE_MUSCLE_GROUPS.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
+        <MuscleGroupField muscleGroup={draft.muscleGroup} customMuscleGroup={draft.customMuscleGroup} onChange={(fields) => setDraft(current => ({ ...current, ...fields }))} />
         <label><span>Оборудование *</span><select required value={draft.equipment} onChange={(event) => setDraft({ ...draft, equipment: event.target.value })}>{EXERCISE_EQUIPMENT.filter((value) => value !== 'Все').map((value) => <option key={value}>{value}</option>)}</select></label>
       </div>
       <label><span>Описание · необязательно</span><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} maxLength={2000} rows="4" placeholder="Техника, положение тела, важные подсказки…" /></label>

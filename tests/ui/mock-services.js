@@ -2,10 +2,17 @@
 const exercise = { id: 'fixture-exercise', name: 'Тестовый жим', muscle_group: 'Грудь', equipment: 'Гантели' };
 export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гантели'];
+export const CUSTOM_EXERCISE_MUSCLE_GROUPS = ['Грудь'];
+export const EXERCISE_MUSCLE_GROUP_OTHER = 'Другое';
+export const MAX_MUSCLE_GROUP_LENGTH = 40;
+export const muscleGroupChoiceError = () => '';
+export const muscleGroupDraft = (muscleGroup) => ({ muscleGroup, customMuscleGroup: '' });
+export const exerciseMuscleGroupFilterOptions = () => EXERCISE_MUSCLE_GROUPS;
 export async function listExerciseLibrary() { return { all: [exercise], recent: [], mine: [] }; }
 export const filterExerciseList = (items) => items;
 export async function markExerciseRecent() {}
 export async function createCustomExercise() { throw new Error('Не используется в этом тесте'); }
+export async function updateCustomExercise() { throw new Error('Не используется в этом тесте'); }
 export async function createProgram(program) {
   if (program.name.startsWith('Ошибка')) throw new Error('Тестовая ошибка сохранения');
   return { id: 'fixture-saved', ...program };
