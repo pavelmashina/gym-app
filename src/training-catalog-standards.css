@@ -7,8 +7,8 @@
 
 /* Visual navigation for all training sub-sections. */
 .exercise-catalog-content .training-tabs button {
-  font-size: var(--gym-type-xs) !important; /* 12px */
-  line-height: var(--lh-caption) !important;
+  font-size: var(--gym-type-xxs) !important; /* 10px */
+  line-height: var(--lh-micro) !important;
 }
 
 /* Recommendation empty state. */
