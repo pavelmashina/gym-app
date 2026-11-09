@@ -10,6 +10,12 @@
   --workout-danger: color-mix(in srgb, #bc3f3f 75%, var(--ink));
 }
 
+/* Red of the rest timer bar in its last 15 seconds. The bar lies on an --ink plate, so this red
+   is mixed into --surface instead: bright on the black plate, deeper on the light one. */
+:root {
+  --workout-rest-ending: color-mix(in srgb, #ff453a 85%, var(--surface));
+}
+
 /* .phone is the scroll container of this screen. Instant scrolling keeps the jump to a
    focused field from racing the keyboard animation; no browser pull-to-refresh mid-workout. */
 .phone.workout-session-phone {

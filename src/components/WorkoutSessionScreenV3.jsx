@@ -36,6 +36,7 @@ import {
   clockSkewMs,
   createRestTimer,
   extendRestTimer,
+  isRestEnding,
   msUntilNextSecond,
   readRestAutostart,
   readRestTimer,
@@ -234,7 +235,7 @@ function RestCountdown({ timer, canTurnOff, onStop, onAdd, onTurnOff }) {
   const remaining = restRemainingSeconds(timer, now);
   const progress = timer.duration > 0 ? Math.max(0, Math.min(1, remaining / timer.duration)) : 0;
   const title = remaining === 0 ? 'Отдых закончен' : `Отдых${timer.exerciseName ? ` · ${timer.exerciseName}` : ''}`;
-  return <section className={`rest-countdown${remaining === 0 ? ' finished' : ''}`} aria-label="Таймер отдыха"><div className="rest-countdown-copy"><span aria-live="polite">{title}</span><strong role="timer">{formatRest(remaining)}</strong></div><div className="rest-countdown-track"><span style={{ transform: `scaleX(${progress})` }} /></div><div className="rest-countdown-actions"><button type="button" onClick={() => onAdd(30)}>+30 сек</button><button type="button" onClick={onStop}>{remaining === 0 ? 'Закрыть' : 'Остановить'}</button>{canTurnOff && <button type="button" onClick={onTurnOff}>Выключить</button>}</div></section>;
+  return <section className={`rest-countdown${remaining === 0 ? ' finished' : isRestEnding(remaining) ? ' ending' : ''}`} aria-label="Таймер отдыха"><div className="rest-countdown-copy"><span aria-live="polite">{title}</span><strong role="timer">{formatRest(remaining)}</strong></div><div className="rest-countdown-track"><span style={{ transform: `scaleX(${progress})` }} /></div><div className="rest-countdown-actions"><button type="button" onClick={() => onAdd(30)}>+30 сек</button><button type="button" onClick={onStop}>{remaining === 0 ? 'Закрыть' : 'Остановить'}</button>{canTurnOff && <button type="button" onClick={onTurnOff}>Выключить</button>}</div></section>;
 }
 
 // Lives in the footer: visible wherever the list is scrolled, and its appearing does not move the cards under the finger.

@@ -37,6 +37,13 @@ export function restRemainingSeconds(timer, now) {
   return Math.max(0, Math.ceil((timer.endsAt - now) / 1000));
 }
 
+// The last seconds of a rest, from 0:15 on the display down to 0:01: time to walk back to the machine.
+export const REST_ENDING_SECONDS = 15;
+
+export function isRestEnding(remainingSeconds) {
+  return remainingSeconds > 0 && remainingSeconds <= REST_ENDING_SECONDS;
+}
+
 // A rest that ended while the page was suspended is not news: a buzz on return would come out of nowhere.
 export function shouldAlertRestEnd(timer, now) {
   return now >= timer.endsAt && now - timer.endsAt <= REST_ALERT_WINDOW_MS;
