@@ -46,6 +46,17 @@ uppercase for normal labels, filter headings or program tags.
   imported **after** the legacy design layers in `src/main.jsx`.
   Do not undo these rules by writing conflicting declarations elsewhere.
 
+### Training → Exercises (Base / My) — binding design contract
+
+- Exactly **one upper Training tab** named “Упражнения”; **no separate “Мои упражнения” top tab**. Keep the Base/My split *inside* Exercises as a two-way text switcher: **“База” / “Мои упражнения”**.
+- Search precedes a **single horizontal row** containing two compact filters (“Группа мышц”, “Оборудование”) and the **same compact “+ Создать” button** used by Training program creation. Both filter **selected values are 10px**; preserve one-row layout down to narrow mobile screens.
+- Exercise list rows have **no chevron/arrow**; the **info icon is transparent** with no colored background. Tapping either the row or info opens a **full-screen exercise details page**, not a modal sheet.
+- Full-screen details typography: “Упражнение” **16px**, sentence case; exercise name **14px**; muscle/equipment tags **12px**; “Описание” **16px**; description body **14px**.
+- “Создать” opens a **separate full-screen editor**; no “Мои упражнения” eyebrow, required-fields note **12px**, video separator “или” **10px**. Preserve photo/video inputs and edit/delete safety checks.
+- Edit and delete remain available on the details page **for user-owned exercises only**; removal must check usage in training history and saved programs, preserving referenced data.
+- Implementation: `src/components/TrainingExerciseBrowser.jsx`, `src/training-exercise-browser.css`; old `ExerciseLibraryPicker` stays available for workout/program exercise selection and **must not regress**.
+- Regression test: `tests/training-exercise-browser.mjs`.
+
 ### Bottom navigation — binding design contract
 
 - Order: **Главная → Тренировки → Статистика → Питание → Спортпит**.
