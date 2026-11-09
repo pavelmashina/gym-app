@@ -92,7 +92,7 @@ function rawDraft(input: string): IssueDraft {
   };
 }
 
-async function makeDraft(input: string): Promise<IssueDraft> {
+async function makeDraft(input: string, screenshotUrls: string[] = []): Promise<IssueDraft> {
   // Claude replaces GPT for all task structuring; never silently call OpenAI for text.
   // Without Anthropic credentials, plain-text Issues continue to work.
   const key = Deno.env.get("ANTHROPIC_API_KEY");
@@ -120,7 +120,6 @@ async function makeDraft(input: string): Promise<IssueDraft> {
     body: JSON.stringify({
       model: Deno.env.get("ANTHROPIC_MODEL") || "claude-sonnet-5-5",
       max_tokens: 2500,
-      temperature: 0,
       output_config: { format: { type: "json_schema", schema } },
       system:
         "Ты создаёшь GitHub Issues для русскоязычного спортивного веб-приложения. " +
@@ -134,9 +133,18 @@ async function makeDraft(input: string): Promise<IssueDraft> {
         "P0 — приложение или ключевая функция заблокированы; " +
         "P1 — серьёзная ошибка; P2 — остальные изменения и улучшения. " +
         "Все поля по заданной JSON-схеме; текст на русском языке.",
-      messages: [{ role: "user", content: input }],
+      messages: [{
+        role: "user",
+        content: screenshotUrls.length ? [
+          { type: "text", text: input + "\n\nПроанализируй приложенные скриншоты как контекст. " +
+            "Перенеси в задачу только наблюдаемые проблемы и требования, не делай предположений." },
+          ...screenshotUrls.map((url) => ({
+            type: "image", source: { type: "url", url },
+          })),
+        ] : input,
+      }],
     }),
-    signal: AbortSignal.timeout(45000),
+    signal: AbortSignal.timeout(65000),
   });
   if (!res.ok) {
     console.error("Claude issue formatting failed", { status: res.status });
@@ -348,7 +356,9 @@ async function saveScreenshots(admin: Admin, token: string, images: ImageRef[], 
 }
 
 async function speechToText(botToken: string, fileId: string, mimeType: string): Promise<string> {
-  const key = Deno.env.get("OPENAI_API_KEY");
+  // Claude Sonnet handles text/images, not raw audio. Use Groq's free-tier
+  // Whisper-compatible transcription service, never OpenAI API.
+  const key = Deno.env.get("GROQ_API_KEY");
   if (!key) throw new Error("AUDIO_KEY_MISSING");
   const bytes = await telegramFile(botToken, fileId, MAX_AUDIO_BYTES);
   const mime = mimeType === "audio/mpeg" ? "audio/mpeg" :
@@ -356,13 +366,18 @@ async function speechToText(botToken: string, fileId: string, mimeType: string):
   const extension = mime === "audio/mpeg" ? "mp3" : mime === "audio/mp4" ? "m4a" : "ogg";
   const form = new FormData();
   form.append("file", new Blob([bytes], { type: mime }), "task." + extension);
-  form.append("model", Deno.env.get("OPENAI_TRANSCRIPTION_MODEL") || "whisper-1");
+  form.append("model", Deno.env.get("GROQ_TRANSCRIPTION_MODEL") || "whisper-large-v3-turbo");
+  form.append("language", "ru");
+  form.append("response_format", "json");
   form.append("prompt", "Русский язык. Термины спортивного веб-приложения: тренировки, подходы, повторения, GitHub, Supabase, UI, карточки.");
-  const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+  const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
     method: "POST", headers: { Authorization: "Bearer " + key }, body: form,
-    signal: AbortSignal.timeout(70000),
+    signal: AbortSignal.timeout(65000),
   });
-  if (!res.ok) throw new Error("AUDIO_API_HTTP_" + res.status);
+  if (!res.ok) {
+    console.error("Groq transcription failed", { status: res.status });
+    throw new Error("AUDIO_API_HTTP_" + res.status);
+  }
   const response = await res.json();
   if (typeof response?.text !== "string" || !response.text.trim()) throw new Error("AUDIO_EMPTY");
   return response.text.trim();
@@ -394,10 +409,11 @@ async function createFromMessage(
     await telegramSend(botToken, chatId, "Эта задача уже существует: " + already, threadId);
     return;
   }
-  const draft = await makeDraft(description);
   const screenshots = pending?.images?.length
     ? await saveScreenshots(admin, botToken, pending.images, pending.batch_id)
     : [];
+  // Claude sees image URLs and the description, while GitHub Issue embeds images.
+  const draft = await makeDraft(description, screenshots);
   const created = await createIssue(githubToken, draft, marker, screenshots);
   if (pending) await clearPending(admin, pending);
   await telegramSend(botToken, chatId,
@@ -766,13 +782,13 @@ Deno.serve(async (req: Request) => {
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
             : detail.includes("AUDIO_KEY_MISSING")
-            ? "❌ Для голосовых нужен OPENAI_API_KEY в Supabase → Edge Functions → Secrets."
+            ? "❌ Для голосовых нужен GROQ_API_KEY в Supabase → Edge Functions → Secrets."
             : detail.includes("AUDIO_API_HTTP_401")
-              ? "❌ Неверный OPENAI_API_KEY для распознавания голоса."
+              ? "❌ Неверный GROQ_API_KEY. Проверь ключ сервиса Groq."
               : detail.includes("AUDIO_API_HTTP_429")
-                ? "❌ Лимит OpenAI API. Проверь баланс и ограничения."
+                ? "❌ Достигнут бесплатный лимит Groq для голосовых. Повтори позже или проверь квоту."
                 : detail.includes("AUDIO_API_HTTP_")
-                  ? "❌ Не удалось распознать голосовое. Проверь OpenAI API."
+                  ? "❌ Не удалось расшифровать голосовое через Groq. Проверь GROQ_API_KEY и ограничения."
                   : detail.includes("FILE_TOO_LARGE")
                     ? "❌ Файл слишком большой: скриншоты до 8 МБ, аудио до 20 МБ."
                     : detail.includes("IMAGE_UNSUPPORTED")
