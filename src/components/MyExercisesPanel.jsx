@@ -9,7 +9,7 @@ import { ExerciseInfoModal } from './ExerciseInfoModal.jsx';
 
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
 
-function DeleteExerciseDialog({ exercise, onClose, onDeleted }) {
+export function DeleteExerciseDialog({ exercise, onClose, onDeleted }) {
   const [usage, setUsage] = useState(null);
   const [usageError, setUsageError] = useState('');
   const [usageCheck, setUsageCheck] = useState(0);
