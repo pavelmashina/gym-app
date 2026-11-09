@@ -1,5 +1,7 @@
 # Telegram → GitHub Issues (gym-app)
 
+> Обновление: добавлены кнопки в Telegram, привязка существующего группового топика и несколько пользователей. Подробная инструкция: [Настройка группового топика](telegram-topic-setup.md).
+
 Telegram-бот создаёт Issues в репозитории
 [`pavelmashina/gym-app`](https://github.com/pavelmashina/gym-app/issues).
 

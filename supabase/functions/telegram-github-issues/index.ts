@@ -8,11 +8,12 @@ type TgMessage = {
   text?: string;
   caption?: string;
   media_group_id?: string;
+  message_thread_id?: number;
   photo?: Array<{ file_id: string; file_size?: number }>;
   voice?: { file_id: string; file_size?: number; mime_type?: string };
   audio?: { file_id: string; file_size?: number; mime_type?: string; file_name?: string };
   document?: { file_id: string; file_size?: number; mime_type?: string; file_name?: string };
-  from?: { id?: number };
+  from?: { id?: number; is_bot?: boolean };
   chat?: { id?: number; type?: string };
 };
 type TgUpdate = { update_id?: number; message?: TgMessage };
@@ -54,11 +55,26 @@ function constantTimeEquals(a: string, b: string): boolean {
   return diff === 0;
 }
 
-async function telegramSend(token: string, chatId: number, text: string) {
+const BUTTONS = {
+  keyboard: [
+    [{ text: "🆕 Новая задача" }, { text: "✅ Отправить" }],
+    [{ text: "❌ Отмена" }, { text: "📖 Правила" }],
+    [{ text: "🆔 Мой ID" }],
+  ],
+  resize_keyboard: true,
+  is_persistent: true,
+  input_field_placeholder: "Описание задачи, скриншот или голосовое",
+};
+
+async function telegramSend(token: string, chatId: number, text: string, threadId?: number) {
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
+    body: JSON.stringify({
+      chat_id: chatId, text, disable_web_page_preview: true,
+      ...(threadId ? { message_thread_id: threadId } : {}),
+      reply_markup: BUTTONS,
+    }),
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`Telegram sendMessage HTTP ${res.status}`);
@@ -244,7 +260,7 @@ function adminClient(): Admin {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-async function readPending(admin: Admin, chatId: number): Promise<TaskDraft | null> {
+async function readPending(admin: Admin, chatId: string): Promise<TaskDraft | null> {
   const { data, error } = await admin.from("telegram_issue_drafts")
     .select("chat_id,batch_id,description,images,composing,updated_at")
     .eq("chat_id", String(chatId)).maybeSingle();
@@ -252,7 +268,7 @@ async function readPending(admin: Admin, chatId: number): Promise<TaskDraft | nu
   return data as TaskDraft | null;
 }
 
-async function savePending(admin: Admin, chatId: number, values: Partial<TaskDraft>, old?: TaskDraft | null): Promise<TaskDraft> {
+async function savePending(admin: Admin, chatId: string, values: Partial<TaskDraft>, old?: TaskDraft | null): Promise<TaskDraft> {
   const item: TaskDraft = {
     chat_id: String(chatId),
     batch_id: old?.batch_id || crypto.randomUUID(),
@@ -350,13 +366,14 @@ async function speechToText(botToken: string, fileId: string, mimeType: string):
 async function createFromMessage(
   admin: Admin, botToken: string, githubToken: string, chatId: number,
   messageId: number, description: string, pending: TaskDraft | null,
+  threadId?: number,
 ) {
   if (!description.trim()) {
-    await telegramSend(botToken, chatId, "Сначала добавь описание текстом или голосом.");
+    await telegramSend(botToken, chatId, "Сначала добавь описание текстом или голосом.", threadId);
     return;
   }
   if (description.length > 12000) {
-    await telegramSend(botToken, chatId, "Описание слишком длинное. Максимум 12000 символов.");
+    await telegramSend(botToken, chatId, "Описание слишком длинное. Максимум 12000 символов.", threadId);
     return;
   }
   const digest = await crypto.subtle.digest("SHA-256",
@@ -369,7 +386,7 @@ async function createFromMessage(
   const already = await findExisting(githubToken, marker);
   if (already) {
     if (pending) await clearPending(admin, pending);
-    await telegramSend(botToken, chatId, "Эта задача уже существует: " + already);
+    await telegramSend(botToken, chatId, "Эта задача уже существует: " + already, threadId);
     return;
   }
   const draft = await makeDraft(description);
@@ -381,53 +398,232 @@ async function createFromMessage(
   await telegramSend(botToken, chatId,
     "✅ Issue #" + created.number + " создан\n\n" + draft.title +
     (screenshots.length ? "\n📎 Скриншотов: " + screenshots.length : "") +
-    "\n\n" + created.url);
+    "\n\n" + created.url, threadId);
 }
 
-async function processMessage(message: TgMessage, botToken: string, githubToken: string) {
+
+type ChatType = "private" | "supergroup";
+type BoundTopic = { chat_id: string; thread_id: number };
+const RULES = [
+  "🏋️ GymAppEditBot — задачи спортивного приложения",
+  "",
+  "Все задачи попадают в GitHub Issues: pavelmashina/gym-app.",
+  "",
+  "🆕 Новая задача — начать сбор материалов.",
+  "📝 Пришли текст, голосовое и до 6 скриншотов в любом порядке.",
+  "✅ Отправить — создать Issue и получить ссылку.",
+  "❌ Отмена — удалить незавершённый черновик.",
+  "📖 Правила — показать эту памятку.",
+  "🆔 Мой ID — узнать свой числовой Telegram ID.",
+  "",
+  "В личном чате текст или голосовое также можно отправлять сразу — без кнопки «Новая задача».",
+  "В групповом топике сначала нажми «Новая задача», затем «Отправить».",
+  "Данные разных пользователей не смешиваются.",
+  "",
+  "⚠️ Репозиторий публичный. Скриншоты в Issues доступны всем по ссылке; не отправляй личные данные.",
+  "",
+  "Администратору: /bind — привязать этот топик, /unbind — отвязать.",
+  "/allow ID — разрешить пользователю, /revoke ID — убрать доступ, /users — список.",
+].join("\n");
+
+function normalizedCommand(raw: string): string {
+  const text = raw.trim();
+  const lookup: Record<string, string> = {
+    "🆕 Новая задача": "/new",
+    "✅ Отправить": "/create",
+    "❌ Отмена": "/cancel",
+    "📖 Правила": "/rules",
+    "🆔 Мой ID": "/id",
+    "Новая задача": "/new",
+    "Отправить": "/create",
+    "Отмена": "/cancel",
+    "Правила": "/rules",
+    "Мой ID": "/id",
+  };
+  if (lookup[text]) return lookup[text];
+  const match = /^\/([a-z_]+)(?:@([A-Za-z0-9_]+))?(\s+.*)?$/i.exec(text);
+  if (match) {
+    // Don't respond to commands addressed to another bot in a group.
+    if (match[2] && match[2].toLowerCase() !== "gymappeditbot") return "__ignore__";
+    return "/" + match[1].toLowerCase() + (match[3] || "");
+  }
+  return text;
+}
+
+async function boundTopic(admin: Admin, chatId: number): Promise<BoundTopic | null> {
+  const { data, error } = await admin.from("telegram_issue_bound_topics")
+    .select("chat_id,thread_id").eq("chat_id", String(chatId)).maybeSingle();
+  if (error) throw new Error("Topic lookup failed " + error.code);
+  return data as BoundTopic | null;
+}
+
+async function userAllowed(admin: Admin, sender: number, ownerId: string): Promise<boolean> {
+  if (String(sender) === ownerId) return true;
+  const { data, error } = await admin.from("telegram_issue_authorized_users")
+    .select("telegram_id").eq("telegram_id", String(sender)).maybeSingle();
+  if (error) throw new Error("User permission lookup failed " + error.code);
+  return Boolean(data);
+}
+
+async function processMessage(
+  message: TgMessage, botToken: string, githubToken: string, ownerId: string,
+) {
   const chatId = message.chat!.id!;
-  const text = message.text?.trim() || "";
+  const senderId = message.from!.id!;
+  const chatType = message.chat!.type as ChatType;
+  const threadId = chatType === "supergroup" ? message.message_thread_id : undefined;
+  const original = message.text?.trim() || "";
+  const command = normalizedCommand(original);
+  if (command === "__ignore__") return;
+  const owner = String(senderId) === ownerId;
   const admin = adminClient();
-  if (text === "/start" || text === "/help") {
-    await telegramSend(botToken, chatId,
-      "Отправь текст или голосовое — создам GitHub Issue.\n" +
-      "📎 Можно прислать до 6 скриншотов перед описанием задачи.\n" +
-      "/new — собирать задачу из нескольких сообщений;\n" +
-      "/create — создать её;\n" +
-      "/cancel — отменить.\n" +
-      "Фото с подписью (не альбом) создаёт задачу сразу.\n" +
-      "⚠️ Прикреплённые скриншоты будут публично доступны.");
+  const send = (text: string) => telegramSend(botToken, chatId, text, threadId);
+
+  if (chatType === "supergroup") {
+    // A bot is a group member, not a member of just one topic. The owner binds
+    // exactly the desired forum topic from inside that topic with /bind.
+    if (command === "/bind") {
+      if (!owner) return;
+      if (!threadId || threadId <= 0) {
+        await send("Открой существующий топик группы и отправь /bind именно в нём.");
+        return;
+      }
+      const { error } = await admin.from("telegram_issue_bound_topics").upsert({
+        chat_id: String(chatId),
+        thread_id: threadId,
+        bound_by: ownerId,
+        bound_at: new Date().toISOString(),
+      }, { onConflict: "chat_id" });
+      if (error) throw new Error("Topic bind failed " + error.code);
+      await send("✅ Этот топик привязан к GymAppEditBot. \n\n" + RULES);
+      return;
+    }
+    const bound = await boundTopic(admin, chatId);
+    // Ignore all messages in other topics, including commands, so no accidental
+    // Issues or unnecessary replies appear in the rest of the group.
+    if (!bound || bound.thread_id !== threadId) return;
+    if (command === "/unbind") {
+      if (!owner) return;
+      const { error } = await admin.from("telegram_issue_bound_topics")
+        .delete().eq("chat_id", String(chatId)).eq("thread_id", threadId);
+      if (error) throw new Error("Topic unbind failed " + error.code);
+      await send("🔒 Топик отвязан. Для повторного подключения отправь здесь /bind.");
+      return;
+    }
+  }
+
+  // /id is safe for any person in the bound topic or in a private chat.
+  // Unauthorized users need their ID to request access from the owner.
+  if (command === "/id") {
+    await send("🆔 Твой Telegram ID: " + senderId +
+      (owner ? "\nТы администратор." : ""));
     return;
   }
-  if (text === "/id") {
-    await telegramSend(botToken, chatId, "Твой Telegram ID: " + chatId);
+
+  const authorized = await userAllowed(admin, senderId, ownerId);
+  if (!authorized) {
+    if (chatType === "private" && (command === "/start" || command === "/help" ||
+      command === "/rules")) {
+      await send("Доступ к созданию задач пока не выдан.\n" +
+        "Твой Telegram ID: " + senderId +
+        "\nПопроси администратора отправить /allow " + senderId + " своему боту.");
+    }
+    // Do not let unapproved group members see task details or create Issues.
     return;
   }
-  const pending = await readPending(admin, chatId);
-  if (text === "/cancel") {
+
+  if (command.startsWith("/allow ") || command.startsWith("/revoke ")) {
+    if (!owner) {
+      await send("Только администратор может менять доступ пользователей.");
+      return;
+    }
+    const parts = command.split(/\s+/);
+    if (parts.length !== 2 || !/^[0-9]{1,20}$/.test(parts[1])) {
+      await send("Формат: /allow 123456789 или /revoke 123456789");
+      return;
+    }
+    if (parts[1] === ownerId) {
+      await send("Администратор всегда имеет доступ.");
+      return;
+    }
+    if (parts[0] === "/allow") {
+      const { error } = await admin.from("telegram_issue_authorized_users").upsert({
+        telegram_id: parts[1], added_by: ownerId,
+      }, { onConflict: "telegram_id" });
+      if (error) throw new Error("Grant access failed " + error.code);
+      await send("✅ Доступ разрешён пользователю " + parts[1] +
+        ". Теперь он может создавать Issues в этом топике или в личном чате с ботом.");
+    } else {
+      const { error } = await admin.from("telegram_issue_authorized_users")
+        .delete().eq("telegram_id", parts[1]);
+      if (error) throw new Error("Revoke access failed " + error.code);
+      await send("🔒 Доступ пользователя " + parts[1] + " отозван.");
+    }
+    return;
+  }
+  if (command === "/users") {
+    if (!owner) return;
+    const { data, error } = await admin.from("telegram_issue_authorized_users")
+      .select("telegram_id").order("added_at", { ascending: true }).limit(50);
+    if (error) throw new Error("User list failed " + error.code);
+    await send("👥 Разрешённые пользователи:\n" + ownerId + " (администратор)" +
+      ((data?.length || 0)
+        ? "\n" + data!.map((u: { telegram_id: string }) => u.telegram_id).join("\n")
+        : "\nДругих пользователей пока нет."));
+    return;
+  }
+  if (command === "/start" || command === "/help" || command === "/rules") {
+    await send(RULES);
+    return;
+  }
+  if (command === "/bind" || command === "/unbind") {
+    await send("Привязка доступна только администратору из топика супергруппы.");
+    return;
+  }
+  if (command === "/allow" || command === "/revoke") {
+    await send("Формат: /allow 123456789 или /revoke 123456789");
+    return;
+  }
+
+  // Keep the original private-chat draft key for backwards compatibility.
+  // Group drafts belong to a specific user in a specific topic.
+  const scopeId = chatType === "private"
+    ? String(chatId)
+    : String(chatId) + ":" + String(threadId) + ":" + String(senderId);
+  const pending = await readPending(admin, scopeId);
+
+  if (command === "/cancel") {
     if (pending) await clearPending(admin, pending);
-    await telegramSend(botToken, chatId, "Черновик очищен.");
+    await send("❌ Черновик задачи удалён.");
     return;
   }
-  if (text === "/new") {
+  if (command === "/new") {
     if (pending) {
-      await telegramSend(botToken, chatId,
-        "Черновик уже есть. Пришли остальные материалы и отправь /create либо /cancel.");
+      if (!pending.composing) await savePending(admin, scopeId, { composing: true }, pending);
+      await send("📝 Черновик открыт. Отправляй текст, голос и скриншоты, затем нажми «✅ Отправить».");
       return;
     }
-    await savePending(admin, chatId, { composing: true });
-    await telegramSend(botToken, chatId,
-      "📝 Начали задачу. Присылай текст, голосовые и до 6 скриншотов в любом порядке. " +
-      "Затем отправь /create.");
+    await savePending(admin, scopeId, { composing: true });
+    await send("🆕 Новая задача! Отправь текст, голосовые и до 6 скриншотов. Затем нажми «✅ Отправить».");
     return;
   }
-  if (text === "/create") {
+  if (command === "/create") {
     if (!pending) {
-      await telegramSend(botToken, chatId, "Нет черновика. Отправь описание задачи.");
+      await send("Нет черновика. Нажми «🆕 Новая задача».");
       return;
     }
-    await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
-      pending.description, pending);
+    await createFromMessage(admin, botToken, githubToken, chatId,
+      message.message_id!, pending.description, pending, threadId);
+    return;
+  }
+  if (original.startsWith("/")) {
+    await send("Неизвестная команда. Нажми «📖 Правила».");
+    return;
+  }
+
+  if (chatType !== "private" && !pending) {
+    // In a shared topic, ordinary chat must not become an Issue by accident.
+    await send("Чтобы добавить задачу, сначала нажми «🆕 Новая задача».");
     return;
   }
 
@@ -440,39 +636,41 @@ async function processMessage(message: TgMessage, botToken: string, githubToken:
   if (photo || imageDocument) {
     const file = photo || document!;
     if (file.file_size && file.file_size > MAX_IMAGE_BYTES) {
-      await telegramSend(botToken, chatId, "Скриншот больше 8 МБ. Пришли файл меньшего размера.");
+      await send("Скриншот больше 8 МБ. Пришли файл меньшего размера.");
       return;
     }
     if ((pending?.images?.length || 0) >= MAX_IMAGES) {
-      await telegramSend(botToken, chatId, "Лимит — 6 скриншотов на одну задачу.");
+      await send("Лимит — 6 скриншотов на одну задачу.");
       return;
     }
-    const image: ImageRef = { fileId: file.file_id, messageId: message.message_id!,
-      mime: photo ? "image/jpeg" : document?.mime_type || "image/png" };
-    // Atomic append prevents lost screenshots when Telegram delivers an album in parallel.
+    const image: ImageRef = {
+      fileId: file.file_id, messageId: message.message_id!,
+      mime: photo ? "image/jpeg" : document?.mime_type || "image/png",
+    };
     const { data: appended, error: appendError } = await admin.rpc("gym_telegram_append_image", {
-      p_chat_id: String(chatId),
+      p_chat_id: scopeId,
       p_message_id: message.message_id!,
       p_file_id: image.fileId,
       p_mime: image.mime,
       p_caption: message.caption?.trim() || "",
     });
     if (appendError?.message?.includes("TOO_MANY_IMAGES")) {
-      await telegramSend(botToken, chatId, "Лимит — 6 скриншотов на одну задачу.");
+      await send("Лимит — 6 скриншотов на одну задачу.");
       return;
     }
     if (appendError || !appended) {
       throw new Error("Photo queue failed " + (appendError?.code || "empty"));
     }
     const updated = appended as TaskDraft;
-    if (message.caption?.trim() && !message.media_group_id && !updated.composing) {
+    if (chatType === "private" && message.caption?.trim() &&
+      !message.media_group_id && !updated.composing) {
       await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
-        updated.description, updated);
+        updated.description, updated, threadId);
     } else if (!message.media_group_id) {
-      await telegramSend(botToken, chatId,
-        "📎 Скриншот добавлен (" + updated.images.length + "/6). " +
-        (updated.composing ? "Пришли материалы, затем /create."
-          : "Теперь отправь задачу текстом или голосом."));
+      await send("📎 Скриншот добавлен (" + updated.images.length + "/6). " +
+        (updated.composing
+          ? "Пришли следующие материалы и нажми «✅ Отправить»."
+          : "Теперь отправь описание текстом или голосом."));
     }
     return;
   }
@@ -480,45 +678,43 @@ async function processMessage(message: TgMessage, botToken: string, githubToken:
   const voice = message.voice || message.audio;
   if (voice) {
     if (voice.file_size && voice.file_size > MAX_AUDIO_BYTES) {
-      await telegramSend(botToken, chatId, "Голосовое слишком большое. Максимум 20 МБ.");
+      await send("Голосовое слишком большое. Максимум 20 МБ.");
       return;
     }
     const transcript = await speechToText(botToken, voice.file_id,
       message.voice ? "audio/ogg" : voice.mime_type || "audio/ogg");
     if (pending?.composing) {
-      const saved = await savePending(admin, chatId, {
+      const saved = await savePending(admin, scopeId, {
         description: [pending.description, transcript].filter(Boolean).join("\n\n"),
       }, pending);
-      await telegramSend(botToken, chatId, "🎙 Распознано:\n" +
-        transcript.slice(0, 1300) + "\n\nЧерновик сохранён. Скриншотов: " +
-        saved.images.length + ". Для создания отправь /create.");
+      await send("🎙 Распознано:\n" + transcript.slice(0, 1300) +
+        "\n\nЧерновик сохранён. Скриншотов: " + saved.images.length +
+        ". Для создания нажми «✅ Отправить».");
     } else {
       await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
-        [pending?.description || "", transcript].filter(Boolean).join("\n\n"), pending);
+        [pending?.description || "", transcript].filter(Boolean).join("\n\n"), pending, threadId);
     }
     return;
   }
 
-  if (text) {
-    if (text.length > MAX_MESSAGE_LENGTH) {
-      await telegramSend(botToken, chatId,
-        "Слишком длинное сообщение. Максимум " + MAX_MESSAGE_LENGTH + " символов.");
+  if (original) {
+    if (original.length > MAX_MESSAGE_LENGTH) {
+      await send("Слишком длинное сообщение. Максимум " + MAX_MESSAGE_LENGTH + " символов.");
       return;
     }
     if (pending?.composing) {
-      const saved = await savePending(admin, chatId, {
-        description: [pending.description, text].filter(Boolean).join("\n\n"),
+      const saved = await savePending(admin, scopeId, {
+        description: [pending.description, original].filter(Boolean).join("\n\n"),
       }, pending);
-      await telegramSend(botToken, chatId,
-        "📝 Текст добавлен. Скриншотов: " + saved.images.length + ". Для создания отправь /create.");
+      await send("📝 Текст добавлен. Скриншотов: " + saved.images.length +
+        ". Для создания нажми «✅ Отправить».");
     } else {
       await createFromMessage(admin, botToken, githubToken, chatId, message.message_id!,
-        [pending?.description || "", text].filter(Boolean).join("\n\n"), pending);
+        [pending?.description || "", original].filter(Boolean).join("\n\n"), pending, threadId);
     }
     return;
   }
-  await telegramSend(botToken, chatId,
-    "Принимаю текст, голосовые сообщения и скриншоты JPG/PNG/WebP.");
+  await send("Принимаю текст, голосовые и изображения JPG/PNG/WebP. Нажми «📖 Правила».");
 }
 
 Deno.serve(async (req: Request) => {
@@ -545,9 +741,9 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid JSON" }, 400);
   }
   const msg = update?.message;
-  if (!msg?.chat?.id || !msg?.from?.id || !msg?.message_id ||
-      msg.chat.type !== "private" || msg.chat.id !== msg.from.id ||
-      String(msg.from.id) !== allowedId) {
+  if (!msg?.chat?.id || !msg?.from?.id || !msg?.message_id || msg.from.is_bot ||
+      !["private", "supergroup"].includes(msg.chat.type || "") ||
+      (msg.chat.type === "private" && msg.chat.id !== msg.from.id)) {
     return json({ ok: true, ignored: true });
   }
 
@@ -555,7 +751,7 @@ Deno.serve(async (req: Request) => {
   // completed in the background, with a user-visible success or error message.
   EdgeRuntime.waitUntil((async () => {
     try {
-      await processMessage(msg, botToken, githubToken);
+      await processMessage(msg, botToken, githubToken, allowedId);
     } catch (error) {
       console.error("Telegram GitHub Issue failed:", String(error));
       try {
@@ -579,7 +775,7 @@ Deno.serve(async (req: Request) => {
                       : detail.includes("OpenAI")
                         ? "❌ Ошибка OpenAI API. Проверь OPENAI_API_KEY."
                         : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
-        await telegramSend(botToken, msg.chat!.id!, message);
+        await telegramSend(botToken, msg.chat!.id!, message, msg.message_thread_id);
       } catch (notifyError) {
         console.error("Telegram notification failed:", String(notifyError));
       }
