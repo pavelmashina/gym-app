@@ -246,7 +246,7 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
     {page === 'detail' && selected && <ExerciseDetails exercise={selected} onBack={() => setPage('list')}
       onEdit={edit} onDelete={setDeleting} />}
     {page === 'editor' && <ExercisePage editor title={selected ? 'Редактировать упражнение' : 'Создать упражнение'} onBack={closeEditor}>
-      <CustomExerciseForm key={selected?.id ?? 'new'} exercise={selected} onCancel={closeEditor} onSaved={saved} />
+      <CustomExerciseForm key={selected?.id ?? 'new'} exercise={selected} hideIntro onCancel={closeEditor} onSaved={saved} />
     </ExercisePage>}
     {deleting && <DeleteExerciseDialog exercise={deleting} onClose={() => setDeleting(null)} onDeleted={deleted} />}
   </>;

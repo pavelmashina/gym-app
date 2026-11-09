@@ -353,27 +353,20 @@ body:has(.training-exercise-page) .app-bottom-nav {
 }
 .training-exercise-detail-actions button.danger { color: #a63232; }
 
-/* Editor always occupies its own page. */
+/* The standalone editor has no enclosing form card or layout box:
+   fields participate directly in the page grid, while the native <form>
+   element remains in the DOM for submit validation and keyboard behavior. */
 .training-exercise-editor-page .exercise-library-create-form {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  display: contents;
 }
-.training-exercise-editor-page .exercise-library-create-form-head h3 {
-  margin-top: 0;
+.training-exercise-editor-page .training-exercise-page-header > strong {
   font-size: var(--gym-type-l);
   line-height: var(--lh-h2);
-  letter-spacing: normal;
-  font-weight: var(--weight-semibold);
 }
 .training-exercise-editor-page .exercise-library-create-form label,
 .training-exercise-editor-page .exercise-library-create-form label > span {
-  font-size: var(--gym-type-s);
-  line-height: var(--lh-body);
+  font-size: var(--gym-type-m);
+  line-height: var(--lh-h3);
   font-weight: var(--weight-medium);
 }
 .training-exercise-editor-page .exercise-library-create-form input,
@@ -393,16 +386,9 @@ body:has(.training-exercise-page) .app-bottom-nav {
   line-height: var(--lh-caption);
 }
 .training-exercise-editor-page .exercise-library-create-actions button {
-  font-size: var(--gym-type-m);
-  line-height: var(--lh-h3);
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
   font-weight: var(--weight-semibold);
-}
-.training-exercise-editor-page .exercise-library-create-form-head > small {
-  display: block;
-  margin-top: 6px;
-  font-size: var(--gym-type-xs) !important; /* required fields note */
-  line-height: var(--lh-caption);
-  color: var(--muted);
 }
 .training-exercise-editor-page .exercise-library-video-divider {
   font-size: var(--gym-type-xxs) !important; /* «или» */
