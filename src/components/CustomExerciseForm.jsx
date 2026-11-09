@@ -83,7 +83,7 @@ export function CustomExerciseForm({ exercise = null, initialChoice = null, onCa
   const canSave = Boolean(draft.name.trim()) && !muscleGroupChoiceError(draft) && draft.equipment !== 'Все';
 
   return <form className="exercise-library-create-form" onSubmit={submit}>
-    <div className="exercise-library-create-form-head"><span>Мои упражнения</span><h3>{editing ? 'Редактирование упражнения' : 'Новое упражнение'}</h3><small>Обязательные поля отмечены *</small></div>
+    <div className="exercise-library-create-form-head"><h3>{editing ? 'Редактирование упражнения' : 'Новое упражнение'}</h3><small>Обязательные поля отмечены *</small></div>
     <label><span>Название *</span><input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} maxLength={100} placeholder="Например, жим гантелей сидя" autoFocus /></label>
     <div className="exercise-library-create-form-grid">
       <MuscleGroupField muscleGroup={draft.muscleGroup} customMuscleGroup={draft.customMuscleGroup} onChange={(fields) => setDraft(current => ({ ...current, ...fields }))} />
