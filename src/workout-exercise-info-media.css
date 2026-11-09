@@ -47,7 +47,7 @@
 
 .workout-interrupt-confirm > p {
   margin: 2px 2px 16px;
-  color: #777772;
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -62,14 +62,14 @@
   min-height: 48px;
   border: 0;
   border-radius: 14px;
-  background: #efefeb;
-  color: #171717;
+  background: var(--surface-2);
+  color: var(--ink);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
 }
 
 .workout-interrupt-confirm-actions > button.primary {
-  background: #171717;
-  color: #fff;
+  background: var(--ink);
+  color: var(--surface);
 }
