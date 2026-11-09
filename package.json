@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:lifecycle": "node tests/workout-lifecycle-contracts.mjs && node tests/workout-session-resilience.mjs && node tests/program-edit-sync-db.mjs",
+    "test:lifecycle": "node tests/workout-lifecycle-contracts.mjs && node tests/workout-session-resilience.mjs && node tests/program-edit-sync-db.mjs && node tests/program-weekdays-on-save-db.mjs",
     "test:standalone": "node tests/standalone-workouts.mjs",
     "test:program-sharing": "node tests/program-sharing.mjs",
     "test:catalog-release": "node scripts/verify-catalog-release.mjs",
