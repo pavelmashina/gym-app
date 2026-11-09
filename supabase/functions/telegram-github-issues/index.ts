@@ -181,7 +181,28 @@ async function createIssue(token: string, draft: IssueDraft, marker: string) {
       body: formatIssue(draft, marker),
     }),
   });
-  if (!res.ok) throw new Error(`GitHub create issue HTTP ${res.status}`);
+  if (!res.ok) {
+    let reason = "";
+    try {
+      const payload = await res.json();
+      reason = typeof payload?.message === "string" ? payload.message.slice(0, 240) : "";
+    } catch { /* GitHub can return an empty/non-JSON error body */ }
+    const required = res.headers.get("x-accepted-github-permissions");
+    const remaining = res.headers.get("x-ratelimit-remaining");
+    console.error("GitHub create issue rejected", {
+      status: res.status,
+      reason,
+      requiredPermissions: required,
+      remainingRequests: remaining,
+    });
+    if (res.status === 403 && (remaining === "0" || /rate limit/i.test(reason))) {
+      throw new Error("GITHUB_RATE_LIMIT");
+    }
+    if (res.status === 403 || res.status === 401) {
+      throw new Error("GITHUB_ISSUES_PERMISSION");
+    }
+    throw new Error(`GitHub create issue HTTP ${res.status}`);
+  }
   const issue = await res.json();
   if (!issue.html_url || typeof issue.number !== "number") {
     throw new Error("GitHub returned an invalid issue");
@@ -264,8 +285,15 @@ Deno.serve(async (req: Request) => {
     } catch (error) {
       console.error("Telegram GitHub Issue failed:", String(error));
       try {
-        await telegramSend(botToken, msg.chat!.id!,
-          "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.");
+        const detail = String(error);
+        const message = detail.includes("GITHUB_ISSUES_PERMISSION")
+          ? "❌ GitHub отклонил создание Issue. Проверь GITHUB_ISSUES_TOKEN в Supabase: выбран репозиторий pavelmashina/gym-app и разрешение Issues → Read and write. После исправления отправь задачу снова."
+          : detail.includes("GITHUB_RATE_LIMIT")
+            ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
+            : detail.includes("OpenAI")
+              ? "❌ Ошибка OpenAI API. Проверь OPENAI_API_KEY или удали его: бот сможет сохранять исходный текст без AI."
+              : "❌ Не удалось создать Issue. Проверь настройки или повтори сообщение.";
+        await telegramSend(botToken, msg.chat!.id!, message);
       } catch (notifyError) {
         console.error("Telegram notification failed:", String(notifyError));
       }
