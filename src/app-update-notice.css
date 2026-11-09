@@ -1,33 +1,81 @@
+/* New version available: a small round icon in the top-right corner of the app column (issue #49).
+   On screens with a top bar it takes the bar's empty right slot or sits just left of the control there.
+   Root tabs without a top bar do not show it at all (rule at the end); the corner position below is
+   only a fallback for any other screen without a known top bar. */
 .app-update-notice{
+  --update-size:36px;
+  --update-top:4px;
+  --update-right:4px;
   position:fixed;
   z-index:2147483050;
-  bottom:calc(104px + env(safe-area-inset-bottom));
-  left:50%;
-  transform:translateX(-50%);
-  width:min(calc(100vw - 32px),396px);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:var(--space-3);
-  padding:var(--space-3) var(--space-4);
-  border:1px solid var(--line);
-  border-radius:var(--radius-lg);
-  background:var(--surface);
-  color:var(--ink);
-  box-shadow:var(--shadow-float);
+  top:calc(env(safe-area-inset-top) + var(--update-top));
+  /* On wide screens the 430px app column is centred: stay at its edge, not the window's. */
+  right:max(var(--update-right), calc((100vw - 430px) / 2 + var(--update-right)));
+  width:var(--update-size);
+  height:var(--update-size);
 }
-.app-update-notice span{font-size:var(--text-caption);line-height:var(--lh-caption);font-weight:var(--weight-semibold)}
+.app-update-notice-status{
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
 .app-update-notice button{
-  flex-shrink:0;
-  min-height:40px;
+  position:relative;
+  width:100%;
+  height:100%;
+  min-height:0;
+  display:grid;
+  place-items:center;
+  padding:0;
   border:0;
-  border-radius:var(--radius-md);
+  border-radius:50%;
   background:var(--ink);
   color:var(--surface);
-  padding:0 var(--space-3);
-  font-size:var(--text-body);
-  font-weight:var(--weight-semibold);
+  box-shadow:var(--shadow-float);
   cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  animation:app-update-notice-in .24s ease-out both;
 }
-body:has(.program-detail-phone) .app-update-notice,
-body:has(.catalog-detail-layer) .app-update-notice{bottom:calc(118px + env(safe-area-inset-bottom))}
+.app-update-notice button:active{transform:scale(.94)}
+.app-update-notice button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.app-update-notice-icon{width:22px;height:22px}
+.app-update-notice-mark{stroke-width:2.2}
+.app-update-notice button.is-reloading{cursor:progress}
+.app-update-notice button.is-reloading .app-update-notice-arrows{
+  /* Centre of the arrows ring, which sits up and left to leave the corner for the «!». */
+  transform-origin:10.5px 10.5px;
+  animation:app-update-notice-spin .9s linear infinite;
+}
+@keyframes app-update-notice-in{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes app-update-notice-spin{to{transform:rotate(360deg)}}
+
+/* Nested top bars (same list as design-system.css): 44px right slot, empty on these screens.
+   Bar padding is safe area + 10px, so the 36px icon is centred at safe area + 14px. */
+body:has(:is(.account-topbar,.settings-topbar,.menu-screen-topbar,.recipe-detail-topbar,.sportpit-detail-topbar,.program-detail-header,.create-program-header,.workout-session-header)) .app-update-notice{
+  --update-top:14px;
+  --update-right:calc(var(--page-x) + 4px);
+}
+/* Program details: the back button row is 42px tall under a 7px top padding. */
+body:has(.program-detail-header-stacked) .app-update-notice{--update-top:10px}
+/* The right slot already holds a control (home profile, account settings): sit just left of it. */
+body:has(.account-topbar > button:last-child) .app-update-notice{--update-right:calc(var(--page-x) + 54px)}
+body:has(.appbar > button:last-child) .app-update-notice{
+  --update-top:16px;
+  --update-right:calc(var(--page-x) + 54px);
+}
+/* Inside a top bar the slot around the icon is free, so the touch target can be the usual 44px. */
+body:has(:is(.appbar,.account-topbar,.settings-topbar,.menu-screen-topbar,.recipe-detail-topbar,.sportpit-detail-topbar,.program-detail-header,.create-program-header,.workout-session-header)) .app-update-notice button::after{
+  content:'';
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+}
+/* Workout result: «Готово» occupies the corner and the result is already saved; the icon returns on the next screen. */
+body:has(.completed-reference-header) .app-update-notice{display:none}
+/* Root tabs without a top bar (Тренировки, Статистика, Питание, СпортПит): no icon at all.
+   The bottom navigation marks a root tab; home has its .appbar, and details opened inside a tab
+   (program, recipe, meal plan, sports nutrition item) bring one of the nested top bars. */
+body:has(.app-bottom-nav):not(:has(:is(.appbar,.account-topbar,.settings-topbar,.menu-screen-topbar,.recipe-detail-topbar,.sportpit-detail-topbar,.program-detail-header,.create-program-header,.workout-session-header))) .app-update-notice{display:none}

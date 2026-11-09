@@ -147,7 +147,20 @@ Single UI family: Inter, weights 400/500/600/700/800.
 - Training list cards use **square 104×104 photo boxes**, exactly like Recipes and Ready Meal Plans; images are absolutely positioned with object-fit:cover so arbitrary aspect ratios cannot stretch or shift the card.
 - Both catalog and personal program detail pages reuse `ProgramOverviewIntro`, `ProgramOverviewStats`, and `ProgramOverviewMeta`, with the same order: cover → name/description/categories → state/action → metrics → metadata → workouts. Personal pages retain their live scheduling, editing and sharing. Catalog programs show their cycle and a join action, but no share button.
 - The Receive Program tab has no duplicate Create Program button. Training tab symbols are 40×40 CSS background images and share a single pixel size across all six tab tiles.
-- The GitHub Pages workflow embeds `VITE_APP_BUILD_ID=github.sha` in the Vite bundle and writes `dist/version.json` with that SHA only after a successful build. The active app checks the deployed manifest every 90 seconds and on focus/visibility; when it differs, a discreet **Обновить** button offers an explicit hard-navigation to the new build, preserving URL/share parameters. Never prompt on local `dev` builds or when offline.
+- The GitHub Pages workflow embeds `VITE_APP_BUILD_ID=github.sha` in the Vite bundle and writes `dist/version.json` with that SHA only after a successful build. The active app checks the deployed manifest every 90 seconds and on focus/visibility; when it differs, a small update icon (see below) offers an explicit hard-navigation to the new build, preserving URL/share parameters. Never prompt on local `dev` builds or when offline.
+
+## New version icon — November 2026
+- The bottom banner «Доступна новая версия GYM APP / Обновить» is replaced by a **36px round icon in the top-right corner** of the app column: two circular arrows chasing each other with a small **«!» at their bottom right**. Ink background, surface-coloured strokes, float shadow; it inverts with the dark theme.
+- Tapping the icon itself performs the hard-navigation; the arrows spin while the new build loads. Screen readers hear «Доступна новая версия GYM APP» once, and the button is labelled «Доступна новая версия GYM APP. Обновить».
+- Placement, below the safe area:
+  - nested top bars (the `min-height:64px` list in `design-system.css`): centred in the bar's empty 44px right slot, mirroring the back button, with a 44px touch target;
+  - program details: in the back-button row;
+  - home and the account screen, whose right slot already holds the profile or settings button: 10px to the left of that button;
+  - any other screen without a known top bar: 4px from the corner (fallback).
+- Not shown:
+  - root tabs without a top bar (Тренировки, Статистика, Питание, СпортПит), including their modal sheets. A detail opened inside a tab (program, recipe, meal plan, sports nutrition item) has its own top bar and shows the icon;
+  - workout result screen, because «Готово» occupies that corner; the icon reappears on the next screen.
+- On screens wider than 430px the icon stays at the edge of the centred app column, not the window.
 
 ## Program description and workouts sections
 - Both catalogue and user-created program pages share a two-option top switcher: **Описание** / **Тренировки**, reusing `ProgramDetailTabs`.
