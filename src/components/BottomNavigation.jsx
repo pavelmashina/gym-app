@@ -1,7 +1,7 @@
 const items = [
+  { id: 'home', label: 'Главная', icon: HomeIcon },
   { id: 'training', label: 'Тренировки', icon: TrainingIcon },
   { id: 'statistics', label: 'Статистика', icon: StatisticsIcon },
-  { id: 'home', label: 'Главная', icon: HomeIcon, home: true },
   { id: 'nutrition', label: 'Питание', icon: NutritionIcon },
   { id: 'sportpit', label: 'Спортпит', icon: SportPitIcon },
 ];
@@ -24,12 +24,12 @@ function SportPitIcon() {
 
 export function BottomNavigation({ activeScreen, onNavigate }) {
   return <nav className="app-bottom-nav" aria-label="Основная навигация">
-    {items.map(({ id, label, icon: Icon, home }) => {
+    {items.map(({ id, label, icon: Icon }) => {
       const active = activeScreen === id;
       return <button
         key={id}
         type="button"
-        className={`app-nav-item${home ? ' home' : ''}${active ? ' active' : ''}`}
+        className={`app-nav-item${active ? ' active' : ''}`}
         aria-current={active ? 'page' : undefined}
         aria-label={label}
         onClick={() => onNavigate(id)}
