@@ -1,0 +1,114 @@
+/* Nutrition catalogs: sort controls and a consistent protected text column.
+   Imported after the November refinement layer to override legacy card offsets. */
+.nutrition-screen .catalog-sort-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.nutrition-screen .catalog-sort-panel button {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-medium);
+  text-align: left;
+  cursor: pointer;
+}
+.nutrition-screen .catalog-sort-panel button.active {
+  background: var(--accent-soft);
+  font-weight: var(--weight-semibold);
+}
+.nutrition-screen .catalog-sort-panel button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+.nutrition-screen .recipe-card-shell .recipe-card,
+.nutrition-screen .meal-plan-card-shell .meal-plan-card {
+  grid-template-columns: 104px minmax(0,1fr) !important;
+  column-gap: var(--space-3) !important;
+  align-items: center;
+  padding: var(--space-3) !important;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.nutrition-screen .recipe-card-copy,
+.nutrition-screen .meal-plan-card-copy {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: var(--space-2) !important;
+  justify-items: stretch;
+  min-width: 0;
+  width: 100%;
+  padding: 0 44px 0 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+.nutrition-screen .recipe-card-copy > strong,
+.nutrition-screen .meal-plan-card-copy > strong {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  width: 100%;
+  max-height: calc(var(--lh-h3) * 2);
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.nutrition-screen .recipe-tags,
+.nutrition-screen .meal-plan-tags {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+  justify-self: start;
+  align-self: start;
+}
+.nutrition-screen .recipe-card-copy > small {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left;
+}
+.nutrition-screen .meal-plan-card-shell .meal-plan-card {
+  align-items: start !important;
+}
+.nutrition-screen .meal-plan-card-image,
+.nutrition-screen .meal-plan-card-copy {
+  align-self: start !important;
+}
+.nutrition-screen .meal-plan-card-copy {
+  justify-content: start !important;
+  align-content: start !important;
+  padding-top: 0 !important;
+}
+.nutrition-screen .recipe-card-shell .catalog-card-favorite,
+.nutrition-screen .meal-plan-card-shell .catalog-card-favorite {
+  right: 11px;
+  top: 11px;
+}
+@media (max-width: 370px) {
+  .nutrition-screen .recipe-card-shell .recipe-card,
+  .nutrition-screen .meal-plan-card-shell .meal-plan-card {
+    grid-template-columns: 88px minmax(0,1fr) !important;
+  }
+  .nutrition-screen .recipe-card-copy,
+  .nutrition-screen .meal-plan-card-copy {
+    padding-right: 44px !important;
+  }
+}
