@@ -1,0 +1,326 @@
+/* Consolidated Training -> Exercises.
+   Design source: AGENTS.md and docs/design-system.md.
+   Loaded through TrainingExerciseBrowser after the shared library CSS.
+   The main entrypoint imports training-catalog-standards.css last. */
+.exercise-catalog-content .training-library-browser {
+  gap: var(--space-3);
+  min-width: 0;
+}
+.exercise-catalog-content .training-library-browser .exercise-library-top {
+  gap: var(--space-3);
+}
+.exercise-catalog-content .training-exercise-tools-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto;
+  align-items: end;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+}
+.exercise-catalog-content .training-exercise-tools-row .exercise-library-filter {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.exercise-catalog-content .training-exercise-tools-row .exercise-library-filter > span {
+  min-width: 0;
+  padding: 0;
+  font-size: var(--gym-type-xs) !important;
+  line-height: var(--lh-caption) !important;
+  font-weight: var(--weight-medium) !important;
+  white-space: nowrap;
+}
+.exercise-catalog-content .training-exercise-tools-row .exercise-library-filter select {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 20px 0 7px !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: var(--gym-type-xxs) !important;
+  line-height: var(--lh-micro) !important;
+  font-weight: var(--weight-semibold) !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exercise-catalog-content .training-exercise-tools-row .training-exercise-create {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  margin: 0;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.exercise-catalog-content .training-exercise-tools-row .training-exercise-create svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+.exercise-catalog-content .training-exercise-tools-row .training-exercise-create:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Base / My Exercises: same understated, underlined two-column switcher
+   as the My Programs section. */
+.exercise-catalog-content .training-exercise-source-switcher {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: var(--space-3);
+  margin: 2px 0 0;
+}
+.exercise-catalog-content .training-exercise-source-switcher button {
+  position: relative;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 4px 9px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.exercise-catalog-content .training-exercise-source-switcher button.active {
+  color: var(--ink);
+}
+.exercise-catalog-content .training-exercise-source-switcher button::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+.exercise-catalog-content .training-exercise-source-switcher button.active::after {
+  background: var(--ink);
+}
+
+/* A row is clickable, but it has no chevron. Its standalone info icon
+   has no colored tile/background. */
+.exercise-catalog-content .training-library-browser .exercise-library-row {
+  display: flex;
+  min-width: 0;
+  padding: var(--space-3) 46px var(--space-3) var(--space-3);
+  gap: var(--space-3);
+}
+.exercise-catalog-content .training-library-browser .exercise-library-row-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.exercise-catalog-content .training-library-browser .exercise-library-row-info {
+  width: 38px;
+  height: 38px;
+  right: 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  color: var(--muted);
+  box-shadow: none !important;
+}
+.exercise-catalog-content .training-library-browser .exercise-library-row-info svg {
+  width: 20px;
+  height: 20px;
+}
+.exercise-catalog-content .training-library-browser .exercise-library-row-info:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+  border-radius: 8px;
+}
+
+/* Full-screen detail and creation/editing pages, not popups/bottom sheets. */
+.training-exercise-page {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  width: min(100vw, 430px);
+  height: 100dvh;
+  margin-inline: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-overflow-scrolling: touch;
+}
+body:has(.training-exercise-page) .app-bottom-nav {
+  display: none !important;
+}
+.training-exercise-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 44px minmax(0,1fr) 44px;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(55px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) var(--page-x) 6px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.training-exercise-page-header button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+}
+.training-exercise-page-header button svg {
+  width: 22px;
+  height: 22px;
+}
+.training-exercise-page-header > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+  font-size: var(--gym-type-m);
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-semibold);
+}
+.training-exercise-page-content {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-4) var(--page-x) calc(36px + env(safe-area-inset-bottom));
+}
+.training-exercise-detail-heading {
+  display: grid;
+  gap: var(--space-2);
+}
+.training-exercise-detail-heading > span {
+  color: var(--muted);
+  font-size: var(--gym-type-m) !important; /* «Упражнение» */
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-semibold);
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+.training-exercise-detail-heading > h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--gym-type-s) !important; /* exercise name */
+  line-height: var(--lh-body) !important;
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+.training-exercise-detail-tags {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.training-exercise-detail-tags > span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--gym-type-xs) !important; /* 12px */
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+}
+.training-exercise-detail-video {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.training-exercise-detail-video video { display:block;width:100%;max-height:350px; }
+.training-exercise-detail-video a {
+  display:block;padding:var(--space-4);
+  text-align:center;color:var(--ink);
+  font-size:var(--gym-type-s);font-weight:var(--weight-semibold);
+}
+.training-exercise-detail-description {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.training-exercise-detail-description .exercise-technique h4 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--gym-type-m) !important; /* «Описание» */
+  line-height: var(--lh-h3) !important;
+  font-weight: var(--weight-semibold);
+}
+.training-exercise-detail-description .exercise-technique p,
+.training-exercise-detail-description .exercise-technique li {
+  margin-top: 0;
+  font-size: var(--gym-type-s) !important; /* content */
+  line-height: var(--lh-body) !important;
+  font-weight: var(--weight-regular);
+}
+.training-exercise-detail-actions {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: var(--space-2);
+}
+.training-exercise-detail-actions button {
+  min-height: 44px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.training-exercise-detail-actions button.danger { color: #a63232; }
+
+/* Editor always occupies its own page. */
+.training-exercise-editor-page .exercise-library-create-form {
+  width: 100%;
+  margin: 0;
+}
+.training-exercise-editor-page .exercise-library-create-form-head > small {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--gym-type-xs) !important; /* required fields note */
+  line-height: var(--lh-caption);
+  color: var(--muted);
+}
+.training-exercise-editor-page .exercise-library-video-divider {
+  font-size: var(--gym-type-xxs) !important; /* «или» */
+  line-height: var(--lh-micro);
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+@media (max-width: 360px) {
+  .exercise-catalog-content .training-exercise-tools-row { gap: 5px; }
+  .exercise-catalog-content .training-exercise-tools-row .training-exercise-create {
+    gap: 2px;
+    padding-inline: 5px;
+  }
+  .exercise-catalog-content .training-exercise-tools-row .exercise-library-filter select {
+    padding-left: 5px !important;
+    padding-right: 16px !important;
+  }
+}
