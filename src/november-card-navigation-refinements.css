@@ -168,9 +168,9 @@
 }
 .exercise-catalog-content .catalog-program-difficulty i.filled { background: var(--ink); }
 
-/* Only non-Home destinations get an inset, understated gradient in the bottom dock. */
-.app-nav-item.active:not(.home) { background: transparent !important; }
-.app-nav-item.active:not(.home)::before {
+/* All five destinations share the same inset gradient and active styling. */
+.app-nav-item.active { background: transparent !important; }
+.app-nav-item.active::before {
   content: "" !important;
   position: absolute;
   inset: 7px 5px 6px;
@@ -182,12 +182,8 @@
     color-mix(in srgb, var(--accent-soft) 52%, transparent) 48%,
     transparent 100%) !important;
 }
-.app-nav-item.active:not(.home) .app-nav-icon,
-.app-nav-item.active:not(.home) .app-nav-label { position: relative; z-index: 1; }
-.app-nav-item.home,
-.app-nav-item.home.active { background: transparent !important; }
-.app-nav-item.home::before,
-.app-nav-item.home.active::before { content: none !important; }
+.app-nav-item.active .app-nav-icon,
+.app-nav-item.active .app-nav-label { position: relative; z-index: 1; }
 
 /* SportPit search matches the 42px Training search, including text size. */
 .sportpit-content .sportpit-search {
