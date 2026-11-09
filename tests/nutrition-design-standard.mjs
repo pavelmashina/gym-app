@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { NUTRITION_SORT_OPTIONS, sortNutritionCatalog } from '../src/lib/nutritionCatalogSort.js';
 
 const read = (path) => fs.readFileSync(path, 'utf8');
 const ui = read('src/components/NutritionScreen.jsx');
@@ -39,4 +40,34 @@ assert.match(styles, /\.nutrition-screen \.nutrition-tabs\s*\{[\s\S]*?padding:0 
 assert.match(ui, /<RootSectionHeader title="Питание" \/>/);
 assert.match(sportpit, /<RootSectionHeader title="СпортПит" \/>/);
 assert.match(docs, /8px below the shared header boundary/);
+const catalogCardCss = read('src/nutrition-card-alignment.css');
+assert.match(main,/import '\.\/nutrition-card-alignment\.css';/);
+assert.ok(main.indexOf("import './nutrition-card-alignment.css'") > main.indexOf("import './november-card-navigation-refinements.css'"));
+assert.match(ui,/function SortIcon\(\)/);
+assert.match(ui,/function CatalogSortOptions\(/);
+assert.match(ui,/sortOpen=\{recipeSortOpen\}/);
+assert.match(ui,/sortOpen=\{planSortOpen\}/);
+assert.match(ui,/sortedRecipes\.map\(\(recipe\)/);
+assert.match(ui,/sortedMealPlans\.map\(\(plan\)/);
+assert.match(ui,/sortNutritionCatalog\(filteredRecipes, recipeSortMode, 'calories'\)/);
+assert.match(ui,/sortNutritionCatalog\(filteredMealPlans, planSortMode, 'calories_per_day'\)/);
+assert.match(catalogCardCss,/\.nutrition-screen \.recipe-card-copy > strong/);
+assert.match(catalogCardCss,/-webkit-line-clamp: 2/);
+assert.match(catalogCardCss,/text-overflow: ellipsis/);
+assert.match(catalogCardCss,/padding: 0 44px 0 0 !important/);
+assert.match(catalogCardCss,/\.nutrition-screen \.meal-plan-card-shell \.meal-plan-card \{\s*align-items: start !important/);
+assert.match(catalogCardCss,/\.nutrition-screen \.recipe-tags,/);
+assert.equal(NUTRITION_SORT_OPTIONS.length,5);
+const sample = [
+  {title:'Яичница',calories:400,calories_per_day:2500},
+  {title:'Борщ',calories:150,calories_per_day:1800},
+  {title:'Авокадо',calories:300,calories_per_day:2200},
+];
+const names = list => list.map(item => item.title);
+assert.deepEqual(names(sortNutritionCatalog(sample,'title-asc','calories')),['Авокадо','Борщ','Яичница']);
+assert.deepEqual(names(sortNutritionCatalog(sample,'title-desc','calories')),['Яичница','Борщ','Авокадо']);
+assert.deepEqual(names(sortNutritionCatalog(sample,'calories-asc','calories')),['Борщ','Авокадо','Яичница']);
+assert.deepEqual(names(sortNutritionCatalog(sample,'calories-desc','calories_per_day')),['Яичница','Авокадо','Борщ']);
+assert.equal(sortNutritionCatalog(sample,'default','calories'),sample);
+assert.deepEqual(names(sample),['Яичница','Борщ','Авокадо'],'Sorting does not mutate fetched catalog');
 console.log('Nutrition sections, typography, spacing and catalog headings verified.');
