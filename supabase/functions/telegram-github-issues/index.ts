@@ -209,21 +209,33 @@ async function githubRequest(token: string, path: string, init: RequestInit = {}
       "User-Agent": "gym-app-telegram-issues-bot",
       ...(init.headers || {}),
     },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(25000),
   });
 }
 
 async function findExisting(token: string, marker: string): Promise<string | null> {
-  const res = await githubRequest(
-    token,
-    `${GITHUB_API}?state=all&sort=created&direction=desc&per_page=100`,
-  );
-  if (!res.ok) throw new Error(`GitHub duplicate check HTTP ${res.status}`);
-  const issues = await res.json();
-  if (!Array.isArray(issues)) throw new Error("Unexpected GitHub issues response");
-  return issues.find((issue: { body?: string; html_url?: string }) =>
-    typeof issue.body === "string" && issue.body.includes(marker)
-  )?.html_url || null;
+  // GET is safe to retry once after an occasional network timeout.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await githubRequest(
+        token,
+        `${GITHUB_API}?state=all&sort=created&direction=desc&per_page=100`,
+      );
+      if (!res.ok) throw new Error(`GitHub duplicate check HTTP ${res.status}`);
+      const issues = await res.json();
+      if (!Array.isArray(issues)) throw new Error("Unexpected GitHub issues response");
+      return issues.find((issue: { body?: string; html_url?: string }) =>
+        typeof issue.body === "string" && issue.body.includes(marker)
+      )?.html_url || null;
+    } catch (error) {
+      const retryable = error instanceof Error &&
+        (error.name === "TimeoutError" || error.name === "AbortError" ||
+          error instanceof TypeError);
+      if (!retryable || attempt > 0) throw error;
+      console.warn("GitHub issue lookup timeout: retrying GET once");
+    }
+  }
+  return null;
 }
 
 async function createIssue(token: string, draft: IssueDraft, marker: string, screenshotUrls: string[] = []) {
@@ -354,6 +366,23 @@ async function saveScreenshots(admin: Admin, token: string, images: ImageRef[], 
   return urls;
 }
 
+// Diagnostic labels contain no user text, credentials, file IDs or Telegram IDs.
+async function runIssueStage<T>(stage: string, task: () => Promise<T>): Promise<T> {
+  const started = Date.now();
+  try {
+    return await task();
+  } catch (error) {
+    const name = error instanceof Error ? error.name : "UnknownError";
+    console.error("Telegram Issue stage failed", {
+      stage, errorName: name, elapsedMs: Date.now() - started,
+    });
+    if (name === "TimeoutError" || name === "AbortError") {
+      throw new Error("ISSUE_TIMEOUT_" + stage);
+    }
+    throw error;
+  }
+}
+
 async function createFromMessage(
   admin: Admin, botToken: string, githubToken: string, chatId: number,
   messageId: number, description: string, pending: TaskDraft | null,
@@ -374,23 +403,40 @@ async function createFromMessage(
   const marker = pending
     ? "<!-- gym-telegram-task:" + pending.batch_id + " -->"
     : "<!-- gym-telegram-task:" + fingerprint + " -->";
-  const already = await findExisting(githubToken, marker);
+  const already = await runIssueStage("GITHUB_CHECK", () => findExisting(githubToken, marker));
   if (already) {
     if (pending) await clearPending(admin, pending);
     await telegramSend(botToken, chatId, "Эта задача уже существует: " + already, threadId);
     return;
   }
   const screenshots = pending?.images?.length
-    ? await saveScreenshots(admin, botToken, pending.images, pending.batch_id)
+    ? await runIssueStage("SCREENSHOTS", () => saveScreenshots(admin, botToken, pending.images, pending.batch_id))
     : [];
   // Claude sees image URLs and the description, while GitHub Issue embeds images.
-  const draft = await makeDraft(description, screenshots);
-  const created = await createIssue(githubToken, draft, marker, screenshots);
-  if (pending) await clearPending(admin, pending);
-  await telegramSend(botToken, chatId,
-    "✅ Issue #" + created.number + " создан\n\n" + draft.title +
-    (screenshots.length ? "\n📎 Скриншотов: " + screenshots.length : "") +
-    "\n\n" + created.url, threadId);
+  const draft = await runIssueStage("CLAUDE", () => makeDraft(description, screenshots));
+  const created = await runIssueStage("GITHUB_CREATE", () =>
+    createIssue(githubToken, draft, marker, screenshots));
+  // An Issue already exists: cleanup or Telegram notification failures must
+  // never be misreported to the user as "Issue could not be created".
+  if (pending) {
+    try {
+      await clearPending(admin, pending);
+    } catch (error) {
+      console.error("GitHub Issue created; draft cleanup failed", {
+        name: error instanceof Error ? error.name : "UnknownError",
+      });
+    }
+  }
+  try {
+    await telegramSend(botToken, chatId,
+      "✅ Issue #" + created.number + " создан\n\n" + draft.title +
+      (screenshots.length ? "\n📎 Скриншотов: " + screenshots.length : "") +
+      "\n\n" + created.url, threadId);
+  } catch (error) {
+    console.error("GitHub Issue created; Telegram confirmation failed", {
+      name: error instanceof Error ? error.name : "UnknownError",
+    });
+  }
 }
 
 
@@ -731,7 +777,15 @@ Deno.serve(async (req: Request) => {
       console.error("Telegram GitHub Issue failed:", String(error));
       try {
         const detail = String(error);
-        const message = detail.includes("GITHUB_ISSUES_PERMISSION")
+        const message = detail.includes("ISSUE_TIMEOUT_GITHUB_CHECK")
+          ? "⏳ GitHub не ответил при проверке задач. Попробуй «Отправить» ещё раз — черновик сохранён."
+          : detail.includes("ISSUE_TIMEOUT_SCREENSHOTS")
+            ? "⏳ Не удалось загрузить скриншот вовремя. Черновик сохранён, попробуй «Отправить» ещё раз."
+            : detail.includes("ISSUE_TIMEOUT_CLAUDE")
+              ? "⏳ Claude слишком долго обрабатывал задачу. Попробуй «Отправить» ещё раз."
+              : detail.includes("ISSUE_TIMEOUT_GITHUB_CREATE")
+                ? "⏳ GitHub не подтвердил создание задачи. Сначала проверь GitHub Issues: задача могла создаться. Затем повтори при необходимости."
+                : detail.includes("GITHUB_ISSUES_PERMISSION")
           ? "❌ GitHub отклонил создание Issue. Проверь GITHUB_ISSUES_TOKEN в Supabase: выбран репозиторий pavelmashina/gym-app и разрешение Issues → Read and write. После исправления отправь задачу снова."
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
