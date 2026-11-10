@@ -1,0 +1,46 @@
+/* Home calendar on the dark theme.
+   The calendar is drawn with light-theme literals (styles.css, home-dynamic.css): #3d3d3a days,
+   #b9b9b4 days of other months, #171717 dots, selected circle, today ring and focus outline,
+   and --accent-soft month buttons, a token the dark theme does not redefine. On the dark theme
+   the month arrows vanished on light plates, days of the shown month were dimmer than the others,
+   and the dots, the today ring and the selected circle were black on the black card.
+   Only the dark theme is overridden, with the tokens it redefines; the light theme is unchanged.
+   Imported in main.jsx after the global layers that style the calendar. */
+
+/* Month arrows: a --surface-2 plate with an --ink arrow. */
+html[data-theme='dark'] .calendar-card .month-row button {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* Days keep the light-theme contrast: the shown month is --ink at 84% over the card
+   (#3d3d3a on white), other months --ink at 30% (#b9b9b4 on white). */
+html[data-theme='dark'] .calendar-card .day {
+  color: color-mix(in srgb, var(--ink) 84%, var(--surface));
+}
+
+html[data-theme='dark'] .calendar-card .day.out {
+  color: color-mix(in srgb, var(--ink) 30%, var(--surface));
+}
+
+/* Workout dots, the dot under the selected day and the today ring are --ink. */
+html[data-theme='dark'] .calendar-card .day.workout::after,
+html[data-theme='dark'] .calendar-card .day.selected::after {
+  background: var(--ink);
+}
+
+html[data-theme='dark'] .calendar-card .day.today:not(.selected) span {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* The selected day inverts like the other accent blocks: an --ink circle with --surface digits. */
+html[data-theme='dark'] .calendar-card .day.selected span {
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: none;
+}
+
+html[data-theme='dark'] .calendar-card button.day:focus-visible span {
+  outline-color: var(--ink);
+}

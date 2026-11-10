@@ -332,10 +332,20 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - A word that does not fit even at 14px is hyphenated (`hyphens: auto`, `lang="ru"`), or broken where the browser has no dictionary.
 - `WorkoutTitle` in `src/components/HomeScreen.jsx` measures the title before paint, again when the web font arrives and when the card changes width, and sets `--workout-title-size`.
 - «Питание» shows «Белки» and «Жиры» as rows: label 10/13 in `--muted` on the left, value 12/16 600 on the right, 8px padding, `--radius-sm`. A three-column grid left 27px per macro, and the labels slid under the values. Carbs stay hidden on the home card. The row plates are `color-mix(in srgb, var(--surface) 72%, transparent)`, the old white at 72% on the light theme, and `--surface-2` on the dark theme, where the old literal white made the labels unreadable.
-- Styles: `src/home-summary.css`, imported last in `src/main.jsx`. Check: `tests/home-summary-fit.mjs` (`test:ui-audit`).
+- Styles: `src/home-summary.css`, imported in `src/main.jsx` after `design-system.css` and `ui-layout-audit.css`. Check: `tests/home-summary-fit.mjs` (`test:ui-audit`).
 
 ## Theme «Как в системе» — November 2026
 - `<html data-theme>` is only ever `light` or `dark`. «Как в системе» (`system`) is resolved to the phone's current mode and follows it while the app is open, so every `html[data-theme='dark']` rule serves it too. Write dark rules for `html[data-theme='dark']` only; there is no `data-theme='system'` rule to keep in step.
 - Before, `system` reached `<html>` as is. Only the colour tokens followed the phone (a `prefers-color-scheme` block in `src/settings-screen.css`), while the component rules for the dark theme did not apply: on a phone in dark mode the home «Питание» card stayed `--accent-soft` under light text, and «2105» could not be read.
 - The settings and `localStorage` keep the chosen value, `system`; only `<html>` gets the resolved one. Explicit «Светлая» and «Тёмная» ignore the phone.
 - Code: `applyTheme` in `src/lib/appearance.js`, called from `App.jsx` (cached settings at start) and `SettingsScreen.jsx` (choice). Check: `tests/system-theme.mjs` (`test:ui-audit`): it switches a fake phone between modes and fails if anything else sets `data-theme` or a stylesheet targets `data-theme='system'`.
+
+## Home calendar on the dark theme — November 2026
+- The home calendar was drawn with light-theme literals, so on the dark theme the month arrows were light plates without a visible arrow, the days of the shown month were dimmer than the days of other months, and the workout dots, the today ring and the selected circle were black on the black card.
+- On the dark theme the calendar takes its colours only from the tokens the dark theme redefines, as the active workout does:
+  - month arrows: `--ink` on a `--surface-2` plate;
+  - days of the shown month: `color-mix(in srgb, var(--ink) 84%, var(--surface))`, the contrast of `#3d3d3a` on white; days of other months: `--ink` at 30%, the contrast of `#b9b9b4`;
+  - workout dots and the dot under the selected day: `--ink`; the today ring and its digits: `--ink`; the focus outline: `--ink`;
+  - the selected day inverts like the other accent blocks: an `--ink` circle with `--surface` digits, without the shadow.
+- The light theme is unchanged, pixel for pixel: every rule is scoped to `html[data-theme='dark'] .calendar-card`.
+- Styles: `src/home-calendar-dark.css`, imported in `src/main.jsx` after the global layers. Check: `tests/home-calendar-dark.mjs` (`test:ui-audit`): it fails on a literal colour, on a token the dark theme does not redefine, or on a rule outside the dark theme.

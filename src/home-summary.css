@@ -1,5 +1,5 @@
 /* Home daily summary: the «Тренировка» and «Питание» cards (#74).
-   Imported last in main.jsx: it overrides the type scale of design-system.css
+   Imported in main.jsx after the layers it overrides: the type scale of design-system.css
    and the generic `overflow-wrap: anywhere` of ui-layout-audit.css. */
 
 /* Workout title: words stay whole. `overflow-wrap: anywhere` cut «оздоровительная»

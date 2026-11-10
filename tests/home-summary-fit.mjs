@@ -41,9 +41,9 @@ assert.match(nutrition, /\.summary-col\.food \.food-stat:last-child\{display:non
 assert.match(css, /\.summary-col\.food \.food-stat \{\s*background: color-mix\(in srgb, var\(--surface\) 72%, transparent\);/);
 assert.match(css, /html\[data-theme='dark'\] \.summary-col\.food \.food-stat \{\s*background: var\(--surface-2\);/);
 
-// Imported last: it overrides design-system.css and ui-layout-audit.css.
+// Imported after the layers it overrides: design-system.css and ui-layout-audit.css.
 const imports = [...main.matchAll(/^import '\.\/([^']+\.css)';$/gm)].map((match) => match[1]);
-assert.equal(imports.at(-1), 'home-summary.css', 'home-summary.css is the last stylesheet in main.jsx.');
+assert.ok(imports.includes('home-summary.css'), 'main.jsx imports home-summary.css.');
 assert.ok(imports.indexOf('design-system.css') < imports.indexOf('home-summary.css'));
 assert.ok(imports.indexOf('ui-layout-audit.css') < imports.indexOf('home-summary.css'));
 
