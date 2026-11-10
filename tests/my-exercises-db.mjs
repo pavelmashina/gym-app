@@ -19,8 +19,9 @@ for (const [file, table] of [['program-core', 'program_workout_exercises'], ['pr
   const definition = schema.slice(schema.indexOf(`create table if not exists public.${table}`));
   assert.match(definition.slice(0, definition.indexOf(');')), /exercise_id uuid not null references public\.exercises\(id\) on delete restrict/, table);
 }
-// Shared programs never carry a private exercise ID, so no other user can hold a reference.
-assert.match(read('../supabase/schema/program-sharing.sql'), /'exercise_id',case when ex\.owner_id is null then pwe\.exercise_id else null end/);
+// A shared program keeps the private exercise ID (issue #75), so another user's program may
+// reference the row. The restricting foreign key then turns the owner's delete into retiring.
+assert.match(read('../supabase/schema/program-sharing.sql'), /'exercise_id',ex\.id,/);
 
 try {
   await db.exec(`

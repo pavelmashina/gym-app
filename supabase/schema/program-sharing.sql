@@ -1,4 +1,7 @@
 -- A shared program is a snapshot invitation, not access to the owner's tables.
+-- The one exception (issue #75): the recipient may read the private exercises of the program
+-- they received, through exercise_access_grants. See
+-- ../migrations/20261110120000_shared_program_exercise_access.sql for the rule and the repair of older shares.
 create table if not exists public.program_shares (
   code uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users(id) on delete cascade,
@@ -39,6 +42,59 @@ drop policy if exists program_share_receipts_select_own on public.program_share_
 create policy program_share_receipts_select_own on public.program_share_receipts
 for select to authenticated using (recipient_id=(select auth.uid()));
 
+-- Whoever received a program can read every exercise in it. Only accept_program_share writes here.
+create table if not exists public.exercise_access_grants (
+  exercise_id uuid not null references public.exercises(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  share_code uuid references public.program_shares(code) on delete set null,
+  granted_at timestamptz not null default now(),
+  primary key (exercise_id, user_id)
+);
+create index if not exists exercise_access_grants_user_idx on public.exercise_access_grants(user_id);
+alter table public.exercise_access_grants enable row level security;
+revoke all on public.exercise_access_grants from public, anon, authenticated;
+grant select on public.exercise_access_grants to authenticated;
+grant all on public.exercise_access_grants to service_role;
+drop policy if exists exercise_access_grants_select_own on public.exercise_access_grants;
+create policy exercise_access_grants_select_own on public.exercise_access_grants
+for select to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists exercises_read_shared_program on public.exercises;
+create policy exercises_read_shared_program on public.exercises
+for select to authenticated
+using (
+  owner_id is not null
+  and exists (
+    select 1 from public.exercise_access_grants g
+    where g.exercise_id = exercises.id and g.user_id = (select auth.uid())
+  )
+);
+
+drop policy if exists exercise_videos_select_shared_program on storage.objects;
+create policy exercise_videos_select_shared_program on storage.objects
+for select to authenticated
+using (
+  bucket_id = 'exercise-videos'
+  and exists (
+    select 1 from public.exercise_access_grants g
+    join public.exercises e on e.id = g.exercise_id
+    where g.user_id = (select auth.uid()) and e.video_path = objects.name
+  )
+);
+
+drop policy if exists exercise_photos_select_shared_program on storage.objects;
+create policy exercise_photos_select_shared_program on storage.objects
+for select to authenticated
+using (
+  bucket_id = 'exercise-photos'
+  and exists (
+    select 1 from public.exercise_access_grants g
+    join public.exercises e on e.id = g.exercise_id
+    where g.user_id = (select auth.uid())
+      and (e.photo_path = objects.name or objects.name = any(e.photo_paths))
+  )
+);
+
 -- This runs as the authenticated owner, respecting all existing program RLS policies.
 create or replace function public.create_program_share(p_program_id uuid)
 returns uuid language plpgsql security invoker set search_path = ''
@@ -75,7 +131,8 @@ begin
                 'exercises',coalesce((
                   select jsonb_agg(
                     jsonb_build_object(
-                      'exercise_id',case when ex.owner_id is null then pwe.exercise_id else null end,
+                      -- ex.id is null when the sharer cannot read the exercise themself.
+                      'exercise_id',ex.id,
                       'exercise_name_snapshot',coalesce(nullif(pwe.exercise_name_snapshot,''),ex.name),
                       'prescription_snapshot',pwe.prescription_snapshot,
                       'sets',coalesce((
@@ -154,6 +211,89 @@ as $$ select sharing_private.preview_program_share(p_code); $$;
 revoke all on function public.preview_program_share(uuid) from public,anon,authenticated;
 grant execute on function public.preview_program_share(uuid) to authenticated;
 
+-- Gives the recipient read access to the private exercises of a program they received.
+-- program_shares rows are inserted by their owner directly, so the payload is not trusted:
+-- access is granted only to exercises the sharer owns or was granted.
+create or replace function sharing_private.grant_shared_program_exercises(
+  p_program_id uuid, p_sharer_id uuid, p_recipient_id uuid, p_share_code uuid
+)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  -- Payloads made before issue #75 carry only the name of a private exercise: link it to the
+  -- exercise of that name the sharer owns or, for a program passed on, was granted.
+  update public.program_workout_exercises pwe
+  set exercise_id = (
+    select e.id from public.exercises e
+    where (
+        e.owner_id = p_sharer_id
+        or (e.owner_id is not null and exists (
+          select 1 from public.exercise_access_grants g
+          where g.exercise_id = e.id and g.user_id = p_sharer_id
+        ))
+      )
+      and lower(btrim(e.name)) = lower(btrim(pwe.exercise_name_snapshot))
+    order by (e.owner_id <> p_sharer_id), (e.status = 'retired'), e.created_at, e.id
+    limit 1
+  )
+  where pwe.exercise_id is null
+    and pwe.workout_id in (
+      select w.id from public.program_workouts w
+      join public.program_weeks pw on pw.id = w.week_id
+      where pw.program_id = p_program_id
+    )
+    and exists (
+      select 1 from public.exercises e
+      where (
+        e.owner_id = p_sharer_id
+        or (e.owner_id is not null and exists (
+          select 1 from public.exercise_access_grants g
+          where g.exercise_id = e.id and g.user_id = p_sharer_id
+        ))
+      )
+        and lower(btrim(e.name)) = lower(btrim(pwe.exercise_name_snapshot))
+    );
+
+  insert into public.exercise_access_grants(exercise_id, user_id, share_code)
+  select distinct e.id, p_recipient_id, p_share_code
+  from public.program_workout_exercises pwe
+  join public.program_workouts w on w.id = pwe.workout_id
+  join public.program_weeks pw on pw.id = w.week_id
+  join public.exercises e on e.id = pwe.exercise_id
+  where pw.program_id = p_program_id
+    and e.owner_id is not null
+    and e.owner_id <> p_recipient_id
+    and (
+      e.owner_id = p_sharer_id
+      or exists (
+        select 1 from public.exercise_access_grants g
+        where g.exercise_id = e.id and g.user_id = p_sharer_id
+      )
+    )
+  on conflict (exercise_id, user_id) do nothing;
+
+  -- A forged payload may name a private exercise the sharer has no right to pass on.
+  -- Such a row keeps its name and loses the link.
+  update public.program_workout_exercises pwe
+  set exercise_id = null,
+      exercise_name_snapshot = coalesce(nullif(btrim(pwe.exercise_name_snapshot),''),'Упражнение')
+  from public.exercises e
+  where e.id = pwe.exercise_id
+    and pwe.workout_id in (
+      select w.id from public.program_workouts w
+      join public.program_weeks pw on pw.id = w.week_id
+      where pw.program_id = p_program_id
+    )
+    and e.owner_id is not null
+    and e.owner_id <> p_recipient_id
+    and not exists (
+      select 1 from public.exercise_access_grants g
+      where g.exercise_id = e.id and g.user_id = p_recipient_id
+    );
+end;
+$$;
+revoke all on function sharing_private.grant_shared_program_exercises(uuid,uuid,uuid,uuid) from public,anon,authenticated;
+
 -- Atomic and idempotent import: each recipient gets their own editable program.
 create or replace function sharing_private.accept_program_share(p_code uuid)
 returns uuid language plpgsql security definer set search_path = ''
@@ -173,6 +313,7 @@ begin
     where share_code=p_code and recipient_id=auth.uid();
   if v_existing is not null then return v_existing; end if;
   v_new_program:=public.create_program_with_schedule(v_share.program_payload);
+  perform sharing_private.grant_shared_program_exercises(v_new_program,v_share.owner_id,auth.uid(),p_code);
   insert into public.program_share_receipts(share_code,recipient_id,received_program_id)
     values(p_code,auth.uid(),v_new_program)
     on conflict (share_code,recipient_id)

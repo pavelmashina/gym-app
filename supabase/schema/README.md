@@ -34,7 +34,8 @@ All 16 application tables have RLS enabled. Authenticated users only see data al
 - user-created exercises have `owner_id = auth.uid()`;
 - user exercises may contain `equipment`, `description`, `video_url` and private `video_path` metadata;
 - authenticated users can read the shared catalog plus their own rows, while insert/update/delete are restricted to their own rows;
-- deleting a user exercise removes the row and its media only when nothing references it. A referenced exercise gets `status = 'retired'`: it leaves the user's lists and pickers, while programs and workout history keep reading it by ID.
+- deleting a user exercise removes the row and its media only when nothing references it. A referenced exercise gets `status = 'retired'`: it leaves the user's lists and pickers, while programs and workout history keep reading it by ID;
+- whoever received a program through a share link can read every exercise in it (issue #75). Accepting the share writes `exercise_access_grants (exercise_id, user_id)` rows for the sharer's private exercises; a grant opens the exercise row and its video and photos for reading only. Only `accept_program_share` writes grants, so pointing a program row at somebody's exercise ID gives nothing. Granted exercises stay out of the recipient's catalog and «Мои упражнения». See `program-sharing.sql` and `../migrations/20261110120000_shared_program_exercise_access.sql`.
 
 `user_recent_exercises` stores the last-used timestamp per `(user_id, exercise_id)` so the “Недавние упражнения” list is synchronized across devices for the same account.
 
