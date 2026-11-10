@@ -32,3 +32,26 @@
   min-width: 0;
   padding: var(--space-4) var(--page-x) calc(56px + env(safe-area-inset-bottom));
 }
+
+
+/* Align the workout information header with Training → Exercises. */
+.exercise-info-screen > header {
+  height: auto;
+  min-height: calc(55px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) var(--page-x) 6px;
+  border-bottom: 1px solid var(--line);
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: var(--space-2);
+  z-index: 5;
+}
+.exercise-info-screen > header > button {
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+}
+.exercise-info-screen > header strong {
+  color: var(--ink);
+  font-size: var(--gym-type-m);
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-semibold);
+}
