@@ -1,0 +1,120 @@
+/* «К тренировке» on a workout that has not started: a bottom sheet with «Начать» and
+   «Отметить выполненной», then the completion date (#66). The sheet itself is the shared
+   .workout-modal-card; colours come only from the tokens the dark theme redefines. */
+
+.workout-start-choice .workout-modal-head > div > span {
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.workout-start-choice .workout-modal-head h3 {
+  font-size: var(--gym-type-l);
+  line-height: var(--lh-h2);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.workout-start-options,
+.workout-start-complete {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.workout-start-options > button {
+  display: grid;
+  gap: var(--space-1);
+  min-height: 76px;
+  padding: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+}
+
+.workout-start-options > button.primary {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.workout-start-options strong {
+  font-size: var(--gym-type-m);
+  line-height: var(--lh-h3);
+  font-weight: var(--weight-bold);
+}
+
+.workout-start-options span {
+  color: var(--muted);
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-medium);
+}
+
+.workout-start-options > button.primary span {
+  color: color-mix(in srgb, var(--surface) 68%, transparent);
+}
+
+.workout-start-complete p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
+}
+
+.workout-start-date {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.workout-start-date span {
+  color: var(--muted);
+  font-size: var(--gym-type-xs);
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+}
+
+/* 16px keeps iOS from zooming in when the field gets focus. */
+.workout-start-date input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-h);
+  box-sizing: border-box;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--gym-type-m);
+  line-height: var(--lh-h3);
+  text-align: left;
+  outline: none;
+}
+
+.workout-start-date input:focus {
+  border-color: var(--ink);
+}
+
+.workout-start-complete > button {
+  min-height: var(--control-h);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--gym-type-s);
+  line-height: var(--lh-body);
+  font-weight: var(--weight-bold);
+}
+
+.workout-start-complete > button.primary {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.workout-start-options > button:disabled,
+.workout-start-complete > button:disabled,
+.workout-start-date input:disabled {
+  opacity: .45;
+}
