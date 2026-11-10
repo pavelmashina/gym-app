@@ -59,6 +59,8 @@ uppercase for normal labels, filter headings or program tags.
 - Implementation: `src/components/TrainingExerciseBrowser.jsx`, `src/training-exercise-browser.css`; old `ExerciseLibraryPicker` stays available for workout/program exercise selection and **must not regress**.
 - Regression test: `tests/training-exercise-browser.mjs`.
 
+- Training → My Programs: the “Активные / Мои” switch uses the same spacing and active underline offsets as the “База / Мои упражнения” switch. Keep 12px column gap and list spacing, 32px minimum tab height, 4px bottom padding and 3px underline inset; the Create toolbar supplies the vertical space above.
+
 ### Bottom navigation — binding design contract
 
 - Order: **Главная → Тренировки → Статистика → Питание → Спортпит**.
