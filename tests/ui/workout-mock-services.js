@@ -14,6 +14,11 @@ const orderFails = params.get('order') === 'fail';
 const standalone = params.get('standalone') === '1';
 const addFails = params.get('add') === 'fail';
 const saveFails = params.get('save') === 'fail';
+// `planned=1`: the workout has not started, so «К тренировке» offers «Начать» and
+// «Отметить выполненной» (#66). `mark=fail`: marking it done fails as on a dead connection.
+const markFails = params.get('mark') === 'fail';
+let stage = params.get('planned') === '1' ? 'planned' : 'active';
+let markedEntry = null;
 const pause = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildSet(exerciseIndex, setIndex, empty) {
@@ -64,14 +69,47 @@ function buildEntry() {
   return { mode: 'active', session: { id: 'fixture-session', status: 'active', activeDurationSeconds, startedAt }, workout: structuredClone(workout) };
 }
 
-export async function getWorkoutEntry() { await pause(); return buildEntry(); }
-export async function loadWorkoutSession() { await pause(); return buildEntry(); }
+function buildPlannedEntry() {
+  const plan = structuredClone(workout);
+  plan.status = 'scheduled';
+  plan.exercises = plan.exercises.map((exercise) => ({
+    ...exercise,
+    sets: exercise.sets.filter((set) => set.setType === 'working').map((set, index) => ({ id: set.id, setNumber: index + 1, plannedReps: set.plannedReps })),
+  }));
+  return { mode: 'planned', workout: plan };
+}
+// Like mark_scheduled_workout_completed: a completed session without time, every set done.
+function buildMarkedEntry(date) {
+  const now = new Date().toISOString();
+  const done = structuredClone(workout);
+  done.completedDate = date;
+  done.exercises.forEach((exercise) => exercise.sets.forEach((set) => Object.assign(set, { reps: String(set.plannedReps), completed: true, completedAt: now })));
+  return { mode: 'completed', session: { id: 'fixture-session', status: 'completed', startedAt: now, endedAt: now, activeDurationSeconds: 0, autoCompleted: false }, workout: done };
+}
+function currentEntry() {
+  if (stage === 'planned') return buildPlannedEntry();
+  return stage === 'marked' ? structuredClone(markedEntry) : buildEntry();
+}
+
+export async function getWorkoutEntry() { await pause(); return currentEntry(); }
+export async function loadWorkoutSession() { await pause(); return currentEntry(); }
+export async function markScheduledWorkoutCompleted(scheduledWorkoutId, date) {
+  await pause(400);
+  if (markFails) throw new Error('Не удалось отметить тренировку выполненной. Нет связи с сервером. Проверьте интернет и повторите.');
+  (window.__markedCompleted ??= []).push({ scheduledWorkoutId, date });
+  markedEntry = buildMarkedEntry(date);
+  stage = 'marked';
+  return structuredClone(markedEntry);
+}
 export async function getWorkoutSessionState() {
   const clock = readClock();
   return { status: 'active', paused: Boolean(clock.pausedAt), startedAt: clock.startedAt, activeDurationSeconds: clock.activeDurationSeconds };
 }
 export async function findActiveWorkoutId() { return null; }
-export async function startWorkout() { return buildEntry(); }
+export async function startWorkout() {
+  if (stage === 'planned') { await pause(400); sessionStorage.removeItem(CLOCK_KEY); stage = 'active'; }
+  return buildEntry();
+}
 // Like add_session_exercise: the picked exercise goes to the end of this workout with one empty set;
 // scope 'program' links it to the program.
 export async function addSessionExercise(_, exerciseId, scope = 'session') {

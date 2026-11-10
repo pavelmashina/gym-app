@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { findActiveWorkoutId, getWorkoutEntry, startWorkout } from '../lib/workoutSessions.js';
 import { localDateKey, plannedWorkoutIsInFuture } from '../lib/workoutLifecycle.js';
 import { WorkoutSessionScreen as WorkoutSessionScreenV4 } from './WorkoutSessionScreenV4.jsx';
+import { WorkoutStartChoice } from './WorkoutStartChoice.jsx';
 import '../workout-session-report-fixes.css';
 import { formatRussianCount } from '../lib/formatRussianCount.js';
 
@@ -19,7 +20,7 @@ function plannedSetLabel(set) {
   return set.plannedReps ? `${set.plannedReps} повт.` : 'Повторы не заданы';
 }
 
-function PlannedWorkout({ workout, onBack, onStart, onOpenActive, starting, error }) {
+function PlannedWorkout({ workout, onBack, onStart, onMarkedCompleted, onOpenActive, starting, error }) {
   return <div className="phone workout-session-phone">
     <header className="workout-session-header"><button type="button" aria-label="Назад" onClick={onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header>
     <main className="workout-session-content">
@@ -27,7 +28,7 @@ function PlannedWorkout({ workout, onBack, onStart, onOpenActive, starting, erro
       <section className="workout-plan-list">{workout.exercises.map((exercise, index) => <article className="workout-plan-card" key={exercise.id}><div className="workout-plan-number">{index + 1}</div><div className="workout-plan-main"><span>{exercise.muscleGroup || 'Упражнение'}</span><h2>{exercise.name}</h2>{exercise.prescription && <div className="workout-plan-prescription"><span>План</span><strong>{exercise.prescription}</strong></div>}<div className="workout-plan-sets">{exercise.sets.map((set) => <span key={set.id}>Подход {set.setNumber} · {plannedSetLabel(set)}</span>)}</div></div></article>)}</section>
       {error && <div className="workout-session-error" role="alert">{error}{onOpenActive && <div className="workout-session-recovery"><button type="button" onClick={onOpenActive}>Перейти к текущей тренировке</button></div>}</div>}
     </main>
-    <footer className="workout-session-footer"><button type="button" onClick={onStart} disabled={starting}>{starting ? 'Начинаем…' : 'Начать тренировку'}</button></footer>
+    <WorkoutStartChoice workout={workout} starting={starting} onStart={onStart} onMarkedCompleted={onMarkedCompleted} />
   </div>;
 }
 
@@ -88,5 +89,5 @@ export function WorkoutSessionScreen(props) {
   if (delegate) return <WorkoutSessionScreenV4 {...props} initialEntry={loadedEntry} />;
   if (loading) return <div className="phone workout-session-phone"><header className="workout-session-header"><button type="button" aria-label="Назад" onClick={props.onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header><div className="workout-session-loading">Загружаем тренировку…</div></div>;
   if (!entry) return <div className="phone workout-session-phone"><header className="workout-session-header"><button type="button" aria-label="Назад" onClick={props.onBack}><BackIcon /></button><strong>Тренировка</strong><span /></header><div className="workout-session-error standalone" role="alert">{error || 'Тренировка не найдена.'}<div className="workout-session-recovery"><button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторить</button></div></div></div>;
-  return <PlannedWorkout workout={entry.workout} onBack={props.onBack} onStart={handleStart} onOpenActive={activeWorkoutId && props.onOpenWorkout ? () => props.onOpenWorkout(activeWorkoutId) : null} starting={starting} error={error} />;
+  return <PlannedWorkout workout={entry.workout} onBack={props.onBack} onStart={handleStart} onMarkedCompleted={(completed) => { setLoadedEntry(completed); setDelegate(true); }} onOpenActive={activeWorkoutId && props.onOpenWorkout ? () => props.onOpenWorkout(activeWorkoutId) : null} starting={starting} error={error} />;
 }

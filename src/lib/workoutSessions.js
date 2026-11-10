@@ -537,11 +537,25 @@ export async function abandonWorkout(sessionId) {
   return loadWorkoutSession(data);
 }
 
+// The server starts and completes the workout in one transaction, so its refusals are start_workout's.
+const MARK_COMPLETED_REFUSALS = [
+  ['Another workout is already active', 'У вас уже есть другая активная тренировка. Сначала завершите её.', 'another-active'],
+  ['already completed', 'Эта тренировка уже завершена.'],
+  ['Skipped or cancelled', 'Эта тренировка уже пропущена или отменена.'],
+  ['Future workout', 'Будущую тренировку нельзя отметить выполненной. Сначала перенесите её на сегодня.'],
+  ['cannot be in the future', 'Дата выполнения не может быть позже сегодняшней.'],
+  ['Program is not active', 'Программа сейчас не активна, поэтому тренировку нельзя отметить выполненной.'],
+];
+
 export async function markScheduledWorkoutCompleted(scheduledWorkoutId,date) {
-  const {data,error}=await supabase.rpc('mark_scheduled_workout_completed',{
+  const {data,error}=await settled(supabase.rpc('mark_scheduled_workout_completed',{
     p_scheduled_workout_id:scheduledWorkoutId,p_completed_on:date
-  });
-  if(error||!data) throw new Error(error?.message||'Не удалось отметить тренировку выполненной.');
+  }));
+  if(error||!data) {
+    const refusal=MARK_COMPLETED_REFUSALS.find(([serverText])=>error?.message?.includes(serverText));
+    if(refusal) throw Object.assign(new Error(refusal[1]),{code:refusal[2]??'refused'});
+    throw new Error(describeRequestError(error,'Не удалось отметить тренировку выполненной.'));
+  }
   return loadWorkoutSession(data);
 }
 export async function changeCompletedWorkoutDate(sessionId,date) {
