@@ -89,7 +89,7 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 
 ## Layout resilience
 - Any flex/grid child containing user or database text should use `min-width: 0`.
-- Long exercise/program names use `overflow-wrap: anywhere` instead of forcing horizontal page overflow.
+- Long exercise/program names use `overflow-wrap: anywhere` instead of forcing horizontal page overflow. Exception: the workout title on the home screen keeps its words whole and shrinks instead (see «Home daily summary», #74).
 - Variable-content cards use `min-height` rather than fixed `height`.
 - Do not repair overlaps by adding arbitrary `z-index` or hiding overflow; fix the grid/flex sizing and spacing.
 
@@ -326,3 +326,10 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - Server refusals read in Russian in all three places (another active workout, already completed, skipped, a future workout, a date after today, an inactive program); before #66 they showed the server's English text. A save whose answer was lost is recognised by reading the workout back.
 - The sheet's caption is 12/16 sentence case: the 8px uppercase caption of the other workout sheets is not in the type scale. The date field is 16px so iOS does not zoom in. Colours come only from the dark theme tokens.
 - Both not-started screens use the sheet: the first one (`WorkoutSessionScreenV5`) and the one after «Перенести на сегодня» (`WorkoutSessionScreenV3`). Component: `src/components/WorkoutStartChoice.jsx`; styles: `src/workout-start-choice.css`. Check: `tests/workout-start-choice.mjs` (`test:ui-audit`). On the active workout stand, `&planned=1` opens the workout before its start and `&mark=fail` makes marking it done fail.
+
+## Home daily summary — November 2026 (#74)
+- The workout title in the «Тренировка» card keeps its words whole. Before #74 it wrapped anywhere, so «Домашняя оздоровительная» read «Домашняя / оздоровительна / я». Now, when one word is wider than the card, the whole title gets smaller, 1px at a time, from 20px (`--text-h2`) down to 14px (`--text-body`), with a line height of 1.2 of the size. On a 393pt iPhone «Домашняя оздоровительная» is 16px, on 375px 15px; titles that fit, such as «Ноги и ягодицы», stay at 20/24. On phones narrower than 370px the two cards stack and the title has room at 20px.
+- A word that does not fit even at 14px is hyphenated (`hyphens: auto`, `lang="ru"`), or broken where the browser has no dictionary.
+- `WorkoutTitle` in `src/components/HomeScreen.jsx` measures the title before paint, again when the web font arrives and when the card changes width, and sets `--workout-title-size`.
+- «Питание» shows «Белки» and «Жиры» as rows: label 10/13 in `--muted` on the left, value 12/16 600 on the right, 8px padding, `--radius-sm`. A three-column grid left 27px per macro, and the labels slid under the values. Carbs stay hidden on the home card. The row plates are `color-mix(in srgb, var(--surface) 72%, transparent)`, the old white at 72% on the light theme, and `--surface-2` on the dark theme, where the old literal white made the labels unreadable.
+- Styles: `src/home-summary.css`, imported last in `src/main.jsx`. Check: `tests/home-summary-fit.mjs` (`test:ui-audit`).

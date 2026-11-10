@@ -1,0 +1,39 @@
+/* Home daily summary: the «Тренировка» and «Питание» cards (#74).
+   Imported last in main.jsx: it overrides the type scale of design-system.css
+   and the generic `overflow-wrap: anywhere` of ui-layout-audit.css. */
+
+/* Workout title: words stay whole. `overflow-wrap: anywhere` cut «оздоровительная»
+   into «оздоровительна» / «я». Now a word wider than the card overflows only for a
+   moment: WorkoutTitle in HomeScreen.jsx measures it and lowers --workout-title-size
+   until it fits, from 20px down to 14px. Line height stays 1.2 of the size (24px at 20px). */
+.summary-col.workout > h3 {
+  font-size: var(--workout-title-size, var(--text-h2)) !important;
+  line-height: 1.2 !important;
+  overflow-wrap: normal;
+  -webkit-hyphens: manual;
+  hyphens: manual;
+}
+
+/* A word too wide even at 14px is hyphenated, or broken if the browser has no dictionary. */
+.summary-col.workout > h3[data-title-fit='hyphenate'] {
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* Nutrition: «Белки» and «Жиры» are rows, label left and value right. Three columns in
+   this narrow card left 27px per macro, and the labels slid under the values. */
+.summary-col.food .food-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The row plate was a literal white at 72%: on the dark theme it turned light grey under
+   light text, and «Белки» / «Жиры» could not be read. Light theme: the same white at 72%,
+   now from the token. Dark theme: --surface-2 on the --surface card. */
+.summary-col.food .food-stat {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+html[data-theme='dark'] .summary-col.food .food-stat {
+  background: var(--surface-2);
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { StandaloneWorkoutLauncher } from './StandaloneWorkoutLauncher.jsx';
 import { rescheduleScheduledWorkoutScoped } from '../lib/scheduledWorkoutControls.js';
@@ -89,6 +89,39 @@ function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {
   return <section className="calendar-card"><div className="month-row"><button type="button" aria-label="Предыдущий месяц" onClick={() => changeMonth(-1)}>←</button><div className="month">{formatMonth(displayMonth)}</div><button type="button" aria-label="Следующий месяц" onClick={() => changeMonth(1)}>→</button></div><div className="weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div><div className="days">{days.map((day) => { const className = ['day', day.out ? 'out' : '', day.workout ? 'workout' : '', day.today ? 'today' : '', day.selected ? 'selected' : ''].filter(Boolean).join(' '); return <button className={className} type="button" key={day.key} aria-label={`${formatFullDate(day.date)}${day.workout ? ', запланирована тренировка' : ''}`} aria-pressed={day.selected} aria-current={day.today ? 'date' : undefined} onClick={() => { if (day.out) setDisplayMonth(startOfMonth(day.date)); onSelectDate?.(day.key); }}><span>{day.label}</span></button>; })}</div></section>;
 }
 
+// #74: the title keeps its words whole. A word wider than the card shrinks the whole title
+// 1px at a time, down to the body size; only a word too wide even then gets hyphenated.
+const WORKOUT_TITLE_MIN_PX = 14;
+
+function fitWorkoutTitle(node) {
+  node.style.removeProperty('--workout-title-size');
+  delete node.dataset.titleFit;
+  let size = parseFloat(getComputedStyle(node).fontSize) || 20;
+  while (node.scrollWidth > node.clientWidth && size > WORKOUT_TITLE_MIN_PX) {
+    size -= 1;
+    node.style.setProperty('--workout-title-size', `${size}px`);
+  }
+  if (node.scrollWidth > node.clientWidth) node.dataset.titleFit = 'hyphenate';
+}
+
+function WorkoutTitle({ title }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+    let width = node.clientWidth;
+    fitWorkoutTitle(node);
+    // The font arrives after the first paint, and the card narrows or widens with the phone.
+    const refitOnFont = () => fitWorkoutTitle(node);
+    const refitOnWidth = () => { if (node.clientWidth !== width) { width = node.clientWidth; fitWorkoutTitle(node); } };
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(refitOnWidth) : null;
+    observer?.observe(node);
+    document.fonts?.addEventListener?.('loadingdone', refitOnFont);
+    return () => { observer?.disconnect(); document.fonts?.removeEventListener?.('loadingdone', refitOnFont); };
+  }, [title]);
+  return <h3 ref={ref}>{title}</h3>;
+}
+
 function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry, onEditWorkout }) {
   if (status === 'loading') return <section className="summary-col workout home-empty-card" aria-live="polite"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на выбранную дату</p></div></section>;
   if (status === 'error' && !workout) return <section className="summary-col workout home-error-card" role="alert"><div className="summary-label">Тренировка</div><div className="home-error-copy"><h3>Не удалось загрузить тренировку</h3><p>Это не означает, что на выбранную дату ничего не запланировано.</p><button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button></div></section>;
@@ -96,7 +129,7 @@ function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry, onEd
   const skipped = workout.status === 'skipped';
   const recovery = Boolean(workout.recovery);
   const buttonLabel = workout.active ? 'Продолжить тренировку' : (workout.completed ? 'Посмотреть результат' : (recovery ? 'Перенести на сегодня' : (skipped ? 'Пропущена' : 'К тренировке')));
-  return <section className={`summary-col workout${recovery ? ' recovery' : ''}`}><div className="summary-label">{workout.active ? 'Активная тренировка' : (recovery ? 'Пропущенная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка'))}</div><h3>{workout.title}</h3><p>{recovery ? `Плановая дата: ${formatFullDate(dateFromKey(workout.scheduledDate))}` : formatExerciseCount(workout.exerciseCount)}</p><button className="workout-btn" type="button" disabled={skipped && !recovery} onClick={() => recovery ? onEditWorkout?.() : (!skipped && onOpenWorkout?.(workout.id))}>{buttonLabel}</button></section>;
+  return <section className={`summary-col workout${recovery ? ' recovery' : ''}`}><div className="summary-label">{workout.active ? 'Активная тренировка' : (recovery ? 'Пропущенная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка'))}</div><WorkoutTitle title={workout.title} /><p>{recovery ? `Плановая дата: ${formatFullDate(dateFromKey(workout.scheduledDate))}` : formatExerciseCount(workout.exerciseCount)}</p><button className="workout-btn" type="button" disabled={skipped && !recovery} onClick={() => recovery ? onEditWorkout?.() : (!skipped && onOpenWorkout?.(workout.id))}>{buttonLabel}</button></section>;
 }
 
 function NutritionSummary({ nutritionPlan }) {
