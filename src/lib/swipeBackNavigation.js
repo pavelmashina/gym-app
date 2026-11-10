@@ -11,6 +11,8 @@ const BACK_SELECTORS = [
   '.catalog-detail-header > button:first-child',
   '.workout-session-header > button:first-child',
   '.workout-lifecycle-header > button:first-child',
+  // Exercise information during a workout (#65): a screen there, not a modal, and the workout header is hidden.
+  '.exercise-info-screen > header > button:first-child',
 ].join(',');
 
 const SCREEN_SELECTORS = [

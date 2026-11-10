@@ -88,12 +88,17 @@
 
 .exercise-info-screen,
 .exercise-reorder-screen {
+  background: var(--bg);
+}
+
+/* A layer over the workout with a scroll of its own. The exercise information is not one:
+   it is a screen of the workout and scrolls with .phone (src/workout-exercise-info-screen.css). */
+.exercise-reorder-screen {
   position: fixed;
   inset: 0;
   z-index: 80;
   margin: 0 auto;
   width: min(100vw, 430px);
-  background: var(--bg);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
