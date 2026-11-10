@@ -162,7 +162,7 @@ export function PromoBanner() {
         aria-current={index === activeSlide ? 'true' : undefined}
         onClick={() => changeSlide(index)} />)}
       <span className="banner-dot-indicator" aria-hidden="true"
-        style={{ transform: 'translate3d(' + activeSlide * 26 + 'px,0,0)' }} />
+        style={{ transform: 'translate3d(' + activeSlide * 16 + 'px,0,0)' }} />
     </div>
   </section>;
 }
