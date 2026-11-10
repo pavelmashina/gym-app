@@ -22,3 +22,13 @@
 .phone.workout-session-phone > .exercise-info-screen > main {
   padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
+
+
+/* Match the catalog exercise information layout inside the workout's scroll flow. */
+.exercise-info-screen > main.training-exercise-page-content {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-4) var(--page-x) calc(56px + env(safe-area-inset-bottom));
+}
