@@ -20,6 +20,7 @@ import './november-card-navigation-refinements.css';
 import './nutrition-card-alignment.css';
 import './training-catalog-standards.css';
 import './home-summary.css';
+import './home-calendar-dark.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
