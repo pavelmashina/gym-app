@@ -1,0 +1,23 @@
+/* Home advertising banner (#92): the slide fills the whole card and changes by swipe.
+   The arrows are gone, so the card needs no gutters: the artwork runs from edge to edge
+   and the card's own rounded corners clip it. */
+.banner-wrap {
+  /* Horizontal movement belongs to the carousel, vertical movement stays the page scroll. */
+  touch-action: pan-y;
+}
+
+/* The card takes the proportions of the artwork (800 × 385), so the slide covers it
+   completely and nothing is cropped. */
+.banner-wrap .banner-slides {
+  height: auto;
+  aspect-ratio: 800 / 385;
+}
+
+.banner-wrap .banner-slide {
+  height: 100%;
+  /* A swipe must not start an image drag, a selection or the iOS «save image» sheet. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}

@@ -17,8 +17,9 @@ assert.match(home,/standalone_owner_id/);
 assert.match(home,/toDateKey\(new Date\(row\.ended_at\)\)/);
 assert.match(styles,/\.food-grid[\s\S]*grid-template-columns:\s*1fr/);
 assert.match(styles,/\.food-stat span[\s\S]*white-space:\s*nowrap/);
-assert.match(home,/CarouselArrowIcon/);
-assert.match(styles,/\.carousel-arrow[\s\S]*background:\s*transparent/);
+// #92: the home banner changes by swipe; the carousel arrows are removed for good.
+assert.doesNotMatch(home,/CarouselArrowIcon|carousel-arrow/);
+assert.doesNotMatch(styles,/\.carousel-arrow/);
 
 assert.match(workout,/function LegacySetRow/);
 assert.match(workout,/setTimeout\(\(\)=>\{timerRef\.current=null;onPersist/);
