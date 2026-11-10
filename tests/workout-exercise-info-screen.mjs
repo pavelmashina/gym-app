@@ -45,6 +45,17 @@ assert.match(workout, /import '\.\.\/workout-exercise-info-screen\.css';/);
 
 // 3. The information is a screen of the workout, rendered next to the footer, not a modal over it.
 const infoScreen = between(workout, 'function ExerciseInfoScreen(', 'function ReorderExerciseScreen(');
+const shared = read('src/components/ExerciseDetailsContent.jsx');
+assert.match(infoScreen, /<ExerciseDetailsContent exercise=\{resolved\} \/>/);
+assert.match(infoScreen, /className="training-exercise-page-content"/);
+assert.match(shared, /className="training-exercise-detail-heading"/);
+assert.match(shared, /className="training-exercise-detail-tags"/);
+assert.match(shared, /className="training-exercise-video-empty"/);
+assert.match(shared, /-webkit-line-clamp|className=\{expanded \? 'training-exercise-description-text'/);
+assert.match(shared, /Подробнее/);
+assert.match(shared, /Скрыть/);
+assert.doesNotMatch(infoScreen, /<ExerciseTechnique|exercise-info-meta|exercise-info-hero/);
+
 assert.match(infoScreen, /<section className="exercise-info-screen" aria-label="Упражнение"><header><button type="button" data-swipe-back aria-label="Назад" onClick=\{onClose\}>/);
 assert.doesNotMatch(infoScreen, /aria-modal|role="dialog"/);
 assert.match(infoScreen, /<\/main><\/section>;/);
