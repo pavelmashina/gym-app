@@ -17,7 +17,7 @@ assert.match(sessions,/completedDate: mode === 'completed'/);
 assert.match(report,/entry\.workout\.completedDate \|\| entry\.workout\.scheduledDate/);
 assert.match(report,/По плану: \{originallyScheduled\}/);
 assert.match(report,/plannedSetLabel\(set, exercise\.prescription\)/);
-assert.match(report,/exercise\.prescription && <p className="workout-exercise-prescription"/);
+assert.doesNotMatch(report, /exercise\.prescription && <p className="workout-exercise-prescription"/, 'No prescription line during an active session.');
 assert.match(detail,/statusText=\{participationLabel\(participation\)\}/);
 assert.doesNotMatch(detail,/className="program-detail-start-state"/);
 assert.match(catalog,/<ProgramListCard/);
