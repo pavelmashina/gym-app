@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { disablePushForUser, enablePushForUser, hasPushSubscription } from '../lib/pushNotifications.js';
+import { applyTheme } from '../lib/appearance.js';
 import '../settings-screen.css';
 
 function BackIcon(){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 5-7 7 7 7"/></svg>}
@@ -39,7 +40,7 @@ export function SettingsScreen({user,planCode,onBack,onOpenPlan,refreshKey=0}){
     return()=>{active=false};},[user.id,refreshKey]);
 
   function applyLocalSettings(next){
-    document.documentElement.dataset.theme=next.theme;
+    applyTheme(next.theme);
     document.documentElement.lang=next.language;
     localStorage.setItem('gym:user-settings',JSON.stringify({weight_unit:next.weight_unit,theme:next.theme,language:next.language,region:next.region,timezone:next.timezone}));
     window.dispatchEvent(new CustomEvent('gym-settings-changed',{detail:next}));
