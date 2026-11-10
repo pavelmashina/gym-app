@@ -11,9 +11,9 @@ import { carouselSwipeIndex } from '../lib/carouselSwipe.js';
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 const HOME_SLIDES = [
-  { src: 'assets/home-slider-ad-1.webp', alt: 'Рекламный баннер для фитнес-клуба или спортивного бренда' },
-  { src: 'assets/home-slider-ad-2.webp', alt: 'Рекламный баннер спортивных турниров, секций и мероприятий' },
-  { src: 'assets/home-slider-ad-3.webp', alt: 'Рекламный баннер спортзалов, секций и спортивных брендов' },
+  { src: 'assets/home-slider-hq-1.svg', alt: 'Рекламный баннер для фитнес-клуба или спортивного бренда' },
+  { src: 'assets/home-slider-hq-2.svg', alt: 'Рекламный баннер спортивных турниров, секций и мероприятий' },
+  { src: 'assets/home-slider-hq-3.svg', alt: 'Рекламный баннер спортзалов, секций и спортивных брендов' },
 ];
 
 function toDateKey(date) {
@@ -70,34 +70,101 @@ function Header({ menuOpen, onOpenMenu }) {
 }
 
 const BANNER_AUTOPLAY_MS = 6000;
+const BANNER_SLIDE_COUNT = HOME_SLIDES.length;
+const BANNER_TRACK_SLIDES = [HOME_SLIDES[BANNER_SLIDE_COUNT - 1], ...HOME_SLIDES, HOME_SLIDES[0]];
 
-// The slides change by swipe, by the dots and by themselves; there are no arrows (#92).
+// Slides scroll horizontally; the endpoint clones make looping continuous.
 export function PromoBanner() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [trackIndex, setTrackIndex] = useState(1);
+  const [snapping, setSnapping] = useState(false);
   const [held, setHeld] = useState(false);
   const touchStart = useRef(null);
-  // The countdown restarts after every change and waits while a finger is on the banner,
-  // so a slide the user has just opened is not replaced at once.
+  const transitionBusy = useRef(false);
+
+  function changeSlide(next, direction = 0) {
+    if (next === activeSlide || transitionBusy.current || snapping) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setActiveSlide(next);
+      setTrackIndex(next + 1);
+      return;
+    }
+    const forward = (next - activeSlide + BANNER_SLIDE_COUNT) % BANNER_SLIDE_COUNT;
+    const backward = BANNER_SLIDE_COUNT - forward;
+    const step = direction || (forward <= backward ? forward : -backward);
+    transitionBusy.current = true;
+    setActiveSlide(next);
+    setTrackIndex(index => index + step);
+  }
+
+  // Autoplay remains six seconds and pauses while the banner is touched.
   useEffect(() => {
     if (held) return undefined;
-    const timer = window.setTimeout(() => setActiveSlide((current) => (current + 1) % HOME_SLIDES.length), BANNER_AUTOPLAY_MS);
+    const timer = window.setTimeout(() => {
+      changeSlide((activeSlide + 1) % BANNER_SLIDE_COUNT, 1);
+    }, BANNER_AUTOPLAY_MS);
     return () => window.clearTimeout(timer);
-  }, [activeSlide, held]);
-  const beginTouch = (event) => {
+  }, [activeSlide, held, snapping]);
+
+  // Move from a visually identical end clone to its real slide without animation.
+  useEffect(() => {
+    if (!snapping) return undefined;
+    const timer = window.setTimeout(() => {
+      setSnapping(false);
+      transitionBusy.current = false;
+    }, 40);
+    return () => window.clearTimeout(timer);
+  }, [snapping]);
+
+  function finishSlide(event) {
+    if (event.target !== event.currentTarget || event.propertyName !== 'transform') return;
+    if (trackIndex === 0 || trackIndex === BANNER_SLIDE_COUNT + 1) {
+      setSnapping(true);
+      setTrackIndex(trackIndex === 0 ? BANNER_SLIDE_COUNT : 1);
+    } else {
+      transitionBusy.current = false;
+    }
+  }
+
+  const beginTouch = event => {
     const touch = event.touches.length === 1 ? event.touches[0] : null;
     touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
-    setHeld(true);
+    setHeld(Boolean(touch));
   };
-  const endTouch = (event) => {
-    const start = touchStart.current;
+  const endTouch = event => {
+    const origin = touchStart.current;
     touchStart.current = null;
     setHeld(false);
-    if (!start || event.changedTouches.length !== 1) return;
+    if (!origin || event.changedTouches.length !== 1) return;
     const touch = event.changedTouches[0];
-    setActiveSlide((current) => carouselSwipeIndex(current, HOME_SLIDES.length, touch.clientX - start.x, touch.clientY - start.y));
+    const dx = touch.clientX - origin.x;
+    const next = carouselSwipeIndex(activeSlide, BANNER_SLIDE_COUNT, dx, touch.clientY - origin.y);
+    if (next !== activeSlide) changeSlide(next, dx < 0 ? 1 : -1);
   };
   const cancelTouch = () => { touchStart.current = null; setHeld(false); };
-  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры" onTouchStart={beginTouch} onTouchEnd={endTouch} onTouchCancel={cancelTouch}><div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" draggable="false" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div><div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div></section>;
+
+  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры"
+    onTouchStart={beginTouch} onTouchEnd={endTouch} onTouchCancel={cancelTouch}>
+    <div className="banner-slides">
+      <div className={'banner-slide-track' + (snapping ? ' is-snapping' : '')}
+        style={{ transform: 'translate3d(-' + trackIndex * 100 + '%,0,0)' }}
+        onTransitionEnd={finishSlide}>
+        {BANNER_TRACK_SLIDES.map((slide, index) => <img className="banner banner-slide"
+          src={import.meta.env.BASE_URL + slide.src} alt={slide.alt}
+          loading="eager" decoding="async" draggable="false"
+          aria-hidden={index !== trackIndex ? 'true' : undefined}
+          key={slide.src + '-' + index} />)}
+      </div>
+    </div>
+    <div className="dots" aria-label="Выбор баннера">
+      {HOME_SLIDES.map((slide, index) => <button className={'dot' + (index === activeSlide ? ' active' : '')}
+        type="button" key={slide.src} aria-label={'Баннер ' + (index + 1)}
+        aria-current={index === activeSlide ? 'true' : undefined}
+        onClick={() => changeSlide(index)} />)}
+      <span className="banner-dot-indicator" aria-hidden="true"
+        style={{ transform: 'translate3d(' + activeSlide * 26 + 'px,0,0)' }} />
+    </div>
+  </section>;
 }
 
 function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {
