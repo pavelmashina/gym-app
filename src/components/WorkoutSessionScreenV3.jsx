@@ -6,7 +6,7 @@ import { WorkoutStartChoice } from './WorkoutStartChoice.jsx';
 import {assertResultsSaved,flushPendingSetEdits,registerSetFlusher} from '../lib/resultDraftGuard.js';
 import {clearSetDraft,readSetDraft,writeSetDraft} from '../lib/setDraftJournal.js';
 import { formatResultV2 } from '../lib/exerciseResultsV2.js';
-import ExerciseTechnique from './ExerciseTechnique.jsx';
+import { ExerciseDetailsContent } from './ExerciseDetailsContent.jsx';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   addPerformedSet,
@@ -137,34 +137,20 @@ function ExerciseActionsPopup({ exercise, unit, restSeconds, onUnitChange, onRes
   return <div className="exercise-actions-shell" role="dialog" aria-modal="true"><button className="exercise-actions-scrim" type="button" onClick={onClose} /><section className="exercise-actions-popup"><div className="exercise-actions-heading"><div><span>Упражнение</span><strong>{exercise.name}</strong></div><button type="button" onClick={onClose}>×</button></div><button className="exercise-action-row" type="button" onClick={onReplace}><span>Заменить упражнение</span><ChevronIcon /></button><button className="exercise-action-row" type="button" onClick={onReorder}><span>Переместить упражнение</span><ChevronIcon /></button><button className="exercise-action-row danger" type="button" onClick={onDelete}><span>Удалить упражнение</span><ChevronIcon /></button><div className="exercise-unit-row"><span>Единица измерения веса</span><div className="exercise-unit-toggle"><button className={unit === 'kg' ? 'active' : ''} type="button" onClick={() => onUnitChange('kg')}>кг</button><button className={unit === 'lb' ? 'active' : ''} type="button" onClick={() => onUnitChange('lb')}>lb</button></div></div><div className="exercise-rest-settings"><span>Отдых после подхода</span><div>{REST_PRESETS.map((seconds) => <button className={restSeconds === seconds ? 'active' : ''} type="button" key={seconds} onClick={() => onRestChange(seconds)}>{seconds < 60 ? `${seconds} с` : `${seconds / 60} мин`}</button>)}</div></div></section></div>;
 }
 
-function toEmbedVideoUrl(value) {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    const host = url.hostname.replace(/^www\./, '');
-    if (host === 'youtu.be') return `https://www.youtube.com/embed/${url.pathname.split('/').filter(Boolean)[0] || ''}`;
-    if (host === 'youtube.com' || host === 'm.youtube.com') {
-      if (url.pathname === '/watch') return url.searchParams.get('v') ? `https://www.youtube.com/embed/${url.searchParams.get('v')}` : null;
-      const parts = url.pathname.split('/').filter(Boolean);
-      if (parts[0] === 'shorts' || parts[0] === 'embed') return parts[1] ? `https://www.youtube.com/embed/${parts[1]}` : null;
-    }
-    if (host === 'vimeo.com') {
-      const id = url.pathname.split('/').filter(Boolean)[0];
-      return id ? `https://player.vimeo.com/video/${id}` : null;
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
 function ExerciseInfoScreen({ exercise, details, loading, onClose }) {
-  const technique = details?.technique?.trim() || exercise.prescription?.trim() || '';
-  const notes = details?.description?.trim() || details?.notes?.trim() || '';
-  const videoUrl = details?.resolvedVideoUrl?.trim() || '';
-  const embedUrl = details?.video_path ? null : toEmbedVideoUrl(videoUrl);
-  // A screen of the workout, not a modal layer (#65): the rest timer in the footer stays usable under it.
-  return <section className="exercise-info-screen" aria-label="Упражнение"><header><button type="button" data-swipe-back aria-label="Назад" onClick={onClose}><BackIcon /></button><strong>Упражнение</strong><span /></header><main><div className="exercise-info-video">{videoUrl ? (details?.video_path ? <video controls playsInline preload="metadata" src={videoUrl}>Ваш браузер не поддерживает видео.</video> : embedUrl ? <iframe src={embedUrl} title={`Видео упражнения ${details?.name || exercise.name}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <a className="exercise-video-link" href={videoUrl} target="_blank" rel="noreferrer"><span>▶</span><strong>Открыть видео упражнения</strong><small>Видео откроется в новой вкладке</small></a>) : <div className="exercise-video-placeholder"><span>▶</span><strong>Видео упражнения</strong><small>Видео пока не добавлено</small></div>}</div><section className="exercise-info-hero"><span>{details?.muscle_group || exercise.muscleGroup || 'Упражнение'}</span><h1>{details?.name || exercise.name}</h1></section>{loading ? <div className="exercise-info-loading">Загружаем описание…</div> : <><section className="exercise-info-meta"><div><span>Целевая мышца</span><strong>{details?.target_muscle || 'Нет данных'}</strong></div><div><span>Синергисты</span><strong>{details?.synergists || 'Нет данных'}</strong></div><div><span>Тип</span><strong>{details?.exercise_type || details?.movement_type || 'Нет данных'}</strong></div><div><span>Сложность</span><strong>{details?.difficulty ? `${details.difficulty}/3` : 'Нет данных'}</strong></div></section><section className="exercise-info-copy">{details?.execution_steps?.length ? <ExerciseTechnique exercise={details} /> : <><span>Техника выполнения</span>{technique ? <p>{technique}</p> : <div className="exercise-info-placeholder">Подробная техника выполнения для этого упражнения пока не добавлена.</div>}</>}</section><section className="exercise-info-copy"><span>Описание и подсказки</span>{notes ? <p>{notes}</p> : <div className="exercise-info-placeholder">Дополнительное описание пока отсутствует.</div>}</section></>}</main></section>;
+  // The workout shares exactly the same content as Training → Exercises.
+  // Keep this in the workout's scroll flow so its running rest timer remains usable.
+  const resolved = {
+    ...(details || {}),
+    id: details?.id || exercise.linkedExerciseId || exercise.id,
+    name: details?.name || exercise.name,
+    display_muscle_group: details?.display_muscle_group || details?.muscle_group || exercise.muscleGroup || 'Упражнение',
+    equipment: details?.equipment || exercise.equipment || '',
+  };
+  return <section className="exercise-info-screen" aria-label="Упражнение"><header><button type="button" data-swipe-back aria-label="Назад" onClick={onClose}><BackIcon /></button><strong>Информация</strong><span /></header><main className="training-exercise-page-content">
+    <ExerciseDetailsContent exercise={resolved} />
+    {loading && <div className="exercise-info-loading">Загружаем информацию…</div>}
+  </main></section>;
 }
 
 function ReorderExerciseScreen({ exercises, sessionOnly, focusId, saving, onSave, onClose }) {
