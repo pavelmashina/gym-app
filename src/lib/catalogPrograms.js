@@ -1,13 +1,10 @@
 import { supabase } from './supabase.js';
 import { normalizeProgramCategories, normalizeProgramLevel } from './programOptions.js';
+import { catalogCoverUrls } from './catalogCoverUrls.js';
 
 function mapCatalogProgram(row) {
   const sourcePayload = row.source_payload ?? { cycle: { workouts: [] } };
-  const coverImage = sourcePayload.cover_image;
-  const validImageName = (name) => typeof name === 'string' && /^[a-z0-9][a-z0-9._-]*\.(?:webp|png|jpg)$/i.test(name);
-  const coverUrl = validImageName(coverImage) ? `${import.meta.env.BASE_URL}assets/${coverImage}` : null;
-  const coverDetailImage = sourcePayload.cover_image_detail;
-  const coverDetailUrl = validImageName(coverDetailImage) ? `${import.meta.env.BASE_URL}assets/${coverDetailImage}` : coverUrl;
+  const { coverUrl, coverDetailUrl } = catalogCoverUrls(sourcePayload, import.meta.env.BASE_URL);
   return {
     id: row.id,
     name: row.name,

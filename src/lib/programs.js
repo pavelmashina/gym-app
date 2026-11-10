@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js';
 import { normalizeProgramDetails, normalizeProgramCategories, normalizeProgramLevel } from './programOptions.js';
 import { normalizeTrainingWeekdays } from './readyProgramSchedule.js';
+import { catalogCoverUrls, preferProgramCover } from './catalogCoverUrls.js';
 
 const PROGRAM_COVERS_BUCKET = 'program-covers';
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
@@ -105,6 +106,26 @@ async function getSignedCoverUrl(coverPath) {
   const { data, error } = await supabase.storage.from(PROGRAM_COVERS_BUCKET).createSignedUrl(coverPath, 60 * 60);
   if (error) return null;
   return data?.signedUrl ?? null;
+}
+
+async function loadCatalogCoverUrls(programRows) {
+  const catalogIds = [...new Set(programRows.map(row => row.source_catalog_program_id).filter(Boolean))];
+  if (!catalogIds.length) return new Map();
+  // An adopted program retains the original catalog ID but has no Storage cover_path.
+  const { data, error } = await supabase.from('catalog_programs')
+    .select('id, source_payload').in('id', catalogIds);
+  if (error) {
+    console.warn('Unable to resolve source catalog covers:', error);
+    return new Map();
+  }
+  return new Map((data ?? []).map(row => [
+    row.id, catalogCoverUrls(row.source_payload, import.meta.env.BASE_URL).coverUrl,
+  ]));
+}
+
+async function resolveProgramCover(row, catalogCovers) {
+  const signedUrl = await getSignedCoverUrl(row.cover_path);
+  return preferProgramCover(signedUrl, catalogCovers.get(row.source_catalog_program_id));
 }
 
 async function saveCover({ coverFile, programId, userId }) {
@@ -333,13 +354,15 @@ export async function listRecentCompletedPrograms() {
     .in('id',programIds);
   if(error) throw new Error('Не удалось загрузить завершённые программы.');
   const byId=new Map((rows || []).map(row=>[row.id,row]));
-  const workoutCounts=await loadTemplateWorkoutCounts(programIds);
+  const [workoutCounts, catalogCovers] = await Promise.all([
+    loadTemplateWorkoutCounts(programIds), loadCatalogCoverUrls(rows ?? []),
+  ]);
   return Promise.all(history.filter(item=>byId.has(item.program_id)).map(async item=>{
     const row=byId.get(item.program_id);
     const count=workoutCounts.get(row.id)||0;
     return {...mapProgramRow(row),templateWorkoutCount:count,
       totalPlannedWorkoutCount: count*(row.cycle_repeat_count || 1),
-      participation:mapParticipationRow(item),coverUrl:await getSignedCoverUrl(row.cover_path)};
+      participation:mapParticipationRow(item),coverUrl:await resolveProgramCover(row, catalogCovers)};
   }));
 }
 
@@ -352,9 +375,10 @@ export async function listPrograms() {
   if (error) throw new Error('Не удалось загрузить ваши программы.');
   const rows = data ?? [];
   const programIds = rows.map((row) => row.id);
-  const [participationByProgram, workoutCounts] = await Promise.all([
+  const [participationByProgram, workoutCounts, catalogCovers] = await Promise.all([
     loadLatestParticipations(programIds),
     loadTemplateWorkoutCounts(programIds),
+    loadCatalogCoverUrls(rows),
   ]);
   return Promise.all(rows.map(async (row) => {
     const mapped = mapProgramRow(row);
@@ -366,7 +390,7 @@ export async function listPrograms() {
         ? templateWorkoutCount * mapped.cycleRepeatCount
         : templateWorkoutCount,
       participation: participationByProgram.get(row.id) ?? null,
-      coverUrl: await getSignedCoverUrl(row.cover_path),
+      coverUrl: await resolveProgramCover(row, catalogCovers),
     };
   }));
 }
@@ -506,9 +530,10 @@ export async function getProgram(programId) {
     }));
   }
 
+  const catalogCovers = await loadCatalogCoverUrls([programRow]);
   return {
     ...mapProgramRow(programRow),
-    coverUrl: await getSignedCoverUrl(programRow.cover_path),
+    coverUrl: await resolveProgramCover(programRow, catalogCovers),
     programWeeks,
     participation,
     scheduledWorkouts,

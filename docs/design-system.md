@@ -47,6 +47,7 @@ Rules are implemented in `src/training-catalog-standards.css`, imported after ot
 
 ### Training → Exercises — unified Base / My catalog
 
+- Adopted catalog programs retain source_catalog_program_id and normally have no own Storage cover_path. Cards under Active, full program details and completed history resolve the cover from the published catalog's verified static asset, while an explicit uploaded cover takes precedence. Existing adopted programs require no database changes.
 - The former separate “Мои упражнения” upper tab was removed. The single “Упражнения” tab contains a two-way text switcher **База / Мои упражнения**.
 - Search bar is followed by a single compact row containing **Группа мышц**, **Оборудование** and the same outlined **+ Создать** button used for creating a training program. Filter values use **10px**, labels use **12px**. Keep the three controls on one line on mobile.
 - Exercises are displayed in standard horizontal list cards. There is **no right chevron**. The circled **i** icon has no surrounding tile/background. Tapping the row or the i icon opens the full-screen details screen, not a bottom sheet.
