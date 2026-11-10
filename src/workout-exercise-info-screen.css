@@ -1,0 +1,24 @@
+/* Exercise information during a workout (#65).
+   It is a screen of the workout, not a layer over it: .phone stays the only scroll container,
+   the same one the exercise list scrolls in, and the footer stays under it with the rest timer. */
+.exercise-info-screen {
+  width: 100%;
+  min-width: 0;
+}
+
+/* While it is open the workout header and the exercise list are hidden; ActiveWorkout
+   scrolls .phone to the top and puts the list back where it was on return. */
+.phone.workout-session-phone:has(> .exercise-info-screen) > .workout-session-header,
+.phone.workout-session-phone:has(> .exercise-info-screen) > .workout-session-content {
+  display: none;
+}
+
+/* The footer keeps only the rest timer: pause and finish stay on the workout screen. */
+.phone.workout-session-phone:has(> .exercise-info-screen) .workout-session-footer > button {
+  display: none;
+}
+
+/* With the 96px of .phone this clears the footer with a running rest timer. */
+.phone.workout-session-phone > .exercise-info-screen > main {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+}

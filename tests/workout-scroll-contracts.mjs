@@ -52,7 +52,8 @@ assert.doesNotMatch(rule(sessionCss, '.workout-session-footer'), /backdrop-filte
 assert.match(design, /\.workout-session-header\{background:var\(--bg\)!important;backdrop-filter:none\}/);
 
 // Layers over the workout fit the visible screen and keep the scroll to themselves.
-const fullScreenLayers = between(activeV2, '.exercise-info-screen,', '.exercise-info-screen > header,');
+// The exercise information is no longer one (#65): it scrolls with .phone, see tests/workout-exercise-info-screen.mjs.
+const fullScreenLayers = between(activeV2, '.exercise-reorder-screen {', '.exercise-info-screen > header,');
 assert.doesNotMatch(fullScreenLayers, /100vh/, '100vh is taller than the screen while browser bars are shown.');
 assert.match(fullScreenLayers, /overscroll-behavior:\s*contain/);
 assert.match(between(activeV2, '.exercise-actions-popup,', '.exercise-actions-heading'), /max-height:\s*calc\(100dvh - 36px\)[\s\S]*overflow-y:\s*auto/);
