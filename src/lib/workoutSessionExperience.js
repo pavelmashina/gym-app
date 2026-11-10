@@ -17,7 +17,22 @@ export async function getExerciseDetails(exerciseId) {
     const { data: signed } = await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).createSignedUrl(data.video_path, 60 * 60);
     signedVideoUrl = signed?.signedUrl ?? null;
   }
-  return { ...data, resolvedVideoUrl: signedVideoUrl || data.video_url || null };
+  // Photo galleries in own exercises use private storage, just like the library.
+  const paths = [...new Set([
+    ...(Array.isArray(data.photo_paths) ? data.photo_paths : []),
+    data.photo_path,
+  ].filter(path => typeof path === 'string' && path))];
+  const signedPhotos = await Promise.all(paths.map(async path => {
+    const { data: signed } = await supabase.storage.from('exercise-photos').createSignedUrl(path, 60 * 60);
+    return signed?.signedUrl ?? null;
+  }));
+  const resolvedPhotoUrls = signedPhotos.filter(Boolean);
+  return {
+    ...data,
+    resolvedVideoUrl: signedVideoUrl || data.video_url || null,
+    resolvedPhotoUrls,
+    resolvedPhotoUrl: resolvedPhotoUrls[0] || null,
+  };
 }
 
 export async function reorderSessionExercises(sessionId, orderedExerciseIds, scope = 'session') {
