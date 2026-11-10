@@ -151,38 +151,6 @@ body {
   pointer-events: none;
 }
 
-.carousel-arrow {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #fff;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,.38));
-}
-
-.carousel-arrow svg {
-  width: 25px;
-  height: 25px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.carousel-arrow.left {
-  left: 12px;
-}
-
-.carousel-arrow.right {
-  right: 12px;
-}
-
 .dots {
   position: absolute;
   z-index: 2;

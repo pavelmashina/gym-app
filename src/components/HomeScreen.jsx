@@ -6,6 +6,7 @@ import { markScheduledWorkoutCompleted } from '../lib/workoutSessions.js';
 import '../home-dynamic.css';
 import '../home-schedule-edit.css';
 import { formatExerciseCount } from '../lib/formatRussianCount.js';
+import { carouselSwipeIndex } from '../lib/carouselSwipe.js';
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -68,15 +69,35 @@ function Header({ menuOpen, onOpenMenu }) {
   return <header className="appbar"><button className="icon-btn" type="button" aria-label="Открыть меню" aria-expanded={menuOpen} onClick={onOpenMenu}><span className="burger" aria-hidden="true"><span /><span /><span /></span></button><button className="profile-btn" type="button" aria-label="Профиль"><svg className="profile-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="11" r="5" /><path d="M7 27c1.2-5.7 4.2-8.4 9-8.4s7.8 2.7 9 8.4" /></svg></button></header>;
 }
 
-function CarouselArrowIcon({ direction }) {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d={direction === 'left' ? 'm15 5-7 7 7 7' : 'm9 5 7 7-7 7'} /></svg>;
-}
+const BANNER_AUTOPLAY_MS = 6000;
 
-function PromoBanner() {
+// The slides change by swipe, by the dots and by themselves; there are no arrows (#92).
+export function PromoBanner() {
   const [activeSlide, setActiveSlide] = useState(0);
-  useEffect(() => { const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % HOME_SLIDES.length), 6000); return () => window.clearInterval(timer); }, []);
-  const changeSlide = (delta) => setActiveSlide((current) => (current + delta + HOME_SLIDES.length) % HOME_SLIDES.length);
-  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры"><div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div><button className="carousel-arrow left" type="button" aria-label="Предыдущий баннер" onClick={() => changeSlide(-1)}><CarouselArrowIcon direction="left" /></button><button className="carousel-arrow right" type="button" aria-label="Следующий баннер" onClick={() => changeSlide(1)}><CarouselArrowIcon direction="right" /></button><div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div></section>;
+  const [held, setHeld] = useState(false);
+  const touchStart = useRef(null);
+  // The countdown restarts after every change and waits while a finger is on the banner,
+  // so a slide the user has just opened is not replaced at once.
+  useEffect(() => {
+    if (held) return undefined;
+    const timer = window.setTimeout(() => setActiveSlide((current) => (current + 1) % HOME_SLIDES.length), BANNER_AUTOPLAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeSlide, held]);
+  const beginTouch = (event) => {
+    const touch = event.touches.length === 1 ? event.touches[0] : null;
+    touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+    setHeld(true);
+  };
+  const endTouch = (event) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    setHeld(false);
+    if (!start || event.changedTouches.length !== 1) return;
+    const touch = event.changedTouches[0];
+    setActiveSlide((current) => carouselSwipeIndex(current, HOME_SLIDES.length, touch.clientX - start.x, touch.clientY - start.y));
+  };
+  const cancelTouch = () => { touchStart.current = null; setHeld(false); };
+  return <section className="banner-wrap" aria-roledescription="carousel" aria-label="Рекламные баннеры" onTouchStart={beginTouch} onTouchEnd={endTouch} onTouchCancel={cancelTouch}><div className="banner-slides">{HOME_SLIDES.map((slide, index) => <img className={`banner banner-slide${index === activeSlide ? ' active' : ''}`} src={`${import.meta.env.BASE_URL}${slide.src}?v=3`} alt={slide.alt} loading="eager" decoding="async" draggable="false" aria-hidden={index === activeSlide ? undefined : 'true'} key={slide.src} />)}</div><div className="dots" aria-label="Выбор баннера">{HOME_SLIDES.map((slide, index) => <button className={`dot${index === activeSlide ? ' active' : ''}`} type="button" key={slide.src} aria-label={`Баннер ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} onClick={() => setActiveSlide(index)} />)}</div></section>;
 }
 
 function CalendarCard({ today, selectedDateKey, workoutDates, onSelectDate }) {

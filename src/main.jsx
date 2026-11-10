@@ -21,7 +21,7 @@ import './nutrition-card-alignment.css';
 import './training-catalog-standards.css';
 import './home-summary.css';
 import './home-calendar-dark.css';
-import './home-banner-arrows.css';
+import './home-banner-swipe.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
