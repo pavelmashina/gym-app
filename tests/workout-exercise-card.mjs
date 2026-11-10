@@ -18,6 +18,7 @@ const rule = (source, selector) => {
 // Issues #56 and #57: the exercise card of an active workout is recomposed, smaller and with less text.
 assert.match(screen, /import '\.\.\/workout-exercise-card\.css';/);
 assert.ok(card.length > 0, 'the card markup is found');
+assert.doesNotMatch(card, /workout-exercise-prescription/, 'Active exercise cards should not show the planned prescription.');
 
 // The note field shows only an ellipsis under a short caption; the old hint and long caption are gone.
 assert.match(card, /<label className="exercise-card-note-field"><span>Заметка<\/span><textarea className="exercise-card-note" rows="1" value=\{exercise\.note \?\? ''\} placeholder="…"/);
