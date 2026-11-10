@@ -19,6 +19,7 @@ import { isSupabaseConfigured, isSupabaseReachable, supabase } from './lib/supab
 import { loadSubscriptionState } from './lib/subscription.js';
 import { incomingProgramShareCode } from './lib/programSharing.js';
 import { programDraftKey, readProgramDraft, clearProgramDraft, hasProgramDraftProgress } from './lib/programDraft.js';
+import { applyTheme } from './lib/appearance.js';
 import './program-create-choice.css';
 
 const BOTTOM_NAV_SCREENS = ['training', 'statistics', 'home', 'nutrition', 'sportpit'];
@@ -34,7 +35,7 @@ function isPasswordRecoveryUrl() {
 function applyCachedAppearance() {
   try {
     const cached = JSON.parse(localStorage.getItem('gym:user-settings') || '{}');
-    if (cached.theme) document.documentElement.dataset.theme = cached.theme;
+    if (cached.theme) applyTheme(cached.theme);
     if (cached.language) document.documentElement.lang = cached.language;
   } catch {}
 }
