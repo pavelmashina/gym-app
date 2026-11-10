@@ -40,11 +40,14 @@ assert.match(home, /if \(held\) return undefined;/);
 assert.match(home, /window\.setTimeout\(\(\) => \{[\s\S]*?changeSlide\(\(activeSlide \+ 1\) % BANNER_SLIDE_COUNT, 1\)/);
 assert.match(home, /\}, \[activeSlide, held, snapping\]\);/);
 assert.match(home, /className="banner-dot-indicator"/);
-assert.match(home, /activeSlide \* 26/);
+assert.match(home, /activeSlide \* 16/);
 const motion = read('src/home-banner-swipe.css');
-assert.match(motion, /\.banner-wrap \.banner-slide-track \{[\s\S]*?transition: transform 550ms cubic-bezier/);
-assert.match(motion, /\.banner-wrap \.banner-dot-indicator \{[\s\S]*?transition: transform 550ms cubic-bezier/);
+assert.match(motion, /\.banner-wrap \.banner-slide-track \{[\s\S]*?transition: transform 750ms cubic-bezier/);
+assert.match(motion, /\.banner-wrap \.banner-dot-indicator \{[\s\S]*?transition: transform 750ms cubic-bezier/);
 assert.match(motion, /\.banner-wrap \.dots \.dot.active::before \{ opacity: 0; \}/);
+assert.match(motion, /\.banner-wrap \.dots \.dot,[\s\S]*?width: 10px;[\s\S]*?height: 6px;/, 'Fixed dot slots preserve the original pagination footprint.');
+assert.match(motion, /\.banner-wrap \.banner-dot-indicator \{[\s\S]*?left: 5px;[\s\S]*?width: 18px;[\s\S]*?height: 6px;/, 'Active pagination marker keeps the original 18×6 px size.');
+assert.match(motion, /transition: transform 750ms cubic-bezier\(\.4, 0, \.2, 1\)/, 'Slides move more slowly and gently.');
 assert.match(motion, /@media \(prefers-reduced-motion: reduce\)/);
 
 // The slide fills the card: the card takes the ratio of the artwork, no gutters, no padding.
