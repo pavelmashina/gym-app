@@ -349,3 +349,11 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
   - the selected day inverts like the other accent blocks: an `--ink` circle with `--surface` digits, without the shadow.
 - The light theme is unchanged, pixel for pixel: every rule is scoped to `html[data-theme='dark'] .calendar-card`.
 - Styles: `src/home-calendar-dark.css`, imported in `src/main.jsx` after the global layers. Check: `tests/home-calendar-dark.mjs` (`test:ui-audit`): it fails on a literal colour, on a token the dark theme does not redefine, or on a rule outside the dark theme.
+
+## Statistics: per-workout averages without outliers — November 2026 (#77)
+- A workout whose timer was never stopped is saved as completed with a duration of many hours. One such session made «Средние показатели → Одна тренировка» show 17 h 20 min for a month of four workouts.
+- A workout is an outlier, by its duration only, when it is longer than 4 hours, or longer than 2 hours and more than 3 times the median of the period. The median rule needs at least 3 plausible workouts in the period and ignores the ones already rejected by the 4-hour limit.
+- An outlier is left out of all three averages («Время», «Тоннаж», «Подходов»), in the block and in the favourite cards, because its sets belong to an unfinished workout. The averages divide by the workouts that are left.
+- Totals («Время», «Тоннаж», «Подходов», «Тренировок»), the chart, the calendar and «Тренировки периода» still include every workout.
+- When something is left out, the block counter reads «3 из 4 шт.» instead of «4 шт.».
+- Code: `src/lib/statisticsAverages.js`, used by `StatisticsScreenV3.jsx`. Check: `tests/statistics-average-outliers.mjs` (`test:core`), which replays the month from the issue.
