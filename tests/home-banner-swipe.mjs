@@ -28,14 +28,24 @@ for (const file of fs.readdirSync('src').filter((name) => name.endsWith('.css'))
 }
 assert.ok(!fs.existsSync('src/home-banner-arrows.css'), 'The gutter layout of #78 is removed.');
 
-// The banner listens to touches and uses the shared rule; the dots stay as the other way to choose.
+// The slides move horizontally, with endpoint clones for continuous looping.
 assert.match(home, /import \{ carouselSwipeIndex \} from '\.\.\/lib\/carouselSwipe\.js';/);
-assert.match(home, /<section className="banner-wrap"[^>]*onTouchStart=\{beginTouch\}[^>]*onTouchEnd=\{endTouch\}[^>]*onTouchCancel=\{cancelTouch\}[^>]*><div className="banner-slides">/);
-assert.match(home, /carouselSwipeIndex\(current, HOME_SLIDES\.length, touch\.clientX - start\.x, touch\.clientY - start\.y\)/);
-assert.match(home, /className=\{`dot\$\{index === activeSlide \? ' active' : ''\}`\}/, 'The dots are still there.');
-// The autoplay countdown restarts on every change and pauses under a finger.
-assert.match(home, /if \(held\) return undefined;\s*const timer = window\.setTimeout\(/);
-assert.match(home, /\}, \[activeSlide, held\]\);/);
+assert.match(home, /onTouchStart=\{beginTouch\} onTouchEnd=\{endTouch\} onTouchCancel=\{cancelTouch\}/);
+assert.match(home, /carouselSwipeIndex\(activeSlide, BANNER_SLIDE_COUNT, dx, touch.clientY - origin.y\)/);
+assert.match(home, /const BANNER_TRACK_SLIDES = \[HOME_SLIDES\[BANNER_SLIDE_COUNT - 1\], \.\.\.HOME_SLIDES, HOME_SLIDES\[0\]\]/);
+assert.match(home, /onTransitionEnd=\{finishSlide\}/);
+assert.match(home, /setTrackIndex\(trackIndex === 0 \? BANNER_SLIDE_COUNT : 1\)/);
+assert.match(home, /window\.matchMedia\?\.\('\(prefers-reduced-motion: reduce\)'\)/);
+assert.match(home, /if \(held\) return undefined;/);
+assert.match(home, /window\.setTimeout\(\(\) => \{[\s\S]*?changeSlide\(\(activeSlide \+ 1\) % BANNER_SLIDE_COUNT, 1\)/);
+assert.match(home, /\}, \[activeSlide, held, snapping\]\);/);
+assert.match(home, /className="banner-dot-indicator"/);
+assert.match(home, /activeSlide \* 26/);
+const motion = read('src/home-banner-swipe.css');
+assert.match(motion, /\.banner-wrap \.banner-slide-track \{[\s\S]*?transition: transform 550ms cubic-bezier/);
+assert.match(motion, /\.banner-wrap \.banner-dot-indicator \{[\s\S]*?transition: transform 550ms cubic-bezier/);
+assert.match(motion, /\.banner-wrap \.dots \.dot.active::before \{ opacity: 0; \}/);
+assert.match(motion, /@media \(prefers-reduced-motion: reduce\)/);
 
 // The slide fills the card: the card takes the ratio of the artwork, no gutters, no padding.
 const rules = Object.fromEntries([...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(([, selector, body]) => [selector.trim(), body]));
