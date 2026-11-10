@@ -357,3 +357,10 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - Totals («Время», «Тоннаж», «Подходов», «Тренировок»), the chart, the calendar and «Тренировки периода» still include every workout.
 - When something is left out, the block counter reads «3 из 4 шт.» instead of «4 шт.».
 - Code: `src/lib/statisticsAverages.js`, used by `StatisticsScreenV3.jsx`. Check: `tests/statistics-average-outliers.mjs` (`test:core`), which replays the month from the issue.
+
+## Home advertising banner: arrows beside the slide — November 2026 (#78)
+- The carousel arrows lay on top of the slide: the left one crossed the headline «ВАША РЕКЛАМА», the right one sat on the artwork.
+- The banner card is now a three-column grid: a 36px gutter, the slide, a 36px gutter (`--banner-arrow-gutter`). The arrows are grid items in the gutters, not overlays, so they never cover the artwork. Their touch target is 36 × 44px.
+- The slide is narrower than the card and keeps the 800 × 385 ratio of its artwork, so nothing is cropped; it has `--radius-md` corners and 12px of the card above and below. On a 375px phone the slide is 267 × 129px (was 339 × 190px) and the card is 153px high (was 190px).
+- The dots stay on the slide, 8px above its lower edge.
+- Styles: `src/home-banner-arrows.css`, imported in `src/main.jsx` after the global layers. Check: `tests/home-banner-arrows.mjs` (`test:ui-audit`): it fails if the arrows become overlays again or the slide loses its own column or ratio.
