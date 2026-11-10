@@ -21,19 +21,25 @@
   hyphens: auto;
 }
 
-/* Nutrition: «Белки» and «Жиры» are rows, label left and value right. Three columns in
-   this narrow card left 27px per macro, and the labels slid under the values. */
+/* Nutrition: «Белки», «Жиры» and «Углеводы» are rows of one list, label left and value
+   right. Three columns in this narrow card left 27px per macro, and the labels slid under
+   the values (#74). */
 .summary-col.food .food-grid {
   grid-template-columns: minmax(0, 1fr);
+  gap: 0;
 }
 
-/* The row plate was a literal white at 72%: on the dark theme it turned light grey under
-   light text, and «Белки» / «Жиры» could not be read. Light theme: the same white at 72%,
-   now from the token. Dark theme: --surface-2 on the --surface card. */
+/* No plates since carbs came back (#94). «Углеводы» is 47px at 10px and «420 г» 31px:
+   with the plate's 8px side padding a row needed 102px, and the card's content is 93px wide
+   on a 375px phone, 101px on 393px. Without it the row fits from 371px, the narrowest
+   two-column width. The plates needed their own dark-theme colour; hairlines from --ink do not. */
 .summary-col.food .food-stat {
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  min-height: 0;
+  padding: 6px 0 !important;
+  border-radius: 0 !important;
+  background: none;
 }
 
-html[data-theme='dark'] .summary-col.food .food-stat {
-  background: var(--surface-2);
+.summary-col.food .food-stat + .food-stat {
+  border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
 }
