@@ -74,6 +74,12 @@ uppercase for normal labels, filter headings or program tags.
 - The completed workout screen has **no “Результаты по типам нагрузки” section**. Its unified result list uses **every exercise actually stored in the finished session**, including ones added mid-workout (session-only or program scope). Show completed sets first (weight/reps, V2 bodyweight/duration/cardio). If saved weight/reps or valid V2 metrics exist in a not-yet-checked set, show the saved values with “(не отмечен)” instead of a misleading “—”, without marking that set completed, including it in tonnage, or awarding records. A truly empty or merely prefilled planned set still shows “—”. Only external weight/reps completed working sets contribute to tonnage. Keep result editing and underlying data intact; never compare V2 records as legacy e1RM records.
 - In the completed workout editor, every set has an explicit **«Выполнен» checkbox**, including saved but previously unchecked sets. Never derive completion from typed repetitions in retrospective editing. Validate required data before marking complete, preserve recorded weight/reps, persist the status for both legacy and V2 sets, and reload the session to refresh tonnage and results. Regression tests: `tests/completed-workout-tonnage.mjs` and `tests/completed-workout-editor-completion.mjs`.
 
+### Home typography and drawer
+
+- Calendar month/year **20px**; weekdays **10px**. Summary labels **10px without caps**; workout name **16px** (down to 14px only when the word is too long); calorie number and empty-state headings **16px**; macro labels **12px** and values stacked below so they remain readable. No exercise count under the workout name. The planned workout button says **«Начать»**, active workout **«Продолжить»**; skipped, completed and recovery workflows retain their original semantics.
+- Home edit sheet: no upper caption; heading **20px**, workout name **16px**, transfer-option descriptions and errors **10px**. Drawer: heading **20px**, menu items **16px**, no name/profile row. The root bottom navigation is **not rendered while the home drawer is open** and returns on close. All five navigation labels are **10px**, including at narrow widths.
+- UI contract: tests/home-typography-refresh.mjs.
+
 ### Bottom navigation — binding design contract
 
 - Order: **Главная → Тренировки → Статистика → Питание → Спортпит**.
