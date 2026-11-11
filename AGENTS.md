@@ -70,7 +70,7 @@ uppercase for normal labels, filter headings or program tags.
 ### Completed workout results
 
 - The completed workout **tonnage** totals recorded kilograms × repetitions for completed **working** weight/reps sets in both legacy columns and V2 `resultV2` payloads. Do not infer body mass or multiply per-implement weights without an explicit separate metric. Exclude warmups and non-weight/reps activities. Use the same total for the on-screen card and share text.
-- The completed workout screen has **no “Результаты по типам нагрузки” section**; weight/reps V2 exercises can appear in the existing best-set summary. Keep the ability to edit results and their underlying data. Do not present legacy e1RM personal records as V2 records without comparable-load validation.
+- The completed workout screen has **no “Результаты по типам нагрузки” section**. Its unified result list uses **every exercise actually stored in the finished session**, including ones added mid-workout (session-only or program scope). Show a completed result for every exercise: weight/reps, V2 bodyweight/duration/cardio, or “—” when no sets were completed. Only external weight/reps completed working sets contribute to tonnage. Keep result editing and underlying data intact; never compare V2 records as legacy e1RM records.
 - Regression test: `tests/completed-workout-tonnage.mjs`.
 
 ### Bottom navigation — binding design contract
