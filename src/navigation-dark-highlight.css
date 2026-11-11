@@ -1,0 +1,32 @@
+/* Active section highlight on the dark theme (#96).
+   The bottom navigation glow is built from --accent-soft, a token the dark theme does not
+   redefine, so on the dark dock it stayed a near-white light spot. The active tile of the
+   Training and Nutrition icon sliders is filled with --ink, which the dark theme turns into a
+   near-white plate: the white Training icons vanished on it.
+   On the dark theme both highlights are a dimmed --ink over --surface instead: the active tile is
+   a grey plate with an --ink outline and a light icon, and the bottom glow is --ink at 14% in the
+   centre. Only the dark theme is overridden; the light theme is unchanged.
+   Imported in main.jsx after the global layers that style the navigation. */
+
+/* Bottom navigation: the same inset radial glow, from --ink at 14% to transparent. */
+html[data-theme='dark'] .app-bottom-nav .app-nav-item.active::before {
+  background: radial-gradient(ellipse 62% 60% at center,
+    color-mix(in srgb, var(--ink) 14%, transparent) 0%,
+    color-mix(in srgb, var(--ink) 10%, transparent) 46%,
+    color-mix(in srgb, var(--ink) 4%, transparent) 76%,
+    color-mix(in srgb, var(--ink) 1%, transparent) 90%,
+    transparent 100%) !important;
+}
+
+/* Training slider: a grey plate with an --ink outline; the light icon stays readable on it. */
+html[data-theme='dark'] .exercise-catalog-content .training-tabs button.active::before {
+  border-color: color-mix(in srgb, var(--ink) 45%, var(--surface));
+  background-color: color-mix(in srgb, var(--ink) 18%, var(--surface));
+}
+
+/* Nutrition slider: the same plate and outline, with an --ink icon. */
+html[data-theme='dark'] .nutrition-screen .nutrition-tabs button.active .nutrition-tab-icon {
+  background: color-mix(in srgb, var(--ink) 18%, var(--surface));
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 45%, var(--surface)) !important;
+}
