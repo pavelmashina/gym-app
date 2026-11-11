@@ -265,7 +265,7 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - «История» opens the former «Предыдущий результат» sheet (best set and last result). Its icon is a clock turning back, never the info icon.
 - Type scale, nothing else: eyebrow and column head 10/13 (700/600, uppercase), buttons 12/16 600, set number 14/20 700, name 16/21 700. Inputs and the note stay at 16px so iOS does not zoom on focus.
 - Controls are 32px high: weight and reps fields (10px radius), the ✓ and delete buttons, the three action buttons and the «⋯» menu. A set row is 40px. The buttons are plain filled tiles (`--surface-2`), without dashed outlines.
-- The unit is named once, in the column head («кг» or «lb»); an empty weight shows «—», an empty reps field shows the planned reps. A list made only of results v2 rows hides the column head, because those rows label their own fields.
+- The unit is named once, in the column head («кг» or «lbs»); an empty weight shows «—», an empty reps field shows the planned reps. A list made only of results v2 rows hides the column head, because those rows label their own fields.
 - The note has the short caption «Заметка» (10/13, like the column head) and no hint: one 36px line with «…» as the placeholder. It grows to two lines while focused or filled, and up to 140px with its content where `field-sizing` is supported.
 - Colours come only from theme tokens, so the card follows the dark theme. A completed set is tinted `color-mix(in srgb, #2e9e57 13%, var(--surface))`; its ✓ button is filled with `--ink`.
 
@@ -384,3 +384,10 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - The grey is `--muted` at 75 % opacity, weight 500, the same as the weight × reps rows already used for their placeholders, so it follows the dark theme. Styles: `src/workout-previous-hints.css`.
 - One batch for the whole workout (`getPreviousWorkoutSets` in `src/lib/workoutSessions.js`): the 40 latest completed workouts, their exercises, then the completed sets of the latest one per exercise — three requests however many exercises there are. It reloads when an exercise is added or replaced. On a failure the cells simply stay empty, without an error.
 - Logic: `src/lib/previousWorkoutHints.js`. Check: `tests/workout-previous-hints.mjs` (`test:ui-audit`). On the active workout stand, `&previous=1` gives every exercise a previous workout; `&v2=bodyweight` turns the second exercise into pull-ups with «Дополнительный вес, кг».
+
+## Weight unit of an exercise: «кг» / «lbs» — November 2026 (#101)
+- Pounds are written **«lbs»** everywhere: the switch «Единица измерения веса» of the exercise menu («кг» · «lbs»), the column head and the weight field of a weight × reps row, the weights of «История» and «Фунты (lbs)» in Settings. «lb» is never shown. The stored value of the unit is still `lb` (`localStorage`, `user_app_settings.weight_unit`).
+- A weight caption of a results v2 row names the unit chosen for the exercise: «Вес одного снаряда, кг» becomes «Вес одного снаряда, lbs», and the same for «Штанга с грифом», «Дополнительный вес», «Указанный вес» and «Помощь». The caption still wraps to two balanced lines on a narrow phone.
+- The caption never names a unit the numbers are not in. With «lbs» a results v2 row shows its weights, and last time's grey values, in pounds and takes pounds; switching the unit converts what is on screen. Results are stored in kilograms as before (`weight_unit: 'kg'`), so statistics and the completed workout keep showing kilograms.
+- Pounds typed into a results v2 row are stored as kilograms with three decimals, so the typed number comes back unchanged (22.5 lbs → 10.206 kg → 22.5 lbs).
+- Logic: `src/lib/weightUnits.js` (`weightUnitLabel` is the only place that spells the unit). Check: `tests/weight-unit-labels.mjs` (`test:ui-audit`).

@@ -2,26 +2,31 @@ import {useEffect,useRef,useState} from 'react';
 import {parseMetricInput, resultFieldsV2, validateResultV2} from '../lib/exerciseResultsV2.js';
 import {markResultDraft} from '../lib/resultDraftGuard.js';
 import {previousResultV2Value} from '../lib/previousWorkoutHints.js';
+import {poundsInputToKg, toDisplayWeight, weightUnitLabel} from '../lib/weightUnits.js';
 
 // The same icons as the other set rows of the exercise card.
 const CheckIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>;
 const TrashIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" /></svg>;
 
-const labels = {weight:'Вес, кг',reps:'Повторения',duration_seconds:'Время, с',distance_meters:'Дистанция, м',assistance_weight:'Помощь, кг'};
+const labels = {reps:'Повторения',duration_seconds:'Время, с',distance_meters:'Дистанция, м'};
+// Issue #101: a weight caption names the unit chosen for the exercise, «кг» or «lbs».
+const WEIGHT_FIELDS = ['weight', 'assistance_weight'];
+const weightCaption = (field, loadMode) => field === 'assistance_weight' ? 'Помощь'
+  : ['dumbbell_each', 'kettlebell_each'].includes(loadMode) ? 'Вес одного снаряда'
+    : loadMode === 'barbell_total' ? 'Штанга с грифом'
+      : loadMode === 'bodyweight' ? 'Дополнительный вес' : 'Указанный вес';
 const hasSide = result => ['unilateral', 'independent'].includes(result?.laterality);
 const metricColumns = result => 'repeat(' + resultFieldsV2(result?.measurement_type).length + ', minmax(0, 1fr))' + (hasSide(result) ? ' 52px' : '');
-const fieldLabel = (field, loadMode) => field !== 'weight' ? labels[field]
-  : ['dumbbell_each', 'kettlebell_each'].includes(loadMode) ? 'Вес одного снаряда, кг'
-    : loadMode === 'barbell_total' ? 'Штанга с грифом, кг'
-      : loadMode === 'bodyweight' ? 'Дополнительный вес, кг' : 'Указанный вес, кг';
+const fieldLabel = (field, loadMode, unit) => WEIGHT_FIELDS.includes(field)
+  ? `${weightCaption(field, loadMode)}, ${weightUnitLabel(unit)}` : labels[field];
 
 // One caption row per exercise, not a repeated caption above every set.
-export function ResultSetV2Head({ contract }) {
+export function ResultSetV2Head({ contract, unit = 'kg' }) {
   const fields = resultFieldsV2(contract?.measurement_type);
   return <div className="exercise-set-head result-set-v2-head" aria-hidden="true">
     <span />
     <div className="result-set-v2-fields" style={{ gridTemplateColumns: metricColumns(contract) }}>
-      {fields.map(field => <span key={field}>{fieldLabel(field, contract?.load_mode)}</span>)}
+      {fields.map(field => <span key={field}>{fieldLabel(field, contract?.load_mode, unit)}</span>)}
       {hasSide(contract) && <span>Сторона</span>}
     </div>
     <span />
@@ -29,7 +34,7 @@ export function ResultSetV2Head({ contract }) {
   </div>;
 }
 
-export default function ResultSetV2({set,previous=null,contract,configurationKeyValue='standard',equipmentInstanceId=null,dragging=false,handleProps,onSave,onDelete}) {
+export default function ResultSetV2({set,previous=null,unit='kg',contract,configurationKeyValue='standard',equipmentInstanceId=null,dragging=false,handleProps,onSave,onDelete}) {
   const initial = set.resultV2 || {...contract,metric_version:'v2',weight_unit:'kg',configuration_key:configurationKeyValue,equipment_instance_id:equipmentInstanceId,set_type:set.setType,completed:false};
   const [draft,setDraft] = useState(initial);
   const [dirty,setDirty] = useState(false);
@@ -43,7 +48,19 @@ export default function ResultSetV2({set,previous=null,contract,configurationKey
   const [saving,setSaving] = useState(false);
   const [error,setError] = useState('');
   const patch = (key,value) => {markDirty(true);setDraft(current=>({...current,[key]:value}));};
-  function discard(){setDraft(initial);setError('');markDirty(false);}
+  // The draft stays in kilograms, as it is stored. With «lbs» a weight field shows the pounds being typed,
+  // or the stored kilograms converted, and writes the kilograms into the draft.
+  const [typedPounds,setTypedPounds] = useState({});
+  useEffect(()=>{setTypedPounds({});},[unit]);
+  const inPounds = field => unit==='lb'&&WEIGHT_FIELDS.includes(field);
+  const shownValue = field => !inPounds(field) ? draft[field]??'' : typedPounds[field]??toDisplayWeight(draft[field],unit);
+  const shownHint = field => {const hint=previousResultV2Value(previous,field,draft.load_mode);return inPounds(field)?toDisplayWeight(hint,unit):hint;};
+  function change(field,value){
+    if(!inPounds(field))return patch(field,value);
+    setTypedPounds(current=>({...current,[field]:value}));
+    patch(field,poundsInputToKg(value));
+  }
+  function discard(){setDraft(initial);setTypedPounds({});setError('');markDirty(false);}
   async function save(completed) {
     setError('');
     const previous=draft;
@@ -53,6 +70,7 @@ export default function ResultSetV2({set,previous=null,contract,configurationKey
     for(const field of resultFieldsV2(result.measurement_type))result[field]=parseMetricInput(result[field]);
     if(validateResultV2(result).length){setError('Заполните необходимые значения. Для одностороннего выполнения выберите сторону.');return;}
     setDraft(result);
+    setTypedPounds({});
     setSaving(true);
     markDirty(true);
     try {
@@ -72,7 +90,7 @@ export default function ResultSetV2({set,previous=null,contract,configurationKey
     <div className="result-set-v2-fields" style={{ gridTemplateColumns: metricColumns(draft) }}>
       {fields.map(field=><label key={field}>
         {/* Issue #100: an empty field shows last time's value of the same set in grey; with none, it stays empty. */}
-        <input aria-label={fieldLabel(field,draft.load_mode)} inputMode={field==='reps'?'numeric':'decimal'} placeholder={previousResultV2Value(previous,field,draft.load_mode)} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
+        <input aria-label={fieldLabel(field,draft.load_mode,unit)} inputMode={field==='reps'?'numeric':'decimal'} placeholder={shownHint(field)} value={shownValue(field)} onChange={e=>change(field,e.target.value)} disabled={saving}/>
       </label>)}
       {hasSide(draft)&&<label className="result-set-v2-side"><select aria-label="Сторона выполнения" value={draft.side||''} disabled={saving||Boolean(set.resultV2)} onChange={e=>patch('side',e.target.value)}><option value="">—</option><option value="left">Л</option><option value="right">П</option></select></label>}
     </div>

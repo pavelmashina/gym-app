@@ -121,7 +121,8 @@ assert.match(screen, /getPreviousWorkoutSets\(JSON\.parse\(previousKeys\), sessi
 assert.match(screen, /const previousBySet = matchPreviousSets\(displaySets, previousSets\.get\(String\(exercise\.exerciseId\)\)\);/);
 assert.match(screen, /<ResultSetV2 key=\{set\.id\} set=\{set\} previous=\{previousBySet\.get\(set\.id\)\}/);
 assert.match(screen, /<LegacySetRow key=\{set\.id\} set=\{set\} previous=\{previousBySet\.get\(set\.id\)\}/);
-assert.match(resultSet, /placeholder=\{previousResultV2Value\(previous,field,draft\.load_mode\)\} value=\{draft\[field\]\?\?''\}/,
+assert.match(resultSet, /const hint=previousResultV2Value\(previous,field,draft\.load_mode\);/);
+assert.match(resultSet, /placeholder=\{shownHint\(field\)\} value=\{shownValue\(field\)\}/,
   'a results v2 field shows last time\'s value only while it is empty');
 const legacyRow = screen.slice(screen.indexOf('function LegacySetRow('), screen.indexOf('function ActiveWorkout('));
 assert.match(legacyRow, /placeholder=\{weightHint\}/);
