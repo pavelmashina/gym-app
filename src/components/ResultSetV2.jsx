@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {parseMetricInput, resultFieldsV2, validateResultV2} from '../lib/exerciseResultsV2.js';
 import {markResultDraft} from '../lib/resultDraftGuard.js';
+import {previousResultV2Value} from '../lib/previousWorkoutHints.js';
 
 // The same icons as the other set rows of the exercise card.
 const CheckIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>;
@@ -28,7 +29,7 @@ export function ResultSetV2Head({ contract }) {
   </div>;
 }
 
-export default function ResultSetV2({set,contract,configurationKeyValue='standard',equipmentInstanceId=null,dragging=false,handleProps,onSave,onDelete}) {
+export default function ResultSetV2({set,previous=null,contract,configurationKeyValue='standard',equipmentInstanceId=null,dragging=false,handleProps,onSave,onDelete}) {
   const initial = set.resultV2 || {...contract,metric_version:'v2',weight_unit:'kg',configuration_key:configurationKeyValue,equipment_instance_id:equipmentInstanceId,set_type:set.setType,completed:false};
   const [draft,setDraft] = useState(initial);
   const [dirty,setDirty] = useState(false);
@@ -70,7 +71,8 @@ export default function ResultSetV2({set,contract,configurationKeyValue='standar
     <span className="result-set-v2-number" {...handleProps}>{label}</span>
     <div className="result-set-v2-fields" style={{ gridTemplateColumns: metricColumns(draft) }}>
       {fields.map(field=><label key={field}>
-        <input aria-label={fieldLabel(field,draft.load_mode)} inputMode={field==='reps'?'numeric':'decimal'} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
+        {/* Issue #100: an empty field shows last time's value of the same set in grey; with none, it stays empty. */}
+        <input aria-label={fieldLabel(field,draft.load_mode)} inputMode={field==='reps'?'numeric':'decimal'} placeholder={previousResultV2Value(previous,field,draft.load_mode)} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
       </label>)}
       {hasSide(draft)&&<label className="result-set-v2-side"><select aria-label="Сторона выполнения" value={draft.side||''} disabled={saving||Boolean(set.resultV2)} onChange={e=>patch('side',e.target.value)}><option value="">—</option><option value="left">Л</option><option value="right">П</option></select></label>}
     </div>

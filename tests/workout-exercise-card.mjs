@@ -55,7 +55,9 @@ assert.match(resultSet, /style=\{\{ gridTemplateColumns: metricColumns\(draft\) 
 assert.doesNotMatch(resultSet, /<label key=\{field\}>\s*<span>/, 'The V2 set rows cannot repeat the header captions');
 assert.doesNotMatch(resultSet, /<span>Сторона<\/span><select/, 'The side selector cannot repeat its caption');
 assert.match(resultSet, /aria-label=\{fieldLabel\(field,draft\.load_mode\)\}/);
-assert.match(setRow, /aria-label=\{`Вес, \$\{unit==='lb'\?'lb':'кг'\}`\} inputMode="decimal" enterKeyHint="next" placeholder="—"/);
+assert.match(setRow, /aria-label=\{`Вес, \$\{unit==='lb'\?'lb':'кг'\}`\} inputMode="decimal" enterKeyHint="next" placeholder=\{weightHint\}/);
+// An empty weight shows a dash, or last time's weight in grey when there is one (#100).
+assert.match(setRow, /const weightHint=last\.weight!==''\?toDisplayWeight\(last\.weight,unit\):'—';/);
 assert.match(setRow, /aria-label="Повторы" data-reps-set-id=\{set\.id\}/);
 assert.match(setRow, /aria-label="Удалить подход"/);
 

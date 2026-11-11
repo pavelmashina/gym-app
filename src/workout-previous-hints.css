@@ -1,0 +1,9 @@
+/* Issue #100: an empty cell of a set row shows what the same set held in the previous workout,
+   light grey and lighter in weight than a typed value. Both kinds of set rows look the same.
+   Only theme tokens, so the hint follows the dark theme. Typing replaces it. */
+.workout-exercise-card.v3 .exercise-set-row input::placeholder,
+.workout-exercise-card.v3 .result-set-v2 input::placeholder {
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+  opacity: .75;
+}

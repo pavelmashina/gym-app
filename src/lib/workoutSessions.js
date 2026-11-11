@@ -487,6 +487,59 @@ export async function getExerciseHistorySummary(exerciseKey, currentSessionId = 
   };
 }
 
+// Issue #100: for every exercise of the open workout at once, the completed sets of its latest
+// completed workout (the one «История» calls «Предыдущий результат»). Three requests in all,
+// however many exercises the workout has. Only the most recent completed workouts are searched,
+// so an exercise last done long ago gets no hints. Resolves to Map(exercise key → sets).
+const PREVIOUS_WORKOUTS_SEARCHED = 40;
+export async function getPreviousWorkoutSets(exerciseKeys, currentSessionId = null) {
+  const keys = new Set((exerciseKeys ?? []).filter(Boolean).map(String));
+  const found = new Map();
+  if (keys.size === 0) return found;
+
+  let sessionQuery = supabase
+    .from('workout_sessions')
+    .select('id, started_at, ended_at')
+    .eq('status', 'completed')
+    .order('ended_at', { ascending: false, nullsFirst: false })
+    .limit(PREVIOUS_WORKOUTS_SEARCHED);
+  if (currentSessionId) sessionQuery = sessionQuery.neq('id', currentSessionId);
+  const { data: sessions, error: sessionsError } = await withDeadline(Promise.resolve(sessionQuery), LOAD_DEADLINE_MS);
+  if (sessionsError) throw new Error('Не удалось загрузить прошлую тренировку.');
+  const sessionOrder = new Map((sessions ?? []).map((session, index) => [session.id, index]));
+  if (sessionOrder.size === 0) return found;
+
+  const { data: exerciseRows, error: exercisesError } = await withDeadline(Promise.resolve(supabase
+    .from('workout_session_exercises')
+    .select('id, exercise_id, exercise_name_snapshot, workout_session_id, position')
+    .in('workout_session_id', [...sessionOrder.keys()])), LOAD_DEADLINE_MS);
+  if (exercisesError) throw new Error('Не удалось загрузить прошлую тренировку.');
+
+  // The newest workout wins; inside one workout, the exercise's first card.
+  const rank = (row) => sessionOrder.get(row.workout_session_id) * 1000 + (row.position ?? 0);
+  const latestRowByKey = new Map();
+  for (const row of exerciseRows ?? []) {
+    const key = String(snapshotExerciseKey(row.exercise_id, row.exercise_name_snapshot));
+    if (!keys.has(key)) continue;
+    const current = latestRowByKey.get(key);
+    if (!current || rank(row) < rank(current)) latestRowByKey.set(key, row);
+  }
+  if (latestRowByKey.size === 0) return found;
+
+  const { data: setRows, error: setsError } = await withDeadline(Promise.resolve(supabase
+    .from('performed_sets')
+    .select('*')
+    .in('workout_session_exercise_id', [...latestRowByKey.values()].map((row) => row.id))
+    .eq('completed', true)
+    .order('set_number', { ascending: true })), LOAD_DEADLINE_MS);
+  if (setsError) throw new Error('Не удалось загрузить подходы прошлой тренировки.');
+
+  for (const [key, row] of latestRowByKey) {
+    found.set(key, (setRows ?? []).filter((set) => set.workout_session_exercise_id === row.id).map(mapSet));
+  }
+  return found;
+}
+
 export async function listWorkoutExerciseCatalog() {
   const { data, error } = await supabase
     .from('exercises')
