@@ -146,3 +146,30 @@
 /* The active root item uses an actual pale surface (not a negative z-index layer). */
 .app-nav-item.active:not(.home){background:var(--accent-soft)!important;border-radius:15px}
 .app-nav-item.active:not(.home)::before{content:none!important}
+
+/* Explicit completion status for saved sets in the completed workout editor.
+   Override the default 42px-wide editor input rules only for this checkbox. */
+.completed-editor-set .completed-editor-completion {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 7px 2px 0;
+  color: var(--ink);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.completed-editor-set .completed-editor-completion input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 0;
+  padding: 0;
+  border-radius: 5px;
+  accent-color: var(--ink);
+}
+.completed-editor-set .completed-editor-completion:has(input:disabled) { opacity: .6; cursor: default; }
