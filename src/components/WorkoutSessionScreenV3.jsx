@@ -6,7 +6,7 @@ import { WorkoutStartChoice } from './WorkoutStartChoice.jsx';
 import {assertResultsSaved,flushPendingSetEdits,registerSetFlusher} from '../lib/resultDraftGuard.js';
 import {clearSetDraft,readSetDraft,writeSetDraft} from '../lib/setDraftJournal.js';
 import { formatResultV2 } from '../lib/exerciseResultsV2.js';
-import { readWorkingLoad, workingTonnage } from '../lib/completedWorkoutTonnage.js';
+import { completedWorkoutExerciseRows, workingTonnage } from '../lib/completedWorkoutTonnage.js';
 import { ExerciseDetailsContent } from './ExerciseDetailsContent.jsx';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -629,21 +629,13 @@ function CompletedWorkout({ entry, onDone, onReload }) {
     return weight * (1 + reps / 30);
   }
 
-  const rows = useMemo(() => entry.workout.exercises.map((exercise) => {
-    // Both legacy and V2 store completed weight/reps, but in different fields.
-    const working = exercise.sets.map((set) => {
-      const load = readWorkingLoad(set);
-      return load ? { ...set, ...load } : null;
-    }).filter(Boolean);
-    const best = working.reduce((current, set) => !current || e1rm(set) > e1rm(current) ? set : current, null);
-    return best ? { exercise, best, score: e1rm(best) } : null;
-  }).filter(Boolean), [entry.workout.exercises]);
+  const rows = useMemo(() => completedWorkoutExerciseRows(entry.workout.exercises), [entry.workout.exercises]);
 
   useEffect(() => {
     let active = true;
     Promise.all(rows.map(async (row) => {
       // The legacy record comparator is not valid across V2 equipment/load modes.
-      if (!row.exercise.exerciseId || row.best.fromV2) return null;
+      if (!row.best || !row.exercise.exerciseId || row.best.fromV2) return null;
       try {
         const history = await getExerciseHistorySummary(row.exercise.exerciseId, entry.session.id);
         const previousBest = history?.best?.set;
@@ -676,9 +668,7 @@ function CompletedWorkout({ entry, onDone, onReload }) {
     completedDate,
     `Время: ${duration}`,
     `Тоннаж: ${Math.round(tonnage).toLocaleString('ru-RU')} кг`,
-    ...entry.workout.exercises.flatMap(exercise => exercise.sets.filter(set=>set.completed && set.resultV2).map(set=>`${exercise.name}: ${formatResultV2(set.resultV2)}${set.setType==='warmup'?' (разминка)':''}`)),
-    '',
-    ...rows.map((row) => `${recordExerciseIds.has(row.exercise.id) ? '🏆 ' : ''}${row.exercise.name}: ${Number(row.best.weight || 0)} кг × ${row.best.reps}`),
+    ...rows.map((row) => (recordExerciseIds.has(row.exercise.id) ? '🏆 ' : '') + row.exercise.name + ': ' + row.summary),
   ].filter((line) => line !== undefined).join('\n');
 
   async function shareResult() {
@@ -716,11 +706,11 @@ function CompletedWorkout({ entry, onDone, onReload }) {
       </div>
 
       <div className="completed-result-table">
-        <div className="completed-result-table-head"><span>Упражнение</span><span>Лучший подход</span></div>
+        <div className="completed-result-table-head"><span>Упражнение</span><span>Результат</span></div>
         {rows.length ? rows.map((row) => <div className="completed-result-row" key={row.exercise.id}>
           <span className="completed-result-exercise">{row.exercise.name}</span>
-          <span className="completed-result-best">{recordExerciseIds.has(row.exercise.id) && <span className="completed-result-trophy" aria-label="Личный рекорд">🏆</span>}<span>{Number(row.best.weight || 0)} кг{['dumbbell_each','kettlebell_each'].includes(row.best.loadMode) ? ' / снаряд' : ''} × {row.best.reps}</span></span>
-        </div>) : <div className="completed-result-empty">Нет завершённых рабочих подходов с весом и повторами.</div>}
+          <span className="completed-result-best">{recordExerciseIds.has(row.exercise.id) && <span className="completed-result-trophy" aria-label="Личный рекорд">🏆</span>}<span>{row.summary}</span></span>
+        </div>) : <div className="completed-result-empty">В тренировке нет упражнений.</div>}
       </div>
     </section>
 
