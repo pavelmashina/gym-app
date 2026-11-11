@@ -55,6 +55,27 @@ assert.equal(rows[4].summary, '—');
 assert.equal(rows[5].summary, '40 кг × 6');
 assert.equal(workingTonnage(exercises.flatMap(exercise => exercise.sets)), 840);
 assert.equal(rows[2].best, null, 'Bodyweight repetitions are shown without inventing external-weight records');
+
+// The regression seen in a real completed workout: values were autosaved on
+// an exercise added in-session, but the checkmark was never pressed. The set
+// stays incomplete in storage, yet must not render as a misleading dash.
+const uncheckedAdded = { id: 'saved-added', name: 'Тяга блока', addedInWorkout: true,
+  sets: [{ ...legacy, weight: '65', reps: '12', completed: false }] };
+const uncheckedV2 = { id: 'saved-v2', name: 'Жим гантелей', addedInWorkout: true,
+  sets: [{ ...v2, completed: false, resultV2: { ...v2.resultV2, completed: false } }] };
+const uncheckedCardio = { id: 'saved-cardio', name: 'Велотренажёр', addedInWorkout: true,
+  sets: [{ ...cardio, completed: false, resultV2: { ...cardio.resultV2, completed: false } }] };
+const fakePlanned = { id: 'planned-reps', name: 'Без результата', addedInWorkout: false,
+  sets: [{ ...legacy, completed: false, weight: '', reps: '10' }] };
+const summaries = completedWorkoutExerciseRows([uncheckedAdded, uncheckedV2, uncheckedCardio, fakePlanned]);
+assert.equal(summaries[0].summary, '65 кг × 12 (не отмечен)');
+assert.equal(summaries[1].summary, '12.5 кг / снаряд × 8 (не отмечен)');
+assert.equal(summaries[2].summary, '900 с · 2000 м (не отмечен)');
+assert.equal(summaries[3].summary, '—', 'Scheduled repetitions alone are not a saved workout result');
+assert.equal(summaries[0].best, null, 'Unmarked results must not be treated as personal records');
+assert.equal(workingTonnage(uncheckedAdded.sets.concat(uncheckedV2.sets)), 0,
+  'Showing a saved value must not silently mark it completed or add it to tonnage');
+
 assert.match(completed, /row\.summary/, 'The same inclusive summary appears in result cards and sharing');
 assert.match(completed, /<span>Результат<\/span>/);
 const loader = readFileSync('src/lib/workoutSessions.js', 'utf8');
