@@ -47,7 +47,7 @@ assert.match(rule(css, '.exercise-card-actions button'), /border: 0;/);
 
 // One shared column head per exercise, legacy or V2. No repeated labels in set rows.
 assert.match(card, /displaySets\.length > 0 && \(hasV2Rows && headerContract \? <ResultSetV2Head contract=\{headerContract\} \/> : <div className="exercise-set-head"/);
-assert.match(card, /const hasV2Rows = displaySets\.some\(/);
+assert.match(screen, /const hasV2Rows = displaySets\.some\(/);
 assert.match(card, /<span>Повт\.<\/span><\/div>/);
 assert.match(resultSet, /export function ResultSetV2Head\(\{ contract \}\)/);
 assert.match(resultSet, /style=\{\{ gridTemplateColumns: metricColumns\(contract\) \}\}/);
@@ -78,7 +78,7 @@ assert.doesNotMatch(caption, /nowrap|ellipsis|overflow: hidden/);
 assert.match(caption, /white-space: normal;/);
 assert.match(caption, /text-wrap: balance;/);
 assert.match(rule(v3Css, '.result-set-v2.compact label'), /align-content: end;/);
-assert.match(rule(v3Css, '.result-set-v2-head'), /grid-template-columns: 28px minmax\(0, 1fr\) 32px 28px;/);
+assert.match(rule(v3Css, '.exercise-set-head.result-set-v2-head'), /grid-template-columns: 28px minmax\(0, 1fr\) 32px 28px;/);
 assert.match(resultSet, /'Вес одного снаряда, кг'/);
 // The V2 head must not be hidden in exercises that have no legacy input rows.
 assert.doesNotMatch(css, /\.workout-exercise-card\.v3:not\(:has\(\.exercise-set-row\)\) \.exercise-set-head \{ display: none; \}/);
