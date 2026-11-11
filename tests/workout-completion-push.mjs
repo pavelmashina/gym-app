@@ -61,7 +61,7 @@ assert.match(server,/gym_verify_push_cron_token/);
 assert.match(workflow,/VITE_VAPID_PUBLIC_KEY/);
 // Editors must include V2 results rather than silently hiding the modern exercise format.
 assert.match(completedEdits,/resultFieldsV2/);
-assert.match(completedEdits,/completed: Boolean\(draft.completed\)/);
+assert.match(completedEdits,/const completed = Boolean\(draft.completed\)/);
 assert.match(editor,/assistance_weight/);
 assert.doesNotMatch(programs,/<ProgramOverviewStats items=/);
 const pushClient=read('src/lib/pushNotifications.js');
