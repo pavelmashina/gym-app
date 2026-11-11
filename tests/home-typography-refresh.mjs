@@ -15,7 +15,8 @@ assert.match(summary, /\.summary-col \.summary-label\s*\{[^}]*text-transform: no
 assert.match(summary, /\.summary-col\.workout > h3\s*\{[^}]*font-size: var\(--workout-title-size, var\(--text-h3\)\) !important;/);
 assert.match(summary, /\.summary-col\.food > h3,\s*\.summary-col \.home-empty-copy h3\s*\{[^}]*font-size: var\(--text-h3\) !important;/);
 assert.match(summary, /\.summary-col\.food \.food-stat span\s*\{[^}]*font-size: var\(--text-caption\) !important;/);
-assert.match(summary, /\.summary-col\.food \.food-stat\s*\{[^}]*flex-direction: column;/);
+assert.match(summary, /\.summary-col\.food \.food-stat\s*\{[^}]*flex-direction: row;/);
+assert.match(summary, /\.summary-col\.food \.food-stat\s*\{[^}]*white-space: nowrap;/);
 
 assert.doesNotMatch(home, /formatExerciseCount/, 'Hide the standard exercise count');
 assert.match(home, /\{recovery && <p>Плановая дата:/, 'Recovery still shows its original planned date');

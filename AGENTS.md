@@ -76,7 +76,8 @@ uppercase for normal labels, filter headings or program tags.
 
 ### Home typography and drawer
 
-- Calendar month/year **20px**; weekdays **10px**. Summary labels **10px without caps**; workout name **16px** (down to 14px only when the word is too long); calorie number and empty-state headings **16px**; macro labels **12px** and values stacked below so they remain readable. No exercise count under the workout name. The planned workout button says **«Начать»**, active workout **«Продолжить»**; skipped, completed and recovery workflows retain their original semantics.
+- Calendar month/year **20px**; weekdays **10px**. Summary labels **10px without caps**; workout name **16px** (down to 14px only when the word is too long); calorie number and empty-state headings **16px**; macro labels **12px** and values alongside on the **same line** (including narrow screens). No exercise count under the workout name. The planned workout button says **«Начать»**, active workout **«Продолжить»**; skipped, completed and recovery workflows retain their original semantics.
+- Calendar workout indicator dots sit **2px below the selected day's 31px circular badge** in the 39px grid cell; ordinary and selected workout days share the same dot offset. The dot remains visible in light and dark themes.
 - Home edit sheet: no upper caption; heading **20px**, workout name **16px**, transfer-option descriptions and errors **10px**. Drawer: heading **20px**, menu items **16px**, no name/profile row. The root bottom navigation is **not rendered while the home drawer is open** and returns on close. All five navigation labels are **10px**, including at narrow widths.
 - UI contract: tests/home-typography-refresh.mjs.
 

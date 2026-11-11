@@ -47,6 +47,13 @@ const styles = read('src/styles.css');
 assert.match(styles, /\.day \{[^}]*color: #3d3d3a;/);
 assert.match(styles, /\.day\.out \{\s*color: #b9b9b4;/);
 assert.match(styles, /\.month-row button \{[^}]*background: var\(--accent-soft\);/);
+// The workout dot is visible BELOW the selected-day circle, not overlapping its fill.
+// In a 39px date cell the centered 31px circle ends at 35px; a 4px dot at
+// bottom:-2px starts at 37px, leaving a 2px clear gap.
+assert.match(styles, /\.day \{[^}]*height: 39px;/);
+assert.match(styles, /\.day\.selected span \{[^}]*height: 31px;/);
+assert.match(styles, /\.day\.workout::after \{[^}]*bottom: -2px;/);
+assert.match(styles, /\.day\.selected::after \{[^}]*bottom: -2px;/);
 
 // Imported after every global layer that styles the calendar.
 const imports = [...main.matchAll(/^import '\.\/([^']+\.css)';$/gm)].map((match) => match[1]);

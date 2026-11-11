@@ -254,7 +254,9 @@ body {
 .day.workout::after {
   content: "";
   position: absolute;
-  bottom: 2px;
+  /* 31px day circle in a 39px cell ends 4px above the bottom.
+     Place the 4px workout dot 2px below the circle, with a visible gap. */
+  bottom: -2px;
   width: 4px;
   height: 4px;
   background: #171717;
@@ -276,7 +278,7 @@ body {
 .day.selected::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  bottom: -2px;
   width: 4px;
   height: 4px;
   background: #171717;

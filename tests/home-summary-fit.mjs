@@ -29,7 +29,7 @@ assert.match(titleRule[1], /overflow-wrap: normal;/, 'Words stay whole: no overf
 assert.match(titleRule[1], /hyphens: manual;/);
 assert.match(css, /\.summary-col\.workout > h3\[data-title-fit='hyphenate'\] \{[^}]*hyphens: auto;/);
 
-// Nutrition: one row per macro, with label and value stacked to avoid collisions at 12px.
+// Nutrition: each label and its grams stay on one line, also on narrow devices.
 assert.match(css, /\.summary-col\.food \.food-grid \{\s*grid-template-columns: minmax\(0, 1fr\);\s*gap: 0;/);
 for (const file of fs.readdirSync('src').filter((name) => name.endsWith('.css'))) {
   const source = read(`src/${file}`);
@@ -55,7 +55,10 @@ assert.ok(rowRule, 'home-summary.css styles the macro rows.');
 assert.match(rowRule[1], /padding: 6px 0 !important;/, 'No side padding: it overrides the 8px !important of design-system.css.');
 assert.match(rowRule[1], /background: none;/);
 assert.match(rowRule[1], /border-radius: 0 !important;/);
-assert.match(rowRule[1], /flex-direction: column;/);
+assert.match(rowRule[1], /flex-direction: row;/);
+assert.match(rowRule[1], /white-space: nowrap;/);
+assert.match(rowRule[1], /justify-content: space-between;/);
+assert.match(css, /@media \(min-width: 371px\) and \(max-width: 400px\) \{\s*\.date-card \.summary \{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
 assert.match(css, /\.summary-col\.food \.food-stat span \{[^}]*font-size: var\(--text-caption\) !important;/);
 assert.match(css, /\.summary-col\.food \.food-stat \+ \.food-stat \{\s*border-top: 1px solid color-mix\(in srgb, var\(--ink\) 10%, transparent\);/);
 assert.doesNotMatch(css, /html\[data-theme='dark'\] \.summary-col\.food \.food-stat/, 'No dark plate colour is left behind.');
