@@ -432,7 +432,7 @@ export default function App() {
   const showBottomNavigation = BOTTOM_NAV_SCREENS.includes(activeScreen);
   return <>
     {renderActiveScreen()}
-    {showBottomNavigation && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}
+    {showBottomNavigation && !menuOpen && <BottomNavigation activeScreen={activeScreen} onNavigate={handleBottomNavigate} />}
     <PullToRefresh onRefresh={refreshActiveScreen} disabled={activeScreen === 'workout-session' || menuOpen || draftChoiceOpen} />
     <AppUpdateNotice />
     {draftChoiceOpen && <div className="program-draft-choice-overlay" role="presentation">
