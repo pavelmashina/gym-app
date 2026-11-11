@@ -1,5 +1,6 @@
 // New-result contract only. Never reinterpret legacy weight/reps as duration or assistance.
 import {configurationFields,parseConfigurationKey} from './exerciseConfiguration.js';
+import {toDisplayWeight,weightUnitLabel} from './weightUnits.js';
 const fields = ['weight','reps','duration_seconds','distance_meters','assistance_weight'];
 const formats = {
   weight_reps: { required:['weight','reps'], allowed:['weight','reps'], loads:['barbell_total','dumbbell_each','kettlebell_each','external_total','stack','plates','machine_indicated'] },
@@ -14,11 +15,13 @@ export function resultFieldsV2(type) {
   return formats[type]?.allowed ?? [];
 }
 
-export function formatResultV2(row) {
+// The row is stored in kilograms; `unit` is the one chosen for the exercise on the workout screen (#101).
+export function formatResultV2(row, unit = 'kg') {
   if (!row) return '';
   const parts = [];
-  if (row.weight != null) parts.push(`${row.weight} кг${['dumbbell_each','kettlebell_each'].includes(row.load_mode) ? ' / снаряд' : ''}`);
-  if (row.assistance_weight != null) parts.push(`помощь ${row.assistance_weight} кг`);
+  const shown = value => `${unit === 'lb' ? toDisplayWeight(value, unit) : value} ${weightUnitLabel(unit)}`;
+  if (row.weight != null) parts.push(`${shown(row.weight)}${['dumbbell_each','kettlebell_each'].includes(row.load_mode) ? ' / снаряд' : ''}`);
+  if (row.assistance_weight != null) parts.push(`помощь ${shown(row.assistance_weight)}`);
   if (row.reps != null) parts.push(`${row.reps} повт.`);
   if (row.duration_seconds != null) parts.push(`${row.duration_seconds} с`);
   if (row.distance_meters != null) parts.push(`${row.distance_meters} м`);

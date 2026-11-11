@@ -46,16 +46,16 @@ assert.doesNotMatch(css, /dashed/);
 assert.match(rule(css, '.exercise-card-actions button'), /border: 0;/);
 
 // One shared column head per exercise, legacy or V2. No repeated labels in set rows.
-assert.match(card, /displaySets\.length > 0 && \(hasV2Rows && headerContract \? <ResultSetV2Head contract=\{headerContract\} \/> : <div className="exercise-set-head"/);
+assert.match(card, /displaySets\.length > 0 && \(hasV2Rows && headerContract \? <ResultSetV2Head contract=\{headerContract\} unit=\{unit\} \/> : <div className="exercise-set-head"/);
 assert.match(screen, /const hasV2Rows = displaySets\.some\(/);
 assert.match(card, /<span>Повт\.<\/span><\/div>/);
-assert.match(resultSet, /export function ResultSetV2Head\(\{ contract \}\)/);
+assert.match(resultSet, /export function ResultSetV2Head\(\{ contract, unit = 'kg' \}\)/);
 assert.match(resultSet, /style=\{\{ gridTemplateColumns: metricColumns\(contract\) \}\}/);
 assert.match(resultSet, /style=\{\{ gridTemplateColumns: metricColumns\(draft\) \}\}/);
 assert.doesNotMatch(resultSet, /<label key=\{field\}>\s*<span>/, 'The V2 set rows cannot repeat the header captions');
 assert.doesNotMatch(resultSet, /<span>Сторона<\/span><select/, 'The side selector cannot repeat its caption');
-assert.match(resultSet, /aria-label=\{fieldLabel\(field,draft\.load_mode\)\}/);
-assert.match(setRow, /aria-label=\{`Вес, \$\{unit==='lb'\?'lb':'кг'\}`\} inputMode="decimal" enterKeyHint="next" placeholder=\{weightHint\}/);
+assert.match(resultSet, /aria-label=\{fieldLabel\(field,draft\.load_mode,unit\)\}/);
+assert.match(setRow, /aria-label=\{`Вес, \$\{weightUnitLabel\(unit\)\}`\} inputMode="decimal" enterKeyHint="next" placeholder=\{weightHint\}/);
 // An empty weight shows a dash, or last time's weight in grey when there is one (#100).
 assert.match(setRow, /const weightHint=last\.weight!==''\?toDisplayWeight\(last\.weight,unit\):'—';/);
 assert.match(setRow, /aria-label="Повторы" data-reps-set-id=\{set\.id\}/);
@@ -81,7 +81,8 @@ assert.match(caption, /white-space: normal;/);
 assert.match(caption, /text-wrap: balance;/);
 assert.match(rule(v3Css, '.result-set-v2.compact label'), /align-content: end;/);
 assert.match(rule(v3Css, '.exercise-set-head.result-set-v2-head'), /grid-template-columns: 28px minmax\(0, 1fr\) 32px 28px;/);
-assert.match(resultSet, /'Вес одного снаряда, кг'/);
+// #101: the unit of the caption follows the exercise («кг» or «lbs»), see tests/weight-unit-labels.mjs.
+assert.match(resultSet, /'Вес одного снаряда'/);
 // The V2 head must not be hidden in exercises that have no legacy input rows.
 assert.doesNotMatch(css, /\.workout-exercise-card\.v3:not\(:has\(\.exercise-set-row\)\) \.exercise-set-head \{ display: none; \}/);
 for (const [, selector] of css.matchAll(/([^{}]+)\{/g)) {
