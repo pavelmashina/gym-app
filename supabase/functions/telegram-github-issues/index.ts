@@ -25,8 +25,14 @@ type IssueDraft = {
   priority: "P0" | "P1" | "P2";
 };
 
-const REPO = "pavelmashina/gym-app";
-const GITHUB_API = `https://api.github.com/repos/${REPO}/issues`;
+type ProjectKey = "gym-app" | "ryadom-app";
+const REPOSITORIES: Record<ProjectKey, { fullName: string; title: string }> = {
+  "gym-app": { fullName: "pavelmashina/gym-app", title: "Gym App" },
+  "ryadom-app": { fullName: "pavelmashina/ryadom-app", title: "Рядом" },
+};
+const issueApi = (project: ProjectKey) =>
+  "https://api.github.com/repos/" + REPOSITORIES[project].fullName + "/issues";
+const projectTitle = (project: ProjectKey) => REPOSITORIES[project].title;
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_IMAGES = 6;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -38,6 +44,7 @@ type TaskDraft = {
   description: string;
   images: ImageRef[];
   composing: boolean;
+  project: ProjectKey | null;
   updated_at: string;
 };
 type Admin = ReturnType<typeof createClient>;
@@ -57,6 +64,7 @@ function constantTimeEquals(a: string, b: string): boolean {
 const BUTTONS = {
   keyboard: [
     [{ text: "🆕 Новая задача" }, { text: "✅ Отправить" }],
+    [{ text: "🏋️ Gym App" }, { text: "🐾 Рядом" }],
     [{ text: "❌ Отмена" }, { text: "📖 Правила" }],
     [{ text: "🆔 Мой ID" }],
   ],
@@ -91,7 +99,7 @@ function rawDraft(input: string): IssueDraft {
   };
 }
 
-async function makeDraft(input: string, screenshotUrls: string[] = []): Promise<IssueDraft> {
+async function makeDraft(input: string, screenshotUrls: string[] = [], project: ProjectKey = "gym-app"): Promise<IssueDraft> {
   // Claude replaces GPT for all task structuring; never silently call OpenAI for text.
   // Without Anthropic credentials, plain-text Issues continue to work.
   const key = Deno.env.get("ANTHROPIC_API_KEY");
@@ -121,7 +129,10 @@ async function makeDraft(input: string, screenshotUrls: string[] = []): Promise<
       max_tokens: 2500,
       output_config: { format: { type: "json_schema", schema } },
       system:
-        "Ты создаёшь GitHub Issues для русскоязычного спортивного веб-приложения. " +
+        "Ты создаёшь GitHub Issues для русскоязычного " +
+        (project === "ryadom-app"
+          ? "приложения «Рядом» для владельцев питомцев (календарь, здоровье, документы, запасы, занятия). "
+          : "спортивного веб-приложения Gym App (тренировки, упражнения, питание, статистика). ") +
         "Сохраняй КАЖДОЕ конкретное требование, название экрана, точный текст интерфейса, " +
         "числовые значения, размер шрифта и ограничения пользователя. " +
         "Не придумывай новых функций, требований, причин ошибок или деталей реализации. " +
@@ -213,13 +224,13 @@ async function githubRequest(token: string, path: string, init: RequestInit = {}
   });
 }
 
-async function findExisting(token: string, marker: string): Promise<string | null> {
+async function findExisting(token: string, project: ProjectKey, marker: string): Promise<string | null> {
   // GET is safe to retry once after an occasional network timeout.
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const res = await githubRequest(
         token,
-        `${GITHUB_API}?state=all&sort=created&direction=desc&per_page=100`,
+        `${issueApi(project)}?state=all&sort=created&direction=desc&per_page=100`,
       );
       if (!res.ok) throw new Error(`GitHub duplicate check HTTP ${res.status}`);
       const issues = await res.json();
@@ -238,8 +249,8 @@ async function findExisting(token: string, marker: string): Promise<string | nul
   return null;
 }
 
-async function createIssue(token: string, draft: IssueDraft, marker: string, screenshotUrls: string[] = []) {
-  const res = await githubRequest(token, GITHUB_API, {
+async function createIssue(token: string, project: ProjectKey, draft: IssueDraft, marker: string, screenshotUrls: string[] = []) {
+  const res = await githubRequest(token, issueApi(project), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -286,7 +297,7 @@ function adminClient(): Admin {
 
 async function readPending(admin: Admin, chatId: string): Promise<TaskDraft | null> {
   const { data, error } = await admin.from("telegram_issue_drafts")
-    .select("chat_id,batch_id,description,images,composing,updated_at")
+    .select("chat_id,batch_id,description,images,composing,project,updated_at")
     .eq("chat_id", String(chatId)).maybeSingle();
   if (error) throw new Error("Draft lookup: " + error.code);
   return data as TaskDraft | null;
@@ -299,6 +310,7 @@ async function savePending(admin: Admin, chatId: string, values: Partial<TaskDra
     description: values.description ?? old?.description ?? "",
     images: values.images ?? old?.images ?? [],
     composing: values.composing ?? old?.composing ?? false,
+    project: values.project !== undefined ? values.project : (old?.project ?? "gym-app"),
     updated_at: new Date().toISOString(),
   };
   const { error } = await admin.from("telegram_issue_drafts")
@@ -400,10 +412,19 @@ async function createFromMessage(
     new TextEncoder().encode(String(chatId) + ":" + messageId));
   const fingerprint = Array.from(new Uint8Array(digest))
     .map((x) => x.toString(16).padStart(2, "0")).join("");
-  const marker = pending
-    ? "<!-- gym-telegram-task:" + pending.batch_id + " -->"
-    : "<!-- gym-telegram-task:" + fingerprint + " -->";
-  const already = await runIssueStage("GITHUB_CHECK", () => findExisting(githubToken, marker));
+  // Existing drafts from before the migration still belong to Gym App.
+  if (pending?.project === null) {
+    await telegramSend(botToken, chatId, "Сначала выбери проект: 🏋️ Gym App или 🐾 Рядом.", threadId);
+    return;
+  }
+  const project: ProjectKey = pending?.project || "gym-app";
+  const repositoryToken = project === "ryadom-app"
+    ? (Deno.env.get("GITHUB_ISSUES_TOKEN_RYADOM") || githubToken)
+    : githubToken;
+  const markerPrefix = project === "ryadom-app" ? "ryadom-telegram-task:" : "gym-telegram-task:";
+  const marker = "<!-- " + markerPrefix + (pending ? pending.batch_id : fingerprint) + " -->";
+  const already = await runIssueStage("GITHUB_CHECK", () =>
+    findExisting(repositoryToken, project, marker));
   if (already) {
     if (pending) await clearPending(admin, pending);
     await telegramSend(botToken, chatId, "Эта задача уже существует: " + already, threadId);
@@ -413,9 +434,9 @@ async function createFromMessage(
     ? await runIssueStage("SCREENSHOTS", () => saveScreenshots(admin, botToken, pending.images, pending.batch_id))
     : [];
   // Claude sees image URLs and the description, while GitHub Issue embeds images.
-  const draft = await runIssueStage("CLAUDE", () => makeDraft(description, screenshots));
+  const draft = await runIssueStage("CLAUDE", () => makeDraft(description, screenshots, project));
   const created = await runIssueStage("GITHUB_CREATE", () =>
-    createIssue(githubToken, draft, marker, screenshots));
+    createIssue(repositoryToken, project, draft, marker, screenshots));
   // An Issue already exists: cleanup or Telegram notification failures must
   // never be misreported to the user as "Issue could not be created".
   if (pending) {
@@ -429,7 +450,7 @@ async function createFromMessage(
   }
   try {
     await telegramSend(botToken, chatId,
-      "✅ Issue #" + created.number + " создан\n\n" + draft.title +
+      "✅ Issue #" + created.number + " создан — " + projectTitle(project) + "\n\n" + draft.title +
       (screenshots.length ? "\n📎 Скриншотов: " + screenshots.length : "") +
       "\n\n" + created.url, threadId);
   } catch (error) {
@@ -443,19 +464,21 @@ async function createFromMessage(
 type ChatType = "private" | "supergroup";
 type BoundTopic = { chat_id: string; thread_id: number };
 const RULES = [
-  "🏋️ GymAppEditBot — задачи спортивного приложения",
+  "📋 GymAppEditBot — задачи Gym App и «Рядом»",
   "",
-  "Все задачи попадают в GitHub Issues: pavelmashina/gym-app.",
+  "Проекты: pavelmashina/gym-app и pavelmashina/ryadom-app.",
   "",
-  "🆕 Новая задача — начать сбор материалов.",
+  "🆕 Новая задача — сначала выбрать проект.",
+  "🏋️ Gym App / 🐾 Рядом — выбор проекта для текущего черновика.",
+  "Можно также использовать команды /gym и /ryadom.",
   "📝 Пришли текст и до 6 скриншотов в любом порядке.",
   "✅ Отправить — создать Issue и получить ссылку.",
   "❌ Отмена — удалить незавершённый черновик.",
   "📖 Правила — показать эту памятку.",
   "🆔 Мой ID — узнать свой числовой Telegram ID.",
   "",
-  "В личном чате текст можно отправлять сразу — без кнопки «Новая задача».",
-  "В групповом топике сначала нажми «Новая задача», затем «Отправить».",
+  "В личном чате текст без черновика создаёт задачу Gym App, как раньше.",
+  "В групповом топике сначала нажми «Новая задача», выбери проект, затем «Отправить».",
   "Данные разных пользователей не смешиваются.",
   "",
   "⚠️ Репозиторий публичный. Скриншоты в Issues доступны всем по ссылке; не отправляй личные данные.",
@@ -468,6 +491,10 @@ function normalizedCommand(raw: string): string {
   const text = raw.trim();
   const lookup: Record<string, string> = {
     "🆕 Новая задача": "/new",
+    "🏋️ Gym App": "/gym",
+    "🐾 Рядом": "/ryadom",
+    "Gym App": "/gym",
+    "Рядом": "/ryadom",
     "✅ Отправить": "/create",
     "❌ Отмена": "/cancel",
     "📖 Правила": "/rules",
@@ -630,6 +657,27 @@ async function processMessage(
     : String(chatId) + ":" + String(threadId) + ":" + String(senderId);
   const pending = await readPending(admin, scopeId);
 
+  if (command === "/project") {
+    await send("📁 Выбери проект для новой задачи: 🏋️ Gym App или 🐾 Рядом." +
+      (pending?.project ? "\nТекущий черновик: " + projectTitle(pending.project) : ""));
+    return;
+  }
+  const selectedProject: ProjectKey | null = command === "/gym" ? "gym-app"
+    : command === "/ryadom" ? "ryadom-app" : null;
+  if (selectedProject) {
+    if (pending && pending.project !== selectedProject &&
+        (pending.description.trim() || pending.images.length > 0)) {
+      await send("⚠️ В черновике уже есть материалы для другого проекта. " +
+        "Сначала нажми «❌ Отмена», затем создай задачу и выбери нужный проект.");
+      return;
+    }
+    const updated = await savePending(admin, scopeId,
+      { project: selectedProject, composing: true }, pending);
+    await send("📁 Проект: " + projectTitle(updated.project!) +
+      ". Теперь отправь текст и до 6 скриншотов, затем нажми «✅ Отправить».");
+    return;
+  }
+
   if (command === "/cancel") {
     if (pending) await clearPending(admin, pending);
     await send("❌ Черновик задачи удалён.");
@@ -638,16 +686,23 @@ async function processMessage(
   if (command === "/new") {
     if (pending) {
       if (!pending.composing) await savePending(admin, scopeId, { composing: true }, pending);
-      await send("📝 Черновик открыт. Отправляй текст и скриншоты, затем нажми «✅ Отправить».");
+      await send(pending.project === null
+        ? "🆕 Выбери проект: 🏋️ Gym App или 🐾 Рядом."
+        : "📝 Текущий черновик: " + projectTitle(pending.project) +
+          ". Отправляй материалы или нажми «❌ Отмена», чтобы начать заново.");
       return;
     }
-    await savePending(admin, scopeId, { composing: true });
-    await send("🆕 Новая задача! Отправь текст и до 6 скриншотов. Затем нажми «✅ Отправить».");
+    await savePending(admin, scopeId, { composing: true, project: null });
+    await send("🆕 Новая задача! Сначала выбери проект: 🏋️ Gym App или 🐾 Рядом.");
     return;
   }
   if (command === "/create") {
     if (!pending) {
       await send("Нет черновика. Нажми «🆕 Новая задача».");
+      return;
+    }
+    if (pending.project === null) {
+      await send("Сначала выбери проект: 🏋️ Gym App или 🐾 Рядом.");
       return;
     }
     await createFromMessage(admin, botToken, githubToken, chatId,
@@ -662,6 +717,11 @@ async function processMessage(
   if (chatType !== "private" && !pending) {
     // In a shared topic, ordinary chat must not become an Issue by accident.
     await send("Чтобы добавить задачу, сначала нажми «🆕 Новая задача».");
+    return;
+  }
+
+  if (pending?.project === null) {
+    await send("Сначала выбери проект: 🏋️ Gym App или 🐾 Рядом. Материалы пока не добавлены.");
     return;
   }
 
@@ -768,7 +828,7 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, ignored: true });
   }
 
-  // Telegram gets a 2xx immediately. Long-running OpenAI/GitHub requests are
+  // Telegram gets a 2xx immediately. Long-running Claude/GitHub requests are
   // completed in the background, with a user-visible success or error message.
   EdgeRuntime.waitUntil((async () => {
     try {
@@ -786,7 +846,7 @@ Deno.serve(async (req: Request) => {
               : detail.includes("ISSUE_TIMEOUT_GITHUB_CREATE")
                 ? "⏳ GitHub не подтвердил создание задачи. Сначала проверь GitHub Issues: задача могла создаться. Затем повтори при необходимости."
                 : detail.includes("GITHUB_ISSUES_PERMISSION")
-          ? "❌ GitHub отклонил создание Issue. Проверь GITHUB_ISSUES_TOKEN в Supabase: выбран репозиторий pavelmashina/gym-app и разрешение Issues → Read and write. После исправления отправь задачу снова."
+          ? "❌ GitHub отклонил создание Issue. Проверь GitHub-токен: доступ Issues → Read and write к нужному репозиторию (gym-app или ryadom-app). Для «Рядом» можно задать GITHUB_ISSUES_TOKEN_RYADOM. После исправления отправь задачу снова."
           : detail.includes("GITHUB_RATE_LIMIT")
             ? "❌ GitHub временно ограничил запросы. Попробуй ещё раз позже."
                   : detail.includes("FILE_TOO_LARGE")
