@@ -22,6 +22,7 @@ import './training-catalog-standards.css';
 import './home-summary.css';
 import './home-calendar-dark.css';
 import './home-banner-swipe.css';
+import './navigation-dark-highlight.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

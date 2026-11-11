@@ -59,7 +59,7 @@ Rules are implemented in `src/training-catalog-standards.css`, imported after ot
 - Source files: `src/components/TrainingExerciseBrowser.jsx`, `src/training-exercise-browser.css`; checks: `tests/training-exercise-browser.mjs`.
 
 ### Bottom navigation
-Five equal-sized buttons, from left to right: **Главная → Тренировки → Статистика → Питание → Спортпит**. No raised or outlined central icon. The active section uses an **inset radial gradient** fading from stronger center color to transparent outer edges, with room between the highlight and outer dock border. Preserve this effect; do not substitute a solid block.
+Five equal-sized buttons, from left to right: **Главная → Тренировки → Статистика → Питание → Спортпит**. No raised or outlined central icon. The active section uses an **inset radial gradient** fading from stronger center color to transparent outer edges, with room between the highlight and outer dock border. Preserve this effect; do not substitute a solid block. On the dark theme the glow is a dimmed `--ink` (see “Active section highlight on the dark theme”).
 
 ## Components
 - Radii: 12px small, 16px control, 24px card, 28px hero.
@@ -367,3 +367,12 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - The slide fills the whole card: the card takes the 800 × 385 ratio of the artwork, so nothing is cropped and no card background shows. On a 375px phone the card is 339 × 163px.
 - The dots stay 12px above the lower edge of the card.
 - Code: `PromoBanner` in `src/components/HomeScreen.jsx`, the swipe rule in `src/lib/carouselSwipe.js`, styles in `src/home-banner-swipe.css` (imported in `src/main.jsx` after the global layers). Check: `tests/home-banner-swipe.mjs` (`test:ui-audit`): it fails if arrows or gutters come back, the slide stops filling the card, or the swipe rule changes.
+
+## Active section highlight on the dark theme — November 2026 (#96)
+- On the dark theme the active section was highlighted too brightly. The bottom navigation glow is built from `--accent-soft`, which the dark theme does not redefine, so it stayed a near-white spot on the dark dock. The active tile of the Training slider is filled with `--ink`, which the dark theme turns into a near-white plate, and the active Training icons are drawn white, so the icon vanished on it.
+- On the dark theme both highlights are a dimmed `--ink` over `--surface`:
+  - bottom navigation: the same inset radial glow, from `--ink` at 14% in the centre to transparent at the edge (10% / 4% / 1% at 46% / 76% / 90%); the icon and label stay `--ink`;
+  - Training slider: the active tile is `color-mix(in srgb, var(--ink) 18%, var(--surface))` with a `color-mix(in srgb, var(--ink) 45%, var(--surface))` outline; the white icon reads on it;
+  - Nutrition slider, the same 72px tiles: the same fill and outline (an inset 1px shadow), with an `--ink` icon.
+- The light theme is unchanged: every rule is scoped to `html[data-theme='dark']`.
+- Styles: `src/navigation-dark-highlight.css`, imported in `src/main.jsx` after the global layers. Check: `tests/navigation-dark-highlight.mjs` (`test:ui-audit`): it fails on a literal colour, on a token the dark theme does not redefine (such as `--accent-soft`), on a rule outside the dark theme, or on a glow stronger than 14% `--ink`.
