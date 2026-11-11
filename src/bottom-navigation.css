@@ -65,7 +65,7 @@ body .bottom-nav:not(.app-bottom-nav) {
 
 .app-nav-label {
   min-width: 0;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 12px;
   font-weight: var(--weight-semibold);
   white-space: nowrap;
@@ -96,7 +96,7 @@ body .bottom-nav:not(.app-bottom-nav) {
     width: calc(100vw - 24px);
     padding-inline: 5px;
   }
-  .app-nav-label { font-size: 8px; }
+  .app-nav-label { font-size: 10px; }
 }
 
 
