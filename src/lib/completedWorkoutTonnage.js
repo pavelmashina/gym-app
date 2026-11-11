@@ -53,7 +53,16 @@ function hasRecordedMetrics(set) {
 function completedSetSummary(set) {
   const load = readWorkingLoad(set);
   if (load) return load.weight + ' кг' + (['dumbbell_each', 'kettlebell_each'].includes(load.loadMode) ? ' / снаряд' : '') + ' × ' + load.reps;
-  if (set.resultV2) return formatResultV2(set.resultV2);
+  // Unchecked but already persisted weight × reps must not lose its weight
+  // when shown after the workout (readWorkingLoad only accepts checked sets).
+  const result = set.resultV2;
+  if (hasRecordedMetrics(set) && (!result || result.measurement_type === 'weight_reps')) {
+    const weight = Number(result ? result.weight : set.weight);
+    const reps = Number(result ? result.reps : set.reps);
+    const perImplement = ['dumbbell_each', 'kettlebell_each'].includes(result?.load_mode) ? ' / снаряд' : '';
+    return weight + ' кг' + perImplement + ' × ' + reps;
+  }
+  if (result) return formatResultV2(result);
   const reps = Number(set.reps);
   const weight = Number(set.weight);
   if (Number.isFinite(reps) && reps > 0) return reps + ' повт.';
