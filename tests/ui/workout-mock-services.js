@@ -9,7 +9,11 @@ const setCount = Math.max(1, Number(params.get('sets')) || 6);
 // its empty sets are results v2 rows. `order=fail`: saving a new set order fails.
 // `standalone=1`: a workout without a program. `add=fail`: adding an exercise fails.
 // `save=fail`: saving a set fails as on a dead connection (#64).
-const resultsV2 = params.get('v2') === '1';
+// `v2=bodyweight`: the same, but pull-ups with «Повторения» and «Дополнительный вес, кг».
+// `previous=1`: the last workout had these exercises, so empty cells show its values in grey (#100).
+const resultsV2 = ['1', 'bodyweight'].includes(params.get('v2'));
+const bodyweightV2 = params.get('v2') === 'bodyweight';
+const withPrevious = params.get('previous') === '1';
 const orderFails = params.get('order') === 'fail';
 const standalone = params.get('standalone') === '1';
 const addFails = params.get('add') === 'fail';
@@ -42,11 +46,13 @@ function buildExercise(_, index) {
     id: `exercise-${index}`,
     exerciseId: `catalog-${index}`,
     linkedExerciseId: `catalog-${index}`,
-    name: v2 ? 'Жим гантелей сидя' : `Тестовое упражнение с длинным названием ${index + 1}`,
-    muscleGroup: v2 ? 'Плечи' : index % 2 ? 'Спина' : 'Грудь',
+    name: v2 ? (bodyweightV2 ? 'Подтягивания прямым хватом' : 'Жим гантелей сидя') : `Тестовое упражнение с длинным названием ${index + 1}`,
+    muscleGroup: v2 ? (bodyweightV2 ? 'Спина' : 'Плечи') : index % 2 ? 'Спина' : 'Грудь',
     prescription: '',
     note: '',
-    metricContract: v2 ? { exercise_id: `catalog-${index}`, measurement_type: 'weight_reps', load_mode: 'dumbbell_each', laterality: 'bilateral', measurement_note: null } : null,
+    metricContract: v2 ? (bodyweightV2
+      ? { exercise_id: `catalog-${index}`, measurement_type: 'bodyweight_reps', load_mode: 'bodyweight', laterality: 'bilateral', measurement_note: null }
+      : { exercise_id: `catalog-${index}`, measurement_type: 'weight_reps', load_mode: 'dumbbell_each', laterality: 'bilateral', measurement_note: null }) : null,
     sets: Array.from({ length: setCount }, (__, setIndex) => buildSet(index, setIndex, v2)),
   };
 }
@@ -138,6 +144,22 @@ export async function deletePerformedSet() { await pause(); }
 export async function deleteSessionExercise() { await pause(); }
 export async function updateExerciseNote() { await pause(); }
 export async function getExerciseHistorySummary() { await pause(); return { best: null, previous: null }; }
+// Last time: a warm-up and three working sets of every exercise, so the 4th working set and later get no hint.
+function previousSetsOf(index) {
+  const v2 = resultsV2 && index === 1;
+  const legacy = [[20, 15], [40, 10], [45, 8], [45, 6]];
+  const results = bodyweightV2 ? [[0, 12], [0, 8], [0, 5], [5, 4]] : [[8, 15], [22.5, 10], [22.5, 9], [20, 8]];
+  return (v2 ? results : legacy).map(([weight, reps], setIndex) => ({
+    id: `previous-${index}-${setIndex}`, setNumber: setIndex + 1, setType: setIndex === 0 ? 'warmup' : 'working', plannedReps: null,
+    weight: v2 ? '' : String(weight), reps: v2 ? '' : String(reps), completed: true, completedAt: null,
+    resultV2: v2 ? { metric_version: 'v2', measurement_type: bodyweightV2 ? 'bodyweight_reps' : 'weight_reps', load_mode: bodyweightV2 ? 'bodyweight' : 'dumbbell_each', weight_unit: 'kg', weight, reps, completed: true } : null,
+  }));
+}
+export async function getPreviousWorkoutSets(exerciseKeys) {
+  await pause(400);
+  if (!withPrevious) return new Map();
+  return new Map(exerciseKeys.map((key) => [key, previousSetsOf(Number(String(key).replace('catalog-', '')))]));
+}
 export async function replaceSessionExercise() { await pause(); }
 function buildCompletedEntry() {
   const clock = readClock();
