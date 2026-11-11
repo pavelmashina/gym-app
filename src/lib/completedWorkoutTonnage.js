@@ -29,6 +29,27 @@ export function workingTonnage(sets) {
 }
 
 
+function hasRecordedMetrics(set) {
+  const result = set.resultV2;
+  if (result) {
+    const positive = field => field != null && field !== '' && Number.isFinite(Number(field)) && Number(field) > 0;
+    switch (result.measurement_type) {
+      case 'weight_reps': return positive(result.weight) && positive(result.reps);
+      case 'bodyweight_reps': return positive(result.reps);
+      case 'assisted_reps': return positive(result.reps) && result.assistance_weight != null;
+      case 'duration':
+      case 'cardio': return positive(result.duration_seconds);
+      case 'carry': return positive(result.weight) && (positive(result.duration_seconds) || positive(result.distance_meters));
+      default: return false;
+    }
+  }
+  // Planned repetitions are prefilled before the workout starts. Repetitions
+  // alone are not proof of a saved performance; require entered weight too.
+  return set.weight !== '' && set.weight != null && Number.isFinite(Number(set.weight))
+    && Number(set.weight) >= 0 && set.reps !== '' && set.reps != null
+    && Number.isFinite(Number(set.reps)) && Number(set.reps) > 0;
+}
+
 function completedSetSummary(set) {
   const load = readWorkingLoad(set);
   if (load) return load.weight + ' кг' + (['dumbbell_each', 'kettlebell_each'].includes(load.loadMode) ? ' / снаряд' : '') + ' × ' + load.reps;
@@ -60,13 +81,23 @@ export function completedWorkoutExerciseRows(exercises) {
       return score > currentScore ? set : current;
     }, null);
     const warmups = sets.filter(set => set.completed && set.setType === 'warmup');
-    const fallback = working.at(-1) || warmups.at(-1);
+    const completedFallback = working.at(-1) || warmups.at(-1);
+    // A user can enter and persist weight/reps without pressing the set's
+    // checkmark. After finishing the workout the values still exist, even
+    // though "completed" is false. Show them rather than an incorrect dash;
+    // do not silently turn them into completed sets or count them as tonnage.
+    const savedUnmarked = !best && !completedFallback
+      ? [...sets].reverse().find(set => !set.completed && hasRecordedMetrics(set))
+      : null;
+    const visibleSet = best || completedFallback || savedUnmarked;
+    const warmupPrefix = visibleSet && visibleSet.setType === 'warmup' && !working.length ? 'Разминка: ' : '';
     return {
       exercise,
       best,
       score: best ? best.weight * (1 + best.reps / 30) : 0,
-      summary: best ? completedSetSummary(best)
-        : fallback ? (working.length ? '' : 'Разминка: ') + completedSetSummary(fallback) : '—',
+      summary: visibleSet
+        ? warmupPrefix + completedSetSummary(visibleSet) + (savedUnmarked ? ' (не отмечен)' : '')
+        : '—',
     };
   });
 }
