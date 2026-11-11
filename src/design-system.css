@@ -122,7 +122,7 @@ input,select,textarea{border-radius:var(--radius-md)!important}
 .banner-wrap{border-radius:var(--radius-xl)!important;box-shadow:var(--shadow-float)!important}
 .calendar-card{margin-top:var(--space-4)!important}
 .date-card{margin-top:var(--space-3)!important}
-.month{font-size:18px!important;line-height:22px!important;font-weight:var(--weight-bold)!important;letter-spacing:-.3px!important}
+.month{font-size:20px!important;line-height:24px!important;font-weight:var(--weight-bold)!important;letter-spacing:-.3px!important}
 .date-title{font-size:var(--text-h3)!important;line-height:var(--lh-h3)!important;font-weight:var(--weight-bold)!important;letter-spacing:-.2px!important}
 .summary{gap:var(--space-3)!important}
 .summary-col{border-radius:20px!important;padding:var(--space-4)!important}
