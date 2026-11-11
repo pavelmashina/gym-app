@@ -1,9 +1,8 @@
-# Telegram → GitHub Issues (gym-app)
+# Telegram → GitHub Issues (Gym App и «Рядом»)
 
-> Обновление: добавлены кнопки в Telegram, привязка существующего группового топика и несколько пользователей. Подробная инструкция: [Настройка группового топика](telegram-topic-setup.md).
+> Telegram-бот поддерживает два проекта. [Выбор проекта и инструкции](telegram-multi-project.md) · [Настройка группового топика](telegram-topic-setup.md).
 
-Telegram-бот создаёт Issues в репозитории
-[`pavelmashina/gym-app`](https://github.com/pavelmashina/gym-app/issues).
+Telegram-бот создаёт Issues в [`gym-app`](https://github.com/pavelmashina/gym-app/issues) или [`ryadom-app`](https://github.com/pavelmashina/ryadom-app/issues) после выбора проекта.
 
 ## Где расположен код
 
@@ -14,7 +13,7 @@ Telegram-бот создаёт Issues в репозитории
   `https://sjggdpyficjkpcmybbfr.supabase.co/functions/v1/telegram-github-issues`
 
 Функция принимает текстовые задачи, фото и изображения-файлы от владельца и разрешённых Telegram-пользователей. Голосовые сообщения пока отключены.
-Команды: `/start`, `/help`, `/id`, `/new`, `/create`, `/cancel`.
+Команды: `/start`, `/help`, `/id`, `/new`, `/gym`, `/ryadom`, `/project`, `/create`, `/cancel`.
 Новые задачи автоматически становятся Issues и получают ссылку в ответе Telegram.
 
 ## 1. Создать Telegram-бота
@@ -29,7 +28,7 @@ BotFather выдаст токен. **Никогда не добавлять ег
 Открыть [GitHub → Fine-grained tokens](https://github.com/settings/personal-access-tokens/new).
 
 - Resource owner: `pavelmashina`
-- Repository access: **Only select repositories → gym-app**
+- Repository access: **Only select repositories → gym-app и ryadom-app**
 - Repository permissions: **Issues → Read and write**
 - Остальные разрешения оставить по минимуму.
 - Сохранить выданный токен в безопасном месте.
@@ -45,7 +44,8 @@ BotFather выдаст токен. **Никогда не добавлять ег
 | `TELEGRAM_BOT_TOKEN` | Токен BotFather |
 | `TELEGRAM_ALLOWED_USER_ID` | Твой **числовой** Telegram ID |
 | `TELEGRAM_WEBHOOK_SECRET` | Случайная строка из латинских букв/цифр/`_`/`-` |
-| `GITHUB_ISSUES_TOKEN` | GitHub fine-grained PAT |
+| `GITHUB_ISSUES_TOKEN` | GitHub fine-grained PAT с доступом Issues к обоим проектам (или только к Gym App, если задан отдельный токен для «Рядом») |
+| `GITHUB_ISSUES_TOKEN_RYADOM` (необязательно) | Отдельный PAT с Issues → Read and write для ryadom-app; используется только для «Рядом», если задан |
 | `ANTHROPIC_API_KEY` | Ключ Claude API для структурирования задач (создаётся в Anthropic Console) |
 | `ANTHROPIC_MODEL` (опционально) | `claude-sonnet-5-5` по умолчанию |
 
@@ -91,12 +91,12 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 ## 6. Проверить
 
 1. Открыть бота, отправить `/start` — должен перечислить команды.
-2. Отправить обычное текстовое сообщение — появится Issue.
+2. Нажать «🆕 Новая задача», выбрать «🏋️ Gym App» либо «🐾 Рядом», отправить текст и нажать «✅ Отправить» — Issue появится в выбранном репозитории.
 3. Отправить голосовое — бот ответит, что обработка аудио временно отключена; Issue не создаётся.
-4. Отправить скриншот **без подписи**, затем текстовое описание — одна Issue со скриншотом.
-5. Отправить **одну фотографию с подписью** — одна Issue с изображением.
-6. Для нескольких сообщений в любом порядке: `/new`, затем фото/текст, затем `/create`.
-7. Проверить фотографии и требования в [Issues gym-app](https://github.com/pavelmashina/gym-app/issues).
+4. Для новой задачи выбрать проект, затем отправить скриншот **без подписи** и текст — одна Issue со скриншотом в выбранном репозитории.
+5. Для Gym App сохраняется прежнее поведение: в личном чате фотография с подписью без начатого черновика сразу создаёт Issue в Gym App.
+6. Для нескольких сообщений в любом порядке: `/new`, **выбрать проект**, затем фото/текст, затем `/create`.
+7. Проверить результаты в [Issues gym-app](https://github.com/pavelmashina/gym-app/issues) и [Issues ryadom-app](https://github.com/pavelmashina/ryadom-app/issues).
 
 ## Безопасность и особенности
 
@@ -106,19 +106,19 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 - Ответ Telegram webhook отправляется сразу, а задача обрабатывается фоном.
 - Перед созданием бот ищет маркер данного сообщения среди 100 последних Issues, чтобы при повторной доставке не создать дубль. Это **best effort**, не транзакционная защита от гонок.
 - Для закрытого репозитория требуется надлежащий GitHub PAT.
-- Issues репозитория `gym-app` публичные: не отправляй боту личные данные и секреты.
-- Поддерживаются до **6 скриншотов по 8 МБ** на задачу. Можно отправлять фото или PNG/JPEG/WebP как файл. Голосовое — до **20 МБ**.
+- Оба репозитория публичные: не отправляй боту личные данные и секреты.
+- Поддерживаются до **6 скриншотов по 8 МБ** на задачу. Можно отправлять фото или PNG/JPEG/WebP как файл. Голосовые сообщения пока отключены.
 - Скриншоты анализируются Claude Vision (если настроен `ANTHROPIC_API_KEY`) и размещаются в отдельном **публичном** Supabase Storage bucket `telegram-issue-screenshots` и отображаются в GitHub Issue через Markdown. Любой с URL сможет их просматривать.
 - Внутренние черновики хранятся в таблице `public.telegram_issue_drafts`; RLS включён, публичный доступ запрещён. Функция `gym_telegram_append_image` добавляет файлы атомарно для альбомов.
 - Файлы в хранилище не удаляются автоматически при удалении Issue.
-- Обычный текст без черновика сразу создаёт Issue. Фото без подписи добавляется в ожидающую задачу; следующее текстовое описание создаёт Issue. Для материалов в любом порядке используй `/new` и `/create`.
+- В личной беседе обычный текст без черновика по-прежнему создаёт Issue в **Gym App**. Для «Рядом» нажми «🐾 Рядом» перед отправкой материалов. При создании нового черновика через `/new` выбор проекта обязателен. Смена проекта после добавления текста/фото запрещена во избежание ошибочной маршрутизации.
 - Чтобы отменить незавершённую задачу, отправь `/cancel`.
 - Если Claude API вернёт ошибку при оформлении задачи, Issue не создаётся, и бот сообщает об ошибке. Голосовые сообщения не обрабатываются. Токены не логируются.
 
 
 ## Хранилище и SQL
 
-Миграции подготовлены в `supabase/sql/telegram-issue-drafts.sql` и `supabase/sql/telegram-issue-append-image.sql` и применены в спортивном Supabase-проекте. Дополнительные разрешения GitHub Contents не требуются; бот использует прежний `GITHUB_ISSUES_TOKEN` с доступом Issues.
+Миграции подготовлены в `supabase/sql/telegram-issue-drafts.sql` и `supabase/sql/telegram-issue-append-image.sql` и применены в спортивном Supabase-проекте. Дополнительные разрешения GitHub Contents не требуются; бот использует `GITHUB_ISSUES_TOKEN` с доступом Issues к целевому репозиторию или отдельный `GITHUB_ISSUES_TOKEN_RYADOM`.
 
 
 
@@ -128,7 +128,7 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 2. Создать ключ в [Claude Console → API Keys](https://platform.claude.com/settings/keys).
 3. Добавить ключ в [Supabase Edge Functions Secrets](https://supabase.com/dashboard/project/sjggdpyficjkpcmybbfr/functions/secrets) под именем `ANTHROPIC_API_KEY`.
 4. При необходимости `ANTHROPIC_MODEL` задаёт Claude-модель. По умолчанию используется `claude-sonnet-5-5`.
-5. В боте нажать «Новая задача», прислать текст и скриншот, затем «Отправить». Проверить Issue в GitHub.
+5. В боте нажать «Новая задача», выбрать проект, прислать текст и скриншот, затем «Отправить». Проверить Issue в нужном репозитории.
 
 **Голосовые временно отключены:** бот не загружает и не расшифровывает аудио. Cloudflare, Groq и OpenAI API для работы не нужны. ПК не требуется. Не пересылай API-ключи в чат.
 
@@ -136,4 +136,4 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/setWebhook" -Method P
 
 Если GitHub, Supabase Storage или Claude не отвечают вовремя, бот теперь указывает этап ошибки вместо общей фразы. В журналах Edge Function пишется только название этапа, тип ошибки и прошедшее время — **без ключей, текста задачи и Telegram ID**. Проверка существующих GitHub Issues (GET) при сетевом таймауте повторяется один раз, а лимит ожидания GitHub API увеличен до 25 секунд.
 
-**Не дублируй запрос создания**, если бот сообщает о таймауте на этапе создания GitHub Issue — сначала проверь [список Issues](https://github.com/pavelmashina/gym-app/issues), поскольку GitHub мог сохранить Issue, даже если не успел вернуть ответ. Черновик по возможности остаётся в Supabase до успешного создания.
+**Не дублируй запрос создания**, если бот сообщает о таймауте на этапе создания GitHub Issue — сначала проверь список Issues целевого проекта, поскольку GitHub мог сохранить Issue, даже если не успел вернуть ответ. Черновик по возможности остаётся в Supabase до успешного создания.
