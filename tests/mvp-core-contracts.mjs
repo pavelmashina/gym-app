@@ -19,7 +19,7 @@ assert.equal(formatExerciseCount(11), '11 упражнений');
 assert.equal(formatExerciseCount(21), '21 упражнение');
 assert.equal(formatRussianCount(22, ['тренировка', 'тренировки', 'тренировок']), '22 тренировки');
 
-assert.match(home, /formatExerciseCount\(workout\.exerciseCount\)/);
+assert.doesNotMatch(home, /formatExerciseCount\(workout\.exerciseCount\)/, 'The Home workout card no longer displays the exercise count');
 assert.doesNotMatch(app, /completion:\s*0/);
 
 assert.doesNotMatch(workoutV3, /Прервать тренировку/);
