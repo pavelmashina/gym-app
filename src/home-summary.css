@@ -5,9 +5,9 @@
 /* Workout title: words stay whole. `overflow-wrap: anywhere` cut «оздоровительная»
    into «оздоровительна» / «я». Now a word wider than the card overflows only for a
    moment: WorkoutTitle in HomeScreen.jsx measures it and lowers --workout-title-size
-   until it fits, from 20px down to 14px. Line height stays 1.2 of the size (24px at 20px). */
+   until it fits, from 16px down to 14px. Line height stays 1.2 of the size. */
 .summary-col.workout > h3 {
-  font-size: var(--workout-title-size, var(--text-h2)) !important;
+  font-size: var(--workout-title-size, var(--text-h3)) !important;
   line-height: 1.2 !important;
   overflow-wrap: normal;
   -webkit-hyphens: manual;
@@ -21,25 +21,40 @@
   hyphens: auto;
 }
 
-/* Nutrition: «Белки», «Жиры» and «Углеводы» are rows of one list, label left and value
-   right. Three columns in this narrow card left 27px per macro, and the labels slid under
-   the values (#74). */
+/* Home typography follows the compact size scale, overriding the generic h3. */
+.summary-col .summary-label {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+.summary-col.food > h3,
+.summary-col .home-empty-copy h3 {
+  font-size: var(--text-h3) !important;
+  line-height: var(--lh-h3) !important;
+}
+
+/* Nutrition macro labels are 12px; stack the value under each label so
+   all text remains visible even inside the narrow 2-column layout. */
 .summary-col.food .food-grid {
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
 }
 
-/* No plates since carbs came back (#94). «Углеводы» is 47px at 10px and «420 г» 31px:
-   with the plate's 8px side padding a row needed 102px, and the card's content is 93px wide
-   on a 375px phone, 101px on 393px. Without it the row fits from 371px, the narrowest
-   two-column width. The plates needed their own dark-theme colour; hairlines from --ink do not. */
+/* Keep the macro rows plate-free and preserve the dark-theme-safe hairlines. */
 .summary-col.food .food-stat {
   min-height: 0;
   padding: 6px 0 !important;
   border-radius: 0 !important;
   background: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .summary-col.food .food-stat + .food-stat {
   border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.summary-col.food .food-stat span {
+  font-size: var(--text-caption) !important;
+  line-height: var(--lh-caption) !important;
 }
