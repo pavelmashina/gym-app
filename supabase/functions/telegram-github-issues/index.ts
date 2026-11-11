@@ -72,6 +72,14 @@ const BUTTONS = {
   is_persistent: true,
   input_field_placeholder: "Описание задачи или скриншот",
 };
+const GROUP_BUTTONS = {
+  ...BUTTONS,
+  keyboard: [
+    [{ text: "🆕 Новая задача" }, { text: "✅ Отправить" }],
+    [{ text: "❌ Отмена" }, { text: "📖 Правила" }],
+    [{ text: "🆔 Мой ID" }],
+  ],
+};
 
 async function telegramSend(token: string, chatId: number, text: string, threadId?: number) {
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -80,7 +88,7 @@ async function telegramSend(token: string, chatId: number, text: string, threadI
     body: JSON.stringify({
       chat_id: chatId, text, disable_web_page_preview: true,
       ...(threadId ? { message_thread_id: threadId } : {}),
-      reply_markup: BUTTONS,
+      reply_markup: threadId ? GROUP_BUTTONS : BUTTONS,
     }),
     signal: AbortSignal.timeout(12000),
   });
@@ -462,7 +470,7 @@ async function createFromMessage(
 
 
 type ChatType = "private" | "supergroup";
-type BoundTopic = { chat_id: string; thread_id: number };
+type BoundTopic = { chat_id: string; thread_id: number; project: ProjectKey };
 const RULES = [
   "📋 GymAppEditBot — задачи Gym App и «Рядом»",
   "",
@@ -478,12 +486,12 @@ const RULES = [
   "🆔 Мой ID — узнать свой числовой Telegram ID.",
   "",
   "В личном чате текст без черновика создаёт задачу Gym App, как раньше.",
-  "В групповом топике сначала нажми «Новая задача», выбери проект, затем «Отправить».",
+  "В групповом топике проект закреплён за топиком: «Новая задача» → материалы → «Отправить».",
   "Данные разных пользователей не смешиваются.",
   "",
   "⚠️ Репозиторий публичный. Скриншоты в Issues доступны всем по ссылке; не отправляй личные данные.",
   "",
-  "Администратору: /bind — привязать этот топик, /unbind — отвязать.",
+  "Администратору: /bind gym или /bind ryadom — привязать топик к проекту; /unbind — отвязать.",
   "/allow ID — разрешить пользователю, /revoke ID — убрать доступ, /users — список.",
 ].join("\n");
 
@@ -515,9 +523,13 @@ function normalizedCommand(raw: string): string {
   return text;
 }
 
-async function boundTopic(admin: Admin, chatId: number): Promise<BoundTopic | null> {
+async function boundTopic(admin: Admin, chatId: number, threadId: number | undefined): Promise<BoundTopic | null> {
+  if (!threadId || threadId <= 0) return null;
   const { data, error } = await admin.from("telegram_issue_bound_topics")
-    .select("chat_id,thread_id").eq("chat_id", String(chatId)).maybeSingle();
+    .select("chat_id,thread_id,project")
+    .eq("chat_id", String(chatId))
+    .eq("thread_id", threadId)
+    .maybeSingle();
   if (error) throw new Error("Topic lookup failed " + error.code);
   return data as BoundTopic | null;
 }
@@ -544,35 +556,68 @@ async function processMessage(
   const admin = adminClient();
   const send = (text: string) => telegramSend(botToken, chatId, text, threadId);
 
+  let topicProject: ProjectKey | null = null;
   if (chatType === "supergroup") {
-    // A bot is a group member, not a member of just one topic. The owner binds
-    // exactly the desired forum topic from inside that topic with /bind.
-    if (command === "/bind") {
+    // The existing Gym App binding is preserved; new topics are bound by
+    // their (chat_id, thread_id) pair. A project can have one topic per group.
+    if (command === "/bind" || command.startsWith("/bind ")) {
       if (!owner) return;
       if (!threadId || threadId <= 0) {
-        await send("Открой существующий топик группы и отправь /bind именно в нём.");
+        await send("Открой нужный топик группы и отправь /bind gym или /bind ryadom именно в нём.");
+        return;
+      }
+      const requestedProject: ProjectKey | null = command === "/bind gym" ? "gym-app"
+        : command === "/bind ryadom" ? "ryadom-app" : null;
+      if (!requestedProject) {
+        await send("Формат привязки: /bind gym для Gym App или /bind ryadom для «Рядом».");
+        return;
+      }
+      const existing = await boundTopic(admin, chatId, threadId);
+      if (existing && existing.project !== requestedProject) {
+        await send("⚠️ Этот топик уже привязан к " + projectTitle(existing.project) +
+          ". Сначала отправь /unbind в этом топике. Текущие задачи останутся в прежнем проекте.");
+        return;
+      }
+      const { data: matching, error: matchingError } = await admin
+        .from("telegram_issue_bound_topics")
+        .select("thread_id")
+        .eq("chat_id", String(chatId))
+        .eq("project", requestedProject)
+        .limit(1);
+      if (matchingError) throw new Error("Topic project lookup failed " + matchingError.code);
+      if (matching?.length && matching[0].thread_id !== threadId) {
+        await send("⚠️ Проект " + projectTitle(requestedProject) +
+          " уже привязан к другому топику этой группы. Сначала выполни /unbind в старом топике.");
+        return;
+      }
+      if (existing) {
+        await send("✅ Этот топик уже закреплён за проектом " + projectTitle(existing.project) + ".");
         return;
       }
       const { error } = await admin.from("telegram_issue_bound_topics").upsert({
         chat_id: String(chatId),
         thread_id: threadId,
+        project: requestedProject,
         bound_by: ownerId,
         bound_at: new Date().toISOString(),
-      }, { onConflict: "chat_id" });
+      }, { onConflict: "chat_id,thread_id" });
       if (error) throw new Error("Topic bind failed " + error.code);
-      await send("✅ Этот топик привязан к GymAppEditBot. \n\n" + RULES);
+      await send("✅ Топик закреплён за проектом " + projectTitle(requestedProject) +
+        ". Новые задачи из этого топика будут создаваться только в " +
+        REPOSITORIES[requestedProject].fullName + ".\n\n" + RULES);
       return;
     }
-    const bound = await boundTopic(admin, chatId);
-    // Ignore all messages in other topics, including commands, so no accidental
-    // Issues or unnecessary replies appear in the rest of the group.
-    if (!bound || bound.thread_id !== threadId) return;
+    const bound = await boundTopic(admin, chatId, threadId);
+    // Ignore other topics; unbound topics cannot accidentally create Issues.
+    if (!bound) return;
+    topicProject = bound.project;
     if (command === "/unbind") {
       if (!owner) return;
       const { error } = await admin.from("telegram_issue_bound_topics")
         .delete().eq("chat_id", String(chatId)).eq("thread_id", threadId);
       if (error) throw new Error("Topic unbind failed " + error.code);
-      await send("🔒 Топик отвязан. Для повторного подключения отправь здесь /bind.");
+      await send("🔒 Топик " + projectTitle(bound.project) +
+        " отвязан. Для повторной привязки отправь /bind gym или /bind ryadom.");
       return;
     }
   }
@@ -641,8 +686,8 @@ async function processMessage(
     await send(RULES);
     return;
   }
-  if (command === "/bind" || command === "/unbind") {
-    await send("Привязка доступна только администратору из топика супергруппы.");
+  if (command === "/bind" || command.startsWith("/bind ") || command === "/unbind") {
+    await send("Привязка доступна только администратору из топика супергруппы: /bind gym или /bind ryadom.");
     return;
   }
   if (command === "/allow" || command === "/revoke") {
@@ -655,16 +700,38 @@ async function processMessage(
   const scopeId = chatType === "private"
     ? String(chatId)
     : String(chatId) + ":" + String(threadId) + ":" + String(senderId);
-  const pending = await readPending(admin, scopeId);
+  let pending = await readPending(admin, scopeId);
+  // A group's topic binding is authoritative. Never silently reroute material
+  // from an old draft that was created for another project.
+  if (topicProject && pending?.project !== topicProject && pending &&
+      command !== "/cancel") {
+    if (pending.description.trim() || pending.images.length) {
+      await send("⚠️ В этом топике есть старый черновик для другого проекта. " +
+        "Нажми «❌ Отмена» и создай новую задачу — она будет направлена в " +
+        projectTitle(topicProject) + ".");
+      return;
+    }
+    pending = await savePending(admin, scopeId, { project: topicProject }, pending);
+  }
 
   if (command === "/project") {
-    await send("📁 Выбери проект для новой задачи: 🏋️ Gym App или 🐾 Рядом." +
-      (pending?.project ? "\nТекущий черновик: " + projectTitle(pending.project) : ""));
+    if (topicProject) {
+      await send("📁 Этот топик закреплён за проектом " + projectTitle(topicProject) +
+        ". Для другого проекта перейди в соответствующий топик.");
+    } else {
+      await send("📁 Выбери проект для новой задачи: 🏋️ Gym App или 🐾 Рядом." +
+        (pending?.project ? "\nТекущий черновик: " + projectTitle(pending.project) : ""));
+    }
     return;
   }
   const selectedProject: ProjectKey | null = command === "/gym" ? "gym-app"
     : command === "/ryadom" ? "ryadom-app" : null;
   if (selectedProject) {
+    if (topicProject) {
+      await send("📁 Этот топик закреплён за проектом " + projectTitle(topicProject) +
+        ". Кнопки выбора проекта работают только в личном чате.");
+      return;
+    }
     if (pending && pending.project !== selectedProject &&
         (pending.description.trim() || pending.images.length > 0)) {
       await send("⚠️ В черновике уже есть материалы для другого проекта. " +
@@ -692,8 +759,11 @@ async function processMessage(
           ". Отправляй материалы или нажми «❌ Отмена», чтобы начать заново.");
       return;
     }
-    await savePending(admin, scopeId, { composing: true, project: null });
-    await send("🆕 Новая задача! Сначала выбери проект: 🏋️ Gym App или 🐾 Рядом.");
+    await savePending(admin, scopeId, { composing: true, project: topicProject });
+    await send(topicProject
+      ? "🆕 Новая задача для " + projectTitle(topicProject) +
+        "! Пришли текст и скриншоты, затем нажми «✅ Отправить»."
+      : "🆕 Новая задача! Сначала выбери проект: 🏋️ Gym App или 🐾 Рядом.");
     return;
   }
   if (command === "/create") {
