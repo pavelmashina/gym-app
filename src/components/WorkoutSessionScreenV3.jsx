@@ -6,6 +6,7 @@ import { WorkoutStartChoice } from './WorkoutStartChoice.jsx';
 import {assertResultsSaved,flushPendingSetEdits,registerSetFlusher} from '../lib/resultDraftGuard.js';
 import {clearSetDraft,readSetDraft,writeSetDraft} from '../lib/setDraftJournal.js';
 import { formatResultV2 } from '../lib/exerciseResultsV2.js';
+import { readWorkingLoad, workingTonnage } from '../lib/completedWorkoutTonnage.js';
 import { ExerciseDetailsContent } from './ExerciseDetailsContent.jsx';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -94,11 +95,6 @@ function formatWeight(weightKg, unit = 'kg') {
   const display = toDisplayWeight(weightKg, unit);
   return display === '' ? '—' : `${display} ${unit === 'lb' ? 'lb' : 'кг'}`;
 }
-function workingTonnage(sets) {
-  return (sets ?? []).filter((set) => set.completed && set.setType === 'working')
-    .reduce((sum, set) => sum + Number(set.weight || 0) * Number(set.reps || 0), 0);
-}
-
 function BackIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 5-7 7 7 7" /></svg>; }
 function CheckIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6" /></svg>; }
 function TrashIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" /></svg>; }
@@ -634,7 +630,11 @@ function CompletedWorkout({ entry, onDone, onReload }) {
   }
 
   const rows = useMemo(() => entry.workout.exercises.map((exercise) => {
-    const working = exercise.sets.filter((set) => set.completed && set.setType === 'working' && Number(set.weight || 0) > 0 && Number(set.reps || 0) > 0);
+    // Both legacy and V2 store completed weight/reps, but in different fields.
+    const working = exercise.sets.map((set) => {
+      const load = readWorkingLoad(set);
+      return load ? { ...set, ...load } : null;
+    }).filter(Boolean);
     const best = working.reduce((current, set) => !current || e1rm(set) > e1rm(current) ? set : current, null);
     return best ? { exercise, best, score: e1rm(best) } : null;
   }).filter(Boolean), [entry.workout.exercises]);
@@ -642,7 +642,8 @@ function CompletedWorkout({ entry, onDone, onReload }) {
   useEffect(() => {
     let active = true;
     Promise.all(rows.map(async (row) => {
-      if (!row.exercise.exerciseId) return null;
+      // The legacy record comparator is not valid across V2 equipment/load modes.
+      if (!row.exercise.exerciseId || row.best.fromV2) return null;
       try {
         const history = await getExerciseHistorySummary(row.exercise.exerciseId, entry.session.id);
         const previousBest = history?.best?.set;
@@ -718,16 +719,11 @@ function CompletedWorkout({ entry, onDone, onReload }) {
         <div className="completed-result-table-head"><span>Упражнение</span><span>Лучший подход</span></div>
         {rows.length ? rows.map((row) => <div className="completed-result-row" key={row.exercise.id}>
           <span className="completed-result-exercise">{row.exercise.name}</span>
-          <span className="completed-result-best">{recordExerciseIds.has(row.exercise.id) && <span className="completed-result-trophy" aria-label="Личный рекорд">🏆</span>}<span>{Number(row.best.weight || 0)} кг × {row.best.reps}</span></span>
+          <span className="completed-result-best">{recordExerciseIds.has(row.exercise.id) && <span className="completed-result-trophy" aria-label="Личный рекорд">🏆</span>}<span>{Number(row.best.weight || 0)} кг{['dumbbell_each','kettlebell_each'].includes(row.best.loadMode) ? ' / снаряд' : ''} × {row.best.reps}</span></span>
         </div>) : <div className="completed-result-empty">Нет завершённых рабочих подходов с весом и повторами.</div>}
       </div>
     </section>
 
-    {entry.workout.exercises.some(exercise=>exercise.sets.some(set=>set.completed && set.resultV2)) && <section className="completed-result-card">
-      <h3>Результаты по типам нагрузки</h3>
-      <p>Эти подходы не смешиваются со старым тоннажем и расчётными силовыми рекордами.</p>
-      {entry.workout.exercises.flatMap(exercise=>exercise.sets.filter(set=>set.completed && set.resultV2).map(set=><div className="completed-result-row" key={set.id}><strong>{exercise.name}{set.setType==='warmup'?' · разминка':''}</strong><span>{formatResultV2(set.resultV2)}</span></div>))}
-    </section>}
     <CompletedWorkoutEditor key={entry.session.id + entry.workout.completedDate} entry={entry} onReload={onReload}/>
     <section className="completed-share-section">
       <h3>Поделитесь результатами тренировки со своими друзьями</h3>

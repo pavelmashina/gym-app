@@ -67,6 +67,12 @@ uppercase for normal labels, filter headings or program tags.
 - An **active** workout exercise card does not render a prescription summary (e.g. “3×8, отдых 120 сек”). Do not remove prescribed reps from planned workout previews or stored set targets.
 - The exercise info page opened from an active workout **reuses ExerciseDetailsContent** from Training → Exercises. Same title hierarchy, photo/video/GIF or outlined no-video block, tags, five-line description and “Подробнее / Скрыть”; same header styling. Keep the workout-native scrolling and rest-timer dock, and restore scroll position when closing it.
 
+### Completed workout results
+
+- The completed workout **tonnage** totals recorded kilograms × repetitions for completed **working** weight/reps sets in both legacy columns and V2 `resultV2` payloads. Do not infer body mass or multiply per-implement weights without an explicit separate metric. Exclude warmups and non-weight/reps activities. Use the same total for the on-screen card and share text.
+- The completed workout screen has **no “Результаты по типам нагрузки” section**; weight/reps V2 exercises can appear in the existing best-set summary. Keep the ability to edit results and their underlying data. Do not present legacy e1RM personal records as V2 records without comparable-load validation.
+- Regression test: `tests/completed-workout-tonnage.mjs`.
+
 ### Bottom navigation — binding design contract
 
 - Order: **Главная → Тренировки → Статистика → Питание → Спортпит**.
