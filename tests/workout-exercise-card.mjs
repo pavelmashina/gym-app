@@ -45,8 +45,16 @@ assert.match(rule(css, '.exercise-card-actions'), /grid-template-columns: repeat
 assert.doesNotMatch(css, /dashed/);
 assert.match(rule(css, '.exercise-card-actions button'), /border: 0;/);
 
-// The unit is named once, in the column head; the weight field no longer repeats it.
-assert.match(card, /<div className="exercise-set-head" aria-hidden="true"><span \/><span>\{unit === 'lb' \? 'lb' : 'кг'\}<\/span><span>Повт\.<\/span><\/div>/);
+// One shared column head per exercise, legacy or V2. No repeated labels in set rows.
+assert.match(card, /displaySets\.length > 0 && \(hasV2Rows && headerContract \? <ResultSetV2Head contract=\{headerContract\} \/> : <div className="exercise-set-head"/);
+assert.match(card, /const hasV2Rows = displaySets\.some\(/);
+assert.match(card, /<span>Повт\.<\/span><\/div>/);
+assert.match(resultSet, /export function ResultSetV2Head\(\{ contract \}\)/);
+assert.match(resultSet, /style=\{\{ gridTemplateColumns: metricColumns\(contract\) \}\}/);
+assert.match(resultSet, /style=\{\{ gridTemplateColumns: metricColumns\(draft\) \}\}/);
+assert.doesNotMatch(resultSet, /<label key=\{field\}>\s*<span>/, 'The V2 set rows cannot repeat the header captions');
+assert.doesNotMatch(resultSet, /<span>Сторона<\/span><select/, 'The side selector cannot repeat its caption');
+assert.match(resultSet, /aria-label=\{fieldLabel\(field,draft\.load_mode\)\}/);
 assert.match(setRow, /aria-label=\{`Вес, \$\{unit==='lb'\?'lb':'кг'\}`\} inputMode="decimal" enterKeyHint="next" placeholder="—"/);
 assert.match(setRow, /aria-label="Повторы" data-reps-set-id=\{set\.id\}/);
 assert.match(setRow, /aria-label="Удалить подход"/);
@@ -63,17 +71,17 @@ assert.match(rule(v3Css, '.result-set-v2-complete,\n.result-set-v2-delete'), /he
 assert.match(resultSet, /<CheckIcon \/>/);
 assert.match(resultSet, /<TrashIcon \/>/);
 assert.doesNotMatch(resultSet, /'✓'|>×</);
-// #64: a field caption is never cut, so «Вес одного снаряда, кг» keeps its unit on a narrow phone.
-// It wraps to two lines instead, and the inputs of the row stay level with each other.
-const caption = rule(v3Css, '.result-set-v2.compact label > span');
+// #64: captions remain readable, but are now above the entire exercise.
+// Inputs of every set share aligned columns, including unilateral side.
+const caption = rule(v3Css, '.result-set-v2-head .result-set-v2-fields > span');
 assert.doesNotMatch(caption, /nowrap|ellipsis|overflow: hidden/);
 assert.match(caption, /white-space: normal;/);
 assert.match(caption, /text-wrap: balance;/);
 assert.match(rule(v3Css, '.result-set-v2.compact label'), /align-content: end;/);
+assert.match(rule(v3Css, '.result-set-v2-head'), /grid-template-columns: 28px minmax\(0, 1fr\) 32px 28px;/);
 assert.match(resultSet, /'Вес одного снаряда, кг'/);
-// Those captions make the «кг / Повт.» head redundant over a card of only results v2 rows. The rule
-// that hid it nested :has() inside :has(), which browsers reject, so the head always showed.
-assert.match(css, /\.workout-exercise-card\.v3:not\(:has\(\.exercise-set-row\)\) \.exercise-set-head \{ display: none; \}/);
+// The V2 head must not be hidden in exercises that have no legacy input rows.
+assert.doesNotMatch(css, /\.workout-exercise-card\.v3:not\(:has\(\.exercise-set-row\)\) \.exercise-set-head \{ display: none; \}/);
 for (const [, selector] of css.matchAll(/([^{}]+)\{/g)) {
   assert.doesNotMatch(selector.replace(/\/\*[\s\S]*?\*\//g, ''), /:has\([^)]*:has\(/, `${selector.trim()}: a :has() inside :has() is dropped by the browser`);
 }

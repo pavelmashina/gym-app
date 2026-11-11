@@ -204,22 +204,31 @@
   gap: 6px;
 }
 
-/* Inputs of one row stay on one line when a neighbouring caption takes two. */
-.result-set-v2.compact label {
-  min-width: 0;
-  display: grid;
-  align-content: end;
-  gap: 3px;
+/* V2 headers use the same columns as the input rows and appear once per exercise. */
+.result-set-v2-head {
+  grid-template-columns: 28px minmax(0, 1fr) 32px 28px;
+  align-items: end;
 }
-
-/* The caption is shown whole (#64): on a narrow phone «Вес одного снаряда, кг» wraps to two even lines instead of losing its unit. */
-.result-set-v2.compact label > span {
+.result-set-v2-head .result-set-v2-fields {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.result-set-v2-head .result-set-v2-fields > span {
+  min-width: 0;
   color: var(--muted);
   font-size: var(--text-micro);
   line-height: var(--lh-micro);
   font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  text-transform: none;
   white-space: normal;
   text-wrap: balance;
+}
+.result-set-v2.compact label {
+  min-width: 0;
+  display: grid;
+  align-content: end;
 }
 
 .result-set-v2.compact input,
@@ -299,7 +308,8 @@
 }
 
 @media (max-width: 370px) {
-  .result-set-v2.compact {
+  .result-set-v2.compact,
+  .result-set-v2-head {
     grid-template-columns: 24px minmax(0, 1fr) 32px 28px;
     gap: 5px;
   }

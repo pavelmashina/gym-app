@@ -65,6 +65,7 @@ uppercase for normal labels, filter headings or program tags.
 
 - Home ad images slide horizontally as a continuous full-width track, with cloned end frames to avoid a reverse jump during wraparound. The pagination's active capsule animates across fixed-width dot slots; autoplay and touch swipes retain their behavior. Honour reduced-motion settings; no arrow buttons.
 - An **active** workout exercise card does not render a prescription summary (e.g. “3×8, отдых 120 сек”). Do not remove prescribed reps from planned workout previews or stored set targets.
+- Active workout set-entry columns have **one shared header per exercise**, never captions repeated above each set. The header adapts to the metric type: weight/reps, bodyweight, assistance, time, distance, and left/right side. Legacy and V2 rows keep their respective input semantics and accessible input labels; no header when there are no sets.
 - The exercise info page opened from an active workout **reuses ExerciseDetailsContent** from Training → Exercises. Same title hierarchy, photo/video/GIF or outlined no-video block, tags, five-line description and “Подробнее / Скрыть”; same header styling. Keep the workout-native scrolling and rest-timer dock, and restore scroll position when closing it.
 
 ### Completed workout results

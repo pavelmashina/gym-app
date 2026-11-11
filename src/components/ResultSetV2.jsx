@@ -7,6 +7,26 @@ const CheckIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 const TrashIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" /></svg>;
 
 const labels = {weight:'Вес, кг',reps:'Повторения',duration_seconds:'Время, с',distance_meters:'Дистанция, м',assistance_weight:'Помощь, кг'};
+const hasSide = result => ['unilateral', 'independent'].includes(result?.laterality);
+const metricColumns = result => 'repeat(' + resultFieldsV2(result?.measurement_type).length + ', minmax(0, 1fr))' + (hasSide(result) ? ' 52px' : '');
+const fieldLabel = (field, loadMode) => field !== 'weight' ? labels[field]
+  : ['dumbbell_each', 'kettlebell_each'].includes(loadMode) ? 'Вес одного снаряда, кг'
+    : loadMode === 'barbell_total' ? 'Штанга с грифом, кг'
+      : loadMode === 'bodyweight' ? 'Дополнительный вес, кг' : 'Указанный вес, кг';
+
+// One caption row per exercise, not a repeated caption above every set.
+export function ResultSetV2Head({ contract }) {
+  const fields = resultFieldsV2(contract?.measurement_type);
+  return <div className="exercise-set-head result-set-v2-head" aria-hidden="true">
+    <span />
+    <div className="result-set-v2-fields" style={{ gridTemplateColumns: metricColumns(contract) }}>
+      {fields.map(field => <span key={field}>{fieldLabel(field, contract?.load_mode)}</span>)}
+      {hasSide(contract) && <span>Сторона</span>}
+    </div>
+    <span />
+    <span />
+  </div>;
+}
 
 export default function ResultSetV2({set,contract,configurationKeyValue='standard',equipmentInstanceId=null,dragging=false,handleProps,onSave,onDelete}) {
   const initial = set.resultV2 || {...contract,metric_version:'v2',weight_unit:'kg',configuration_key:configurationKeyValue,equipment_instance_id:equipmentInstanceId,set_type:set.setType,completed:false};
@@ -43,15 +63,17 @@ export default function ResultSetV2({set,contract,configurationKeyValue='standar
     } finally {setSaving(false);}
   }
   useEffect(()=>{if(!set.resultV2)setDraft(current=>({...current,configuration_key:configurationKeyValue,equipment_instance_id:equipmentInstanceId||null}));},[configurationKeyValue,equipmentInstanceId,set.resultV2]);
-  const loadLabel=['dumbbell_each','kettlebell_each'].includes(draft.load_mode)?'Вес одного снаряда, кг':draft.load_mode==='barbell_total'?'Штанга с грифом, кг':draft.load_mode==='bodyweight'?'Дополнительный вес, кг':'Указанный вес, кг';
+  const fields = resultFieldsV2(draft.measurement_type);
   // The label comes from the shown order (Р1, 1, 2…), as on the weight × reps rows; the stored number may have gaps.
   const label=set.displayLabel??`${set.setType==='warmup'?'Р':''}${set.setNumber}`;
   return <div className={`result-set-v2 compact${draft.completed?' done':''}${set.setType==='warmup'?' warmup':''}${dragging?' dragging':''}`} data-set-id={set.id}>
     <span className="result-set-v2-number" {...handleProps}>{label}</span>
-    <div className="result-set-v2-fields">{resultFieldsV2(draft.measurement_type).map(field=><label key={field}>
-      <span>{field==='weight'?loadLabel:labels[field]}</span><input aria-label={field==='weight'?loadLabel:labels[field]} inputMode={field==='reps'?'numeric':'decimal'} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
-    </label>)}</div>
-    {['unilateral','independent'].includes(draft.laterality)&&<label className="result-set-v2-side"><span>Сторона</span><select aria-label="Сторона выполнения" value={draft.side||''} disabled={saving||Boolean(set.resultV2)} onChange={e=>patch('side',e.target.value)}><option value="">—</option><option value="left">Л</option><option value="right">П</option></select></label>}
+    <div className="result-set-v2-fields" style={{ gridTemplateColumns: metricColumns(draft) }}>
+      {fields.map(field=><label key={field}>
+        <input aria-label={fieldLabel(field,draft.load_mode)} inputMode={field==='reps'?'numeric':'decimal'} value={draft[field]??''} onChange={e=>patch(field,e.target.value)} disabled={saving}/>
+      </label>)}
+      {hasSide(draft)&&<label className="result-set-v2-side"><select aria-label="Сторона выполнения" value={draft.side||''} disabled={saving||Boolean(set.resultV2)} onChange={e=>patch('side',e.target.value)}><option value="">—</option><option value="left">Л</option><option value="right">П</option></select></label>}
+    </div>
     <button className="result-set-v2-complete" type="button" disabled={saving} onClick={()=>save(!draft.completed)} aria-label={draft.completed?'Снять отметку':'Записать подход'}>{saving?'…':<CheckIcon />}</button>
     <button className="result-set-v2-delete" type="button" disabled={saving} onClick={onDelete} aria-label="Удалить подход"><TrashIcon /></button>
     {error&&<p role="alert" className="workout-session-error">{error}</p>}
