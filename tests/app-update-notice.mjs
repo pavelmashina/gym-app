@@ -69,6 +69,6 @@ const keepsIcon = rootTabs[1].split(',');
 assert.ok(keepsIcon.includes('.appbar'), 'home keeps the icon');
 for (const bar of bars) assert.ok(keepsIcon.includes(bar), `${bar} inside a root tab keeps the icon`);
 assert.match(read('src/components/BottomNavigation.jsx'), /<nav className="app-bottom-nav"/, 'the root-tab marker exists');
-assert.match(app, /showBottomNavigation && <BottomNavigation/);
+assert.match(app, /showBottomNavigation && !menuOpen && <BottomNavigation/, 'Root tab navigation is hidden while the home drawer is open');
 
 console.log('App update icon: top-right placement, top-bar slots and icon contract passed.');
