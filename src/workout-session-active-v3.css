@@ -44,8 +44,13 @@
 /* Last 15 seconds (#63): only the bar turns red, a quiet hint that it is time to go back to the machine. */
 .rest-countdown.ending .rest-countdown-track span { background:var(--workout-rest-ending); }
 .rest-countdown-actions { min-width:0; margin-top:8px; display:flex; gap:6px; }
-.rest-timer-idle { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.rest-timer-idle > span { flex:1 1 0; min-width:0; color:var(--ink); font-size:12px; font-weight:700; line-height:1.25; }
+/* Idle row (#106): a stopwatch, "Timer" with its mode under it, the "Auto" mark and the start button with the rest time.
+   The two text lines are 20 + 16px, so the row keeps the 36px of its buttons and the footer does not grow. */
+.rest-timer-idle { display:flex; align-items:center; gap:8px; min-height:36px; }
+.rest-timer-idle > svg { flex:0 0 20px; width:20px; height:20px; color:var(--ink); }
+.rest-timer-idle-copy { flex:1 1 0; min-width:0; display:grid; }
+.rest-timer-idle-copy strong { color:var(--ink); font-size:var(--text-body); line-height:var(--lh-body); font-weight:var(--weight-bold); }
+.rest-timer-idle-copy span { color:var(--muted); font-size:var(--text-caption); line-height:var(--lh-caption); font-weight:var(--weight-medium); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rest-timer-idle-actions { flex:0 0 auto; display:flex; gap:6px; }
 .workout-session-footer .rest-countdown-actions button,
 .workout-session-footer .rest-timer-idle-actions button { width:auto; min-width:0; min-height:36px; padding:0 11px; border:0; border-radius:10px; font-size:11px; font-weight:800; white-space:nowrap; }
@@ -55,7 +60,18 @@
    The red is the one of the last seconds: it is mixed for the --ink plate, which inverts with the theme. */
 .workout-session-footer .rest-countdown-actions .rest-countdown-stop { flex:0 0 44px; min-width:44px; margin-left:auto; padding:0; display:grid; place-items:center; color:var(--workout-rest-ending); }
 .rest-countdown-stop svg { width:16px; height:16px; }
-.workout-session-footer .rest-timer-idle-actions button { border:1px solid var(--line); background:var(--surface); color:var(--ink); }
+.workout-session-footer .rest-timer-idle-actions button { display:inline-flex; align-items:center; border-radius:12px; }
+/* "Auto" is a quiet outline while the timer waits for a manual start, and a framed mark with a tick while every set starts it. */
+.workout-session-footer .rest-timer-idle-actions .rest-timer-auto { gap:5px; padding:0 10px; border:1px solid var(--line); background:transparent; color:var(--muted); font-size:var(--text-caption); font-weight:var(--weight-bold); }
+.workout-session-footer .rest-timer-idle-actions .rest-timer-auto.active { border-color:var(--ink); background:var(--surface); color:var(--ink); }
+.rest-timer-auto svg { width:13px; height:13px; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+/* The start button carries the rest time, so the row does not repeat it. */
+.workout-session-footer .rest-timer-idle-actions .rest-timer-start { gap:6px; padding:0 12px 0 10px; background:var(--surface-2); color:var(--ink); font-size:var(--text-body); font-weight:var(--weight-extra); font-variant-numeric:tabular-nums; }
+.rest-timer-start svg { width:12px; height:12px; }
+/* Narrow phones: the mode line needs the room more than the stopwatch does. */
+@media (max-width: 374px) {
+  .rest-timer-idle > svg { display:none; }
+}
 
 .exercise-rest-settings {
   border-top: 1px solid var(--line);

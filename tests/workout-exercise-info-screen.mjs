@@ -90,7 +90,7 @@ assert.match(between(mock, 'export async function getExerciseDetails(', 'export 
 assert.match(design, /A failed load \(#104\)/);
 assert.match(read('tests/ui/README.md'), /&info=fail/);
 
-// 5. «Запустить» on this screen starts the rest of the exercise on screen.
+// 5. The start button of the timer row on this screen starts the rest of the exercise on screen.
 assert.match(active, /const restExercise = exerciseInfo\?\.exercise \?\? workout\.exercises\.find\(/);
 
 // 6. The back swipe still closes it: without a modal it is found among the back buttons.

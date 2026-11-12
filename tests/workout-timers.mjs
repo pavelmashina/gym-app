@@ -141,7 +141,15 @@ const dock = between(v3, 'function RestTimerDock(', 'function LegacySetRow(');
 const list = between(active, 'className="workout-execution-list"', '</main>');
 const footer = between(active, '<footer className="workout-session-footer', '</footer>');
 
-for (const label of ['Запустить', 'Выключить', 'Включить']) assert.match(dock, new RegExp(label), `${label} is on the dock.`);
+// The idle row (#106): «Таймер» with its mode under it, the «Авто» mark and the start button with the rest time.
+assert.match(dock, /<section className="rest-timer-idle" aria-label="Таймер отдыха"><StopwatchIcon \/><div className="rest-timer-idle-copy"><strong>Таймер<\/strong><span>\{autostart \? 'Запуск после подхода' : 'Ручной запуск'\}<\/span><\/div>/);
+// «Авто» turns starting after every set on and off and says so to screen readers; the tick is there only while it is on.
+assert.match(dock, /<button className=\{`rest-timer-auto\$\{autostart \? ' active' : ''\}`\} type="button" aria-pressed=\{autostart\} aria-label="Автозапуск таймера после подхода" onClick=\{\(\) => onAutostartChange\(!autostart\)\}>\{autostart && <CheckIcon \/>\}Авто<\/button>/);
+// The start button shows the rest time instead of a word, so the row does not repeat it; it stands last, at the right end.
+assert.match(dock, /Авто<\/button><button className="rest-timer-start" type="button" aria-label=\{`Запустить таймер отдыха, \$\{formatRest\(idleSeconds\)\}`\} onClick=\{onStart\}><PlayIcon \/>\{formatRest\(idleSeconds\)\}<\/button><\/div><\/section>/);
+assert.equal(dock.match(/<button /g).length, 2, 'Two buttons on the idle row.');
+// The two look-alike text buttons and the old caption are gone.
+assert.doesNotMatch(dock, />Запустить<|Включить|Выключить|Таймер отдыха выключен|Таймер отдыха ·/);
 const countdown = between(v3, 'function RestCountdown(', 'function RestTimerDock(');
 assert.match(countdown, /Остановить/);
 // «−30 сек» stands before «+30 сек» (#105).
@@ -176,6 +184,20 @@ assert.match(activeCss, /\.rest-countdown-actions button \{ flex:0 0 auto; min-w
 // The cross is red, keeps a fixed 44px and stands at the right end of the row, away from the time buttons (#105).
 assert.match(activeCss, /\.workout-session-footer \.rest-countdown-actions \.rest-countdown-stop \{ flex:0 0 44px; min-width:44px; margin-left:auto; padding:0; display:grid; place-items:center; color:var\(--workout-rest-ending\); \}/);
 assert.match(sessionCss, /\.workout-session-content\.active \{ padding-bottom: calc\(128px \+ env\(safe-area-inset-bottom\)\); \}/);
+
+// The idle row (#106) is as high as its 36px buttons: two text lines of 20 + 16px, so the footer does not grow.
+assert.match(activeCss, /\.rest-timer-idle \{ display:flex; align-items:center; gap:8px; min-height:36px; \}/);
+assert.match(activeCss, /\.rest-timer-idle-copy strong \{ color:var\(--ink\); font-size:var\(--text-body\); line-height:var\(--lh-body\); font-weight:var\(--weight-bold\); \}/);
+// On a narrow phone the mode line is the part that gives way, with an ellipsis; the buttons keep their size.
+assert.match(activeCss, /\.rest-timer-idle-copy \{ flex:1 1 0; min-width:0; display:grid; \}/);
+assert.match(activeCss, /\.rest-timer-idle-copy span \{ color:var\(--muted\); font-size:var\(--text-caption\); line-height:var\(--lh-caption\); font-weight:var\(--weight-medium\); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; \}/);
+assert.match(activeCss, /\.rest-timer-idle-actions \{ flex:0 0 auto; display:flex; gap:6px; \}/);
+// Below 375px the stopwatch is hidden: at 360px the mode line would not fit next to it.
+assert.match(activeCss, /@media \(max-width: 374px\) \{\s*\.rest-timer-idle > svg \{ display:none; \}\s*\}/);
+// «Авто» is a quiet outline when off and a framed mark when on; the start button is tonal. Theme tokens only.
+assert.match(activeCss, /\.rest-timer-auto \{ gap:5px; padding:0 10px; border:1px solid var\(--line\); background:transparent; color:var\(--muted\);/);
+assert.match(activeCss, /\.rest-timer-auto\.active \{ border-color:var\(--ink\); background:var\(--surface\); color:var\(--ink\); \}/);
+assert.match(activeCss, /\.rest-timer-start \{ gap:6px; padding:0 12px 0 10px; background:var\(--surface-2\); color:var\(--ink\); font-size:var\(--text-body\); font-weight:var\(--weight-extra\); font-variant-numeric:tabular-nums; \}/);
 
 // In the last 15 seconds only the bar turns red (#63): the plate, the digits and the buttons keep their colours.
 const endingRules = [...activeCss.matchAll(/([^{}]*\.rest-countdown\.ending[^{}]*)\{([^}]*)\}/g)];
