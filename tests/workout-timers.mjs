@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
+  canShortenRest,
   clearRestTimer,
   clockSkewMs,
   createRestTimer,
@@ -11,6 +12,7 @@ import {
   readRestAutostart,
   readRestTimer,
   restRemainingSeconds,
+  shortenRestTimer,
   shouldAlertRestEnd,
   workoutElapsedSeconds,
   writeRestAutostart,
@@ -77,6 +79,21 @@ assert.equal(restRemainingSeconds(revived, late), 30, 'A past end plus 30 second
 assert.equal(revived.duration, 30);
 assert.equal(revived.id, timer.id);
 
+// −30 sec (#105) takes 30 seconds off a running rest and leaves it running.
+const shortened = shortenRestTimer(timer, 30, T0 + 20_000);
+assert.equal(restRemainingSeconds(shortened, T0 + 20_000), 40);
+assert.equal(shortened.duration, 60);
+assert.equal(shortened.id, timer.id);
+assert.deepEqual(extendRestTimer(shortened, 30, T0 + 21_000), timer, '+30 sec undoes a mistaken −30 sec.');
+assert.equal(isRestEnding(restRemainingSeconds(shortenRestTimer(timer, 30, T0 + 50_000), T0 + 50_000)), true, '−30 sec can bring the rest into its last seconds.');
+// It never ends the rest: with 30 seconds or less on the display it changes nothing, and the button is disabled.
+assert.equal(canShortenRest(31, 30), true);
+assert.equal(canShortenRest(30, 30), false);
+assert.equal(canShortenRest(0, 30), false);
+assert.equal(restRemainingSeconds(shortenRestTimer(timer, 30, T0 + 59_000), T0 + 59_000), 1, 'At 0:31 the rest goes down to 0:01.');
+assert.equal(shortenRestTimer(timer, 30, T0 + 60_000), timer, 'At 0:30 nothing changes.');
+assert.equal(shortenRestTimer(timer, 30, T0 + 400_000), timer, 'A finished rest is not shortened.');
+
 // The end signal fires when the rest really ends, not on a return long afterwards.
 assert.equal(shouldAlertRestEnd(timer, T0 + 89_000), false);
 assert.equal(shouldAlertRestEnd(timer, T0 + 90_020), true);
@@ -125,7 +142,19 @@ const list = between(active, 'className="workout-execution-list"', '</main>');
 const footer = between(active, '<footer className="workout-session-footer', '</footer>');
 
 for (const label of ['Запустить', 'Выключить', 'Включить']) assert.match(dock, new RegExp(label), `${label} is on the dock.`);
-assert.match(between(v3, 'function RestCountdown(', 'function RestTimerDock('), /Остановить/);
+const countdown = between(v3, 'function RestCountdown(', 'function RestTimerDock(');
+assert.match(countdown, /Остановить/);
+// «−30 сек» stands before «+30 сек» (#105).
+assert.match(countdown, /<button type="button" onClick=\{\(\) => onShorten\(REST_STEP_SECONDS\)\} disabled=\{!canShortenRest\(remaining, REST_STEP_SECONDS\)\}>−30 сек<\/button><button type="button" onClick=\{\(\) => onAdd\(REST_STEP_SECONDS\)\}>\+30 сек<\/button>/);
+assert.match(v3, /const REST_STEP_SECONDS = 30;/);
+// Stopping is a cross at the right end of the row, named for screen readers; no text button (#105).
+assert.match(countdown, /\+30 сек<\/button><button className="rest-countdown-stop" type="button" aria-label=\{remaining === 0 \? 'Закрыть таймер' : 'Остановить отдых'\} onClick=\{onStop\}><CloseIcon \/><\/button><\/div>/);
+assert.equal(countdown.match(/<button /g).length, 3, 'Three buttons on the running countdown.');
+// Turning the timer off is not next to stopping it: it stays on the idle dock only (#105).
+assert.doesNotMatch(countdown, /Выключить|onTurnOff|canTurnOff/);
+assert.doesNotMatch(dock, /onTurnOff|canTurnOff/);
+assert.match(dock, /onShorten=\{onShorten\}/);
+assert.match(active, /onShorten=\{\(seconds\) => setRestTimer\(\(current\) => current && shortenRestTimer\(current, seconds, Date\.now\(\)\)\)\}/);
 assert.match(between(v3, 'function RestCountdown(', 'function RestTimerDock('), /className=\{`rest-countdown\$\{remaining === 0 \? ' finished' : isRestEnding\(remaining\) \? ' ending' : ''\}`\}/, 'The countdown marks its last 15 seconds.');
 assert.match(footer, /<RestTimerDock /, 'The controls stay reachable wherever the list is scrolled.');
 assert.doesNotMatch(list, /RestCountdown|RestTimerDock/, 'A timer inside the list moves the cards when it appears.');
@@ -142,7 +171,10 @@ assert.match(lib, /select\('status, paused_at, started_at, active_duration_secon
 const activeCss = fs.readFileSync('src/workout-session-active-v3.css', 'utf8');
 const sessionCss = fs.readFileSync('src/workout-session.css', 'utf8');
 assert.doesNotMatch(activeCss.match(/\.rest-countdown-actions \{[^}]*\}/)[0], /flex-wrap/);
-assert.match(activeCss, /\.rest-countdown-actions button \{ flex:1 1 auto; padding:0 6px;/);
+// The two time buttons are compact and do not stretch (#105).
+assert.match(activeCss, /\.rest-countdown-actions button \{ flex:0 0 auto; min-width:72px; padding:0 12px;/);
+// The cross is red, keeps a fixed 44px and stands at the right end of the row, away from the time buttons (#105).
+assert.match(activeCss, /\.workout-session-footer \.rest-countdown-actions \.rest-countdown-stop \{ flex:0 0 44px; min-width:44px; margin-left:auto; padding:0; display:grid; place-items:center; color:var\(--workout-rest-ending\); \}/);
 assert.match(sessionCss, /\.workout-session-content\.active \{ padding-bottom: calc\(128px \+ env\(safe-area-inset-bottom\)\); \}/);
 
 // In the last 15 seconds only the bar turns red (#63): the plate, the digits and the buttons keep their colours.

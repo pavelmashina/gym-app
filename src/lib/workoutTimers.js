@@ -33,6 +33,17 @@ export function extendRestTimer(timer, seconds, now) {
   return { ...timer, duration: running ? timer.duration + seconds : seconds, endsAt: (running ? timer.endsAt : now) + seconds * 1000 };
 }
 
+// «−30 сек» (#105) only shortens a rest that stays running afterwards: ending it is what the stop cross is for.
+export function canShortenRest(remainingSeconds, seconds) {
+  return remainingSeconds > seconds;
+}
+
+export function shortenRestTimer(timer, seconds, now) {
+  if (!canShortenRest(restRemainingSeconds(timer, now), seconds)) return timer;
+  // The duration shrinks with the end time, as it grows in extendRestTimer: «+30 сек» then undoes a mistaken tap exactly.
+  return { ...timer, duration: timer.duration - seconds, endsAt: timer.endsAt - seconds * 1000 };
+}
+
 export function restRemainingSeconds(timer, now) {
   return Math.max(0, Math.ceil((timer.endsAt - now) / 1000));
 }

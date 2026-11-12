@@ -50,7 +50,11 @@
 .workout-session-footer .rest-countdown-actions button,
 .workout-session-footer .rest-timer-idle-actions button { width:auto; min-width:0; min-height:36px; padding:0 11px; border:0; border-radius:10px; font-size:11px; font-weight:800; white-space:nowrap; }
 /* One row even at 320px: a second one would make the footer cover the end of the list. */
-.workout-session-footer .rest-countdown-actions button { flex:1 1 auto; padding:0 6px; background:color-mix(in srgb, var(--surface) 12%, transparent); color:var(--surface); }
+.workout-session-footer .rest-countdown-actions button { flex:0 0 auto; min-width:72px; padding:0 12px; background:color-mix(in srgb, var(--surface) 12%, transparent); color:var(--surface); }
+/* Stopping the rest is a red cross at the right end of the row (#105), apart from the two compact time buttons on the left.
+   The red is the one of the last seconds: it is mixed for the --ink plate, which inverts with the theme. */
+.workout-session-footer .rest-countdown-actions .rest-countdown-stop { flex:0 0 44px; min-width:44px; margin-left:auto; padding:0; display:grid; place-items:center; color:var(--workout-rest-ending); }
+.rest-countdown-stop svg { width:16px; height:16px; }
 .workout-session-footer .rest-timer-idle-actions button { border:1px solid var(--line); background:var(--surface); color:var(--ink); }
 
 .exercise-rest-settings {
