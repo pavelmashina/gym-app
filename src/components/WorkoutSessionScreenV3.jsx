@@ -95,6 +95,8 @@ function InfoIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="curren
 // A clock turning back: the button opens past results, not information about the exercise.
 function HistoryIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5" /><path d="M3.5 3.5v5h5" /><path d="M12 7.5V12l3 2" /></svg>; }
 function CloseIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>; }
+function StopwatchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5" /><path d="M12 9.6v3.9l2.4 1.5M10 2.8h4M12 2.8V6M18.3 6.9l1.2-1.2" /></svg>; }
+function PlayIcon() { return <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.6v10.8a.8.8 0 0 0 1.2.7l8.6-5.4a.8.8 0 0 0 0-1.4L5.2 1.9A.8.8 0 0 0 4 2.6z" /></svg>; }
 function ChevronIcon() { return <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m4 2 4 4-4 4" /></svg>; }
 function MoreIcon() { return <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>; }
 function GripIcon() { return <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="7" r="1.3"/><circle cx="16" cy="7" r="1.3"/><circle cx="8" cy="12" r="1.3"/><circle cx="16" cy="12" r="1.3"/><circle cx="8" cy="17" r="1.3"/><circle cx="16" cy="17" r="1.3"/></svg>; }
@@ -222,7 +224,8 @@ function RestCountdown({ timer, onStop, onAdd, onShorten }) {
 // Lives in the footer: visible wherever the list is scrolled, and its appearing does not move the cards under the finger.
 function RestTimerDock({ timer, autostart, idleSeconds, onStart, onStop, onAdd, onShorten, onAutostartChange }) {
   if (timer) return <RestCountdown key={timer.id} timer={timer} onStop={onStop} onAdd={onAdd} onShorten={onShorten} />;
-  return <section className="rest-timer-idle" aria-label="Таймер отдыха"><span>{autostart ? `Таймер отдыха · ${formatRest(idleSeconds)}` : 'Таймер отдыха выключен'}</span><div className="rest-timer-idle-actions"><button type="button" onClick={onStart}>Запустить</button><button type="button" onClick={() => onAutostartChange(!autostart)}>{autostart ? 'Выключить' : 'Включить'}</button></div></section>;
+  // Idle row (#106): the mode under «Таймер», the «Авто» mark for starting after every set, and the start button showing the rest time.
+  return <section className="rest-timer-idle" aria-label="Таймер отдыха"><StopwatchIcon /><div className="rest-timer-idle-copy"><strong>Таймер</strong><span>{autostart ? 'Запуск после подхода' : 'Ручной запуск'}</span></div><div className="rest-timer-idle-actions"><button className={`rest-timer-auto${autostart ? ' active' : ''}`} type="button" aria-pressed={autostart} aria-label="Автозапуск таймера после подхода" onClick={() => onAutostartChange(!autostart)}>{autostart && <CheckIcon />}Авто</button><button className="rest-timer-start" type="button" aria-label={`Запустить таймер отдыха, ${formatRest(idleSeconds)}`} onClick={onStart}><PlayIcon />{formatRest(idleSeconds)}</button></div></section>;
 }
 
 function LegacySetRow({ set, previous, unit, saving, dragging, handleProps, onPersist, onToggle, onDelete }) {
