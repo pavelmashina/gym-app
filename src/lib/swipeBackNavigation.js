@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { appBox, appPoint } from './portraitLock.js';
 
 const BACK_SELECTORS = [
   '.sportpit-detail-topbar > button:first-child',
@@ -98,24 +99,26 @@ export function useSwipeBackNavigation() {
       if (!button) return;
       if (event.target instanceof Element && event.target.closest('input,textarea,select,[contenteditable="true"]')) return;
       const page = screenForBackButton(button);
-      const box = page?.getBoundingClientRect();
+      // The edge, the width and the finger as the user sees them: the page itself is turned
+      // while the phone is on its side (#102).
+      const box = page ? appBox(page) : null;
       if (!page || !box || box.width <= 0) return;
-      const finger = event.touches[0];
-      const edge = finger.clientX - box.left;
+      const finger = appPoint(event.touches[0]);
+      const edge = finger.x - box.left;
       if (edge < 0 || edge > 48) return;
-      drag = { page, button, x: finger.clientX, y: finger.clientY, lastX: finger.clientX, lastY: finger.clientY, start: performance.now(), width: box.width, direction: null };
+      drag = { page, button, x: finger.x, y: finger.y, lastX: finger.x, lastY: finger.y, start: performance.now(), width: box.width, direction: null };
     }
 
     function onMove(event) {
       if (!drag || event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      const dx = touch.clientX - drag.x;
-      const dy = touch.clientY - drag.y;
+      const touch = appPoint(event.touches[0]);
+      const dx = touch.x - drag.x;
+      const dy = touch.y - drag.y;
       if (!drag.direction) drag.direction = backSwipeDirection(dx, dy);
       if (drag.direction !== 'back') return;
       if (event.cancelable) event.preventDefault();
-      drag.lastX = touch.clientX;
-      drag.lastY = touch.clientY;
+      drag.lastX = touch.x;
+      drag.lastY = touch.y;
       const distance = Math.min(drag.width, Math.max(0, dx));
       drag.page.classList.add('swipe-back-moving');
       drag.page.style.transition = 'none';
@@ -130,9 +133,9 @@ export function useSwipeBackNavigation() {
         resetScreen(current.page, current.direction === 'back');
         return;
       }
-      const touch = event.changedTouches[0];
-      const dx = touch.clientX - current.x;
-      const dy = Math.abs(touch.clientY - current.y);
+      const touch = appPoint(event.changedTouches[0]);
+      const dx = touch.x - current.x;
+      const dy = Math.abs(touch.y - current.y);
       const elapsedMs = Math.max(1, performance.now() - current.start);
       const valid = dx > dy * 1.1;
       if (!valid || !backSwipeShouldComplete({ dx, width: current.width, elapsedMs })) {

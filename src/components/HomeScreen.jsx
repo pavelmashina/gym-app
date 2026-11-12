@@ -6,6 +6,7 @@ import { markScheduledWorkoutCompleted } from '../lib/workoutSessions.js';
 import '../home-dynamic.css';
 import '../home-schedule-edit.css';
 import { carouselSwipeIndex } from '../lib/carouselSwipe.js';
+import { appPoint } from '../lib/portraitLock.js';
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -127,7 +128,7 @@ export function PromoBanner() {
 
   const beginTouch = event => {
     const touch = event.touches.length === 1 ? event.touches[0] : null;
-    touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+    touchStart.current = touch ? appPoint(touch) : null;
     setHeld(Boolean(touch));
   };
   const endTouch = event => {
@@ -135,9 +136,9 @@ export function PromoBanner() {
     touchStart.current = null;
     setHeld(false);
     if (!origin || event.changedTouches.length !== 1) return;
-    const touch = event.changedTouches[0];
-    const dx = touch.clientX - origin.x;
-    const next = carouselSwipeIndex(activeSlide, BANNER_SLIDE_COUNT, dx, touch.clientY - origin.y);
+    const touch = appPoint(event.changedTouches[0]);
+    const dx = touch.x - origin.x;
+    const next = carouselSwipeIndex(activeSlide, BANNER_SLIDE_COUNT, dx, touch.y - origin.y);
     if (next !== activeSlide) changeSlide(next, dx < 0 ? 1 : -1);
   };
   const cancelTouch = () => { touchStart.current = null; setHeld(false); };

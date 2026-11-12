@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { ExerciseLibraryPicker } from './ExerciseLibraryPicker.jsx';
 import { addSessionExercise, loadWorkoutSession } from '../lib/workoutSessions.js';
 import { assertResultsSaved, flushPendingSetEdits } from '../lib/resultDraftGuard.js';
+import { appBox, appHeight } from '../lib/portraitLock.js';
 import '../exercise-library-picker.css';
 import '../workout-exercise-adder.css';
 
@@ -23,9 +24,12 @@ function revealAddedCard(id, framesLeft = 10) {
   const card = document.querySelector(`[data-session-exercise-id="${id}"]`);
   // React may render the reloaded workout a frame or two later.
   if (!card) { if (framesLeft > 0) requestAnimationFrame(() => revealAddedCard(id, framesLeft - 1)); return; }
-  const top = (document.querySelector('.workout-session-header')?.getBoundingClientRect().bottom ?? 0) + 12;
-  const bottom = (document.querySelector('.workout-session-footer')?.getBoundingClientRect().top ?? window.innerHeight) - 12;
-  const rect = card.getBoundingClientRect();
+  // Measured as the user sees the app: the page is turned while the phone is on its side (#102).
+  const header = document.querySelector('.workout-session-header');
+  const footer = document.querySelector('.workout-session-footer');
+  const top = (header ? appBox(header).bottom : 0) + 12;
+  const bottom = (footer ? appBox(footer).top : appHeight()) - 12;
+  const rect = appBox(card);
   const shift = rect.bottom > bottom ? Math.min(rect.bottom - bottom, rect.top - top) : Math.min(0, rect.top - top);
   if (shift) scrollParent(card).scrollBy({ top: shift, behavior: 'smooth' });
 }

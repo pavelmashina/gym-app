@@ -1,0 +1,51 @@
+/* The app stays upright when the phone is turned on its side (#102).
+   `lib/portraitLock.js` sets <html data-portrait-lock> to the quarter turn of the page, "90" or
+   "270", only on a phone whose system did turn the page. <body> is then turned back by it and
+   takes the place of the screen: fixed layers hang on it, and #root scrolls instead of the page. */
+
+html[data-portrait-lock] {
+  /* One hundredth of the app's width and height: the stylesheets' vw and vh while the lock is on. */
+  --portrait-lock-vw: 1dvh;
+  --portrait-lock-vh: calc((100vw - var(--portrait-lock-top)) / 100);
+  overflow: hidden;
+}
+
+/* The top of the phone, with its camera cutout, is the left side of the turned page, or the right. */
+html[data-portrait-lock="90"] {
+  --portrait-lock-top: env(safe-area-inset-left, 0px);
+}
+html[data-portrait-lock="270"] {
+  --portrait-lock-top: env(safe-area-inset-right, 0px);
+}
+
+html[data-portrait-lock] body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: calc(100 * var(--portrait-lock-vw));
+  height: calc(100 * var(--portrait-lock-vh));
+  min-height: 0;
+  overflow: hidden;
+  transform-origin: 0 0;
+}
+html[data-portrait-lock="90"] body {
+  transform: translate(var(--portrait-lock-top), 100dvh) rotate(-90deg);
+}
+html[data-portrait-lock="270"] body {
+  transform: translate(calc(100vw - var(--portrait-lock-top)), 0) rotate(90deg);
+}
+
+/* The page cannot scroll under a turned <body>, so #root scrolls in its place. Screens keep their
+   own height (`flex-start`): stretched to #root they would let long content run past their background. */
+html[data-portrait-lock] #root {
+  height: 100%;
+  min-height: 0;
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Sheets that stop the page from scrolling do it through <body>. */
+html[data-portrait-lock] body[style*="overflow: hidden"] #root {
+  overflow-y: hidden;
+}

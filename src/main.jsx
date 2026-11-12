@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
+import { installPortraitLock } from './lib/portraitLock.js';
 import './styles.css';
 import './auth.css';
 import './training-icon-tabs.css';
@@ -23,6 +24,10 @@ import './home-summary.css';
 import './home-calendar-dark.css';
 import './home-banner-swipe.css';
 import './navigation-dark-highlight.css';
+import './portrait-lock.css';
+
+// Before the first render, so a phone already on its side opens the app upright (#102).
+installPortraitLock();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

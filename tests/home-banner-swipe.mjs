@@ -31,7 +31,8 @@ assert.ok(!fs.existsSync('src/home-banner-arrows.css'), 'The gutter layout of #7
 // The slides move horizontally, with endpoint clones for continuous looping.
 assert.match(home, /import \{ carouselSwipeIndex \} from '\.\.\/lib\/carouselSwipe\.js';/);
 assert.match(home, /onTouchStart=\{beginTouch\} onTouchEnd=\{endTouch\} onTouchCancel=\{cancelTouch\}/);
-assert.match(home, /carouselSwipeIndex\(activeSlide, BANNER_SLIDE_COUNT, dx, touch.clientY - origin.y\)/);
+// The finger is read through appPoint(): the page is turned while the phone is on its side (#102).
+assert.match(home, /carouselSwipeIndex\(activeSlide, BANNER_SLIDE_COUNT, dx, touch\.y - origin\.y\)/);
 assert.match(home, /const BANNER_TRACK_SLIDES = \[HOME_SLIDES\[BANNER_SLIDE_COUNT - 1\], \.\.\.HOME_SLIDES, HOME_SLIDES\[0\]\]/);
 assert.match(home, /onTransitionEnd=\{finishSlide\}/);
 assert.match(home, /setTrackIndex\(trackIndex === 0 \? BANNER_SLIDE_COUNT : 1\)/);
