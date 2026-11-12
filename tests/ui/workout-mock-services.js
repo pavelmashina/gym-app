@@ -21,6 +21,8 @@ const saveFails = params.get('save') === 'fail';
 // `planned=1`: the workout has not started, so «К тренировке» offers «Начать» and
 // «Отметить выполненной» (#66). `mark=fail`: marking it done fails as on a dead connection.
 const markFails = params.get('mark') === 'fail';
+// `info=fail`: the first load of exercise information fails, the next ones succeed (#104).
+let infoFailsLeft = params.get('info') === 'fail' ? 1 : 0;
 let stage = params.get('planned') === '1' ? 'planned' : 'active';
 let markedEntry = null;
 const pause = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -173,6 +175,7 @@ export async function changeCompletedWorkoutDate() { throw new Error('Не ис�
 
 export async function getExerciseDetails(id) {
   await pause();
+  if (infoFailsLeft > 0) { infoFailsLeft -= 1; throw new Error('Не удалось загрузить информацию об упражнении.'); }
   return {
     id,
     name: 'Тестовое упражнение',

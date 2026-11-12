@@ -69,6 +69,27 @@ assert.match(active, /useLayoutEffect\(\(\) => \{\s*const phone = contentRef\.cu
 // Back tapped while the description loads must not reopen the screen.
 assert.match(active, /setExerciseInfo\(\(current\) => current\?\.exercise === exercise \? \{ exercise, details \} : current\);/);
 
+// Issue #104: a failed load shows its error in the footer; the next attempt clears it before loading,
+// so the error does not stay next to information that has loaded.
+const openInfo = between(active, 'async function openInfo(exercise) {', 'async function removeExercise(');
+assert.match(openInfo, /setExerciseInfo\(\{ exercise, details: null \}\); setInfoLoading\(true\);[\s\S]*?setLocalError\(''\);[\s\S]*?await getExerciseDetails\(/, 'The earlier error is cleared before the new load starts.');
+assert.ok(openInfo.includes("setLocalError('')") && openInfo.indexOf("setLocalError('')") < openInfo.indexOf('try {'), 'The error is cleared outside try, whatever the load ends with.');
+// Only the latest request reports a failure or ends the loading state.
+assert.match(active, /const infoRequestRef = useRef\(0\);/);
+assert.match(openInfo, /const request = \+\+infoRequestRef\.current;/);
+assert.match(openInfo, /catch \(e\) \{[\s\S]*?if \(infoRequestRef\.current === request\) setLocalError\(e\.message\);/);
+assert.match(openInfo, /finally \{ if \(infoRequestRef\.current === request\) setInfoLoading\(false\); \}/);
+assert.equal((openInfo.match(/setLocalError\(e\.message\)/g) || []).length, 1, 'No unguarded failure report.');
+// The failure stays visible where the user is: the footer error is not hidden on the information screen.
+assert.doesNotMatch(infoCss, /\.workout-(session|footer)-error[^{]*\{[^}]*display:\s*none/);
+assert.match(active, /\{\(error \|\| localError\) && <div className="workout-session-error workout-footer-error" role="alert">\{error \|\| localError\}<\/div>\}/);
+// The stand can reproduce it: the first load fails, the next one succeeds.
+const mock = read('tests/ui/workout-mock-services.js');
+assert.match(mock, /let infoFailsLeft = params\.get\('info'\) === 'fail' \? 1 : 0;/);
+assert.match(between(mock, 'export async function getExerciseDetails(', 'export async function reorderSessionExercises('), /if \(infoFailsLeft > 0\) \{ infoFailsLeft -= 1; throw new Error\('Не удалось загрузить информацию об упражнении\.'\); \}/);
+assert.match(design, /A failed load \(#104\)/);
+assert.match(read('tests/ui/README.md'), /&info=fail/);
+
 // 5. «Запустить» on this screen starts the rest of the exercise on screen.
 assert.match(active, /const restExercise = exerciseInfo\?\.exercise \?\? workout\.exercises\.find\(/);
 
