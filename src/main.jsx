@@ -21,6 +21,7 @@ import './november-card-navigation-refinements.css';
 import './nutrition-card-alignment.css';
 import './training-catalog-standards.css';
 import './home-summary.css';
+import './home-workout-done.css';
 import './home-calendar-dark.css';
 import './home-banner-swipe.css';
 import './navigation-dark-highlight.css';

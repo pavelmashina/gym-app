@@ -430,3 +430,14 @@ Five equal-sized buttons, from left to right: **Главная → Тренир�
 - The sheet is only its title and the three buttons: no caption «Текущая тренировка» above the title and no explanatory note under it. The pause sheet keeps both.
 - «Поставить на паузу» in the footer opens the former sheet «Поставить тренировку на паузу?» with «Продолжить сейчас» and «Поставить на паузу»; «Выйти без паузы» appears there only after a failed pause. Both sheets are `.workout-interrupt-confirm` and need no styles of their own.
 - Check: `tests/workout-leave-without-pause.mjs` (`test:ui-audit`).
+
+## Home card of a finished workout — November 2026 (#107)
+- Before #107 a finished workout kept the black «Тренировка» card and changed only the button text to «Посмотреть результат». Now the card itself changes, so the day reads as done at a glance.
+- The card turns light: `--surface` with a 1.5px `--ink` outline (an inset shadow, so its size does not change) and `--ink` text. The black card stays the call to action for a workout still to do; in the dark theme, where every home card is `--surface`, the outline is what sets the finished one apart.
+- The label reads «Выполнена» at full strength, with an 18px `--ink` circle and a check mark in `--surface` before it. The title is the same `WorkoutTitle` as in the other states (#74).
+- Under the title, the totals of the workout as rows like those of «Питание»: label 12/16 in `--muted` on the left, value 12/16 600 on the right, 6px above and below, a hairline `color-mix(in srgb, var(--ink) 10%, transparent)` between rows. «Время» is whole minutes («52 мин», «1 ч 5 мин», «2 ч»), «Тоннаж» is the number of the result screen («4 850 кг»; from 100 tonnes «124,9 т», which still fits a 375px phone).
+- A row with nothing to say is left out: a workout marked done by hand has no time, and bodyweight or cardio sets give no tonnage. With no rows the card is the label, the title and the button.
+- The button swaps colours with the card (`--ink` plate, `--surface` text) and reads «Результат»; its `aria-label` is still «Посмотреть результат». It opens the result screen as before.
+- The totals are read with the card: the latest completed session of the workout gives the time, its completed sets the tonnage (`tonnageFromSetRows`, the rules of the result screen). If that reading fails, the card shows without rows instead of the error card.
+- A workout that is running again («Активная тренировка») keeps the black card.
+- Styles: `src/home-workout-done.css`, imported in `src/main.jsx` after `home-summary.css`. Wording: `src/lib/completedWorkoutFacts.js`. Check: `tests/home-workout-done.mjs` (`test:ui-audit`).

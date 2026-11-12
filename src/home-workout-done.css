@@ -1,0 +1,73 @@
+/* Home «Тренировка» card after the workout is done (#107).
+   Imported in main.jsx after home-summary.css. Before #107 only the button text changed.
+   Now the card turns from the black call to action into a light one with an outline,
+   says «Выполнена» and shows what the workout came to, in rows like the «Питание» card. */
+
+.summary-col.workout.workout-done {
+  background: var(--surface);
+  color: var(--ink);
+  /* An inset shadow, not a border: the card keeps the size of the other states. */
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.summary-col.workout-done .summary-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 1;
+}
+
+.workout-done-check {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.workout-done-check svg {
+  width: 11px;
+  height: 11px;
+}
+
+.workout-done-facts {
+  margin: var(--space-2) 0 0;
+}
+
+.workout-done-facts > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  padding: 6px 0;
+  white-space: nowrap;
+}
+
+/* The hairline comes from --ink, so it shows in both themes, as on the «Питание» card. */
+.workout-done-facts > div + div {
+  border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.workout-done-facts dt,
+.workout-done-facts dd {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+}
+
+.workout-done-facts dt {
+  color: var(--muted);
+}
+
+.workout-done-facts dd {
+  font-weight: var(--weight-semibold);
+}
+
+/* The button of the other states is white on black; here the colours swap with the card. */
+.summary-col.workout-done .workout-btn {
+  background: var(--ink);
+  color: var(--surface);
+}
