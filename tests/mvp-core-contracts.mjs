@@ -30,7 +30,7 @@ assert.match(workoutV3, /onPauseRequest/);
 assert.doesNotMatch(workoutV4, /MutationObserver/);
 assert.doesNotMatch(workoutV4, /onClickCapture/);
 assert.match(workoutV4, /onPauseRequest=\{requestPause\}/);
-assert.match(workoutV4, /onBack=\{requestPause\}/);
+assert.match(workoutV4, /onBack=\{requestLeave\}/);
 
 assert.doesNotMatch(app, /if \(current === 'workout-session'\) \{[\s\S]{0,180}setWorkoutScheduledId\(null\)/);
 assert.match(app, /if \(current === 'workout-session'\) return current/);

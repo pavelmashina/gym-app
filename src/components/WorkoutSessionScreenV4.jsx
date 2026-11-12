@@ -27,6 +27,7 @@ export function WorkoutSessionScreen(props) {
   const [replacementLoading, setReplacementLoading] = useState(false);
   const [replacementError, setReplacementError] = useState('');
   const [pauseConfirmOpen, setPauseConfirmOpen] = useState(false);
+  const [leaveAsked, setLeaveAsked] = useState(false);
   const [pauseLoading, setPauseLoading] = useState(false);
   const [pauseError, setPauseError] = useState('');
   const [pauseFailed, setPauseFailed] = useState(false);
@@ -127,6 +128,15 @@ export function WorkoutSessionScreen(props) {
     props.onBack?.();
   }
 
+  function leaveWithoutPause() {
+    if (pauseLoading) return;
+    // An unconfirmed results v2 row exists only on screen and would be lost with it.
+    // Typed weights and reps need no wait: their rows send them when the screen closes.
+    try { assertResultsSaved(); } catch (e) { setPauseError(e.message); return; }
+    setPauseConfirmOpen(false);
+    props.onBack?.();
+  }
+
   async function resumeWorkout() {
     if (resumeLoading) return;
     setResumeLoading(true);
@@ -195,22 +205,31 @@ export function WorkoutSessionScreen(props) {
     </div>;
   }
 
-  const requestPause = () => { setPauseError(''); setPauseFailed(false); setPauseConfirmOpen(true); };
+  const openInterrupt = (leaving) => { setPauseError(''); setPauseFailed(false); setLeaveAsked(leaving); setPauseConfirmOpen(true); };
+  const requestPause = () => openInterrupt(false);
+  // «Назад» asks how to leave (#103); «Поставить на паузу» on the screen asks only about the pause.
+  const requestLeave = () => openInterrupt(true);
 
   return <div>
-    <WorkoutSessionScreenV3 key={version} {...props} initialEntry={version === 0 ? props.initialEntry : undefined} canRecoverFinish={lifecycle.hasActiveSession} onBack={requestPause} onExit={props.onBack} onPauseRequest={requestPause} onSessionPaused={() => setVersion((value) => value + 1)} pausing={pauseLoading} onRequestReplacement={openReplacement} />
+    <WorkoutSessionScreenV3 key={version} {...props} initialEntry={version === 0 ? props.initialEntry : undefined} canRecoverFinish={lifecycle.hasActiveSession} onBack={requestLeave} onExit={props.onBack} onPauseRequest={requestPause} onSessionPaused={() => setVersion((value) => value + 1)} pausing={pauseLoading} onRequestReplacement={openReplacement} />
 
-    {pauseConfirmOpen && <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label="Поставить тренировку на паузу">
+    {pauseConfirmOpen && <div className="workout-modal-shell" role="dialog" aria-modal="true" aria-label={leaveAsked ? 'Выйти из тренировки' : 'Поставить тренировку на паузу'}>
       <button className="workout-modal-scrim" type="button" aria-label="Закрыть" onClick={() => !pauseLoading && setPauseConfirmOpen(false)} />
       <section className="workout-modal-card workout-interrupt-confirm">
-        <div className="workout-modal-head"><div><span>Текущая тренировка</span><h3>Поставить тренировку на паузу?</h3></div><button type="button" onClick={() => setPauseConfirmOpen(false)} disabled={pauseLoading}>×</button></div>
-        <p>Все введённые подходы, веса, повторы, заметки и прошедшее время сохранятся. Вы сможете продолжить тренировку позже с того же места.</p>
+        <div className="workout-modal-head"><div>{!leaveAsked && <span>Текущая тренировка</span>}<h3>{leaveAsked ? 'Выйти из тренировки?' : 'Поставить тренировку на паузу?'}</h3></div><button type="button" onClick={() => setPauseConfirmOpen(false)} disabled={pauseLoading}>×</button></div>
+        {!leaveAsked && <p>Все введённые подходы, веса, повторы, заметки и прошедшее время сохранятся. Вы сможете продолжить тренировку позже с того же места.</p>}
         {pauseError && <div className="workout-lifecycle-error">{pauseError}</div>}
-        <div className="workout-interrupt-confirm-actions">
-          <button type="button" onClick={() => setPauseConfirmOpen(false)} disabled={pauseLoading}>Продолжить сейчас</button>
-          <button className="primary" type="button" onClick={pauseWorkout} disabled={pauseLoading}>{pauseLoading ? 'Сохраняем…' : 'Поставить на паузу'}</button>
-          {pauseFailed && <button type="button" onClick={props.onBack} disabled={pauseLoading}>Выйти без паузы</button>}
-        </div>
+        {leaveAsked
+          ? <div className="workout-interrupt-confirm-actions">
+            <button type="button" onClick={() => setPauseConfirmOpen(false)} disabled={pauseLoading}>Остаться в тренировке</button>
+            <button type="button" onClick={pauseWorkout} disabled={pauseLoading}>{pauseLoading ? 'Сохраняем…' : 'Поставить на паузу'}</button>
+            <button className="primary" type="button" onClick={leaveWithoutPause} disabled={pauseLoading}>Выйти без паузы</button>
+          </div>
+          : <div className="workout-interrupt-confirm-actions">
+            <button type="button" onClick={() => setPauseConfirmOpen(false)} disabled={pauseLoading}>Продолжить сейчас</button>
+            <button className="primary" type="button" onClick={pauseWorkout} disabled={pauseLoading}>{pauseLoading ? 'Сохраняем…' : 'Поставить на паузу'}</button>
+            {pauseFailed && <button type="button" onClick={leaveWithoutPause} disabled={pauseLoading}>Выйти без паузы</button>}
+          </div>}
       </section>
     </div>}
 
