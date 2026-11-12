@@ -360,6 +360,8 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
   const contentRef = useRef(null);
   const listScrollRef = useRef(0);
   const infoWasOpenRef = useRef(false);
+  // Issue #104: only the latest request for exercise information may report its failure or end the loading state.
+  const infoRequestRef = useRef(0);
   const infoOpen = Boolean(exerciseInfo);
   useLayoutEffect(() => {
     const phone = contentRef.current?.closest('.phone');
@@ -592,11 +594,17 @@ function ActiveWorkout({ entry, onEntryChange, onFinish, onPauseRequest, onSessi
     // The list is about to be hidden: remember where it was scrolled, to put it back on return.
     listScrollRef.current = contentRef.current?.closest('.phone')?.scrollTop ?? 0;
     setExerciseInfo({ exercise, details: null }); setInfoLoading(true);
+    // A new attempt starts clean: the error of an earlier failed load must not outlive a successful one (#104).
+    setLocalError('');
+    const request = ++infoRequestRef.current;
     try {
       const details = await getExerciseDetails(exercise.linkedExerciseId);
       // Back may have been tapped while the description was loading; it must not reopen the screen.
       setExerciseInfo((current) => current?.exercise === exercise ? { exercise, details } : current);
-    } catch (e) { setLocalError(e.message); } finally { setInfoLoading(false); }
+    } catch (e) {
+      // A slow failure of an earlier request must not land on top of the information opened after it.
+      if (infoRequestRef.current === request) setLocalError(e.message);
+    } finally { if (infoRequestRef.current === request) setInfoLoading(false); }
   }
   async function removeExercise(exercise) {
     const hasResults = exercise.sets.some((set) => set.completed || set.weight || set.reps || set.resultV2);
