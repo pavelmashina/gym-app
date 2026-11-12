@@ -9,6 +9,7 @@ import {
 import { CustomExerciseForm } from './CustomExerciseForm.jsx';
 import { DeleteExerciseDialog } from './MyExercisesPanel.jsx';
 import { ExerciseDetailsContent } from './ExerciseDetailsContent.jsx';
+import { appPoint } from '../lib/portraitLock.js';
 import '../exercise-library-picker.css';
 import '../training-exercise-browser.css';
 
@@ -33,14 +34,14 @@ function ExercisePage({ title, onBack, children, editor = false }) {
   }, [onBack]);
   return <div className={`training-exercise-page${editor ? ' training-exercise-editor-page' : ''}`}
     onTouchStart={event => {
-      if (event.touches.length === 1 && event.touches[0].clientX < 38) {
-        setTouchStart({ x: event.touches[0].clientX, y: event.touches[0].clientY });
-      }
+      const start = event.touches.length === 1 ? appPoint(event.touches[0]) : null;
+      if (start && start.x < 38) setTouchStart(start);
     }}
     onTouchEnd={event => {
       if (!touchStart || event.changedTouches.length !== 1) return;
-      const dx = event.changedTouches[0].clientX - touchStart.x;
-      const dy = event.changedTouches[0].clientY - touchStart.y;
+      const end = appPoint(event.changedTouches[0]);
+      const dx = end.x - touchStart.x;
+      const dy = end.y - touchStart.y;
       setTouchStart(null);
       if (dx > 90 && Math.abs(dy) < dx * 0.65) onBack();
     }}

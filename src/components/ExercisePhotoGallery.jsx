@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { appPoint } from '../lib/portraitLock.js';
 import '../exercise-photo-gallery.css';
 
 /** Swipe only for a clearly horizontal gesture; vertical scroll stays native. */
@@ -34,16 +35,16 @@ export function ExercisePhotoGallery({ photos = [], alt = 'Фото упражн
 
   function beginTouch(event) {
     if (event.touches.length !== 1) return;
-    touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    touchStart.current = appPoint(event.touches[0]);
   }
 
   function endTouch(event) {
     const start = touchStart.current;
     touchStart.current = null;
     if (!start || event.changedTouches.length !== 1) return;
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - start.x;
-    const deltaY = touch.clientY - start.y;
+    const touch = appPoint(event.changedTouches[0]);
+    const deltaX = touch.x - start.x;
+    const deltaY = touch.y - start.y;
     const next = gallerySwipeIndex(current, count, deltaX, deltaY);
     if (next !== current) {
       swiped.current = true;

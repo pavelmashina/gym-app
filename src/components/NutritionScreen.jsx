@@ -4,6 +4,7 @@ import { nutritionImageSrc } from '../lib/nutritionImages.js';
 import { calculateNutrition } from '../lib/nutritionCalculator.js';
 import { NUTRITION_SORT_OPTIONS, sortNutritionCatalog } from '../lib/nutritionCatalogSort.js';
 import { supabase } from '../lib/supabase.js';
+import { appBox, appPoint } from '../lib/portraitLock.js';
 import '../nutrition-screen.css';
 import '../meal-plans.css';
 
@@ -130,17 +131,18 @@ function MealPlanDetails({ plan, meals, onBack }) {
 
   function onMealImageTouchStart(event) {
     if (event.touches.length !== 1) return;
-    const touch = event.touches[0];
+    const touch = appPoint(event.touches[0]);
     // Give the application's left-edge Back gesture precedence.
-    const screenLeft = event.currentTarget.closest('.meal-plan-detail-screen')?.getBoundingClientRect().left ?? 0;
-    swipeStart.current = touch.clientX - screenLeft <= 48 ? null : { x: touch.clientX, y: touch.clientY };
+    const screen = event.currentTarget.closest('.meal-plan-detail-screen');
+    const screenLeft = screen ? appBox(screen).left : 0;
+    swipeStart.current = touch.x - screenLeft <= 48 ? null : touch;
   }
   function onMealImageTouchEnd(event) {
     const start = swipeStart.current;
     swipeStart.current = null;
     if (!start || event.changedTouches.length !== 1) return;
-    const touch = event.changedTouches[0];
-    setIndex(current => mealSwipeTarget(start.x, start.y, touch.clientX, touch.clientY, meals.length, current));
+    const touch = appPoint(event.changedTouches[0]);
+    setIndex(current => mealSwipeTarget(start.x, start.y, touch.x, touch.y, meals.length, current));
   }
   const meal = meals[index];
   if (!meal) return <div className="nutrition-screen meal-plan-detail-screen"><header className="recipe-detail-topbar"><button type="button" className="recipe-detail-back" onClick={onBack}><BackIcon /></button><strong>{plan.title}</strong><span /></header><main className="meal-plan-detail-content"><div className="recipe-state">В этом рационе пока нет блюд.</div></main></div>;

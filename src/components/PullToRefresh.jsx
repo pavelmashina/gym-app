@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { appBox, appPoint } from '../lib/portraitLock.js';
 import '../pull-to-refresh.css';
 
 export const PULL_REFRESH_THRESHOLD = 150;
@@ -107,20 +108,21 @@ export function PullToRefresh({ onRefresh, disabled = false }) {
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
       if (event.target instanceof Element && event.target.closest('input,select,textarea,[contenteditable="true"]')) return;
       if (!scrollIsAtTop(event.target)) return;
-      const touch = event.touches[0];
+      // The finger as the user sees the app: the page is turned while the phone is on its side (#102).
+      const touch = appPoint(event.touches[0]);
       const screen = event.target.closest('.sportpit-detail-screen,.sportpit-stack,.nutrition-screen,.phone,.exercise-phone,.statistics-phone,.account-screen,.settings-screen,.menu-screen,.create-program-phone');
       if (!screen) return;
-      const rect = screen.getBoundingClientRect();
-      if (touch.clientX < rect.left + 50) return; // the left edge is reserved for back navigation
+      const rect = appBox(screen);
+      if (touch.x < rect.left + 50) return; // the left edge is reserved for back navigation
       clearPending();
-      gesture = { x: touch.clientX, y: touch.clientY, direction: null, deltaY: 0 };
+      gesture = { x: touch.x, y: touch.y, direction: null, deltaY: 0 };
     }
 
     function handleMove(event) {
       if (!gesture || event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      const dx = touch.clientX - gesture.x;
-      const dy = touch.clientY - gesture.y;
+      const touch = appPoint(event.touches[0]);
+      const dx = touch.x - gesture.x;
+      const dy = touch.y - gesture.y;
       if (!gesture.direction) {
         if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
         gesture.direction = dy > 0 && dy > Math.abs(dx) * 1.25 ? 'refresh' : 'other';

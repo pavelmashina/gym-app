@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { appPoint } from '../lib/portraitLock.js';
 import '../program-cover-crop.css';
 
 const OUTPUT_WIDTH = 1200;
@@ -69,14 +70,15 @@ export function ProgramCoverCropEditor({ imageUrl, onApply, onCancel }) {
     if (!geometry || saving) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
-    dragRef.current = { x: event.clientX, y: event.clientY, offsetX: point.x, offsetY: point.y };
+    dragRef.current = { ...appPoint(event), offsetX: point.x, offsetY: point.y };
   }
   function moveDrag(event) {
     const drag = dragRef.current;
     if (!drag || !geometry) return;
+    const finger = appPoint(event);
     setPosition({
-      x: clamp(drag.offsetX + event.clientX - drag.x, geometry.limitX),
-      y: clamp(drag.offsetY + event.clientY - drag.y, geometry.limitY),
+      x: clamp(drag.offsetX + finger.x - drag.x, geometry.limitX),
+      y: clamp(drag.offsetY + finger.y - drag.y, geometry.limitY),
     });
   }
   function endDrag() { dragRef.current = null; }

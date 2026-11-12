@@ -71,7 +71,8 @@ assert.match(adder, /function closePicker\(\) \{ if \(!pending\.current\) \{ set
 assert.match(adder, /function closeChoice\(\) \{ if \(!pending\.current\) setChoice\(null\); \}/);
 assert.match(adder, /<button className="workout-add-exercise" type="button" disabled=\{Boolean\(busy\)\} onClick=\{openPicker\}><PlusIcon \/>Добавить упражнение<\/button>/);
 // The new card is brought fully above the fixed footer.
-assert.match(adder, /querySelector\('\.workout-session-footer'\)\?\.getBoundingClientRect\(\)\.top/);
+// Measured through appBox(): the page is turned while the phone is on its side (#102).
+assert.match(adder, /const footer = document\.querySelector\('\.workout-session-footer'\);[\s\S]*appBox\(footer\)\.top/);
 
 // 5. Look: a full-width 48px tile in theme tokens, so it follows the dark theme.
 const button = rule(css, '.workout-add-exercise');
