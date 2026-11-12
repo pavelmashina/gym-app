@@ -7,6 +7,7 @@ import '../home-dynamic.css';
 import '../home-schedule-edit.css';
 import { carouselSwipeIndex } from '../lib/carouselSwipe.js';
 import { appPoint } from '../lib/portraitLock.js';
+import { completedWorkoutFacts, tonnageFromSetRows } from '../lib/completedWorkoutFacts.js';
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTHS_GENITIVE = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -210,13 +211,22 @@ function WorkoutTitle({ title }) {
   return <h3 ref={ref}>{title}</h3>;
 }
 
+function DoneCheckIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5.5 12.5 4.2 4.2L18.5 8" /></svg>; }
+
+// #107: a finished workout gets a card of its own — light, with «Выполнена» and its totals.
+function CompletedWorkoutSummary({ workout, onOpenWorkout }) {
+  const facts = completedWorkoutFacts(workout.summary);
+  return <section className="summary-col workout workout-done"><div className="summary-label"><span className="workout-done-check"><DoneCheckIcon /></span>Выполнена</div><WorkoutTitle title={workout.title} />{facts.length > 0 && <dl className="workout-done-facts">{facts.map((fact) => <div key={fact.key}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}<button className="workout-btn" type="button" aria-label="Посмотреть результат" onClick={() => onOpenWorkout?.(workout.id)}>Результат</button></section>;
+}
+
 function WorkoutSummary({ workout, status, isToday, onOpenWorkout, onRetry, onEditWorkout }) {
   if (status === 'loading') return <section className="summary-col workout home-empty-card" aria-live="polite"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Загружаем…</h3><p>Проверяем расписание на выбранную дату</p></div></section>;
   if (status === 'error' && !workout) return <section className="summary-col workout home-error-card" role="alert"><div className="summary-label">Тренировка</div><div className="home-error-copy"><h3>Не удалось загрузить тренировку</h3><p>Это не означает, что на выбранную дату ничего не запланировано.</p><button className="home-error-retry" type="button" onClick={onRetry}>Повторить</button></div></section>;
   if (!workout) return <section className="summary-col workout home-empty-card"><div className="summary-label">Тренировка</div><div className="home-empty-copy"><h3>Нет тренировки</h3><p>{isToday ? 'На сегодня ничего не запланировано' : 'На эту дату ничего не запланировано'}</p></div></section>;
+  if (workout.completed && !workout.active) return <CompletedWorkoutSummary workout={workout} onOpenWorkout={onOpenWorkout} />;
   const skipped = workout.status === 'skipped';
   const recovery = Boolean(workout.recovery);
-  const buttonLabel = workout.active ? 'Продолжить' : (workout.completed ? 'Посмотреть результат' : (recovery ? 'Перенести на сегодня' : (skipped ? 'Пропущена' : 'Начать')));
+  const buttonLabel = workout.active ? 'Продолжить' : (recovery ? 'Перенести на сегодня' : (skipped ? 'Пропущена' : 'Начать'));
   return <section className={`summary-col workout${recovery ? ' recovery' : ''}`}><div className="summary-label">{workout.active ? 'Активная тренировка' : (recovery ? 'Пропущенная тренировка' : (skipped ? 'Пропущенная тренировка' : 'Тренировка'))}</div><WorkoutTitle title={workout.title} />{recovery && <p>Плановая дата: {formatFullDate(dateFromKey(workout.scheduledDate))}</p>}<button className="workout-btn" type="button" disabled={skipped && !recovery} onClick={() => recovery ? onEditWorkout?.() : (!skipped && onOpenWorkout?.(workout.id))}>{buttonLabel}</button></section>;
 }
 
@@ -267,6 +277,31 @@ function Drawer({ onCloseMenu }) {
   return <><button className="scrim" type="button" aria-label="Закрыть меню" onClick={onCloseMenu} /><aside className="drawer" aria-label="Боковое меню"><div className="drawer-head"><div className="drawer-title">Меню</div><button className="close-button" type="button" aria-label="Закрыть меню" onClick={onCloseMenu}>×</button></div><nav><button className="drawer-link" type="button">Подписка</button><button className="drawer-link" type="button">Настройки</button><button className="drawer-link" type="button">Политика конфиденциальности</button><button className="drawer-link" type="button">Поддержка</button><button className="drawer-link" type="button">Частые вопросы</button><button className="drawer-link" type="button">Рассказать о приложении</button><button className="drawer-link" type="button">Оценить приложение</button></nav><div className="version">Prototype v0.3.3 · React migration</div></aside></>;
 }
 
+// #107: the time and tonnage of a finished workout, for the rows of its home card.
+// The card is worth showing without them, so a failure here is logged and gives no rows
+// instead of turning the whole card into an error.
+async function loadCompletedSummary(scheduledWorkoutId) {
+  try {
+    const { data: sessions, error: sessionError } = await supabase.from('workout_sessions').select('id, active_duration_seconds').eq('scheduled_workout_id', scheduledWorkoutId).eq('status', 'completed').order('ended_at', { ascending: false }).limit(1);
+    if (sessionError) throw sessionError;
+    const session = sessions?.[0];
+    if (!session) return null;
+    const { data: exercises, error: exerciseError } = await supabase.from('workout_session_exercises').select('id').eq('workout_session_id', session.id);
+    if (exerciseError) throw exerciseError;
+    const exerciseIds = (exercises ?? []).map((row) => row.id);
+    let setRows = [];
+    if (exerciseIds.length > 0) {
+      const response = await supabase.from('performed_sets').select('*').in('workout_session_exercise_id', exerciseIds).eq('completed', true);
+      if (response.error) throw response.error;
+      setRows = response.data ?? [];
+    }
+    return { durationSeconds: Number(session.active_duration_seconds || 0), tonnage: tonnageFromSetRows(setRows) };
+  } catch (error) {
+    console.error(`Unable to load the summary of completed workout ${scheduledWorkoutId}:`, error);
+    return null;
+  }
+}
+
 async function loadWorkoutCard(dateKey) {
   const { data: activeRows, error: activeError } = await supabase.from('workout_sessions').select('id, scheduled_workout_id').eq('status', 'active').limit(1);
   if (activeError) throw activeError;
@@ -300,6 +335,10 @@ async function loadWorkoutCard(dateKey) {
   }
   if (!workoutRow) return null;
 
+  const completed = !active && workoutRow.status === 'completed';
+  // Started here and awaited at the end: it runs alongside the requests below and never rejects.
+  const summaryRequest = completed ? loadCompletedSummary(workoutRow.id) : null;
+
   let hasLaterCompleted = false;
   if (!active && workoutRow.user_program_id && Number.isFinite(Number(workoutRow.sequence_number))) {
     const { count: laterCompletedCount, error: laterCompletedError } = await supabase
@@ -325,6 +364,7 @@ async function loadWorkoutCard(dateKey) {
     status: workoutRow.status,
     active,
     completed: workoutRow.status === 'completed',
+    summary: summaryRequest ? await summaryRequest : null,
     hasLaterCompleted,
     canShiftTail: !hasLaterCompleted,
     editable,
