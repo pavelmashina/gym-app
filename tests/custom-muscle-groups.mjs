@@ -12,6 +12,8 @@ function query(table) {
     select() { return builder; },
     order() { return builder; },
     eq() { return builder; },
+    is() { return builder; },
+    neq() { return builder; },
     in() { return builder; },
     insert(payload) { state.inserts.push(payload); pending = { id: `new-${state.inserts.length}`, created_at: '2026-11-09', ...payload }; return builder; },
     update(payload) { state.updates.push(payload); pending = { id: 'own-1', owner_id: 'alice', video_path: null, ...payload }; return builder; },
