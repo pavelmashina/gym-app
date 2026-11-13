@@ -485,10 +485,41 @@ body:has(.training-exercise-page) .app-bottom-nav {
   padding: var(--space-3);
   gap: var(--space-3);
 }
-.exercise-catalog-content .training-exercise-filter-panel .catalog-filter-group > span {
-  font-size: var(--gym-type-s) !important;
-  text-transform: none !important;
+/* Three native dropdowns replace the pill grids; each uses the existing
+   14px labels / 12px values and retains keyboard + touch select behavior. */
+.exercise-catalog-content .training-exercise-filter-panel .training-exercise-filter-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
 }
-.exercise-catalog-content .training-exercise-filter-panel .catalog-filter-pills button {
-  font-size: var(--gym-type-xs) !important;
+.exercise-catalog-content .training-exercise-filter-panel .training-exercise-filter-field > span {
+  font-size: var(--gym-type-s) !important; /* 14px */
+  line-height: var(--lh-body);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.exercise-catalog-content .training-exercise-filter-panel .training-exercise-filter-field select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--gym-type-xs) !important; /* 12px */
+  line-height: var(--lh-caption);
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.exercise-catalog-content .training-exercise-filter-panel .training-exercise-filter-field select:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }

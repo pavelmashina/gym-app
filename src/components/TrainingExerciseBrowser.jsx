@@ -165,24 +165,24 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
         </div>
         {filtersOpen && <section id="training-exercise-filter-panel" className="catalog-filters training-exercise-filter-panel"
           aria-label="Фильтры упражнений">
-          <div className="catalog-filter-group">
+          <label className="training-exercise-filter-field">
             <span>Группа мышц</span>
-            <div className="catalog-filter-pills">{muscleGroups.map(value =>
-              <button key={value} type="button" className={muscleGroup === value ? 'active' : ''}
-                aria-pressed={muscleGroup === value} onClick={() => setMuscleGroup(value)}>{value}</button>)}</div>
-          </div>
-          <div className="catalog-filter-group">
+            <select value={muscleGroup} onChange={event => setMuscleGroup(event.target.value)}>
+              {muscleGroups.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label className="training-exercise-filter-field">
             <span>Оборудование</span>
-            <div className="catalog-filter-pills">{EXERCISE_EQUIPMENT.map(value =>
-              <button key={value} type="button" className={equipment === value ? 'active' : ''}
-                aria-pressed={equipment === value} onClick={() => setEquipment(value)}>{value}</button>)}</div>
-          </div>
-          <div className="catalog-filter-group">
+            <select value={equipment} onChange={event => setEquipment(event.target.value)}>
+              {EXERCISE_EQUIPMENT.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label className="training-exercise-filter-field">
             <span>Тип движения</span>
-            <div className="catalog-filter-pills">{movementTypes.map(value =>
-              <button key={value} type="button" className={movementType === value ? 'active' : ''}
-                aria-pressed={movementType === value} onClick={() => setMovementType(value)}>{value}</button>)}</div>
-          </div>
+            <select value={movementType} onChange={event => setMovementType(event.target.value)}>
+              {movementTypes.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
           {hasFilters && <button className="catalog-filters-reset" type="button"
             onClick={resetFilterChoices}>Сбросить фильтры</button>}
         </section>}
