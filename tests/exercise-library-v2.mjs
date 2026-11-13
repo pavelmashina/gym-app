@@ -8,7 +8,8 @@ rows[1] = {...rows[1], owner_id:'alice'};
 const legacy = { id:'legacy', name:'Старое упражнение', status:'retired', owner_id:null, equipment:'Гантели', muscle_group:'Ноги' };
 const rebuilt = {id:'legs-1', name:'Приседания со штангой на плечах', status:'legacy',
   source_sheet:'Упражнения (Ноги) список', owner_id:null, muscle_group:'Ноги',
-  variation_axes:[{label:'Постановка ног',options:['шире плеч','на ширине плеч']}]};
+  variation_axes:[{label:'Постановка ног',options:['шире плеч','на ширине плеч']}],
+  muscle_tags:['Передняя поверхность бедра (ППБ)','Ягодицы','Приводящие']};
 const oldRows = [legacy, { ...rows[0], status:'retired', source_sheet:'catalog_v2' }, rebuilt];
 let failRecent = false;
 const requests = [];
@@ -40,6 +41,12 @@ assert.equal(result.all.length,502,'New leg card joins existing active catalog a
 assert.equal(result.mine.length,1);
 assert.deepEqual(result.recent.map(x=>x.id),['id-1','legs-1']);
 assert(result.all.some(x=>x.id==='legs-1'&&x.variation_axes?.length===1));
+const legs=result.all.find(x=>x.id==='legs-1');
+assert.deepEqual(library.exerciseMuscleTags(legs),['Передняя поверхность бедра (ППБ)','Ягодицы','Приводящие']);
+assert.equal(legs.display_muscle_group,'Передняя поверхность бедра (ППБ)','Primary label replaces generic legs');
+assert.equal(library.filterExerciseList(result.all,{muscleGroup:'Ноги',query:'приводящие'}).length,1,'Legs filter stays compatible with secondary group search');
+assert.deepEqual(library.exerciseMuscleTags({muscle_group:'Спина'}),['Спина'],'Historical and own exercises retain single group');
+
 assert(!result.all.some(x=>x.id==='legacy'),'Retired exercise never appears in any picker');
 assert.deepEqual(requests.map(row => row.join(':')).sort(),[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]].map(row => row.join(':')).sort(), 'Concurrent catalog fetches may resolve in any order');
 const complete = await library.listExerciseLibrary({includeLegacy:true});

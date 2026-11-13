@@ -12,6 +12,17 @@ assert(src.exercises.some(r=>r.source_number===null && r.name.includes('Отве
 assert(src.exercises.every(r=>r.source_row>1&&r.name&&Array.isArray(r.variation_axes)));
 assert(src.exercises.every(r=>r.variation_axes.length<=3&&r.variation_axes.every(a=>a.label&&Array.isArray(a.options)&&a.options.length>0)));
 assert(src.exercises.some(r=>r.variation_axes.length===3));
+const permittedTags=['Ягодицы','Задняя поверхность бедра (ЗПБ)','Передняя поверхность бедра (ППБ)','Икроножные','Приводящие'];
+assert(src.exercises.every(r=>Array.isArray(r.muscle_tags) && r.muscle_tags.length>=1 && r.muscle_tags.length<=3),'Every exercise gets 1–3 muscle-group tags');
+assert(src.exercises.every(r=>new Set(r.muscle_tags).size===r.muscle_tags.length && r.muscle_tags.every(t=>permittedTags.includes(t))),'Only approved tag labels appear');
+assert.equal(src.exercises.reduce((total,r)=>total+r.muscle_tags.length,0),249,'Tags faithfully copied from the sheet');
+assert.deepEqual(src.exercises.find(r=>r.source_row===2).muscle_tags,['Передняя поверхность бедра (ППБ)','Ягодицы','Приводящие']);
+assert.match(sql,/muscle_tags=excluded.muscle_tags/,'Repeat seed keeps tags fresh');
+assert.match(readFileSync('supabase/migrations/20261113102000_add_exercise_muscle_tags.sql','utf8'),/add column if not exists muscle_tags jsonb/);
+assert.match(readFileSync('src/components/ExerciseMuscleTagLine.jsx','utf8'),/exerciseMuscleTags\(exercise\)/);
+assert.match(details,/exerciseMuscleTags\(exercise\).map/,'Details show all ordered muscle tags');
+assert.match(loader,/exerciseMuscleTags\(exercise\)/,'Search indexes muscle tags');
+
 assert.match(sql, /private\.exercise_catalog_v1_archive/, 'Archive before retirement');
 assert.match(sql, /update public\.exercises[\s\S]*?set status='retired'[\s\S]*?where owner_id is null/, 'Retire shared catalog without deleting referenced records');
 assert.doesNotMatch(sql, /delete from public\.exercises|truncate|cascade/i);
@@ -20,4 +31,4 @@ assert.match(loader, /REBUILT_BASE_SHEETS = \['Упражнения \(Ноги\)
 assert.match(loader, /includeLegacy;[\s\S]*loadRebuiltBaseRows\(\)/, 'Historical browse does not restore old records');
 assert.match(loader, /if \(!isAvailableExercise\(row\)\) continue;/);
 assert.match(details, /training-exercise-variation-axes/,'Variation options display in the exercise information page');
-console.log('Rebuilt leg catalog: all 113 names, optional variation axes, safe retirement and picker isolation passed.');
+console.log('Rebuilt leg catalog: all 113 names, ordered muscle group tags, variants and preservation passed.');

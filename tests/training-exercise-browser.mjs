@@ -31,6 +31,11 @@ assert.match(css, /grid-template-columns: minmax\(0,1fr\) minmax\(0,1fr\) auto/)
 assert.match(css, /\.training-exercise-tools-row \.exercise-library-filter select \{[\s\S]*?font-size: var\(--gym-type-xs\) !important/);
 assert.match(css, /\.training-exercise-tools-row \.training-exercise-create \{[\s\S]*?height: 40px/);
 assert.match(browser, /<span className="exercise-library-row-copy">/);
+assert.match(browser, /<ExerciseMuscleTagLine exercise=\{exercise\} \/>/);
+assert.match(read('src/components/ExerciseLibraryPicker.jsx'), /<ExerciseMuscleTagLine exercise=\{exercise\} \/>/);
+assert.match(read('src/components/ExerciseMuscleTagLine.jsx'), /className="exercise-library-row-tags"/);
+assert.match(read('src/exercise-library-picker.css'), /\.exercise-library-row-tags \{/);
+
 assert.doesNotMatch(browser, /exercise-library-row-chevron/);
 assert.match(browser, /<button className="exercise-library-row-info"/);
 assert.match(css, /\.training-library-browser \.exercise-library-row-info \{[\s\S]*?background: transparent !important/);
