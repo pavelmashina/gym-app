@@ -11,6 +11,7 @@ const rebuilt = {id:'legs-1', name:'Приседания со штангой н�
   variation_axes:[{label:'Постановка ног',options:['шире плеч','на ширине плеч']}],
   muscle_tags:['Передняя поверхность бедра (ППБ)','Ягодицы','Приводящие']};
 const oldRows = [legacy, { ...rows[0], status:'retired', source_sheet:'catalog_v2' }, rebuilt];
+let apiPageCap = Infinity;
 let failRecent = false;
 const requests = [];
 const client = {
@@ -23,7 +24,7 @@ const client = {
       async range(start,end){
         requests.push([table,start,end]);
         const source=table==='exercises'?oldRows:rows;
-        return {data:source.slice(start,end+1),error:null};
+        return {data:source.slice(start,Math.min(end+1,start+apiPageCap)),count:Number.isFinite(apiPageCap)?source.length:undefined,error:null};
       },
       async limit(){return {data:[{exercise_id:'legacy'},{exercise_id:'id-1'},{exercise_id:'legs-1'}],error:failRecent?new Error('network'):null}},
     };
@@ -55,7 +56,9 @@ assert.equal(library.filterExerciseList(result.all,{muscleGroup:'Ноги',query
 assert.deepEqual(library.exerciseMuscleTags({muscle_group:'Спина'}),['Спина'],'Historical and own exercises retain single group');
 
 assert(!result.all.some(x=>x.id==='legacy'),'Retired exercise never appears in any picker');
-assert.deepEqual(requests.map(row => row.join(':')).sort(),[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]].map(row => row.join(':')).sort(), 'Concurrent catalog fetches may resolve in any order');
+assert.deepEqual(requests.map(row => row.join(':')).sort(),
+  [...Array.from({length:6},(_,i)=>['exercise_catalog_v2',i*100,i*100+99]),['exercises',0,99]]
+    .map(row=>row.join(':')).sort(), 'Both sources are fully paginated with 100-row pages');
 const complete = await library.listExerciseLibrary({includeLegacy:true});
 assert.deepEqual(complete.all.map(x=>x.id),result.all.map(x=>x.id),'Browse-only mode does not revive retired rows');
 assert(!complete.all.some(x=>x.id==='legacy'));
@@ -65,6 +68,24 @@ assert.equal(library.filterExerciseList(result.all,{query:'жимы груди'}
 assert.equal(library.filterExerciseList(result.all,{query:'bench',equipment:'Гантели'}).length,0);
 assert.equal(library.filterExerciseList(result.recent,{muscleGroup:'Ноги',equipment:'Гантели'}).length,0);
 assert(!result.all.some(row=>row.id==='legacy'),'Recent history must not reintroduce duplicate catalogue cards');
+// Regression: a capped API may return only 50 of the requested 100 records.
+ // 113 populated leg rows must ALL appear in the user-visible base, without
+ // silently treating the short response as the final page.
+const sheetSnapshot = JSON.parse(readFileSync(new URL('../data/exercise-catalog/rebuilt-legs-from-sheet.json', import.meta.url),'utf8'));
+assert.equal(sheetSnapshot.exercises.length,113);
+oldRows.splice(0,oldRows.length,legacy,...sheetSnapshot.exercises.map(row=>({
+  ...row,id:'leg-'+row.source_row,owner_id:null,muscle_group:'Ноги',
+  source_sheet:'Упражнения (Ноги) список',status:'legacy',
+})));
+apiPageCap=50;
+const loaded = await library.listExerciseLibrary();
+const legRows=loaded.all.filter(row=>row.source_sheet==='Упражнения (Ноги) список');
+assert.equal(legRows.length,113,'Every leg exercise is accessible even with API row limits');
+assert.deepEqual(new Set(legRows.map(row=>row.source_row)),new Set(sheetSnapshot.exercises.map(row=>row.source_row)));
+assert.equal(library.filterExerciseList(legRows).length,113,'Default Все filters show the full leg list');
+assert.equal(library.filterExerciseList(legRows,{muscleGroup:'Все',equipment:'Все'}).length,113);
+assert(requests.some(row=>row[0]==='exercises'&&row[1]===50),'Catalog continues past an API-limited first page');
+assert(requests.some(row=>row[0]==='exercises'&&row[1]===100),'Catalog loads the remaining thirteen rows');
 failRecent = true;
 await assert.rejects(library.listExerciseLibrary(),/недавние/);
 delete globalThis.__catalogTest;

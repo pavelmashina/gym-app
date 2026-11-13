@@ -16,8 +16,8 @@ assert.match(screen, /\{ id: 'exercises', label: 'Упражнения' \}/);
 assert.doesNotMatch(screen, /\{ id: 'my-exercises', label: 'Мои упражнения' \}/);
 assert.match(screen, /<TrainingExerciseBrowser refreshKey=\{refreshKey\}/);
 assert.match(screen, /initialTab === 'my-exercises' \? 'exercises' : initialTab/);
-assert.match(browser, /<button[^>]+onClick=\{\(\) => setSource\('base'\)\}>База<\/button>/);
-assert.match(browser, /<button[^>]+onClick=\{\(\) => setSource\('mine'\)\}>Мои упражнения<\/button>/);
+assert.match(browser, /<button[^>]+onClick=\{\(\) => changeSource\('base'\)\}>База<\/button>/);
+assert.match(browser, /<button[^>]+onClick=\{\(\) => changeSource\('mine'\)\}>Мои упражнения<\/button>/);
 assert.match(browser, /listExerciseLibrary\(\{ includeLegacy: true \}\)/);
 assert.match(browser, /listMyExercises\(\)/);
 assert.match(browser, /library\.all\.filter\(item => !item\.isMine\)/);
@@ -47,6 +47,17 @@ assert.match(css, /\.training-library-browser \.exercise-library-row-info \{[\s\
 assert.match(browser, /function ExerciseDetails\(/);
 assert.match(browser, /<ExerciseDetailsContent exercise=\{exercise\} \/>/);
 assert.match(browser, /<ExercisePage title="Информация"/);
+assert.match(browser, /createPortal\(<div role="dialog"/, 'An exercise opens as a top-level full screen');
+assert.match(browser, /<ExerciseDetails key=\{selected.id\}/, 'Switching exercises resets detail state');
+assert.match(browser, /Показано \{visible.length\} из \{sourceExercises.length\} упражнений/, 'The browser discloses visible vs loaded count');
+assert.match(browser, /onClick=\{clearFilters\}>Сбросить фильтры<\/button>/);
+assert.match(browser, /function changeSource\(next\) \{ setSource\(next\); clearFilters\(\); \}/, 'Source changes clear hidden filters');
+const infoPage = read('src/components/ExerciseInfoModal.jsx');
+assert.match(infoPage, /createPortal\(<div className="training-exercise-page exercise-info-fullscreen"/, 'Program exercise information is also a separate screen');
+assert.match(infoPage, /<ExerciseDetailsContent key=\{exercise.id\} exercise=\{exercise\} \/>/);
+assert.doesNotMatch(infoPage, /exercise-library-info-scrim|exercise-library-info-card/, 'No bottom sheet behind the new screen');
+assert.match(css, /\.training-exercise-page \{[\s\S]*?z-index: 1000;/);
+
 assert.match(detail, /<ExercisePhotoGallery photos=\{photos\}/);
 assert.match(detail, /<ExerciseTechnique exercise=\{exercise\}/);
 assert.match(detail, /training-exercise-video-empty/);
