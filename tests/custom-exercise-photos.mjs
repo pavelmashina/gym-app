@@ -59,6 +59,7 @@ const stub = `const supabase = {auth:{getUser:async()=>({data:{user:{id:'test-us
 const source = lib
   .replace("import { supabase } from './supabase.js';",stub)
   .replace("import { normalizeCatalogSearch } from './exerciseCatalogV2.js';","const normalizeCatalogSearch = x => x;")
+  .replace("import { signVariationMedia } from './exerciseVariationSelection.js';", 'const signVariationMedia = async axes => axes;')
   .replace("import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true'","true");
 const library = await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 assert.deepEqual(library.exercisePhotoPaths({photo_path:'old.jpg',photo_paths:[]}),['old.jpg']);

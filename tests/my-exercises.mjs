@@ -86,6 +86,7 @@ globalThis.__myExercisesTest = { client: null };
 const source = read('../src/lib/exerciseLibrary.js')
   .replace("import { supabase } from './supabase.js';", 'const supabase = new Proxy({}, { get: (_target, key) => globalThis.__myExercisesTest.client[key] });')
   .replace("import { normalizeCatalogSearch } from './exerciseCatalogV2.js';", 'const normalizeCatalogSearch = value => value;')
+  .replace("import { signVariationMedia } from './exerciseVariationSelection.js';", 'const signVariationMedia = async axes => axes;')
   .replace("import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true'", 'true');
 const library = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 // Deletes the way the screen does: the draft check comes from programDraft.js.
