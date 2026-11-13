@@ -167,6 +167,7 @@ assert.match(field, /<option>\{EXERCISE_MUSCLE_GROUP_OTHER\}<\/option>/);
 assert.match(field, /maxLength=\{MAX_MUSCLE_GROUP_LENGTH\}/);
 assert.match(field, /aria-invalid=\{Boolean\(typedError\)\}/);
 assert.match(styles, /\.exercise-library-muscle-other\{grid-column:1\/-1\}/);
-assert.doesNotMatch(read('../src/lib/exerciseLibrary.js'), /import .*from '\.\/(?!supabase\.js'|exerciseCatalogV2\.js')/,'exerciseLibrary.js gains no imports: other tests load it from a data: URL');
+assert.match(read('../src/lib/exerciseLibrary.js'), /import \{ signVariationMedia \} from '\.\/exerciseVariationSelection\.js';/);
+assert.match(source, /const signVariationMedia = async axes => axes;/, 'Data-URL-based test mocks new media signer');
 
 console.log('Custom muscle groups: full list, «Другое» validation, storage, reopening, display and filters passed.');
