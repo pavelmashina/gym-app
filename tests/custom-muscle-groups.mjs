@@ -122,8 +122,8 @@ await assert.rejects(library.updateCustomExercise('own-1', { name: 'Разгиб
 
 // 7. Library: own exercises show their saved group, shared rows the main group, filters agree.
 state.rows = [
-  { id: 'shared-hamstrings', name: 'Сгибание ног лёжа', muscle_group: 'Ноги ЗПБ', equipment: 'Тренажёр' },
-  { id: 'shared-v2', name: 'Жим лёжа', muscle_group: 'Грудь', primary_group_name_ru: 'Грудь', equipment: 'Штанга' },
+  { id: 'shared-hamstrings', status: 'published', name: 'Сгибание ног лёжа', muscle_group: 'Ноги ЗПБ', equipment: 'Тренажёр' },
+  { id: 'shared-v2', status: 'published', name: 'Жим лёжа', muscle_group: 'Грудь', primary_group_name_ru: 'Грудь', equipment: 'Штанга' },
   { id: 'own-old', name: 'Моё старое', muscle_group: 'Ноги', owner_id: 'alice', equipment: 'Гантели' },
   { id: 'own-quads', name: 'Мои выпады', muscle_group: 'Квадрицепсы', owner_id: 'alice', equipment: 'Гантели' },
   { id: 'own-neck', name: 'Мой мост', muscle_group: 'Шея', owner_id: 'alice', equipment: 'Свой вес' },
