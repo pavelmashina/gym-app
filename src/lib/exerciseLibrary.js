@@ -3,6 +3,9 @@ import { normalizeCatalogSearch } from './exerciseCatalogV2.js';
 import { signVariationMedia } from './exerciseVariationSelection.js';
 
 const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
+// Use short pages: the PostgREST API may cap a requested 500-row page at 100.
+// A shortened response must not be mistaken for the end of the catalog.
+const EXERCISE_LIST_PAGE_SIZE = 100;
 
 // The base is being rebuilt sheet by sheet. All earlier system IDs remain
 // in the database for program and session FKs but cannot enter pickers.
@@ -232,26 +235,34 @@ async function mapExercises(rows, userId) {
 
 async function loadCatalogRows({ canonical = CATALOG_V2_ENABLED } = {}) {
   const rows = [];
-  for (let offset = 0; ; offset += 500) {
+  for (let offset = 0; ;) {
     const result = await supabase.from(canonical ? 'exercise_catalog_v2' : 'exercises')
-      .select('*').order('name', { ascending: true }).order('id', { ascending: true }).range(offset, offset + 499);
+      .select('*', { count: 'exact' }).order('name', { ascending: true }).order('id', { ascending: true }).range(offset, offset + EXERCISE_LIST_PAGE_SIZE - 1);
     if (result.error) return result;
-    rows.push(...(result.data || []));
-    if ((result.data || []).length < 500) return { data: rows, error: null };
+    const page = result.data || [];
+    rows.push(...page);
+    if (typeof result.count === 'number' && rows.length >= result.count) return { data: rows, error: null };
+    if (typeof result.count !== 'number' && page.length < EXERCISE_LIST_PAGE_SIZE) return { data: rows, error: null };
+    if (!page.length) return { data: rows, error: new Error('Каталог загружен не полностью.') };
+    offset += page.length;
   }
 }
 
 async function loadRebuiltBaseRows() {
   const rows = [];
-  for (let offset = 0; ; offset += 500) {
+  for (let offset = 0; ;) {
     const result = await supabase.from('exercises')
-      .select('*').is('owner_id', null).in('source_sheet', REBUILT_BASE_SHEETS)
+      .select('*', { count: 'exact' }).is('owner_id', null).in('source_sheet', REBUILT_BASE_SHEETS)
       .neq('status', 'retired')
       .order('name', { ascending: true }).order('id', { ascending: true })
-      .range(offset, offset + 499);
+      .range(offset, offset + EXERCISE_LIST_PAGE_SIZE - 1);
     if (result.error) return result;
-    rows.push(...(result.data || []));
-    if ((result.data || []).length < 500) return { data: rows, error: null };
+    const page = result.data || [];
+    rows.push(...page);
+    if (typeof result.count === 'number' && rows.length >= result.count) return { data: rows, error: null };
+    if (typeof result.count !== 'number' && page.length < EXERCISE_LIST_PAGE_SIZE) return { data: rows, error: null };
+    if (!page.length) return { data: rows, error: new Error('Каталог загружен не полностью.') };
+    offset += page.length;
   }
 }
 

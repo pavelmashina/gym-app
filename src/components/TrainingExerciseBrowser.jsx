@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   EXERCISE_EQUIPMENT,
   exerciseMuscleGroupFilterOptions,
@@ -33,7 +34,10 @@ function ExercisePage({ title, onBack, children, editor = false }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onBack]);
-  return <div className={`training-exercise-page${editor ? ' training-exercise-editor-page' : ''}`}
+  // A real top-level screen, not a fixed child of the scrollable .phone.
+  // The portal escapes ancestor clipping, transforms and image stacking contexts.
+  return createPortal(<div role="dialog" aria-modal="true" aria-label={title}
+    className={`training-exercise-page${editor ? ' training-exercise-editor-page' : ''}`}
     onTouchStart={event => {
       const start = event.touches.length === 1 ? appPoint(event.touches[0]) : null;
       if (start && start.x < 38) setTouchStart(start);
@@ -53,7 +57,7 @@ function ExercisePage({ title, onBack, children, editor = false }) {
       <span aria-hidden="true" />
     </header>
     <main className="training-exercise-page-content">{children}</main>
-  </div>;
+  </div>, document.body);
 }
 
 function ExerciseDetails({ exercise, onBack, onEdit, onDelete }) {
@@ -101,10 +105,13 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
     const options = exerciseMuscleGroupFilterOptions(mine);
     return options.includes(muscleGroup) ? options : [...options, muscleGroup];
   }, [mine, muscleGroup]);
+  const sourceExercises = source === 'base' ? base : mine;
   const visible = useMemo(() => filterExerciseList(source === 'base' ? base : mine, {
     query, muscleGroup, equipment,
   }), [source, base, mine, query, muscleGroup, equipment]);
 
+  function clearFilters() { setQuery(''); setMuscleGroup('Все'); setEquipment('Все'); }
+  function changeSource(next) { setSource(next); clearFilters(); }
   function openInfo(exercise) { setSelected(exercise); setPage('detail'); }
   function create() { setSelected(null); setEditOrigin('list'); setPage('editor'); }
   function edit(exercise) { setSelected(exercise); setEditOrigin('detail'); setPage('editor'); }
@@ -129,7 +136,7 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
   }
 
   return <>
-    <div className="exercise-library-shell training-library-browser">
+    <div className="exercise-library-shell training-library-browser" aria-hidden={page !== 'list'}>
       <section className="exercise-library-top">
         <label className="exercise-library-search exercise-search training-search">
           <SearchIcon />
@@ -154,10 +161,15 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
       </section>
       <div className="training-exercise-source-switcher" role="tablist" aria-label="Источник упражнений">
         <button type="button" role="tab" aria-selected={source === 'base'} className={source === 'base' ? 'active' : ''}
-          onClick={() => setSource('base')}>База</button>
+          onClick={() => changeSource('base')}>База</button>
         <button type="button" role="tab" aria-selected={source === 'mine'} className={source === 'mine' ? 'active' : ''}
-          onClick={() => setSource('mine')}>Мои упражнения</button>
+          onClick={() => changeSource('mine')}>Мои упражнения</button>
       </div>
+      {!loading && !error && <div className="training-exercise-count" aria-live="polite">
+        <span>Показано {visible.length} из {sourceExercises.length} упражнений</span>
+        {(query || muscleGroup !== 'Все' || equipment !== 'Все') &&
+          <button type="button" onClick={clearFilters}>Сбросить фильтры</button>}
+      </div>}
       {loading && <div className="exercise-library-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
       {!loading && error && <div className="exercise-library-state error" role="alert"><span>{error}</span>
         <button type="button" onClick={() => setReloadKey(value => value + 1)}>Повторить</button></div>}
@@ -181,7 +193,7 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
         </div>
       </div>}
     </div>
-    {page === 'detail' && selected && <ExerciseDetails exercise={selected} onBack={() => setPage('list')}
+    {page === 'detail' && selected && <ExerciseDetails key={selected.id} exercise={selected} onBack={() => setPage('list')}
       onEdit={edit} onDelete={setDeleting} />}
     {page === 'editor' && <ExercisePage editor title={selected ? 'Редактировать упражнение' : 'Создать упражнение'} onBack={closeEditor}>
       <CustomExerciseForm key={selected?.id ?? 'new'} exercise={selected} hideIntro onCancel={closeEditor} onSaved={saved} />

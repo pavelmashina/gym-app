@@ -151,7 +151,7 @@
 .training-exercise-page {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 1000;
   width: min(100vw, 430px);
   height: 100dvh;
   margin-inline: auto;
@@ -434,3 +434,8 @@ body:has(.training-exercise-page) .app-bottom-nav {
 
 /* The first muscle chip is primary; further chips are secondary. */
 .training-exercise-detail-tags > span.is-primary { color:var(--ink); font-weight:var(--weight-semibold); }
+
+/* Full-screen portals are mounted on body, never clipped by the Training tab's scrolling phone. */
+.exercise-catalog-content .training-library-browser[aria-hidden="true"] { visibility:hidden; }
+.training-exercise-count { display:flex; align-items:center; justify-content:space-between; min-width:0; gap:10px; font-size:var(--gym-type-xs); line-height:var(--lh-caption); color:var(--muted); }
+.training-exercise-count button { flex:0 0 auto; min-height:30px; border:0; padding:0 4px; background:transparent; color:var(--ink); font:inherit; font-weight:var(--weight-semibold); text-decoration:underline; text-underline-offset:3px; }
