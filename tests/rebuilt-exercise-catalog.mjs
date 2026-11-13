@@ -12,6 +12,15 @@ assert(src.exercises.some(r=>r.source_number===null && r.name.includes('Отве
 assert(src.exercises.every(r=>r.source_row>1&&r.name&&Array.isArray(r.variation_axes)));
 assert(src.exercises.every(r=>r.variation_axes.length<=3&&r.variation_axes.every(a=>a.label&&Array.isArray(a.options)&&a.options.length>0)));
 assert(src.exercises.some(r=>r.variation_axes.length===3));
+assert.equal(src.exercises.filter(r=>Boolean(r.description)).length,113,'All descriptions from source column J');
+assert.equal(src.exercises.filter(r=>Boolean(r.equipment_tag)).length,113,'All equipment labels from column I');
+assert.equal(src.exercises.reduce((sum,r)=>sum+r.variation_axes.length,0),128,'All variation axes retained');
+assert.equal(src.exercises.reduce((sum,r)=>sum+r.variation_axes.reduce((a,ax)=>a+ax.options.length,0),0),308,'All option descriptions from K:M');
+assert(src.exercises.every(r=>r.variation_axes.every(ax=>ax.options.every(o=>typeof o==='object'&&o.label&&o.description))),'Option descriptions complete');
+assert.equal(src.exercises.find(r=>r.source_row===21).equipment_tag,'Свободный вес / свой вес');
+assert.match(sql,/description=excluded.description/);
+assert.match(sql,/equipment_tag=excluded.equipment_tag/);
+assert.match(readFileSync('supabase/migrations/20261113114000_exercise_equipment_source_tag.sql','utf8'),/add column if not exists equipment_tag text/);
 const permittedTags=['Ягодицы','Задняя поверхность бедра (ЗПБ)','Передняя поверхность бедра (ППБ)','Икроножные','Приводящие'];
 assert(src.exercises.every(r=>Array.isArray(r.muscle_tags) && r.muscle_tags.length>=1 && r.muscle_tags.length<=3),'Every exercise gets 1–3 muscle-group tags');
 assert(src.exercises.every(r=>new Set(r.muscle_tags).size===r.muscle_tags.length && r.muscle_tags.every(t=>permittedTags.includes(t))),'Only approved tag labels appear');
@@ -36,7 +45,7 @@ assert.match(details, /setSelection\(current =>/,'Each segmented button updates 
 assert.match(details, /variation=\{variation\}/,'Description updates when selection changes');
 assert.match(details, /const video = variation.video;/,'Video source updates when selection changes');
 assert.doesNotMatch(details, /<span>Упражнение<\/span>/,'Duplicate subtitle is removed');
-const { defaultVariationSelection, variationPresentation, signVariationMedia } = await import('../src/lib/exerciseVariationSelection.js');
+const { defaultVariationSelection, exerciseEquipmentTags, variationPresentation, signVariationMedia } = await import('../src/lib/exerciseVariationSelection.js');
 const example = { name:'Приседания', video_url:'https://example.test/default.mp4', variation_axes:[
   {label:'Стойка',options:['обычная',{label:'широкая',description:'Положение стоп шире плеч.',video_url:'https://example.test/wide.mp4'},'узкая']},
   {label:'Пятки',options:['на полу',{label:'на возвышении',description:'Пятки на возвышении.'}]},
@@ -52,6 +61,13 @@ const alternate=variationPresentation(example,['узкая','на возвыше
 assert.equal(alternate.video,null,'Do not show another variation as though it were selected');
 assert.equal(alternate.missingVideo,true);
 assert.match(alternate.summary,/Пятки — на возвышении/);
+const lunge=src.exercises.find(r=>r.source_row===21);
+assert.deepEqual(exerciseEquipmentTags(lunge),['Свободный вес / свой вес','Штанга']);
+assert.deepEqual(exerciseEquipmentTags(lunge,['пол','гантели']),['Свободный вес / свой вес','Гантели']);
+assert.deepEqual(exerciseEquipmentTags(lunge,['BOSU','без отягощения']),['Свободный вес / свой вес','BOSU','Свой вес']);
+const selectedLunge=variationPresentation(lunge,['пол','гантели']);
+assert.match(selectedLunge.notes,/Гантели дают свободную траекторию/);
+assert.match(selectedLunge.notes,/Твёрдый пол обеспечивает/);
 const signed=await signVariationMedia([{label:'Стойка',options:['обычная',{label:'широкая',video_path:'wide.mp4'}]}],
   async path => 'signed://' + path);
 assert.equal(signed[0].options[0],'обычная');
