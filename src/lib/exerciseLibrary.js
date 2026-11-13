@@ -31,7 +31,7 @@ const REFERENCED_ROW_ERRORS = ['23503', '23001'];
 // A retired private row stays readable for programs and history, but is no longer offered.
 const isRemovedCustomExercise = row => Boolean(row?.owner_id) && row.status === 'retired';
 
-export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'Ноги', 'ППБ', 'ЗПП', 'Икроножные', 'Приводящие', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
+export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'ППБ', 'ЗПП', 'Икроножные', 'Приводящие', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гакк', 'Гантели', 'Штанга', 'Смит', 'Турник', 'Свой вес', 'Гравитрон', 'Гири', 'Тренажёр'];
 
 // Keep original database values from the source sheet, but show the compact
@@ -82,6 +82,32 @@ export function muscleGroupChoiceError({ muscleGroup, customMuscleGroup = '' } =
   return CUSTOM_EXERCISE_MUSCLE_GROUPS.includes(muscleGroup) ? '' : 'Выберите группу мышц.';
 }
 
+// Main muscle plus up to two distinct, optional secondary groups.
+export function customExerciseMuscleTags(choice = {}) {
+  const primary = resolveExerciseMuscleGroup(choice);
+  const secondary = Array.isArray(choice.additionalMuscleGroups)
+    ? choice.additionalMuscleGroups.map(value => collapseSpaces(value)).filter(Boolean)
+    : [];
+  if (secondary.length > 2) throw new Error('Можно выбрать не больше двух дополнительных групп мышц.');
+  if (secondary.some(group => !CUSTOM_EXERCISE_MUSCLE_GROUPS.includes(group))) {
+    throw new Error('Выберите дополнительную группу мышц из списка.');
+  }
+  const tags = [primary, ...secondary];
+  if (new Set(tags.map(muscleGroupKey)).size !== tags.length) {
+    throw new Error('Группы мышц не должны повторяться.');
+  }
+  return tags;
+}
+
+export function customExerciseMuscleTagsError(choice = {}) {
+  try {
+    customExerciseMuscleTags(choice);
+    return '';
+  } catch (error) {
+    return error.message;
+  }
+}
+
 export function resolveExerciseMuscleGroup(choice = {}) {
   const error = muscleGroupChoiceError(choice);
   if (error) throw new Error(error);
@@ -105,7 +131,7 @@ export function exerciseMuscleGroupFilterOptions(ownExercises = []) {
   const extra = new Set();
   for (const exercise of ownExercises) {
     const group = normalizeExerciseMuscleGroup(exercise?.muscle_group);
-    if (!EXERCISE_MUSCLE_GROUPS.includes(group)) extra.add(group);
+    if (group !== 'Ноги' && !EXERCISE_MUSCLE_GROUPS.includes(group)) extra.add(group);
   }
   return [...EXERCISE_MUSCLE_GROUPS, ...[...extra].sort((a, b) => a.localeCompare(b, 'ru'))];
 }
@@ -326,12 +352,13 @@ function normalizeOptionalUrl(value) {
   }
 }
 
-export async function createCustomExercise({ name, muscleGroup, customMuscleGroup = '', equipment, description = '', videoUrl = '', videoFile = null, photoFile = null, photoFiles = [] }) {
+export async function createCustomExercise({ name, muscleGroup, customMuscleGroup = '', additionalMuscleGroups = [], equipment, description = '', videoUrl = '', videoFile = null, photoFile = null, photoFiles = [] }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   const cleanDescription = String(description || '').trim();
   if (!cleanName) throw new Error('Введите название упражнения.');
-  const cleanMuscleGroup = resolveExerciseMuscleGroup({ muscleGroup, customMuscleGroup });
+  const muscleTags = customExerciseMuscleTags({ muscleGroup, customMuscleGroup, additionalMuscleGroups });
+  const cleanMuscleGroup = muscleTags[0];
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
   validateVideoFile(videoFile);
   const selectedPhotos = requestedPhotoFiles(photoFiles, photoFile);
@@ -345,6 +372,7 @@ export async function createCustomExercise({ name, muscleGroup, customMuscleGrou
       owner_id: user.id,
       name: cleanName,
       muscle_group: cleanMuscleGroup,
+      muscle_tags: muscleTags,
       equipment,
       exercise_type: 'Пользовательское',
       movement_type: 'Пользовательское',
@@ -352,7 +380,7 @@ export async function createCustomExercise({ name, muscleGroup, customMuscleGrou
       description: cleanDescription || null,
       video_url: cleanVideoUrl,
     })
-    .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, photo_path, photo_paths, equipment, owner_id, created_at')
+    .select('id, name, muscle_group, target_muscle, synergists, exercise_type, difficulty, movement_type, technique, notes, description, video_url, video_path, photo_path, photo_paths, equipment, muscle_tags, owner_id, created_at')
     .single();
   if (error || !data) {
     console.error('Unable to save custom exercise:', error);
@@ -403,14 +431,15 @@ export async function markExerciseRecent(exerciseId) {
 }
 
 export async function updateCustomExercise(exerciseId, {
-  name, muscleGroup, customMuscleGroup = '', equipment, description = '',
+  name, muscleGroup, customMuscleGroup = '', additionalMuscleGroups = [], equipment, description = '',
   photoFile = null, photoFiles = [], removePhoto = false, removedPhotoPaths = [],
   videoUrl, videoFile = null, removeVideoFile = false,
 }) {
   const user = await currentUser();
   const cleanName = String(name || '').trim();
   if (!cleanName || cleanName.length > 100) throw new Error('Введите название длиной до 100 символов.');
-  const cleanMuscleGroup = resolveExerciseMuscleGroup({ muscleGroup, customMuscleGroup });
+  const muscleTags = customExerciseMuscleTags({ muscleGroup, customMuscleGroup, additionalMuscleGroups });
+  const cleanMuscleGroup = muscleTags[0];
   if (!EXERCISE_EQUIPMENT.includes(equipment) || equipment === 'Все') throw new Error('Выберите оборудование.');
   validateVideoFile(videoFile);
   if (videoFile && String(videoUrl || '').trim()) throw new Error('Добавьте либо видеофайл, либо ссылку на видео.');
@@ -437,6 +466,7 @@ export async function updateCustomExercise(exerciseId, {
     const { data, error } = await supabase.from('exercises').update({
       name: cleanName,
       muscle_group: cleanMuscleGroup,
+      muscle_tags: muscleTags,
       equipment,
       description: String(description).trim() || null,
       photo_path: nextPaths[0] || null,
