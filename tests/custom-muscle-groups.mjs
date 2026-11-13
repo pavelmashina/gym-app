@@ -69,7 +69,7 @@ const legacy = JSON.parse(read('../docs/exercise-catalog-v2/legacy-shared-catalo
 const legacyRows = Array.isArray(legacy) ? legacy : Object.values(legacy).find(Array.isArray);
 const legacyGroups = [...new Set(legacyRows.map(row => row.muscle_group))];
 assert.ok(legacyGroups.length >= 15, 'Legacy catalog fixture was read');
-for (const group of legacyGroups) assert.ok(mainGroups.includes(normalize(group)), `${group} → ${normalize(group)}`);
+for (const group of legacyGroups) assert.ok(mainGroups.includes(normalize(group)) || normalize(group) === 'Ноги', `${group} → ${normalize(group)}`);
 assert.equal(normalize('Ноги ЗПБ'), 'Ноги');
 assert.equal(normalize('ЗПП'), 'Ноги');
 assert.equal(normalize('ППБ'), 'Ноги');
@@ -114,12 +114,29 @@ assert.equal(created.muscle_group, 'Мышцы кисти');
 assert.equal(created.display_muscle_group, 'Мышцы кисти', 'The card shows the typed group');
 await library.createCustomExercise({ name: 'Шраги', equipment: 'Гантели', muscleGroup: 'Трапеции' });
 assert.equal(state.inserts.at(-1).muscle_group, 'Трапеции');
+const threeGroup = await library.createCustomExercise({
+  name:'Жим гантелей для теста', equipment:'Гантели', muscleGroup:'Грудь',
+  additionalMuscleGroups:['Плечи','Трицепс'],
+});
+assert.deepEqual(state.inserts.at(-1).muscle_tags,['Грудь','Плечи','Трицепс']);
+assert.deepEqual(library.exerciseMuscleTags(threeGroup),['Грудь','Плечи','Трицепс']);
+assert.equal(library.filterExerciseList([threeGroup],{muscleGroup:'Плечи'}).length,1);
+assert.equal(library.filterExerciseList([threeGroup],{muscleGroup:'Трицепс'}).length,1);
 const insertsBefore = state.inserts.length;
 await assert.rejects(library.createCustomExercise({ name: 'Пусто', equipment: 'Гантели', ...typed(' ') }), /Введите название группы мышц/);
 await assert.rejects(library.createCustomExercise({ name: 'Все', equipment: 'Гантели', muscleGroup: 'Все' }), /Выберите группу мышц/);
+await assert.rejects(library.createCustomExercise({name:'Повтор',equipment:'Гантели',muscleGroup:'Грудь',additionalMuscleGroups:['Грудь']}),/не должны повторяться/);
+await assert.rejects(library.createCustomExercise({name:'Повтор',equipment:'Гантели',muscleGroup:'Грудь',additionalMuscleGroups:['Плечи','Плечи']}),/не должны повторяться/);
+await assert.rejects(library.createCustomExercise({name:'Лишняя',equipment:'Гантели',muscleGroup:'Грудь',additionalMuscleGroups:['Плечи','Трицепс','Бицепс']}),/не больше двух/);
 assert.equal(state.inserts.length, insertsBefore, 'Rejected input is not inserted');
 const updated = await library.updateCustomExercise('own-1', { name: 'Разгибание кисти', equipment: 'Гантели', ...typed('Предплечья') });
 assert.equal(state.updates.at(-1).muscle_group, 'Предплечья');
+const editedThreeGroup = await library.updateCustomExercise('own-1',{
+  name:'Разгибание кисти',equipment:'Гантели',muscleGroup:'Предплечья',
+  additionalMuscleGroups:['Бицепс','Трицепс'],
+});
+assert.deepEqual(state.updates.at(-1).muscle_tags,['Предплечья','Бицепс','Трицепс']);
+assert.deepEqual(library.exerciseMuscleTags(editedThreeGroup),['Предплечья','Бицепс','Трицепс']);
 assert.equal(updated.display_muscle_group, 'Предплечья');
 await assert.rejects(library.updateCustomExercise('own-1', { name: 'Разгибание кисти', equipment: 'Гантели', ...typed('Другое') }), /конкретную группу/);
 
@@ -147,7 +164,8 @@ assert.deepEqual(names({ muscleGroup: 'Вращатели плеча' }), ['own-
 assert.deepEqual(names({ muscleGroup: 'Всё тело' }), ['own-cardio']);
 assert.deepEqual(names({ muscleGroup: 'Грудь' }), ['shared-v2']);
 assert.deepEqual(names({ query: 'вращатели' }), ['own-rotators'], 'Search finds the typed group');
-assert.deepEqual(filterOptions([]), mainGroups, 'Without own exercises the filter is the old list');
+assert.deepEqual(filterOptions([]), mainGroups, 'The broad Ноги category is no longer a filter option');
+assert(!mainGroups.includes('Ноги') && !filterOptions(result.mine).includes('Ноги'), 'Owned legacy legs do not reintroduce the old filter');
 assert.deepEqual(filterOptions(result.mine), [...mainGroups, 'Вращатели плеча', 'Шея'], 'Only groups outside the main ones are added');
 
 // 8. The form wires the field in; the field offers «Другое» with a bounded text input.
@@ -157,6 +175,10 @@ const form = read('../src/components/CustomExerciseForm.jsx');
 const field = read('../src/components/MuscleGroupField.jsx');
 const styles = read('../src/exercise-library-picker.css');
 assert.match(form, /<MuscleGroupField muscleGroup=\{draft\.muscleGroup\} customMuscleGroup=\{draft\.customMuscleGroup\}/);
+assert.match(form, /exercise-library-secondary-muscles/);
+assert.match(form, /Дополнительная группа мышц /);
+assert.match(form, /additionalMuscleGroups: \[exercise\.muscle_tags\?\.\[1\]/);
+assert.match(form, /customExerciseMuscleTagsError\(draft\)/);
 assert.match(form, /\.\.\.muscleGroupDraft\(exercise\.display_muscle_group\)/);
 assert.match(form, /!muscleGroupChoiceError\(draft\)/);
 assert.match(picker, /exerciseMuscleGroupFilterOptions\(library\.mine\)/);
