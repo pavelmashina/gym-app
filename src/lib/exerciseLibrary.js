@@ -58,7 +58,7 @@ export function exerciseMuscleTags(exercise) {
 // their own filter option once an exercise uses them.
 export const CUSTOM_EXERCISE_MUSCLE_GROUPS = [
   'Грудь', 'Спина', 'Трапеции', 'Поясница', 'Плечи', 'Бицепс', 'Трицепс', 'Предплечья', 'Пресс',
-  'Ягодицы', 'Ноги', 'ППБ', 'ЗПП', 'Икроножные', 'Квадрицепсы', 'Бицепс бедра', 'Приводящие', 'Отводящие', 'Икры', 'Шея', 'Всё тело',
+  'Ягодицы', 'Ноги', 'ППБ', 'ЗПП', 'Икроножные', 'Квадрицепсы', 'Бицепс бедра', 'Приводящие', 'Отводящие', 'Икры', 'Шея', 'Всё тело', 'Кардио',
 ];
 export const EXERCISE_MUSCLE_GROUP_OTHER = 'Другое';
 export const MAX_MUSCLE_GROUP_LENGTH = 40;

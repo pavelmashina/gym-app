@@ -60,7 +60,7 @@ for (const group of ['Трапеции', 'Поясница', 'Предплечь
 // 2. Finer groups are filtered under a main group; groups with no parent keep their own name.
 const parents = {
   Трапеции: 'Спина', Поясница: 'Спина', Квадрицепсы: 'Ноги', 'Бицепс бедра': 'Ноги', Приводящие: 'Ноги',
-  Отводящие: 'Ягодицы', Кардио: 'Всё тело', Предплечья: 'Предплечья', Шея: 'Шея',
+  Отводящие: 'Ягодицы', Кардио: 'Всё тело', Предплечья: 'Предплечья', Шея: 'Шея', ППБ: 'Ноги', ЗПП: 'Ноги', Икроножные: 'Икры',
 };
 for (const group of choices) assert.equal(normalize(group), parents[group] ?? group, group);
 
