@@ -13,6 +13,22 @@ export function normalizedVariationAxes(exercise) {
     .filter(axis => axis.options.length > 0);
 }
 
+// Keep the equipment type from the source sheet; show a further tag when the
+// selected resistance or apparatus variation specifies a different implement.
+export function exerciseEquipmentTags(exercise, selection) {
+  const main = String(exercise?.equipment_tag || exercise?.equipment || '').trim();
+  const axes = normalizedVariationAxes(exercise);
+  const tags = main ? [main] : [];
+  axes.forEach((axis, i) => {
+    const selected = axis.options.find(option => option.label === selection?.[i]) || axis.options[0];
+    const specific = String(selected?.equipment_tag || '').trim();
+    if (specific && !tags.some(tag => tag.toLocaleLowerCase('ru') === specific.toLocaleLowerCase('ru'))) {
+      tags.push(specific);
+    }
+  });
+  return tags;
+}
+
 export function defaultVariationSelection(exercise) {
   return normalizedVariationAxes(exercise).map(axis => axis.options[0].label);
 }
