@@ -70,5 +70,12 @@ export function ExerciseDetailsContent({ exercise }) {
         : <a href={video} target="_blank" rel="noreferrer">Открыть видео упражнения</a>}
     </div>
     <ExerciseDescription key={exercise.id} exercise={exercise} />
+    {Array.isArray(exercise.variation_axes) && exercise.variation_axes.length > 0 &&
+      <section className="training-exercise-variation-axes" aria-label="Вариации упражнения">
+        <h2>Вариации</h2>
+        {exercise.variation_axes.map((axis, index) => <div key={index} className="training-exercise-variation-axis">
+          <strong>{axis.label}</strong><p>{axis.options.join(' · ')}</p>
+        </div>)}
+      </section>}
   </>;
 }

@@ -68,6 +68,13 @@ uppercase for normal labels, filter headings or program tags.
 - Active workout set-entry columns have **one shared header per exercise**, never captions repeated above each set. The header adapts to the metric type: weight/reps, bodyweight, assistance, time, distance, and left/right side. Legacy and V2 rows keep their respective input semantics and accessible input labels; no header when there are no sets.
 - The exercise info page opened from an active workout **reuses ExerciseDetailsContent** from Training → Exercises. Same title hierarchy, photo/video/GIF or outlined no-video block, tags, five-line description and “Подробнее / Скрыть”; same header styling. Keep the workout-native scrolling and rest-timer dock, and restore scroll position when closing it.
 
+### Exercise catalog replacement
+
+- The old shared catalog (legacy and V2) must be **retired, not deleted**. Program, scheduled-workout and performed-session foreign keys stay intact, as do the user's own exercises. No new program selections may surface retired shared records, including in historical browse mode and recent exercises.
+- Rebuild list source: Google Sheet «GYM APP — Актуальная база упражнений V2 (109)», tab «Упражнения (Ноги) список». One exercise per populated name row. Store all three optional axis/option columns in `exercises.variation_axes` as structured JSON; no cross-product expansion. Rows without a numeric № still count. New rows use `source_sheet='Упражнения (Ноги) список'` and stable `canonical_key='rebuild_legs_<source_row>'`. Until technique is authored, keep them `legacy` rather than bypass the `published` validation gate.
+- New base listings include only rebuilt sources, published active catalog items and the current user's own exercises. Old `retired` cards are excluded from all pickers, even when `includeLegacy` was set. Do not change or remove user program references.
+- Source snapshot: `data/exercise-catalog/rebuilt-legs-from-sheet.json`.
+
 ### Completed workout results
 
 - The completed workout **tonnage** totals recorded kilograms × repetitions for completed **working** weight/reps sets in both legacy columns and V2 `resultV2` payloads. Do not infer body mass or multiply per-implement weights without an explicit separate metric. Exclude warmups and non-weight/reps activities. Use the same total for the on-screen card and share text.

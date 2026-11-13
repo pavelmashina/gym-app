@@ -3,6 +3,16 @@ import { normalizeCatalogSearch } from './exerciseCatalogV2.js';
 
 const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
 
+// The base is being rebuilt sheet by sheet. All earlier system IDs remain
+// in the database for program and session FKs but cannot enter pickers.
+export const REBUILT_BASE_SHEETS = ['Упражнения (Ноги) список'];
+const isRebuiltSharedExercise = row => !row?.owner_id
+  && row?.status !== 'retired' && REBUILT_BASE_SHEETS.includes(row?.source_sheet);
+const isAvailableExercise = row => row?.owner_id
+  ? !isRemovedCustomExercise(row)
+  : (row?.status === 'published' || isRebuiltSharedExercise(row));
+
+
 const EXERCISE_VIDEOS_BUCKET = 'exercise-videos';
 const EXERCISE_PHOTOS_BUCKET = 'exercise-photos';
 const MAX_PHOTO_SIZE = 8 * 1024 * 1024;
@@ -183,50 +193,53 @@ async function loadCatalogRows({ canonical = CATALOG_V2_ENABLED } = {}) {
   }
 }
 
+async function loadRebuiltBaseRows() {
+  const rows = [];
+  for (let offset = 0; ; offset += 500) {
+    const result = await supabase.from('exercises')
+      .select('*').is('owner_id', null).in('source_sheet', REBUILT_BASE_SHEETS)
+      .neq('status', 'retired')
+      .order('name', { ascending: true }).order('id', { ascending: true })
+      .range(offset, offset + 499);
+    if (result.error) return result;
+    rows.push(...(result.data || []));
+    if ((result.data || []).length < 500) return { data: rows, error: null };
+  }
+}
+
 export async function listExerciseLibrary({ includeLegacy = false } = {}) {
+  // Keep the argument for existing callers; browsing the complete historical
+  // database is no longer an option after the deliberate base reset.
+  void includeLegacy;
   const user = await currentUser();
-  const [exerciseResult, recentResult, photoResult, legacyResult] = await Promise.all([
+  const [exerciseResult, recentResult, photoResult, rebuiltResult] = await Promise.all([
     loadCatalogRows(),
-    supabase
-      .from('user_recent_exercises')
-      .select('exercise_id, last_used_at')
-      .eq('user_id', user.id)
-      .order('last_used_at', { ascending: false })
-      .limit(5),
-    // Catalog v2 is an existing view without photo_path; get owned paths separately.
+    supabase.from('user_recent_exercises').select('exercise_id, last_used_at')
+      .eq('user_id', user.id).order('last_used_at', { ascending: false }).limit(5),
     supabase.from('exercises').select('id,photo_path,photo_paths').eq('owner_id', user.id),
-    includeLegacy && CATALOG_V2_ENABLED ? loadCatalogRows({ canonical: false }) : Promise.resolve({ data: [], error: null }),
+    loadRebuiltBaseRows(),
   ]);
-  if (legacyResult.error) throw new Error('Не удалось загрузить полную базу упражнений.');
+  if (exerciseResult.error || rebuiltResult.error) throw new Error('Не удалось загрузить базу упражнений.');
   if (photoResult.error) throw new Error('Не удалось загрузить фотографии ваших упражнений.');
-  if (exerciseResult.error) throw new Error('Не удалось загрузить базу упражнений.');
   if (recentResult.error) throw new Error('Не удалось загрузить недавние упражнения.');
 
   const photoFields = new Map((photoResult.data || []).map(item => [item.id, item]));
-  // In browse-only mode merge the complete legacy table with the richer V2 cards.
-  // Preserve the V2 record on matching IDs; do not duplicate exercises.
-  const canonicalRows = exerciseResult.data || [];
-  const knownIds = new Set(canonicalRows.map(row => row.id));
-  const fullRows = (includeLegacy ? [...canonicalRows, ...(legacyResult.data || []).filter(row => !knownIds.has(row.id))] : canonicalRows)
-    .filter(row => !isRemovedCustomExercise(row));
-  fullRows.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-  const all = await mapExercises(fullRows.map(row =>
+  const byId = new Map();
+  for (const row of [...(exerciseResult.data || []), ...(rebuiltResult.data || [])]) {
+    if (!isAvailableExercise(row)) continue;
+    // The rebuilt sheet entry carries variation_axes, while the old V2 view
+    // does not. Prefer that richer row when both sources contain the same ID.
+    if (isRebuiltSharedExercise(row) || !byId.has(row.id)) byId.set(row.id, row);
+  }
+  const rows = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const all = await mapExercises(rows.map(row =>
     row.owner_id === user.id ? { ...row, ...photoFields.get(row.id) } : row
   ), user.id);
-  const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
-  // Old history references keep their original IDs; they are not silently remapped.
-  const missingRecent = (recentResult.data || []).map(row => row.exercise_id).filter(id => !byId.has(id));
-  if (!CATALOG_V2_ENABLED && missingRecent.length) {
-    const result = await supabase.from('exercises').select('*').in('id', missingRecent);
-    if (result.error) throw new Error('Не удалось загрузить недавние упражнения.');
-    for (const exercise of await mapExercises((result.data || []).filter(row => !isRemovedCustomExercise(row)), user.id)) {
-      byId.set(exercise.id, exercise);
-      // Historical IDs belong in Recent, not in the canonical All catalogue.
-      // pick() includes a selected historical row in its callback explicitly.
-    }
-  }
-  const recent = (recentResult.data || []).map((row) => byId.get(row.exercise_id)).filter(Boolean);
-  const mine = all.filter((exercise) => exercise.isMine).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const availableById = new Map(all.map(row => [row.id, row]));
+  // Recent exercises must not resurrect retired or legacy-only system cards.
+  const recent = (recentResult.data || []).map(item => availableById.get(item.exercise_id)).filter(Boolean);
+  const mine = all.filter(row => row.isMine)
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   return { all, mine, recent };
 }
 

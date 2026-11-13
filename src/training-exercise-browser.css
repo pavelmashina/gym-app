@@ -407,3 +407,10 @@ body:has(.training-exercise-page) .app-bottom-nav {
     padding-right: 16px !important;
   }
 }
+
+/* Variations copied from the new exercise-list sheet; each is one axis, not a separate exercise. */
+.training-exercise-variation-axes { display:grid; gap:10px; }
+.training-exercise-variation-axes h2 { margin:0; font-size:var(--gym-type-m); }
+.training-exercise-variation-axis { display:grid; gap:4px; padding:12px; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--surface); }
+.training-exercise-variation-axis strong { font-size:var(--gym-type-s); font-weight:var(--weight-semibold); }
+.training-exercise-variation-axis p { margin:0; font-size:var(--gym-type-xs); line-height:var(--lh-caption); color:var(--muted); overflow-wrap:break-word; }
