@@ -38,6 +38,7 @@ globalThis.__muscleGroupTest = {
 const source = read('../src/lib/exerciseLibrary.js')
   .replace("import { supabase } from './supabase.js';", 'const supabase = globalThis.__muscleGroupTest.client;')
   .replace("import { normalizeCatalogSearch } from './exerciseCatalogV2.js';", 'const normalizeCatalogSearch = globalThis.__muscleGroupTest.normalizeCatalogSearch;')
+  .replace("import { signVariationMedia } from './exerciseVariationSelection.js';", 'const signVariationMedia = async axes => axes;')
   .replace("import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true'", 'true');
 const library = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 const {

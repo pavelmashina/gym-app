@@ -30,5 +30,31 @@ assert.match(sql, /on conflict\(canonical_key\) do update/, 'Repeatable upsert')
 assert.match(loader, /REBUILT_BASE_SHEETS = \['Упражнения \(Ноги\) список'\]/);
 assert.match(loader, /includeLegacy;[\s\S]*loadRebuiltBaseRows\(\)/, 'Historical browse does not restore old records');
 assert.match(loader, /if \(!isAvailableExercise\(row\)\) continue;/);
-assert.match(details, /training-exercise-variation-axes/,'Variation options display in the exercise information page');
+assert.match(details, /training-exercise-variation-axes/,'Variation controls display in the exercise information page');
+assert.match(details, /aria-pressed=\{variation.selection\[axisIndex\] === option.label\}/);
+assert.match(details, /setSelection\(current =>/,'Each segmented button updates selection');
+assert.match(details, /variation=\{variation\}/,'Description updates when selection changes');
+assert.match(details, /const video = variation.video;/,'Video source updates when selection changes');
+assert.doesNotMatch(details, /<span>Упражнение<\/span>/,'Duplicate subtitle is removed');
+const { defaultVariationSelection, variationPresentation, signVariationMedia } = await import('../src/lib/exerciseVariationSelection.js');
+const example = { name:'Приседания', video_url:'https://example.test/default.mp4', variation_axes:[
+  {label:'Стойка',options:['обычная',{label:'широкая',description:'Положение стоп шире плеч.',video_url:'https://example.test/wide.mp4'},'узкая']},
+  {label:'Пятки',options:['на полу',{label:'на возвышении',description:'Пятки на возвышении.'}]},
+]};
+assert.deepEqual(defaultVariationSelection(example),['обычная','на полу']);
+const baseline=variationPresentation(example,['обычная','на полу']);
+assert.equal(baseline.video,'https://example.test/default.mp4');
+assert.match(baseline.summary,/Стойка — обычная/);
+const wide=variationPresentation(example,['широкая','на полу']);
+assert.equal(wide.video,'https://example.test/wide.mp4');
+assert.match(wide.notes,/Положение стоп шире плеч/);
+const alternate=variationPresentation(example,['узкая','на возвышении']);
+assert.equal(alternate.video,null,'Do not show another variation as though it were selected');
+assert.equal(alternate.missingVideo,true);
+assert.match(alternate.summary,/Пятки — на возвышении/);
+const signed=await signVariationMedia([{label:'Стойка',options:['обычная',{label:'широкая',video_path:'wide.mp4'}]}],
+  async path => 'signed://' + path);
+assert.equal(signed[0].options[0],'обычная');
+assert.equal(signed[0].options[1].resolvedVideoUrl,'signed://wide.mp4');
+
 console.log('Rebuilt leg catalog: all 113 names, ordered muscle group tags, variants and preservation passed.');

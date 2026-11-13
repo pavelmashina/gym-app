@@ -34,6 +34,7 @@ globalThis.__catalogTest = {client,normalizeCatalogSearch};
 const source = readFileSync(new URL('../src/lib/exerciseLibrary.js',import.meta.url),'utf8')
   .replace("import { supabase } from './supabase.js';",'const supabase = globalThis.__catalogTest.client;')
   .replace("import { normalizeCatalogSearch } from './exerciseCatalogV2.js';",'const normalizeCatalogSearch = globalThis.__catalogTest.normalizeCatalogSearch;')
+  .replace("import { signVariationMedia } from './exerciseVariationSelection.js';", 'const signVariationMedia = async axes => axes;')
   .replace("import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true'",'true');
 const library = await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const result = await library.listExerciseLibrary();

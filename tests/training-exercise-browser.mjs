@@ -53,6 +53,11 @@ assert.match(css, /-webkit-line-clamp: 5/);
 assert.match(detail, /Подробнее/);
 assert.match(detail, /Скрыть/);
 assert.match(css, /\.training-exercise-detail-video\.is-empty \{[\s\S]*?border: 1px dashed var\(--line\)/);
+assert.match(css, /\.training-exercise-variation-options button.active \{/);
+assert.match(detail, /Видео выбранной вариации пока не добавлено/);
+assert.doesNotMatch(detail, /<span>Упражнение<\/span>/);
+assert.match(read('src/exercise-library-picker.css'), /\.exercise-library-row-copy \.exercise-library-row-tags > span \{[\s\S]*?border:0;/);
+
 assert.match(css, /\.training-exercise-source-switcher button \{[\s\S]*?min-height: 32px;[\s\S]*?padding: 0 4px 4px/);
 // Both Training subsection switches use identical vertical/horizontal spacing.
 assert.match(programsCss, /\.my-programs-switcher \{[\s\S]*?gap: var\(--space-3\);[\s\S]*?margin: 0;/);
