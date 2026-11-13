@@ -47,7 +47,7 @@ assert.match(detail, /<ExercisePhotoGallery photos=\{photos\}/);
 assert.match(detail, /<ExerciseTechnique exercise=\{exercise\}/);
 assert.match(detail, /training-exercise-video-empty/);
 assert.match(detail, /Видео пока нет/);
-assert.match(detail, /animatedImage \? <img src=\{video\}/);
+assert.match(detail, /animatedImage \? <img key=\{video\} src=\{video\}/);
 assert.match(detail, /ResizeObserver/);
 assert.match(css, /-webkit-line-clamp: 5/);
 assert.match(detail, /Подробнее/);
