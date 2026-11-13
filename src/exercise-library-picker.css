@@ -214,3 +214,34 @@
 /* Optional second and third muscle groups; keep mobile form compact. */
 .exercise-library-secondary-muscles { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
 @media(max-width:390px){.exercise-library-secondary-muscles { grid-template-columns:1fr; }}
+
+/* Exercise names and compact borderless tags may use a second line instead
+   of being cut off after the first. Applies to both the main Exercises list
+   and exercise pickers; cards grow naturally and the info button stays clear. */
+.exercise-library-row-copy > strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exercise-library-row-copy small.exercise-library-row-tags {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+}
+.exercise-library-row-copy .exercise-library-row-tags > span {
+  display: inline;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

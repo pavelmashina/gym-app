@@ -90,6 +90,15 @@ assert.match(css, /\.training-exercise-variation-options button.active \{/);
 assert.match(detail, /Видео выбранной вариации пока не добавлено/);
 assert.doesNotMatch(detail, /<span>Упражнение<\/span>/);
 assert.match(read('src/exercise-library-picker.css'), /\.exercise-library-row-copy \.exercise-library-row-tags > span \{[\s\S]*?border:0;/);
+const sharedRowCss = read('src/exercise-library-picker.css');
+assert.match(sharedRowCss, /\.exercise-library-row-copy > strong \{[^}]*-webkit-line-clamp: 2;[^}]*white-space: normal;/,
+  'Exercise names wrap to two lines instead of single-line truncation');
+assert.match(sharedRowCss, /\.exercise-library-row-copy small\.exercise-library-row-tags \{[^}]*-webkit-line-clamp: 2;[^}]*white-space: normal;/,
+  'Exercise metadata wraps to two lines');
+assert.match(sharedRowCss, /\.exercise-library-row-copy \.exercise-library-row-tags > span \{[^}]*display: inline;[^}]*white-space: normal;/,
+  'Muscle and equipment tags remain borderless inline text with natural wrapping');
+assert.match(browser, /<span className="exercise-library-row-copy"><strong>\{exercise.name\}<\/strong><ExerciseMuscleTagLine exercise=\{exercise\} \/><\/span>/);
+assert.match(read('src/components/ExerciseLibraryPicker.jsx'), /<span className="exercise-library-row-copy"><strong>\{exercise.name\}<\/strong><ExerciseMuscleTagLine exercise=\{exercise\} \/><\/span>/);
 
 assert.match(css, /\.training-exercise-source-switcher button \{[\s\S]*?min-height: 32px;[\s\S]*?padding: 0 4px 4px/);
 // Both Training subsection switches use identical vertical/horizontal spacing.
