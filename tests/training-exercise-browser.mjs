@@ -97,7 +97,7 @@ assert.match(sharedRowCss, /\.exercise-library-row-copy small\.exercise-library-
   'Exercise metadata wraps to two lines');
 assert.match(sharedRowCss, /\.exercise-library-row-copy \.exercise-library-row-tags > span \{[^}]*display: inline;[^}]*white-space: normal;/,
   'Muscle and equipment tags remain borderless inline text with natural wrapping');
-assert.match(browser, /<span className="exercise-library-row-copy"><strong>\{exercise.name\}<\/strong><ExerciseMuscleTagLine exercise=\{exercise\} \/><\/span>/);
+assert.match(browser, /<span className="exercise-library-row-copy">\s*<strong>\{exercise.name\}<\/strong>\s*<ExerciseMuscleTagLine exercise=\{exercise\} \/>\s*<\/span>/);
 assert.match(read('src/components/ExerciseLibraryPicker.jsx'), /<span className="exercise-library-row-copy"><strong>\{exercise.name\}<\/strong><ExerciseMuscleTagLine exercise=\{exercise\} \/><\/span>/);
 
 assert.match(css, /\.training-exercise-source-switcher button \{[\s\S]*?min-height: 32px;[\s\S]*?padding: 0 4px 4px/);
