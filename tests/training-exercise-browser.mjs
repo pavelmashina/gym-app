@@ -36,6 +36,10 @@ assert.match(browser, /<ExerciseMuscleTagLine exercise=\{exercise\} \/>/);
 assert.match(read('src/components/ExerciseLibraryPicker.jsx'), /<ExerciseMuscleTagLine exercise=\{exercise\} \/>/);
 assert.match(read('src/components/ExerciseMuscleTagLine.jsx'), /className="exercise-library-row-tags"/);
 assert.match(read('src/exercise-library-picker.css'), /\.exercise-library-row-tags \{/);
+assert.match(read('src/components/ExerciseMuscleTagLine.jsx'), /exerciseEquipmentTags\(exercise\).map/);
+assert.match(detail, /exerciseEquipmentTags\(exercise, variation.selection\).map/);
+assert.match(form, /exercise-library-secondary-muscles/);
+assert.match(form, /additionalMuscleGroups/);
 
 assert.doesNotMatch(browser, /exercise-library-row-chevron/);
 assert.match(browser, /<button className="exercise-library-row-info"/);
