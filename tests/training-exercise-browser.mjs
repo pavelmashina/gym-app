@@ -64,7 +64,7 @@ assert.match(browser, /createPortal\(<div role="dialog"/, 'An exercise opens as 
 assert.match(browser, /<ExerciseDetails key=\{selected.id\}/, 'Switching exercises resets detail state');
 assert.match(browser, /Показано \{visible.length\} из \{sourceExercises.length\} упражнений/, 'The browser discloses visible vs loaded count');
 assert.match(browser, /onClick=\{clearFilters\}>Сбросить фильтры<\/button>/);
-assert.match(browser, /function changeSource\(next\) \{ setSource\(next\); clearFilters\(\); \}/, 'Source changes clear hidden filters');
+assert.match(browser, /function changeSource\(next\) \{ setSource\(next\); clearFilters\(\); setFiltersOpen\(false\); \}/, 'Source changes clear filters and close the panel');
 const infoPage = read('src/components/ExerciseInfoModal.jsx');
 assert.match(infoPage, /createPortal\(<div className="training-exercise-page exercise-info-fullscreen"/, 'Program exercise information is also a separate screen');
 assert.match(infoPage, /<ExerciseDetailsContent key=\{exercise.id\} exercise=\{exercise\} \/>/);
