@@ -25,8 +25,8 @@
 .exercise-catalog-content .training-exercise-tools-row .exercise-library-filter > span {
   min-width: 0;
   padding: 0;
-  font-size: var(--gym-type-xs) !important;
-  line-height: var(--lh-caption) !important;
+  font-size: var(--gym-type-s) !important;
+  line-height: var(--lh-body) !important;
   font-weight: var(--weight-medium) !important;
   white-space: nowrap;
 }
@@ -196,8 +196,8 @@ body:has(.training-exercise-page) .app-bottom-nav {
   min-width: 0;
   overflow-wrap: anywhere;
   text-align: center;
-  font-size: var(--gym-type-m);
-  line-height: var(--lh-h3);
+  font-size: var(--gym-type-l);
+  line-height: var(--lh-h2);
   font-weight: var(--weight-semibold);
 }
 .training-exercise-page-content {
@@ -222,7 +222,7 @@ body:has(.training-exercise-page) .app-bottom-nav {
 .training-exercise-detail-heading > h1 {
   margin: 0;
   color: var(--ink);
-  font-size: var(--gym-type-s) !important; /* exercise name */
+  font-size: var(--gym-type-m) !important; /* exercise name: 16px */
   line-height: var(--lh-body) !important;
   font-weight: var(--weight-semibold);
   letter-spacing: normal;
@@ -239,7 +239,7 @@ body:has(.training-exercise-page) .app-bottom-nav {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--muted);
-  font-size: var(--gym-type-xs) !important; /* 12px */
+  font-size: var(--gym-type-xxs) !important; /* muscle and equipment tags: 10px */
   line-height: var(--lh-caption);
   font-weight: var(--weight-semibold);
 }

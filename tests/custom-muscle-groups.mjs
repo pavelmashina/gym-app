@@ -70,6 +70,8 @@ const legacyGroups = [...new Set(legacyRows.map(row => row.muscle_group))];
 assert.ok(legacyGroups.length >= 15, 'Legacy catalog fixture was read');
 for (const group of legacyGroups) assert.ok(mainGroups.includes(normalize(group)), `${group} → ${normalize(group)}`);
 assert.equal(normalize('Ноги ЗПБ'), 'Ноги');
+assert.equal(normalize('ЗПП'), 'Ноги');
+assert.equal(normalize('ППБ'), 'Ноги');
 assert.equal(normalize('Кор'), 'Пресс');
 assert.equal(normalize('Голень'), 'Икры');
 assert.equal(normalize('Бицепс (эспандеры)'), 'Бицепс');

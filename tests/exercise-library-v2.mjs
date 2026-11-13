@@ -42,8 +42,14 @@ assert.equal(result.mine.length,1);
 assert.deepEqual(result.recent.map(x=>x.id),['id-1','legs-1']);
 assert(result.all.some(x=>x.id==='legs-1'&&x.variation_axes?.length===1));
 const legs=result.all.find(x=>x.id==='legs-1');
-assert.deepEqual(library.exerciseMuscleTags(legs),['Передняя поверхность бедра (ППБ)','Ягодицы','Приводящие']);
-assert.equal(legs.display_muscle_group,'Передняя поверхность бедра (ППБ)','Primary label replaces generic legs');
+assert.deepEqual(library.exerciseMuscleTags(legs),['ППБ','Ягодицы','Приводящие']);
+assert.equal(legs.display_muscle_group,'ППБ','Primary label uses compact approved name');
+assert.equal(library.displayMuscleTag('Задняя поверхность бедра (ЗПБ)'), 'ЗПП');
+assert.equal(library.displayMuscleTag('Передняя поверхность бедра (ППБ)'), 'ППБ');
+assert(library.EXERCISE_MUSCLE_GROUPS.includes('ППБ') && library.EXERCISE_MUSCLE_GROUPS.includes('ЗПП'));
+assert(library.EXERCISE_MUSCLE_GROUPS.includes('Икроножные') && library.EXERCISE_MUSCLE_GROUPS.includes('Приводящие'));
+assert.equal(library.filterExerciseList(result.all,{muscleGroup:'ППБ'}).length,1);
+assert.equal(library.filterExerciseList(result.all,{muscleGroup:'Приводящие'}).length,1);
 assert.equal(library.filterExerciseList(result.all,{muscleGroup:'Ноги',query:'приводящие'}).length,1,'Legs filter stays compatible with secondary group search');
 assert.deepEqual(library.exerciseMuscleTags({muscle_group:'Спина'}),['Спина'],'Historical and own exercises retain single group');
 

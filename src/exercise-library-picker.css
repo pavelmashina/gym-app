@@ -178,8 +178,35 @@
   background:var(--surface);color:#a63232;font:inherit;font-weight:var(--weight-semibold);
 }
 
-/* Muscle-group chips from the rebuilt base: horizontal scroll keeps all three readable. */
-.exercise-library-row-tags { display:flex; gap:5px; min-width:0; max-width:100%; overflow-x:auto; overflow-y:hidden; white-space:nowrap; scrollbar-width:none; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+/* The old, borderless row metadata format; groups and equipment at 10px. */
+.exercise-library-row-tags {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
 .exercise-library-row-tags::-webkit-scrollbar { display:none; }
-.exercise-library-row-tags > span { display:inline-flex; align-items:center; flex:0 0 auto; min-height:22px; padding:3px 7px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--muted); font-size:var(--gym-type-xs); line-height:1.15; font-weight:var(--weight-regular); }
-.exercise-library-row-tags > span.is-primary { color:var(--ink); font-weight:var(--weight-semibold); }
+.exercise-library-row-copy .exercise-library-row-tags > span {
+  display:inline;
+  flex:0 0 auto;
+  min-height:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:var(--gym-type-xxs) !important;
+  line-height:var(--lh-micro);
+  font-weight:var(--weight-medium);
+}
+.exercise-library-row-copy .exercise-library-row-tags > span:not(:first-child)::before {
+  content:"·";
+  margin-right:5px;
+  color:var(--muted);
+}

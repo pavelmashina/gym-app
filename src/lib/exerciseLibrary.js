@@ -30,16 +30,26 @@ const REFERENCED_ROW_ERRORS = ['23503', '23001'];
 // A retired private row stays readable for programs and history, but is no longer offered.
 const isRemovedCustomExercise = row => Boolean(row?.owner_id) && row.status === 'retired';
 
-export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'Ноги', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
+export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'Ноги', 'ППБ', 'ЗПП', 'Икроножные', 'Приводящие', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гакк', 'Гантели', 'Штанга', 'Смит', 'Турник', 'Свой вес', 'Гравитрон', 'Гири', 'Тренажёр'];
+
+// Keep original database values from the source sheet, but show the compact
+// user-approved muscle labels throughout the UI. "ЗПП" is intentional.
+export function displayMuscleTag(value) {
+  const label = String(value ?? '').trim();
+  const key = label.toLocaleLowerCase('ru').replace(/ё/g, 'е');
+  if (key.startsWith('задняя поверхность бедра') || key === 'зпб' || key === 'зпп') return 'ЗПП';
+  if (key.startsWith('передняя поверхность бедра') || key === 'ппб') return 'ППБ';
+  return label;
+}
 
 // Ordered muscle tags from the rebuilt exercise sheet (primary comes first).
 // Historical and own exercises keep their single-group fallback.
 export function exerciseMuscleTags(exercise) {
   const tags = Array.isArray(exercise?.muscle_tags)
-    ? exercise.muscle_tags.filter(tag => typeof tag === 'string' && tag.trim()).slice(0, 3)
+    ? exercise.muscle_tags.filter(tag => typeof tag === 'string' && tag.trim()).slice(0, 3).map(displayMuscleTag)
     : [];
-  return tags.length ? tags : [exercise?.display_muscle_group || exercise?.muscle_group].filter(Boolean);
+  return tags.length ? tags : [exercise?.display_muscle_group || exercise?.muscle_group].filter(Boolean).map(displayMuscleTag);
 }
 
 // Groups offered for a user's own exercise. The finer ones are filtered under a main
@@ -47,7 +57,7 @@ export function exerciseMuscleTags(exercise) {
 // their own filter option once an exercise uses them.
 export const CUSTOM_EXERCISE_MUSCLE_GROUPS = [
   'Грудь', 'Спина', 'Трапеции', 'Поясница', 'Плечи', 'Бицепс', 'Трицепс', 'Предплечья', 'Пресс',
-  'Ягодицы', 'Ноги', 'Квадрицепсы', 'Бицепс бедра', 'Приводящие', 'Отводящие', 'Икры', 'Шея', 'Всё тело', 'Кардио',
+  'Ягодицы', 'Ноги', 'ППБ', 'ЗПП', 'Икроножные', 'Квадрицепсы', 'Бицепс бедра', 'Приводящие', 'Отводящие', 'Икры', 'Шея', 'Всё тело',
 ];
 export const EXERCISE_MUSCLE_GROUP_OTHER = 'Другое';
 export const MAX_MUSCLE_GROUP_LENGTH = 40;
@@ -104,7 +114,7 @@ export function normalizeExerciseMuscleGroup(value) {
   const lower = source.toLocaleLowerCase('ru');
   if (!source) return 'Всё тело';
   if (lower.startsWith('трапец') || lower.startsWith('поясниц')) return 'Спина';
-  if (lower.startsWith('квадрицеп') || lower.startsWith('бицепс бедр')) return 'Ноги';
+  if (lower.startsWith('квадрицеп') || lower.startsWith('бицепс бедр') || lower === 'ппб' || lower === 'зпп') return 'Ноги';
   if (lower.startsWith('отвод')) return 'Ягодицы';
   if (lower.startsWith('груд')) return 'Грудь';
   if (lower.startsWith('плеч')) return 'Плечи';
@@ -165,7 +175,7 @@ function mapExercise(row, userId, resolvedVideoUrl = null, photoUrls = []) {
     photo_paths: photoPaths,
     // Own exercises show the group exactly as chosen or typed; shared rows use the main groups.
     display_muscle_group: (row.owner_id && collapseSpaces(row.muscle_group))
-      || (Array.isArray(row.muscle_tags) ? row.muscle_tags[0] : null)
+      || (Array.isArray(row.muscle_tags) ? displayMuscleTag(row.muscle_tags[0]) : null)
       || normalizeExerciseMuscleGroup(row.primary_group_name_ru || row.muscle_group),
     equipment: normalizeExerciseEquipment(row),
     isMine: Boolean(row.owner_id && row.owner_id === userId),
@@ -528,10 +538,17 @@ export async function deleteCustomExercise(exerciseId, { heldLocally = () => tru
 export function filterExerciseList(exercises, { query = '', muscleGroup = 'Все', equipment = 'Все' } = {}) {
   const tokens = normalizeCatalogSearch(query).split(' ').filter(Boolean);
   return (exercises || []).filter((exercise) => {
-    if (muscleGroup !== 'Все' && normalizeExerciseMuscleGroup(exercise.muscle_group) !== muscleGroup) return false;
+    if (muscleGroup !== 'Все') {
+      const broad = normalizeExerciseMuscleGroup(exercise.muscle_group);
+      const specific = exerciseMuscleTags(exercise);
+      const matchesSpecific = specific.includes(muscleGroup)
+        || (muscleGroup === 'Икры' && specific.includes('Икроножные'))
+        || (muscleGroup === 'Икроножные' && specific.includes('Икры'));
+      if (broad !== muscleGroup && !matchesSpecific) return false;
+    }
     if (equipment !== 'Все' && normalizeExerciseEquipment(exercise) !== equipment) return false;
     const text = normalizeCatalogSearch([exercise.name, exercise.muscle_group, exercise.target_muscle, exercise.synergists, exercise.movement_type, exercise.equipment, exercise.description,
-      exercise.family_name_ru, exercise.equipment_name_ru, ...exerciseMuscleTags(exercise), ...(exercise.aliases || []).map(alias => alias.alias)].filter(Boolean).join(' '));
+      exercise.family_name_ru, exercise.equipment_name_ru, ...(exercise.muscle_tags || []), ...exerciseMuscleTags(exercise), ...(exercise.aliases || []).map(alias => alias.alias)].filter(Boolean).join(' '));
     return tokens.every(token => text.includes(token));
   });
 }
