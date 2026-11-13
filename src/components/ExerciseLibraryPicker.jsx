@@ -9,6 +9,7 @@ import {
 import '../exercise-library-picker.css';
 import { CustomExerciseForm } from './CustomExerciseForm.jsx';
 import { ExerciseInfoModal } from './ExerciseInfoModal.jsx';
+import { ExerciseMuscleTagLine } from './ExerciseMuscleTagLine.jsx';
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>; }
 function PlusIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>; }
@@ -20,7 +21,7 @@ function LibraryRow({ exercise, selected, onClick, onInfo, multi }) {
     <button className="exercise-library-row" type="button" onClick={onClick} aria-pressed={multi ? selected : undefined}>
       {multi && <span className="exercise-library-check">{selected ? '✓' : ''}</span>}
       {exercise.resolvedPhotoUrl && <span className="exercise-library-row-photo"><img src={exercise.resolvedPhotoUrl} alt="" loading="lazy" /></span>}
-      <span className="exercise-library-row-copy"><strong>{exercise.name}</strong><small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small></span>
+      <span className="exercise-library-row-copy"><strong>{exercise.name}</strong><ExerciseMuscleTagLine exercise={exercise} /></span>
       {!multi && <span className="exercise-library-row-chevron">›</span>}
     </button>
     <button className="exercise-library-row-info" type="button" aria-label={`Информация об упражнении ${exercise.name}`} onClick={() => onInfo(exercise)}><InfoIcon /></button>

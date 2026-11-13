@@ -33,6 +33,15 @@ const isRemovedCustomExercise = row => Boolean(row?.owner_id) && row.status === 
 export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'Ноги', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гакк', 'Гантели', 'Штанга', 'Смит', 'Турник', 'Свой вес', 'Гравитрон', 'Гири', 'Тренажёр'];
 
+// Ordered muscle tags from the rebuilt exercise sheet (primary comes first).
+// Historical and own exercises keep their single-group fallback.
+export function exerciseMuscleTags(exercise) {
+  const tags = Array.isArray(exercise?.muscle_tags)
+    ? exercise.muscle_tags.filter(tag => typeof tag === 'string' && tag.trim()).slice(0, 3)
+    : [];
+  return tags.length ? tags : [exercise?.display_muscle_group || exercise?.muscle_group].filter(Boolean);
+}
+
 // Groups offered for a user's own exercise. The finer ones are filtered under a main
 // group by normalizeExerciseMuscleGroup (Квадрицепсы → Ноги); Предплечья and Шея get
 // their own filter option once an exercise uses them.
@@ -156,6 +165,7 @@ function mapExercise(row, userId, resolvedVideoUrl = null, photoUrls = []) {
     photo_paths: photoPaths,
     // Own exercises show the group exactly as chosen or typed; shared rows use the main groups.
     display_muscle_group: (row.owner_id && collapseSpaces(row.muscle_group))
+      || (Array.isArray(row.muscle_tags) ? row.muscle_tags[0] : null)
       || normalizeExerciseMuscleGroup(row.primary_group_name_ru || row.muscle_group),
     equipment: normalizeExerciseEquipment(row),
     isMine: Boolean(row.owner_id && row.owner_id === userId),
@@ -521,7 +531,7 @@ export function filterExerciseList(exercises, { query = '', muscleGroup = 'Вс�
     if (muscleGroup !== 'Все' && normalizeExerciseMuscleGroup(exercise.muscle_group) !== muscleGroup) return false;
     if (equipment !== 'Все' && normalizeExerciseEquipment(exercise) !== equipment) return false;
     const text = normalizeCatalogSearch([exercise.name, exercise.muscle_group, exercise.target_muscle, exercise.synergists, exercise.movement_type, exercise.equipment, exercise.description,
-      exercise.family_name_ru, exercise.equipment_name_ru, ...(exercise.aliases || []).map(alias => alias.alias)].filter(Boolean).join(' '));
+      exercise.family_name_ru, exercise.equipment_name_ru, ...exerciseMuscleTags(exercise), ...(exercise.aliases || []).map(alias => alias.alias)].filter(Boolean).join(' '));
     return tokens.every(token => text.includes(token));
   });
 }

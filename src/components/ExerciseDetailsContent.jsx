@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ExercisePhotoGallery } from './ExercisePhotoGallery.jsx';
 import ExerciseTechnique from './ExerciseTechnique.jsx';
+import { exerciseMuscleTags } from '../lib/exerciseLibrary.js';
 import '../training-exercise-browser.css';
 
 function isDirectVideo(url) {
@@ -56,7 +57,7 @@ export function ExerciseDetailsContent({ exercise }) {
     </div>
     {photos.length > 0 && <ExercisePhotoGallery photos={photos} alt={exercise.name} />}
     <div className="training-exercise-detail-tags">
-      <span>{exercise.display_muscle_group || exercise.muscle_group}</span>
+      {exerciseMuscleTags(exercise).map((tag, index) => <span key={tag} className={index === 0 ? 'is-primary' : 'is-secondary'}>{tag}</span>)}
       {exercise.equipment && <span>{exercise.equipment}</span>}
     </div>
     <div className={'training-exercise-detail-video' + (video ? '' : ' is-empty')}>

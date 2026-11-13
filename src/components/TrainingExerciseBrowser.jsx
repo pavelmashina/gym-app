@@ -9,6 +9,7 @@ import {
 import { CustomExerciseForm } from './CustomExerciseForm.jsx';
 import { DeleteExerciseDialog } from './MyExercisesPanel.jsx';
 import { ExerciseDetailsContent } from './ExerciseDetailsContent.jsx';
+import { ExerciseMuscleTagLine } from './ExerciseMuscleTagLine.jsx';
 import { appPoint } from '../lib/portraitLock.js';
 import '../exercise-library-picker.css';
 import '../training-exercise-browser.css';
@@ -167,7 +168,7 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
               {exercise.resolvedPhotoUrl && <span className="exercise-library-row-photo"><img src={exercise.resolvedPhotoUrl} alt="" loading="lazy" /></span>}
               <span className="exercise-library-row-copy">
                 <strong>{exercise.name}</strong>
-                <small>{[exercise.display_muscle_group || exercise.muscle_group, exercise.equipment].filter(Boolean).join(' · ')}</small>
+                <ExerciseMuscleTagLine exercise={exercise} />
               </span>
             </button>
             <button className="exercise-library-row-info" type="button"

@@ -414,3 +414,6 @@ body:has(.training-exercise-page) .app-bottom-nav {
 .training-exercise-variation-axis { display:grid; gap:4px; padding:12px; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--surface); }
 .training-exercise-variation-axis strong { font-size:var(--gym-type-s); font-weight:var(--weight-semibold); }
 .training-exercise-variation-axis p { margin:0; font-size:var(--gym-type-xs); line-height:var(--lh-caption); color:var(--muted); overflow-wrap:break-word; }
+
+/* The first muscle chip is primary; further chips are secondary. */
+.training-exercise-detail-tags > span.is-primary { color:var(--ink); font-weight:var(--weight-semibold); }
