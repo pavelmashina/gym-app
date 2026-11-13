@@ -22,7 +22,7 @@
     "test:my-exercises": "node tests/my-exercises.mjs && node tests/my-exercises-db.mjs",
     "test:commercial": "node tests/commercial-foundation-contracts.mjs",
     "test:drafts": "node tests/program-draft-filters.mjs",
-    "test:catalog-db": "node tests/exercise-catalog-duplicates.mjs && node tests/exercise-catalog-v2-db.mjs && node tests/exercise-catalog-v2-content.mjs && node tests/exercise-results-v2.mjs && node tests/exercise-catalog-v2-seed.mjs && node tests/exercise-library-v2.mjs && node tests/exercise-results-v2-db.mjs && node tests/exercise-results-v2-client.mjs",
+    "test:catalog-db": "node tests/rebuilt-exercise-catalog.mjs && node tests/exercise-catalog-duplicates.mjs && node tests/exercise-catalog-v2-db.mjs && node tests/exercise-catalog-v2-content.mjs && node tests/exercise-results-v2.mjs && node tests/exercise-catalog-v2-seed.mjs && node tests/exercise-library-v2.mjs && node tests/exercise-results-v2-db.mjs && node tests/exercise-results-v2-client.mjs",
     "test": "pnpm run test:lifecycle && pnpm run test:core && pnpm run test:qa && pnpm run test:mobile && pnpm run test:interface && pnpm run test:workout-ui && pnpm run test:commercial && pnpm run test:drafts && pnpm run test:catalog-db && pnpm run test:my-exercises"
   },
   "engines": {
