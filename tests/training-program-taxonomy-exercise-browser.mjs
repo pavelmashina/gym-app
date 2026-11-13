@@ -46,8 +46,9 @@ assert.match(picker,/if \(browseOnly\) \{ setInfoExercise\(exercise\); return; \
 assert.match(browser,/listExerciseLibrary\(\{ includeLegacy: true \}\)/);
 assert.match(browser,/listMyExercises\(\)/);
 assert.match(browser,/training-exercise-source-switcher/);
-assert.match(library,/includeLegacy && CATALOG_V2_ENABLED/);
-assert.match(library,/knownIds\.has\(row\.id\)/);
+assert.match(library,/void includeLegacy;/, 'Historical full-catalog browsing is disabled after reset');
+assert.match(library,/loadRebuiltBaseRows\(\)/);
+assert.match(library,/!isAvailableExercise\(row\)/, 'Retired system exercises cannot enter the library');
 assert.match(css,/data-training-tab="exercises"/);
 assert.match(css,/training-exercise-browser/);
 assert.match(css,/\.training-exercise-browser \.exercise-library-search input/);
