@@ -41,7 +41,7 @@ assert.equal(result.mine.length,1);
 assert.deepEqual(result.recent.map(x=>x.id),['id-1','legs-1']);
 assert(result.all.some(x=>x.id==='legs-1'&&x.variation_axes?.length===1));
 assert(!result.all.some(x=>x.id==='legacy'),'Retired exercise never appears in any picker');
-assert.deepEqual(requests,[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]]);
+assert.deepEqual(requests.map(row => row.join(':')).sort(),[['exercise_catalog_v2',0,499],['exercise_catalog_v2',500,999],['exercises',0,499]].map(row => row.join(':')).sort(), 'Concurrent catalog fetches may resolve in any order');
 const complete = await library.listExerciseLibrary({includeLegacy:true});
 assert.deepEqual(complete.all.map(x=>x.id),result.all.map(x=>x.id),'Browse-only mode does not revive retired rows');
 assert(!complete.all.some(x=>x.id==='legacy'));
