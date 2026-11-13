@@ -37,6 +37,49 @@ const isRemovedCustomExercise = row => Boolean(row?.owner_id) && row.status === 
 export const EXERCISE_MUSCLE_GROUPS = ['Все', 'Грудь', 'Плечи', 'Спина', 'Пресс', 'ППБ', 'ЗПП', 'Икроножные', 'Приводящие', 'Бицепс', 'Икры', 'Трицепс', 'Ягодицы', 'Всё тело'];
 export const EXERCISE_EQUIPMENT = ['Все', 'Гакк', 'Гантели', 'Штанга', 'Смит', 'Турник', 'Свой вес', 'Гравитрон', 'Гири', 'Тренажёр'];
 
+// The imported legs list has movement_type="Силовое" for every row and no
+// movement_pattern_id. Derive the movement pattern from the full exercise name;
+// do not rewrite historical movement_type or change referenced exercise IDs.
+export const EXERCISE_MOVEMENT_TYPES = [
+  'Все', 'Приседания', 'Выпады', 'Жим ногами', 'Зашагивания', 'Разгибания',
+  'Сгибания', 'Рывок', 'Тяга', 'Ягодичный мост', 'Подъёмы на носки',
+  'Наклоны', 'Сведение', 'Разведение', 'Отведение', 'Махи',
+  'Гиперэкстензия', 'Статические удержания', 'Прыжки', 'Другое',
+];
+
+export function exerciseMovementType(exercise) {
+  const explicit = String(exercise?.movement_filter_type || exercise?.movement_pattern_name_ru || '').trim();
+  if (explicit && explicit !== 'Силовое' && explicit !== 'Пользовательское') return explicit;
+  const name = String(exercise?.name || '').toLocaleLowerCase('ru').replace(/ё/g, 'е');
+  if (/выпрыг|прыж/.test(name)) return 'Прыжки';
+  if (/статическ.*удержан/.test(name)) return 'Статические удержания';
+  if (/присед/.test(name)) return 'Приседания';
+  if (/выпад/.test(name)) return 'Выпады';
+  if (/жим ногами/.test(name)) return 'Жим ногами';
+  if (/зашагив|power runner/.test(name)) return 'Зашагивания';
+  if (/разгибан/.test(name)) return 'Разгибания';
+  if (/сгибан/.test(name)) return 'Сгибания';
+  if (/рывок/.test(name)) return 'Рывок';
+  if (/становая тяга|румынская тяга/.test(name)) return 'Тяга';
+  if (/ягодичн.*мост|подъем таза/.test(name)) return 'Ягодичный мост';
+  if (/подъем.*на носки/.test(name)) return 'Подъёмы на носки';
+  if (/наклон.*вперед|good morning/.test(name)) return 'Наклоны';
+  if (/сведен/.test(name)) return 'Сведение';
+  if (/разведен/.test(name)) return 'Разведение';
+  if (/отведен/.test(name)) return 'Отведение';
+  if (/махи/.test(name)) return 'Махи';
+  if (/гиперэкстенз/.test(name)) return 'Гиперэкстензия';
+  return 'Другое';
+}
+
+export function exerciseMovementFilterOptions(exercises = []) {
+  const types = new Set((exercises || []).map(exerciseMovementType));
+  const ordered = EXERCISE_MOVEMENT_TYPES.slice(1).filter(type => types.has(type));
+  const extras = [...types].filter(type => !EXERCISE_MOVEMENT_TYPES.includes(type))
+    .sort((a, b) => a.localeCompare(b, 'ru'));
+  return ['Все', ...ordered, ...extras];
+}
+
 // Keep original database values from the source sheet, but show the compact
 // user-approved muscle labels throughout the UI. "ЗПП" is intentional.
 export function displayMuscleTag(value) {
@@ -578,7 +621,7 @@ export async function deleteCustomExercise(exerciseId, { heldLocally = () => tru
   return { outcome: 'retired', usage };
 }
 
-export function filterExerciseList(exercises, { query = '', muscleGroup = 'Все', equipment = 'Все' } = {}) {
+export function filterExerciseList(exercises, { query = '', muscleGroup = 'Все', equipment = 'Все', movementType = 'Все' } = {}) {
   const tokens = normalizeCatalogSearch(query).split(' ').filter(Boolean);
   return (exercises || []).filter((exercise) => {
     if (muscleGroup !== 'Все') {
@@ -590,6 +633,7 @@ export function filterExerciseList(exercises, { query = '', muscleGroup = 'Вс�
       if (broad !== muscleGroup && !matchesSpecific) return false;
     }
     if (equipment !== 'Все' && normalizeExerciseEquipment(exercise) !== equipment) return false;
+    if (movementType !== 'Все' && exerciseMovementType(exercise) !== movementType) return false;
     const text = normalizeCatalogSearch([exercise.name, exercise.muscle_group, exercise.target_muscle, exercise.synergists, exercise.movement_type, exercise.equipment, exercise.description,
       exercise.family_name_ru, exercise.equipment_name_ru, ...(exercise.muscle_tags || []), ...exerciseMuscleTags(exercise), ...(exercise.aliases || []).map(alias => alias.alias)].filter(Boolean).join(' '));
     return tokens.every(token => text.includes(token));

@@ -84,6 +84,19 @@ assert.equal(legRows.length,113,'Every leg exercise is accessible even with API 
 assert.deepEqual(new Set(legRows.map(row=>row.source_row)),new Set(sheetSnapshot.exercises.map(row=>row.source_row)));
 assert.equal(library.filterExerciseList(legRows).length,113,'Default Все filters show the full leg list');
 assert.equal(library.filterExerciseList(legRows,{muscleGroup:'Все',equipment:'Все'}).length,113);
+const movementGroups=library.exerciseMovementFilterOptions(legRows);
+assert(movementGroups.length>=15,'Movement types distinguish the exercises, not only Силовое');
+assert(movementGroups.includes('Приседания')&&movementGroups.includes('Выпады')&&movementGroups.includes('Тяга'));
+assert(!movementGroups.includes('Другое'),'Every imported leg name has a recognized pattern');
+assert.equal(legRows.filter(x=>library.exerciseMovementType(x)==='Приседания').length,
+  library.filterExerciseList(legRows,{movementType:'Приседания'}).length);
+assert(library.filterExerciseList(legRows,{movementType:'Приседания'}).length>10);
+assert.equal(library.filterExerciseList(legRows,{movementType:'Прыжки'}).length,2);
+assert.equal(library.filterExerciseList(legRows,{movementType:'Тяга',muscleGroup:'ЗПП'}).every(x=>library.exerciseMovementType(x)==='Тяга'),true);
+assert.equal(library.exerciseMovementType({name:'Статическое удержание в приседе плие'}),'Статические удержания');
+assert.equal(library.exerciseMovementType({name:'Выпрыгивания из приседа'}),'Прыжки');
+assert.equal(library.exerciseMovementType({name:'Гакк-приседания в тренажёре'}),'Приседания');
+assert.equal(library.exerciseMovementType({name:'Румынская тяга со штангой'}),'Тяга');
 assert(requests.some(row=>row[0]==='exercises'&&row[1]===50),'Catalog continues past an API-limited first page');
 assert(requests.some(row=>row[0]==='exercises'&&row[1]===100),'Catalog loads the remaining thirteen rows');
 failRecent = true;

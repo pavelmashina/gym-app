@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   EXERCISE_EQUIPMENT,
   exerciseMuscleGroupFilterOptions,
+  exerciseMovementFilterOptions,
   filterExerciseList,
   listExerciseLibrary,
   listMyExercises,
@@ -20,6 +21,9 @@ function BackIcon() {
 }
 function SearchIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>;
+}
+function FilterIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>;
 }
 function PlusIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>;
@@ -81,6 +85,8 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
   const [query, setQuery] = useState('');
   const [muscleGroup, setMuscleGroup] = useState('Все');
   const [equipment, setEquipment] = useState('Все');
+  const [movementType, setMovementType] = useState('Все');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState('list');
   const [selected, setSelected] = useState(null);
   const [editOrigin, setEditOrigin] = useState('list');
@@ -106,12 +112,15 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
     return options.includes(muscleGroup) ? options : [...options, muscleGroup];
   }, [mine, muscleGroup]);
   const sourceExercises = source === 'base' ? base : mine;
+  const movementTypes = useMemo(() => exerciseMovementFilterOptions(sourceExercises), [sourceExercises]);
+  const hasFilters = muscleGroup !== 'Все' || equipment !== 'Все' || movementType !== 'Все';
   const visible = useMemo(() => filterExerciseList(source === 'base' ? base : mine, {
-    query, muscleGroup, equipment,
-  }), [source, base, mine, query, muscleGroup, equipment]);
+    query, muscleGroup, equipment, movementType,
+  }), [source, base, mine, query, muscleGroup, equipment, movementType]);
 
-  function clearFilters() { setQuery(''); setMuscleGroup('Все'); setEquipment('Все'); }
-  function changeSource(next) { setSource(next); clearFilters(); }
+  function resetFilterChoices() { setMuscleGroup('Все'); setEquipment('Все'); setMovementType('Все'); }
+  function clearFilters() { setQuery(''); resetFilterChoices(); }
+  function changeSource(next) { setSource(next); clearFilters(); setFiltersOpen(false); }
   function openInfo(exercise) { setSelected(exercise); setPage('detail'); }
   function create() { setSelected(null); setEditOrigin('list'); setPage('editor'); }
   function edit(exercise) { setSelected(exercise); setEditOrigin('detail'); setPage('editor'); }
@@ -144,20 +153,39 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
             placeholder="Найти упражнение" aria-label="Найти упражнение" />
           {query && <button type="button" aria-label="Очистить поиск" onClick={() => setQuery('')}>×</button>}
         </label>
-        <div className="training-exercise-tools-row">
-          <label className="exercise-library-filter"><span>Группа мышц</span>
-            <select value={muscleGroup} aria-label="Группа мышц" onChange={event => setMuscleGroup(event.target.value)}>
-              {muscleGroups.map(value => <option key={value}>{value}</option>)}
-            </select>
-          </label>
-          <label className="exercise-library-filter"><span>Оборудование</span>
-            <select value={equipment} aria-label="Оборудование" onChange={event => setEquipment(event.target.value)}>
-              {EXERCISE_EQUIPMENT.map(value => <option key={value}>{value}</option>)}
-            </select>
-          </label>
+        <div className="training-toolbar-row compact-training-toolbar training-exercise-tools-row">
+          <div className="training-tools">
+            <button type="button" className={filtersOpen || hasFilters ? 'active' : ''}
+              title="Фильтры" aria-label="Фильтры" aria-expanded={filtersOpen}
+              aria-controls="training-exercise-filter-panel"
+              onClick={() => setFiltersOpen(value => !value)}><FilterIcon /></button>
+          </div>
           <button className="training-create-compact training-exercise-create" type="button"
             onClick={create} aria-label="Создать своё упражнение"><PlusIcon /><span>Создать</span></button>
         </div>
+        {filtersOpen && <section id="training-exercise-filter-panel" className="catalog-filters training-exercise-filter-panel"
+          aria-label="Фильтры упражнений">
+          <div className="catalog-filter-group">
+            <span>Группа мышц</span>
+            <div className="catalog-filter-pills">{muscleGroups.map(value =>
+              <button key={value} type="button" className={muscleGroup === value ? 'active' : ''}
+                aria-pressed={muscleGroup === value} onClick={() => setMuscleGroup(value)}>{value}</button>)}</div>
+          </div>
+          <div className="catalog-filter-group">
+            <span>Оборудование</span>
+            <div className="catalog-filter-pills">{EXERCISE_EQUIPMENT.map(value =>
+              <button key={value} type="button" className={equipment === value ? 'active' : ''}
+                aria-pressed={equipment === value} onClick={() => setEquipment(value)}>{value}</button>)}</div>
+          </div>
+          <div className="catalog-filter-group">
+            <span>Тип движения</span>
+            <div className="catalog-filter-pills">{movementTypes.map(value =>
+              <button key={value} type="button" className={movementType === value ? 'active' : ''}
+                aria-pressed={movementType === value} onClick={() => setMovementType(value)}>{value}</button>)}</div>
+          </div>
+          {hasFilters && <button className="catalog-filters-reset" type="button"
+            onClick={resetFilterChoices}>Сбросить фильтры</button>}
+        </section>}
       </section>
       <div className="training-exercise-source-switcher" role="tablist" aria-label="Источник упражнений">
         <button type="button" role="tab" aria-selected={source === 'base'} className={source === 'base' ? 'active' : ''}
@@ -167,7 +195,7 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
       </div>
       {!loading && !error && <div className="training-exercise-count" aria-live="polite">
         <span>Показано {visible.length} из {sourceExercises.length} упражнений</span>
-        {(query || muscleGroup !== 'Все' || equipment !== 'Все') &&
+        {(query || hasFilters) &&
           <button type="button" onClick={clearFilters}>Сбросить фильтры</button>}
       </div>}
       {loading && <div className="exercise-library-state"><div className="exercise-list-spinner" aria-hidden="true" /><span>Загружаем упражнения…</span></div>}
@@ -186,7 +214,7 @@ export function TrainingExerciseBrowser({ refreshKey = 0 }) {
             <button className="exercise-library-row-info" type="button"
               aria-label={`Информация об упражнении ${exercise.name}`} onClick={() => openInfo(exercise)}><InfoIcon /></button>
           </div>) : <div className="exercise-library-empty">
-            {source === 'mine' && !query && muscleGroup === 'Все' && equipment === 'Все'
+            {source === 'mine' && !query && !hasFilters
               ? 'Пока нет своих упражнений. Нажмите «Создать», чтобы добавить первое.'
               : 'Упражнения не найдены'}
           </div>}

@@ -439,3 +439,56 @@ body:has(.training-exercise-page) .app-bottom-nav {
 .exercise-catalog-content .training-library-browser[aria-hidden="true"] { visibility:hidden; }
 .training-exercise-count { display:flex; align-items:center; justify-content:space-between; min-width:0; gap:10px; font-size:var(--gym-type-xs); line-height:var(--lh-caption); color:var(--muted); }
 .training-exercise-count button { flex:0 0 auto; min-height:30px; border:0; padding:0 4px; background:transparent; color:var(--ink); font:inherit; font-weight:var(--weight-semibold); text-decoration:underline; text-underline-offset:3px; }
+
+/* Exercises: same 40px filter icon and expandable pill panel as the other Training tabs. */
+.exercise-catalog-content .training-exercise-tools-row.training-toolbar-row {
+  display: flex;
+  grid-template-columns: none;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.exercise-catalog-content .training-exercise-tools-row .training-tools {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-right: auto;
+}
+.exercise-catalog-content .training-exercise-tools-row .training-tools button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.exercise-catalog-content .training-exercise-tools-row .training-tools button.active {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.exercise-catalog-content .training-exercise-tools-row .training-tools button svg {
+  width: 22px;
+  height: 22px;
+}
+.exercise-catalog-content .training-exercise-filter-panel.catalog-filters {
+  margin: 0;
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+.exercise-catalog-content .training-exercise-filter-panel .catalog-filter-group > span {
+  font-size: var(--gym-type-s) !important;
+  text-transform: none !important;
+}
+.exercise-catalog-content .training-exercise-filter-panel .catalog-filter-pills button {
+  font-size: var(--gym-type-xs) !important;
+}
