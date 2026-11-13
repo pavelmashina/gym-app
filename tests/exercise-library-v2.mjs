@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { normalizeCatalogSearch } from '../src/lib/exerciseCatalogV2.js';
 
-const rows = Array.from({length: 501}, (_, i) => ({id: `id-${i}`, name: `Карточка ${i}`, muscle_group:'Грудь', equipment:'Штанга'}));
+const rows = Array.from({length: 501}, (_, i) => ({id: `id-${i}`, name: `Карточка ${i}`, muscle_group:'Грудь', equipment:'Штанга', status:'published', source_sheet:'catalog_v2', owner_id:null}));
 rows[0] = {...rows[0], name:'Жим лёжа', aliases:[{alias:'Bench Press',language:'en'}], family_name_ru:'Жимы от груди'};
 rows[1] = {...rows[1], owner_id:'alice'};
 const legacy = { id:'legacy', name:'Старое упражнение', status:'retired', owner_id:null, equipment:'Гантели', muscle_group:'Ноги' };
