@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { signVariationMedia } from './exerciseVariationSelection.js';
 
 const EXERCISE_VIDEOS_BUCKET = 'exercise-videos';
 
@@ -12,6 +13,11 @@ export async function getExerciseDetails(exerciseId) {
   if (error) throw new Error('Не удалось загрузить информацию об упражнении.');
   if (!data) return null;
 
+  const variation_axes = await signVariationMedia(data.variation_axes, async path => {
+    const { data: signed, error: signError } = await supabase.storage
+      .from(EXERCISE_VIDEOS_BUCKET).createSignedUrl(path, 60 * 60);
+    return signError ? null : (signed?.signedUrl ?? null);
+  });
   let signedVideoUrl = null;
   if (data.video_path) {
     const { data: signed } = await supabase.storage.from(EXERCISE_VIDEOS_BUCKET).createSignedUrl(data.video_path, 60 * 60);
@@ -29,6 +35,7 @@ export async function getExerciseDetails(exerciseId) {
   const resolvedPhotoUrls = signedPhotos.filter(Boolean);
   return {
     ...data,
+    variation_axes,
     resolvedVideoUrl: signedVideoUrl || data.video_url || null,
     resolvedPhotoUrls,
     resolvedPhotoUrl: resolvedPhotoUrls[0] || null,

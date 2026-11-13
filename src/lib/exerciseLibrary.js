@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 import { normalizeCatalogSearch } from './exerciseCatalogV2.js';
+import { signVariationMedia } from './exerciseVariationSelection.js';
 
 const CATALOG_V2_ENABLED = import.meta.env.VITE_EXERCISE_CATALOG_V2 === 'true';
 
@@ -194,11 +195,12 @@ async function currentUser() {
 
 async function mapExercises(rows, userId) {
   return Promise.all((rows || []).map(async row => {
-    const [video, photos] = await Promise.all([
+    const [video, photos, variation_axes] = await Promise.all([
       signedVideoUrl(row.video_path),
       signedPhotoUrls(exercisePhotoPaths(row)),
+      signVariationMedia(row.variation_axes, signedVideoUrl),
     ]);
-    return mapExercise(row, userId, video, photos);
+    return mapExercise({ ...row, variation_axes }, userId, video, photos);
   }));
 }
 

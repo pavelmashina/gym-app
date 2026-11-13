@@ -408,12 +408,29 @@ body:has(.training-exercise-page) .app-bottom-nav {
   }
 }
 
-/* Variations copied from the new exercise-list sheet; each is one axis, not a separate exercise. */
-.training-exercise-variation-axes { display:grid; gap:10px; }
-.training-exercise-variation-axes h2 { margin:0; font-size:var(--gym-type-m); }
-.training-exercise-variation-axis { display:grid; gap:4px; padding:12px; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--surface); }
+/* Accessible variation switches: chosen options control description/video. */
+.training-exercise-variation-axes { display:grid; gap:12px; min-width:0; }
+.training-exercise-variation-axes h2 { margin:0; font-size:var(--gym-type-m); line-height:var(--lh-h3); }
+.training-exercise-variation-axis { display:grid; gap:7px; min-width:0; }
 .training-exercise-variation-axis strong { font-size:var(--gym-type-s); font-weight:var(--weight-semibold); }
-.training-exercise-variation-axis p { margin:0; font-size:var(--gym-type-xs); line-height:var(--lh-caption); color:var(--muted); overflow-wrap:break-word; }
+.training-exercise-variation-options {
+  display:flex; gap:7px; min-width:0; overflow-x:auto; padding:0 0 3px;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.training-exercise-variation-options::-webkit-scrollbar { display:none; }
+.training-exercise-variation-options button {
+  flex:0 0 auto; min-height:36px; padding:7px 12px;
+  border:1px solid var(--line); border-radius:var(--radius-sm);
+  background:var(--surface); color:var(--muted);
+  font:inherit; font-size:var(--gym-type-xs); font-weight:var(--weight-semibold);
+  white-space:nowrap; cursor:pointer;
+}
+.training-exercise-variation-options button.active {
+  background:var(--ink); border-color:var(--ink); color:var(--bg);
+}
+.training-exercise-variation-options button:focus-visible {
+  outline:2px solid var(--ink); outline-offset:2px;
+}
 
 /* The first muscle chip is primary; further chips are secondary. */
 .training-exercise-detail-tags > span.is-primary { color:var(--ink); font-weight:var(--weight-semibold); }
